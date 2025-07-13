@@ -26,67 +26,62 @@ serve(async (req) => {
     const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
     const candidateName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : 'Professional Candidate';
 
-    const enhancementPrompt = `You are an expert resume writer and career coach. Create a professional, ATS-optimized enhanced version of this resume.
+    const enhancementPrompt = `You are an expert resume writer and career coach. Analyze the following ACTUAL resume content and create a professional, ATS-optimized enhanced version.
 
-Candidate Name: ${candidateName}
-Original Resume File: ${fileName}
+IMPORTANT: Use ONLY the information provided in the original resume. Do NOT make up fake data, companies, or achievements. Extract and enhance the real information from the resume.
+
+Original Resume Content:
+${originalText}
+
+Candidate Name from filename: ${candidateName}
 
 Instructions:
-- Create a realistic, professional resume for ${candidateName}
-- Use modern resume best practices and ATS-friendly formatting
-- Include quantified achievements and strong action verbs
-- Make it industry-appropriate and impressive but realistic
-- Use professional language and clear structure
+- Extract ALL real information from the original resume (education, experience, skills, contact info, etc.)
+- Use the actual companies, institutions, and positions mentioned in the original resume
+- Enhance the language and formatting while keeping all factual information accurate
+- If specific details are missing, use general but realistic placeholders based on the actual content
+- Maintain the candidate's actual career progression and timeline
+- Use the real skills and technologies mentioned in the original resume
+- Keep the actual educational background and institutions if mentioned
 
-Generate a complete professional resume with these sections:
-1. Contact Information (use realistic but generic details)
-2. Professional Summary (compelling, 3-4 lines)
-3. Professional Experience (2-3 relevant positions with 3-4 bullet points each)
-4. Skills (8-12 relevant technical/professional skills)
-5. Education (appropriate degree and institution)
+Generate a complete professional resume with these sections based on the ACTUAL content:
+1. Contact Information (extract from original or use realistic details)
+2. Professional Summary (based on actual experience and skills)
+3. Professional Experience (use ACTUAL companies and positions, enhance descriptions)
+4. Skills (use ACTUAL skills mentioned, enhance presentation)
+5. Education (use ACTUAL institutions and degrees mentioned)
 
 Return ONLY a JSON object in this exact format:
 {
-  "name": "${candidateName}",
-  "title": "Professional Job Title",
+  "name": "Actual name or ${candidateName}",
+  "title": "Job title based on actual experience",
   "email": "professional.email@example.com",
   "phone": "+91 XXXXX XXXXX",
   "location": "City, India",
-  "summary": "Results-driven professional with X+ years of experience in relevant field. Proven track record of achieving measurable results and driving success. Strong background in key skills with expertise in industry-specific areas.",
+  "summary": "Professional summary based on actual experience and background",
   "experience": [
     {
-      "title": "Senior Position Title",
-      "company": "Professional Company Name",
-      "duration": "2021 - Present",
+      "title": "ACTUAL job title from resume",
+      "company": "ACTUAL company name from resume",
+      "duration": "ACTUAL dates or estimated based on resume",
       "achievements": [
-        "Led major initiative resulting in X% improvement in key metric",
-        "Managed team of X professionals and delivered projects worth $X",
-        "Implemented strategic solution that increased efficiency by X%",
-        "Collaborated with stakeholders to achieve X% growth in revenue"
-      ]
-    },
-    {
-      "title": "Mid-Level Position Title", 
-      "company": "Previous Company Name",
-      "duration": "2018 - 2021",
-      "achievements": [
-        "Developed innovative approach that reduced costs by X%",
-        "Successfully delivered X+ projects on time and under budget",
-        "Mentored junior team members and improved team productivity by X%"
+        "Enhanced version of actual responsibilities/achievements",
+        "Professional rewrite of actual work done",
+        "Quantified achievements based on actual experience"
       ]
     }
   ],
-  "skills": ["Skill 1", "Skill 2", "Skill 3", "Skill 4", "Skill 5", "Skill 6", "Skill 7", "Skill 8"],
+  "skills": ["ACTUAL skills from resume", "Technologies mentioned", "Tools used"],
   "education": [
     {
-      "degree": "Bachelor's/Master's in Relevant Field",
-      "institution": "Reputable University/College",
-      "year": "20XX"
+      "degree": "ACTUAL degree mentioned in resume",
+      "institution": "ACTUAL institution name from resume",
+      "year": "ACTUAL year or estimated"
     }
   ]
 }
 
-Make it professional, impressive, and realistic for ${candidateName}.`;
+CRITICAL: Base everything on the actual resume content provided. Do not invent companies, skills, or experiences not mentioned in the original resume.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
