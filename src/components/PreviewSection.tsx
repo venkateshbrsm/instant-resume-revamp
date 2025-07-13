@@ -36,8 +36,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('Extracting content from file:', file.name);
       const text = await extractTextFromFile(file);
       setExtractedText(text);
-      const formattedContent = formatResumeText(text, file.name);
-      setOriginalContent(formattedContent);
+      setOriginalContent(text); // Keep original formatting and content
       
       toast({
         title: "File Processed",
