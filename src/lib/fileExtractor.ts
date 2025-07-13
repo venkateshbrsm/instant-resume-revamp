@@ -17,9 +17,13 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       // Handle PDF files
       return await extractTextFromPDF(file);
     }
-    else if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-      // Handle DOCX and DOC files using mammoth
+    else if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx')) {
+      // Handle DOCX files (XML format)
       return await extractTextFromWord(file);
+    }
+    else if (fileName.endsWith('.doc')) {
+      // .doc files are not supported
+      throw new Error('Legacy .doc files are not supported. Please convert your document to .docx, PDF, or text format and try again.');
     }
     else {
       throw new Error('Unsupported file type');

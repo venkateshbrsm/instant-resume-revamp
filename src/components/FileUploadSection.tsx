@@ -23,9 +23,18 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
       'application/pdf',
       'text/plain',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-      'application/msword', // .doc
     ];
-    const allowedExtensions = ['.pdf', '.txt', '.docx', '.doc'];
+    const allowedExtensions = ['.pdf', '.txt', '.docx'];
+    
+    // Check for .doc files specifically to show helpful error
+    if (file.name.toLowerCase().endsWith('.doc')) {
+      toast({
+        title: "File not supported",
+        description: "Legacy .doc files are not supported. Please save your document as .docx, PDF, or text format and try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
 
     if (file.size > maxSize) {
       toast({
@@ -42,7 +51,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     if (!isValidType) {
       toast({
         title: "Invalid file type",
-        description: "Please select a PDF, DOC, DOCX, or TXT file.",
+        description: "Please select a PDF, DOCX, or TXT file.",
         variant: "destructive"
       });
       return false;
@@ -103,7 +112,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
             Upload Your Current Resume
           </h2>
           <p className="text-lg text-muted-foreground">
-            Supported formats: PDF, DOC, DOCX, TXT (Max 10MB)
+            Supported formats: PDF, DOCX, TXT (Max 10MB)
           </p>
         </div>
 
@@ -131,7 +140,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
                 <input
                   id="file-input"
                   type="file"
-                  accept=".pdf,.doc,.docx,.txt"
+                  accept=".pdf,.docx,.txt"
                   onChange={handleFileInput}
                   className="hidden"
                 />
