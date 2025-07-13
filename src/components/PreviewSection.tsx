@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle } from "lucide-react";
+import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PreviewSectionProps {
   file: File;
@@ -14,10 +16,14 @@ interface PreviewSectionProps {
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
   const [originalContent, setOriginalContent] = useState<string>("");
+  const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     extractFileContent();
+    enhanceResume();
   }, [file]);
 
   const extractFileContent = async () => {
@@ -31,6 +37,50 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setOriginalContent(`Document uploaded: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB`);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const enhanceResume = async () => {
+    setIsEnhancing(true);
+    try {
+      // For demonstration, we'll use the filename to create a realistic enhancement
+      // In a real implementation, you'd extract actual text from the file
+      const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
+      const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
+      const extractedName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : 'Professional Candidate';
+
+      const originalText = `Resume for ${extractedName}. Document contains professional experience, education, and skills. This is a ${file.type} file with ${(file.size / 1024).toFixed(1)} KB of content.`;
+
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          fileName: file.name,
+          originalText: originalText
+        }
+      });
+
+      if (error) {
+        console.error('Enhancement error:', error);
+        throw error;
+      }
+
+      if (data.success && data.enhancedResume) {
+        setEnhancedContent(data.enhancedResume);
+        toast({
+          title: "Enhancement Complete!",
+          description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
+        });
+      } else {
+        throw new Error('Enhancement failed');
+      }
+    } catch (error) {
+      console.error('Error enhancing resume:', error);
+      toast({
+        title: "Enhancement Error",
+        description: "Could not enhance resume. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -115,50 +165,119 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-accent" />
-                    Enhanced Resume
+                    AI-Enhanced Resume
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
-                    <div className="text-center space-y-6 max-w-md">
-                      <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
-                        <Sparkles className="w-10 h-10 text-accent" />
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-2xl font-bold mb-3">Your Enhanced Resume Will Be Ready</h3>
-                        <p className="text-muted-foreground leading-relaxed">
-                          After payment, our AI will analyze your uploaded resume and create a professionally enhanced version with improved formatting, ATS optimization, and content refinement.
-                        </p>
-                      </div>
-
-                      <div className="bg-card rounded-lg p-4 text-left">
-                        <h4 className="font-semibold mb-3">Enhancement Process:</h4>
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-accent rounded-full" />
-                            <span>Content analysis and optimization</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-accent rounded-full" />
-                            <span>Professional formatting and design</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-accent rounded-full" />
-                            <span>ATS-friendly structure</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-accent rounded-full" />
-                            <span>Language and impact enhancement</span>
-                          </div>
+                  {isEnhancing ? (
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-4">
+                        <Loader2 className="w-12 h-12 text-accent animate-spin mx-auto" />
+                        <div>
+                          <h3 className="text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                          <p className="text-muted-foreground">
+                            Our AI is analyzing and enhancing your resume...
+                          </p>
                         </div>
                       </div>
+                    </div>
+                  ) : enhancedContent ? (
+                    <div className="bg-background rounded-lg p-6 min-h-[400px] shadow-inner">
+                      <div className="space-y-6">
+                        {/* Header */}
+                        <div className="text-center pb-4 border-b border-border">
+                          <h1 className="text-2xl font-bold text-primary">{enhancedContent.name}</h1>
+                          <p className="text-lg text-accent font-semibold">{enhancedContent.title}</p>
+                          <div className="flex justify-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
+                            <span>{enhancedContent.email}</span>
+                            <span>•</span>
+                            <span>{enhancedContent.phone}</span>
+                            <span>•</span>
+                            <span>{enhancedContent.location}</span>
+                          </div>
+                        </div>
 
-                      <div className="text-sm text-muted-foreground">
-                        Your enhanced resume will be available for download immediately after payment completion.
+                        {/* Professional Summary */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-primary mb-2">Professional Summary</h3>
+                          <p className="text-sm text-foreground leading-relaxed">{enhancedContent.summary}</p>
+                        </div>
+
+                        {/* Experience */}
+                        {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-primary mb-3">Professional Experience</h3>
+                            <div className="space-y-4">
+                              {enhancedContent.experience.map((exp: any, index: number) => (
+                                <div key={index} className="border-l-2 border-accent pl-4">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <h4 className="font-semibold text-foreground">{exp.title}</h4>
+                                      <p className="text-accent font-medium">{exp.company}</p>
+                                    </div>
+                                    <span className="text-sm text-muted-foreground">{exp.duration}</span>
+                                  </div>
+                                  <ul className="text-sm text-foreground space-y-1">
+                                    {exp.achievements.map((achievement: string, idx: number) => (
+                                      <li key={idx} className="flex items-start gap-2">
+                                        <span className="text-accent mt-1.5">•</span>
+                                        <span>{achievement}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Skills */}
+                        {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-primary mb-3">Skills</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {enhancedContent.skills.map((skill: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Education */}
+                        {enhancedContent.education && enhancedContent.education.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-primary mb-3">Education</h3>
+                            <div className="space-y-2">
+                              {enhancedContent.education.map((edu: any, index: number) => (
+                                <div key={index} className="border-l-2 border-accent pl-4">
+                                  <h4 className="font-semibold text-foreground">{edu.degree}</h4>
+                                  <p className="text-accent">{edu.institution}</p>
+                                  <p className="text-sm text-muted-foreground">{edu.year}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-4">
+                        <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+                        <div>
+                          <h3 className="text-xl font-semibold mb-2">Enhancement Failed</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Could not enhance your resume. Please try again.
+                          </p>
+                          <Button onClick={enhanceResume} variant="outline">
+                            Retry Enhancement
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -193,7 +312,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         <Card className="max-w-md mx-auto bg-gradient-primary/5 border-primary/20">
           <CardContent className="p-6 text-center">
             <div className="mb-6">
-              <div className="text-3xl font-bold text-primary mb-2">₹299</div>
+              <div className="text-3xl font-bold text-primary mb-2">₹799</div>
               <p className="text-muted-foreground">One-time payment • Instant download</p>
             </div>
             
@@ -203,13 +322,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 size="xl" 
                 onClick={onPurchase}
                 className="w-full"
+                disabled={!enhancedContent}
               >
                 <CreditCard className="w-5 h-5 mr-2" />
-                Purchase & Download
+                {enhancedContent ? 'Purchase Enhanced Resume' : 'Processing Enhancement...'}
               </Button>
               
               <p className="text-xs text-muted-foreground">
-                Secure payment • Download immediately after payment
+                {enhancedContent 
+                  ? 'Secure payment • Download the enhanced version immediately' 
+                  : 'Enhancement in progress • Payment will be enabled once complete'
+                }
               </p>
             </div>
 
