@@ -330,95 +330,94 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       </div>
                     </div>
                   ) : enhancedContent ? (
-                     <div className="w-full max-h-[80vh] overflow-auto border border-border/20 rounded-lg">
-                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-4 md:p-6 min-h-[600px] shadow-2xl border border-accent/20 min-w-[320px] max-w-full">
+                     <div className="w-full overflow-x-auto border border-border/20 rounded-lg">
+                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-6 min-h-[600px] shadow-2xl border border-accent/20 min-w-[800px]">
                       
                         {/* Color Theme Selector */}
                         <div className="mb-4 p-3 bg-card/80 rounded-lg border border-border/50">
-                          <h4 className="text-xs md:text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                            <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
-                            <span className="hidden sm:inline">Choose Your Color Theme</span>
-                            <span className="sm:hidden">Theme</span>
+                          <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            Choose Your Color Theme
                           </h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 md:gap-2">
-                          {colorThemes.map((theme) => (
-                            <button
-                              key={theme.id}
-                              onClick={() => setSelectedTheme(theme)}
-                              className={`p-1.5 md:p-2 rounded border-2 transition-all duration-200 text-left ${
-                                selectedTheme.id === theme.id 
-                                  ? 'border-primary bg-primary/5 shadow-sm' 
-                                  : 'border-border hover:border-primary/50 bg-background'
-                              }`}
-                            >
-                              <div className="flex items-center gap-1 md:gap-2 mb-1">
-                                <div className="flex gap-0.5 md:gap-1">
-                                  <div 
-                                    className="w-2 h-2 md:w-3 md:h-3 rounded-full" 
-                                    style={{ backgroundColor: theme.primary }}
-                                  />
-                                  <div 
-                                    className="w-2 h-2 md:w-3 md:h-3 rounded-full" 
-                                    style={{ backgroundColor: theme.secondary }}
-                                  />
-                                  <div 
-                                    className="w-2 h-2 md:w-3 md:h-3 rounded-full" 
-                                    style={{ backgroundColor: theme.accent }}
-                                  />
-                                </div>
-                                {selectedTheme.id === theme.id && (
-                                  <Sparkles className="w-2 h-2 md:w-3 md:h-3 text-primary" />
-                                )}
-                              </div>
-                              <p className="text-[10px] md:text-xs font-medium text-foreground leading-tight">{theme.name}</p>
-                            </button>
-                          ))}
+                          <div className="grid grid-cols-6 gap-2">
+                           {colorThemes.map((theme) => (
+                             <button
+                               key={theme.id}
+                               onClick={() => setSelectedTheme(theme)}
+                               className={`p-2 rounded border-2 transition-all duration-200 text-left ${
+                                 selectedTheme.id === theme.id 
+                                   ? 'border-primary bg-primary/5 shadow-sm' 
+                                   : 'border-border hover:border-primary/50 bg-background'
+                               }`}
+                             >
+                               <div className="flex items-center gap-2 mb-1">
+                                 <div className="flex gap-1">
+                                   <div 
+                                     className="w-3 h-3 rounded-full" 
+                                     style={{ backgroundColor: theme.primary }}
+                                   />
+                                   <div 
+                                     className="w-3 h-3 rounded-full" 
+                                     style={{ backgroundColor: theme.secondary }}
+                                   />
+                                   <div 
+                                     className="w-3 h-3 rounded-full" 
+                                     style={{ backgroundColor: theme.accent }}
+                                   />
+                                 </div>
+                                 {selectedTheme.id === theme.id && (
+                                   <Sparkles className="w-3 h-3 text-primary" />
+                                 )}
+                               </div>
+                               <p className="text-xs font-medium text-foreground leading-tight">{theme.name}</p>
+                             </button>
+                           ))}
                         </div>
                       </div>
 
-                      {/* Modern Header with Visual Elements */}
-                      <div 
-                        className="relative rounded-xl p-4 md:p-6 mb-6 text-white overflow-hidden"
-                        style={{
-                          background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-black/10"></div>
-                         <div className="relative z-10">
-                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                             <div className="min-w-0 flex-1 text-center sm:text-left">
-                               <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 break-words">{enhancedContent.name}</h1>
-                               <p className="text-base md:text-lg lg:text-xl text-white/90 font-medium break-words">{enhancedContent.title}</p>
+                       {/* Modern Header with Visual Elements */}
+                       <div 
+                         className="relative rounded-xl p-6 mb-6 text-white overflow-hidden"
+                         style={{
+                           background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                         }}
+                       >
+                         <div className="absolute inset-0 bg-black/10"></div>
+                          <div className="relative z-10">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <h1 className="text-3xl font-bold mb-1">{enhancedContent.name}</h1>
+                                <p className="text-xl text-white/90 font-medium">{enhancedContent.title}</p>
+                              </div>
+                            </div>
+                           
+                           <div className="flex flex-wrap items-center gap-4 mt-4">
+                             <div className="flex items-center gap-2 text-white/90">
+                               <Mail className="w-4 h-4 flex-shrink-0" />
+                               <span className="text-sm">{enhancedContent.email}</span>
+                             </div>
+                             <div className="flex items-center gap-2 text-white/90">
+                               <Phone className="w-4 h-4 flex-shrink-0" />
+                               <span className="text-sm">{enhancedContent.phone}</span>
+                             </div>
+                             <div className="flex items-center gap-2 text-white/90">
+                               <MapPin className="w-4 h-4 flex-shrink-0" />
+                               <span className="text-sm">{enhancedContent.location}</span>
+                             </div>
+                             <div className="flex items-center gap-2 text-white/90">
+                               <Award className="w-4 h-4 flex-shrink-0" />
+                               <span className="text-sm">Professional</span>
                              </div>
                            </div>
-                          
-                          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 mt-4">
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
-                              <Mail className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm break-all">{enhancedContent.email}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
-                              <Phone className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm">{enhancedContent.phone}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
-                              <MapPin className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm">{enhancedContent.location}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
-                              <Award className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm">Professional</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                         </div>
+                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                        {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                       <div className="grid grid-cols-3 gap-6">
+                         {/* Main Content */}
+                         <div className="col-span-2 space-y-6">
                           
-                          {/* Professional Summary with Visual Enhancement */}
-                           <div className="bg-card rounded-xl p-3 md:p-4 shadow-lg border border-border/50">
+                           {/* Professional Summary with Visual Enhancement */}
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
                              <div className="flex items-center gap-3 mb-4">
                                <div 
                                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
