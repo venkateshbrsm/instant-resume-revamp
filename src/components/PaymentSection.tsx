@@ -37,7 +37,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
     return (
       <PayUPayment
         file={file}
-        amount={799}
+        amount={299}
         onSuccess={handlePaymentSuccess}
         onCancel={handlePaymentCancel}
       />
@@ -121,7 +121,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
                 <h4 className="font-semibold mb-2">Order Summary</h4>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm">AI Resume Enhancement</span>
-                  <span className="font-semibold">₹799</span>
+                  <span className="font-semibold">₹299</span>
                 </div>
                 <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Original file: {file.name}</span>
@@ -131,7 +131,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">₹799</span>
+                  <span className="text-primary">₹299</span>
                 </div>
               </div>
             </div>
@@ -144,7 +144,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               className="w-full"
             >
               <CreditCard className="w-5 h-5 mr-2" />
-              Pay ₹799 with PayU
+              Pay ₹299 with PayU
             </Button>
 
             {/* Security Note */}

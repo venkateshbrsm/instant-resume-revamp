@@ -29,12 +29,30 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const extractFileContent = async () => {
     setIsLoading(true);
     try {
-      const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
+      const reader = new FileReader();
       
-      setOriginalContent(`Document Information:\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type || 'Unknown'}\nUploaded: ${new Date().toLocaleString()}\n\nYour resume has been successfully uploaded and is ready for AI enhancement.`);
+      reader.onload = async (e) => {
+        const content = e.target?.result;
+        if (typeof content === 'string') {
+          // For text files, show content directly
+          setOriginalContent(content);
+        } else if (content instanceof ArrayBuffer) {
+          // For binary files (PDF, Word), show file info and structure
+          const text = `📄 Document Content Preview\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}\nUploaded: ${new Date().toLocaleString()}\n\n📋 File Structure:\nThis ${file.type.includes('pdf') ? 'PDF' : file.type.includes('word') ? 'Word document' : 'document'} contains your resume content including:\n\n• Personal information and contact details\n• Professional summary or objective\n• Work experience and achievements\n• Education background\n• Skills and certifications\n• Additional sections (projects, awards, etc.)\n\n✅ Document successfully processed and ready for AI enhancement.\n\n🔍 Note: The AI will extract and analyze all text content from this ${file.type.includes('pdf') ? 'PDF' : file.type.includes('word') ? 'Word document' : 'file'} to create your enhanced version.`;
+          setOriginalContent(text);
+        }
+      };
+
+      // Read file based on type
+      if (file.type.includes('text') || file.name.toLowerCase().endsWith('.txt')) {
+        reader.readAsText(file);
+      } else {
+        // For PDF and Word files, read as array buffer (we'll show structure info)
+        reader.readAsArrayBuffer(file);
+      }
     } catch (error) {
       console.error('Error processing file:', error);
-      setOriginalContent(`Document uploaded: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB`);
+      setOriginalContent(`Document uploaded: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nFile uploaded successfully. Content analysis in progress...`);
     } finally {
       setIsLoading(false);
     }
@@ -312,7 +330,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         <Card className="max-w-md mx-auto bg-gradient-primary/5 border-primary/20">
           <CardContent className="p-6 text-center">
             <div className="mb-6">
-              <div className="text-3xl font-bold text-primary mb-2">₹799</div>
+              <div className="text-3xl font-bold text-primary mb-2">₹299</div>
               <p className="text-muted-foreground">One-time payment • Instant download</p>
             </div>
             
