@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCir
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, formatResumeText } from "@/lib/fileExtractor";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface PreviewSectionProps {
   file: File;
@@ -23,11 +25,39 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     extractFileContent();
+    checkAuth();
   }, [file]);
+
+  useEffect(() => {
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        
+        // If user just logged in and they were trying to purchase, continue to purchase
+        if (event === 'SIGNED_IN' && session?.user) {
+          const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
+          if (wasAttemptingPurchase === 'true') {
+            sessionStorage.removeItem('attemptingPurchase');
+            onPurchase();
+            toast({
+              title: "Logged in successfully!",
+              description: "Continuing with your purchase...",
+            });
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [onPurchase, toast]);
 
   useEffect(() => {
     // Only enhance after we have extracted text
@@ -35,6 +65,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       enhanceResume();
     }
   }, [extractedText]);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setUser(session?.user ?? null);
+  };
 
   const extractFileContent = async () => {
     setIsLoading(true);
@@ -63,6 +98,34 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   };
 
+  const handlePurchaseClick = async () => {
+    setIsCheckingAuth(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        // User is authenticated, proceed with purchase
+        onPurchase();
+      } else {
+        // User is not authenticated, redirect to login
+        sessionStorage.setItem('attemptingPurchase', 'true');
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to continue with your purchase.",
+        });
+        navigate('/auth');
+      }
+    } catch (error) {
+      toast({
+        title: "Authentication Check Failed",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    }
+    
+    setIsCheckingAuth(false);
+  };
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content');
@@ -464,12 +527,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               <Button 
                 variant="success" 
                 size="xl" 
-                onClick={onPurchase}
+                onClick={handlePurchaseClick}
                 className="w-full"
-                disabled={!enhancedContent}
+                disabled={!enhancedContent || isCheckingAuth}
               >
                 <CreditCard className="w-5 h-5 mr-2" />
-                {enhancedContent ? 'Purchase Enhanced Resume' : 'Processing Enhancement...'}
+                {isCheckingAuth ? 'Checking authentication...' : 
+                 !enhancedContent ? 'Processing Enhancement...' :
+                 user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
               <p className="text-xs text-muted-foreground">

@@ -16,10 +16,10 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Check if user was trying to pay before authentication
-        const wasAttemptingPayment = sessionStorage.getItem('attemptingPayment');
-        if (wasAttemptingPayment === 'true') {
-          sessionStorage.removeItem('attemptingPayment');
+        // Check if user was trying to purchase before authentication
+        const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
+        if (wasAttemptingPurchase === 'true') {
+          sessionStorage.removeItem('attemptingPurchase');
           // Store that they should go to payment step
           sessionStorage.setItem('redirectToPayment', 'true');
         }
@@ -31,10 +31,10 @@ export default function Auth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        // Check if user was trying to pay before authentication
-        const wasAttemptingPayment = sessionStorage.getItem('attemptingPayment');
-        if (wasAttemptingPayment === 'true') {
-          sessionStorage.removeItem('attemptingPayment');
+        // Check if user was trying to purchase before authentication
+        const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
+        if (wasAttemptingPurchase === 'true') {
+          sessionStorage.removeItem('attemptingPurchase');
           // Store that they should go to payment step
           sessionStorage.setItem('redirectToPayment', 'true');
         }
