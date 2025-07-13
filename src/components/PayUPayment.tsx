@@ -39,32 +39,56 @@ export function PayUPayment({ file, amount, onSuccess, onCancel }: PayUPaymentPr
 
       if (error) throw error;
 
-      // Create a form and submit to PayU
-      const form = document.createElement('form');
+      // Create form data for PayU
+      const formData = new URLSearchParams();
+      Object.entries(data.paymentData).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
+
+      // Open PayU in a popup window
+      const popup = window.open('', 'PayUPayment', 
+        'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+      );
+
+      if (!popup) {
+        throw new Error("Popup blocked. Please allow popups for this site and try again.");
+      }
+
+      // Create and submit form in the popup
+      const form = popup.document.createElement('form');
       form.method = 'POST';
       form.action = data.paymentUrl;
-      form.target = '_blank';
 
       // Add all payment data as hidden inputs
       Object.entries(data.paymentData).forEach(([key, value]) => {
-        const input = document.createElement('input');
+        const input = popup.document.createElement('input');
         input.type = 'hidden';
         input.name = key;
         input.value = value as string;
         form.appendChild(input);
       });
 
-      document.body.appendChild(form);
+      popup.document.body.appendChild(form);
       form.submit();
-      document.body.removeChild(form);
 
       toast({
-        title: "Redirecting to PayU",
-        description: "Please complete your payment in the new window.",
+        title: "Payment Window Opened",
+        description: "Please complete your payment in the popup window.",
       });
 
-      // Poll for payment status
-      pollPaymentStatus(data.paymentData.txnid);
+      // Listen for popup close and poll for payment status
+      const checkPopupClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopupClosed);
+          // Start polling for payment status
+          pollPaymentStatus(data.paymentData.txnid);
+        }
+      }, 1000);
+
+      // Also start polling after a delay in case popup doesn't close properly
+      setTimeout(() => {
+        pollPaymentStatus(data.paymentData.txnid);
+      }, 5000);
 
     } catch (error) {
       console.error('Payment initiation error:', error);
