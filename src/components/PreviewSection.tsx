@@ -23,66 +23,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const extractFileContent = async () => {
     setIsLoading(true);
     try {
-      // Extract name from filename for personalization
       const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
-      const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
-      const extractedName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : fileName;
       
-      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        setOriginalContent(`📄 PDF Resume Document\n\nFilename: ${file.name}\nDocument Type: PDF Resume\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nYour PDF resume has been successfully uploaded and is ready for enhancement. The AI will analyze your content and improve:\n\n✓ Professional formatting and layout\n✓ ATS-optimized structure\n✓ Enhanced language and action verbs\n✓ Better visual hierarchy\n✓ Quantified achievements\n\nYour original content and all personal information will be preserved.`);
-      } else if (file.type.includes('word') || file.name.toLowerCase().endsWith('.docx') || file.name.toLowerCase().endsWith('.doc')) {
-        setOriginalContent(`📝 Word Resume Document\n\nCandidate: ${extractedName}\nFilename: ${file.name}\nDocument Type: Microsoft Word Resume\nSize: ${(file.size / 1024).toFixed(1)} KB\nUploaded: ${new Date().toLocaleDateString()}\n\nYour Word document has been successfully processed. This resume will be enhanced with:\n\n✓ Professional formatting and modern design\n✓ ATS-compliant structure for better parsing\n✓ Improved language with strong action verbs\n✓ Better visual hierarchy and readability\n✓ Quantified achievements highlighting\n✓ Industry-standard formatting\n\nAll your original information, experience, and achievements will be preserved while improving presentation and impact.`);
-      } else {
-        setOriginalContent(`📋 Resume Document\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nDocument uploaded successfully and ready for enhancement.`);
-      }
+      setOriginalContent(`Document Information:\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type || 'Unknown'}\nUploaded: ${new Date().toLocaleString()}\n\nYour resume has been successfully uploaded and is ready for AI enhancement.`);
     } catch (error) {
       console.error('Error processing file:', error);
-      setOriginalContent("Document uploaded. Processing preview...");
+      setOriginalContent(`Document uploaded: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Generate personalized enhanced content based on the filename
-  const generateEnhancedContent = () => {
-    const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
-    const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
-    const extractedName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : "Your Name";
-    
-    return {
-      name: extractedName,
-      title: "Professional Title", // This would be extracted from actual resume
-      email: "your.email@example.com",
-      phone: "+91 XXXXX XXXXX",
-      location: "Your City, India",
-      summary: `Results-driven professional with proven track record of success. This enhanced version of ${extractedName}'s resume features improved formatting, ATS optimization, and strategic content enhancement while preserving all original achievements and experience.`,
-      experience: [
-        {
-          title: "Current/Recent Position",
-          company: "Company Name",
-          duration: "Duration",
-          achievements: [
-            "Enhanced achievement statement with quantified results",
-            "Improved bullet point with action verbs and impact metrics", 
-            "Optimized description for ATS compatibility and readability"
-          ]
-        },
-        {
-          title: "Previous Position", 
-          company: "Previous Company",
-          duration: "Duration",
-          achievements: [
-            "Professional accomplishment with improved language",
-            "Enhanced achievement highlighting key contributions",
-            "Refined description emphasizing value and impact"
-          ]
-        }
-      ],
-      skills: ["Skill 1", "Skill 2", "Skill 3", "Skill 4", "Skill 5", "Skill 6", "Skill 7", "Skill 8"]
-    };
-  };
-
-  const enhancedContent = generateEnhancedContent();
 
   return (
     <div className="min-h-screen bg-gradient-hero px-4 py-8">
@@ -164,71 +115,47 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-accent" />
-                    AI-Enhanced Resume Preview
+                    Enhanced Resume
                   </CardTitle>
-                  <div className="text-sm text-muted-foreground">
-                    Sample enhancement for: {file.name} • Your actual enhanced resume will reflect your specific content
-                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-background rounded-lg p-6 min-h-[400px] shadow-inner">
-                    {/* Enhanced Resume Preview */}
-                    <div className="space-y-6">
-                      {/* Header */}
-                      <div className="text-center pb-4 border-b border-border">
-                        <h1 className="text-2xl font-bold text-primary">{enhancedContent.name}</h1>
-                        <p className="text-lg text-accent font-semibold">{enhancedContent.title}</p>
-                        <div className="flex justify-center gap-4 text-sm text-muted-foreground mt-2">
-                          <span>{enhancedContent.email}</span>
-                          <span>•</span>
-                          <span>{enhancedContent.phone}</span>
-                          <span>•</span>
-                          <span>{enhancedContent.location}</span>
+                  <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
+                    <div className="text-center space-y-6 max-w-md">
+                      <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
+                        <Sparkles className="w-10 h-10 text-accent" />
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-2xl font-bold mb-3">Your Enhanced Resume Will Be Ready</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          After payment, our AI will analyze your uploaded resume and create a professionally enhanced version with improved formatting, ATS optimization, and content refinement.
+                        </p>
+                      </div>
+
+                      <div className="bg-card rounded-lg p-4 text-left">
+                        <h4 className="font-semibold mb-3">Enhancement Process:</h4>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-accent rounded-full" />
+                            <span>Content analysis and optimization</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-accent rounded-full" />
+                            <span>Professional formatting and design</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-accent rounded-full" />
+                            <span>ATS-friendly structure</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-accent rounded-full" />
+                            <span>Language and impact enhancement</span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Professional Summary */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-primary mb-2">Professional Summary</h3>
-                        <p className="text-sm text-foreground leading-relaxed">{enhancedContent.summary}</p>
-                      </div>
-
-                      {/* Experience */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-primary mb-3">Professional Experience</h3>
-                        <div className="space-y-4">
-                          {enhancedContent.experience.map((exp, index) => (
-                            <div key={index} className="border-l-2 border-accent pl-4">
-                              <div className="flex justify-between items-start mb-2">
-                                <div>
-                                  <h4 className="font-semibold text-foreground">{exp.title}</h4>
-                                  <p className="text-accent font-medium">{exp.company}</p>
-                                </div>
-                                <span className="text-sm text-muted-foreground">{exp.duration}</span>
-                              </div>
-                              <ul className="text-sm text-foreground space-y-1">
-                                {exp.achievements.map((achievement, idx) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <span className="text-accent mt-1.5">•</span>
-                                    <span>{achievement}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Skills */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-primary mb-3">Technical Skills</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {enhancedContent.skills.map((skill, index) => (
-                            <Badge key={index} variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                              {skill}
-                            </Badge>
-                          ))}
-                        </div>
+                      <div className="text-sm text-muted-foreground">
+                        Your enhanced resume will be available for download immediately after payment completion.
                       </div>
                     </div>
                   </div>
