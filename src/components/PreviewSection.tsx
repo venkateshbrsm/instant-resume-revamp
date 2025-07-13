@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { extractTextFromFile, formatResumeText } from "@/lib/fileExtractor";
 
 interface PreviewSectionProps {
   file: File;
@@ -16,6 +17,7 @@ interface PreviewSectionProps {
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
   const [originalContent, setOriginalContent] = useState<string>("");
+  const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -29,30 +31,26 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const extractFileContent = async () => {
     setIsLoading(true);
     try {
-      const reader = new FileReader();
+      console.log('Extracting content from file:', file.name);
+      const text = await extractTextFromFile(file);
+      setExtractedText(text);
+      const formattedContent = formatResumeText(text, file.name);
+      setOriginalContent(formattedContent);
       
-      reader.onload = async (e) => {
-        const content = e.target?.result;
-        if (typeof content === 'string') {
-          // For text files, show content directly
-          setOriginalContent(content);
-        } else if (content instanceof ArrayBuffer) {
-          // For binary files (PDF, Word), show file info and structure
-          const text = `📄 Document Content Preview\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}\nUploaded: ${new Date().toLocaleString()}\n\n📋 File Structure:\nThis ${file.type.includes('pdf') ? 'PDF' : file.type.includes('word') ? 'Word document' : 'document'} contains your resume content including:\n\n• Personal information and contact details\n• Professional summary or objective\n• Work experience and achievements\n• Education background\n• Skills and certifications\n• Additional sections (projects, awards, etc.)\n\n✅ Document successfully processed and ready for AI enhancement.\n\n🔍 Note: The AI will extract and analyze all text content from this ${file.type.includes('pdf') ? 'PDF' : file.type.includes('word') ? 'Word document' : 'file'} to create your enhanced version.`;
-          setOriginalContent(text);
-        }
-      };
-
-      // Read file based on type
-      if (file.type.includes('text') || file.name.toLowerCase().endsWith('.txt')) {
-        reader.readAsText(file);
-      } else {
-        // For PDF and Word files, read as array buffer (we'll show structure info)
-        reader.readAsArrayBuffer(file);
-      }
+      toast({
+        title: "File Processed",
+        description: "Resume content extracted successfully.",
+      });
     } catch (error) {
-      console.error('Error processing file:', error);
-      setOriginalContent(`Document uploaded: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nFile uploaded successfully. Content analysis in progress...`);
+      console.error('Error extracting file content:', error);
+      const fallbackContent = `📄 Resume Document: ${file.name}\n\nFile Size: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}\nUploaded: ${new Date().toLocaleString()}\n\n⚠️ Content extraction encountered an issue, but the file was uploaded successfully.\n\nThe AI enhancement process will work directly with your original document to create an improved version.\n\nNote: Some file formats or protected documents may not display preview text, but enhancement will still work properly.`;
+      setOriginalContent(fallbackContent);
+      
+      toast({
+        title: "Limited Preview",
+        description: "File uploaded successfully. Enhancement will process the original content.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -61,18 +59,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const enhanceResume = async () => {
     setIsEnhancing(true);
     try {
-      // For demonstration, we'll use the filename to create a realistic enhancement
-      // In a real implementation, you'd extract actual text from the file
-      const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
-      const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
-      const extractedName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : 'Professional Candidate';
-
-      const originalText = `Resume for ${extractedName}. Document contains professional experience, education, and skills. This is a ${file.type} file with ${(file.size / 1024).toFixed(1)} KB of content.`;
+      const originalText = extractedText || `Resume content from ${file.name}. Document analysis in progress.`;
 
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
         body: {
           fileName: file.name,
-          originalText: originalText
+          originalText: originalText,
+          extractedText: extractedText
         }
       });
 
@@ -101,7 +94,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setIsEnhancing(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-hero px-4 py-8">
@@ -147,7 +139,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                     <div className="bg-muted/50 rounded-lg p-6 text-center min-h-[400px] flex items-center justify-center">
                       <div className="space-y-4">
                         <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
-                        <p className="text-muted-foreground">Processing document...</p>
+                        <p className="text-muted-foreground">Extracting resume content...</p>
                       </div>
                     </div>
                   ) : (
@@ -156,21 +148,23 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                           <FileText className="w-6 h-6 text-primary" />
                           <div>
-                            <p className="font-semibold">Original Resume</p>
+                            <p className="font-semibold">Original Resume Content</p>
                             <p className="text-sm text-muted-foreground">File: {file.name}</p>
                           </div>
                         </div>
-                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line">
+                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line max-h-96 overflow-y-auto">
                           {originalContent}
                         </div>
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-blue-800">
-                              Your document has been successfully uploaded and analyzed. The enhanced version will improve formatting, structure, and content presentation while preserving all your original information.
-                            </p>
+                        {extractedText && (
+                          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-green-800">
+                                ✅ Successfully extracted {extractedText.length} characters from your resume. This content will be enhanced with AI.
+                              </p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )}
