@@ -330,20 +330,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       </div>
                     </div>
                   ) : enhancedContent ? (
-                     <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-4 md:p-8 min-h-[600px] shadow-2xl border border-accent/20">
+                     <div className="w-full overflow-x-auto">
+                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-4 md:p-8 min-h-[600px] shadow-2xl border border-accent/20 min-w-[800px]">
                       
-                      {/* Color Theme Selector */}
-                      <div className="mb-6 p-3 md:p-4 bg-card/80 rounded-lg border border-border/50">
-                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4" />
-                          Choose Your Color Theme
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
+                        {/* Color Theme Selector */}
+                        <div className="mb-6 p-3 md:p-4 bg-card/80 rounded-lg border border-border/50">
+                          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            Choose Your Color Theme
+                          </h4>
+                          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3">
                           {colorThemes.map((theme) => (
                             <button
                               key={theme.id}
                               onClick={() => setSelectedTheme(theme)}
-                              className={`p-2 md:p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                              className={`p-2 rounded-lg border-2 transition-all duration-200 text-left ${
                                 selectedTheme.id === theme.id 
                                   ? 'border-primary bg-primary/5 shadow-md' 
                                   : 'border-border hover:border-primary/50 bg-background'
@@ -376,36 +377,36 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                       {/* Modern Header with Visual Elements */}
                       <div 
-                        className="relative rounded-xl p-4 md:p-8 mb-8 text-white overflow-hidden"
+                        className="relative rounded-xl p-6 md:p-8 mb-8 text-white overflow-hidden"
                         style={{
                           background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                         }}
                       >
                         <div className="absolute inset-0 bg-black/10"></div>
                         <div className="relative z-10">
-                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                             <div className="text-center sm:text-left">
-                               <h1 className="text-2xl md:text-3xl font-bold mb-2">{enhancedContent.name}</h1>
+                           <div className="flex flex-row items-center justify-between gap-4">
+                             <div className="min-w-0 flex-1">
+                               <h1 className="text-2xl md:text-3xl font-bold mb-2 truncate">{enhancedContent.name}</h1>
                                <p className="text-lg md:text-xl text-white/90 font-medium">{enhancedContent.title}</p>
                              </div>
                            </div>
                           
-                          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-6 mt-6">
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
+                          <div className="flex flex-row flex-wrap items-center gap-6 mt-6">
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Mail className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm truncate">{enhancedContent.email}</span>
+                              <span className="text-sm truncate">{enhancedContent.email}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Phone className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm">{enhancedContent.phone}</span>
+                              <span className="text-sm whitespace-nowrap">{enhancedContent.phone}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <MapPin className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm">{enhancedContent.location}</span>
+                              <span className="text-sm whitespace-nowrap">{enhancedContent.location}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0 w-full sm:w-auto">
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Award className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-xs md:text-sm">Professional</span>
+                              <span className="text-sm whitespace-nowrap">Professional</span>
                             </div>
                           </div>
                         </div>
@@ -605,6 +606,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         </div>
                       </div>
                     </div>
+                  </div>
                   ) : (
                     <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
                       <div className="text-center space-y-4">
