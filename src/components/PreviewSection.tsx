@@ -18,6 +18,15 @@ interface PreviewSectionProps {
   onBack: () => void;
 }
 
+const colorThemes = [
+  { id: 'classic', name: 'Classic Blue', primary: '#2563eb', secondary: '#1e40af', accent: '#3b82f6' },
+  { id: 'emerald', name: 'Emerald Green', primary: '#059669', secondary: '#047857', accent: '#10b981' },
+  { id: 'purple', name: 'Royal Purple', primary: '#7c3aed', secondary: '#6d28d9', accent: '#8b5cf6' },
+  { id: 'rose', name: 'Rose Gold', primary: '#e11d48', secondary: '#be185d', accent: '#f43f5e' },
+  { id: 'amber', name: 'Golden Amber', primary: '#d97706', secondary: '#b45309', accent: '#f59e0b' },
+  { id: 'slate', name: 'Professional Gray', primary: '#475569', secondary: '#334155', accent: '#64748b' }
+];
+
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
   const [originalContent, setOriginalContent] = useState<string>("");
@@ -27,6 +36,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -320,10 +330,57 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       </div>
                     </div>
                   ) : enhancedContent ? (
-                    <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-8 min-h-[600px] shadow-2xl border border-accent/20">
+                     <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-8 min-h-[600px] shadow-2xl border border-accent/20">
                       
+                      {/* Color Theme Selector */}
+                      <div className="mb-6 p-4 bg-card/80 rounded-lg border border-border/50">
+                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4" />
+                          Choose Your Color Theme
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {colorThemes.map((theme) => (
+                            <button
+                              key={theme.id}
+                              onClick={() => setSelectedTheme(theme)}
+                              className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                                selectedTheme.id === theme.id 
+                                  ? 'border-primary bg-primary/5 shadow-md' 
+                                  : 'border-border hover:border-primary/50 bg-background'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className="flex gap-1">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: theme.primary }}
+                                  />
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: theme.secondary }}
+                                  />
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: theme.accent }}
+                                  />
+                                </div>
+                                {selectedTheme.id === theme.id && (
+                                  <Sparkles className="w-3 h-3 text-primary" />
+                                )}
+                              </div>
+                              <p className="text-xs font-medium text-foreground">{theme.name}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Modern Header with Visual Elements */}
-                      <div className="relative bg-gradient-to-r from-primary to-accent rounded-xl p-8 mb-8 text-white overflow-hidden">
+                      <div 
+                        className="relative rounded-xl p-8 mb-8 text-white overflow-hidden"
+                        style={{
+                          background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                        }}
+                      >
                         <div className="absolute inset-0 bg-black/10"></div>
                         <div className="relative z-10">
                           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -359,39 +416,65 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         <div className="lg:col-span-2 space-y-8">
                           
                           {/* Professional Summary with Visual Enhancement */}
-                          <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
-                                <Users className="w-5 h-5 text-white" />
-                              </div>
-                              <h3 className="text-xl font-bold text-primary">Professional Summary</h3>
-                            </div>
+                           <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                             <div className="flex items-center gap-3 mb-4">
+                               <div 
+                                 className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                                 style={{
+                                   background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                                 }}
+                               >
+                                 <Users className="w-5 h-5" />
+                               </div>
+                               <h3 className="text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
+                             </div>
                             <p className="text-foreground leading-relaxed text-base">{enhancedContent.summary}</p>
                             
                           </div>
 
                           {/* Professional Experience with Timeline */}
                           {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                              <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
-                                  <Calendar className="w-5 h-5 text-white" />
-                                </div>
-                                <h3 className="text-xl font-bold text-primary">Professional Experience</h3>
-                              </div>
+                             <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                               <div className="flex items-center gap-3 mb-6">
+                                 <div 
+                                   className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                                   style={{
+                                     background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                                   }}
+                                 >
+                                   <Calendar className="w-5 h-5" />
+                                 </div>
+                                 <h3 className="text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Experience</h3>
+                               </div>
                               
                               <div className="space-y-6">
-                                {enhancedContent.experience.map((exp: any, index: number) => (
-                                  <div key={index} className="relative pl-8 border-l-2 border-accent/30 last:border-l-0">
-                                    <div className="absolute left-[-9px] top-0 w-4 h-4 bg-accent rounded-full border-2 border-white shadow-lg"></div>
-                                    
-                                    <div className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-lg p-6 ml-4">
-                                      <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                          <h4 className="text-lg font-bold text-foreground">{exp.title}</h4>
-                                          <p className="text-accent font-semibold text-lg">{exp.company}</p>
-                                        </div>
-                                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                                 {enhancedContent.experience.map((exp: any, index: number) => (
+                                   <div key={index} className="relative pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedTheme.accent}30` }}>
+                                     <div 
+                                       className="absolute left-[-9px] top-0 w-4 h-4 rounded-full border-2 border-white shadow-lg"
+                                       style={{ backgroundColor: selectedTheme.accent }}
+                                     ></div>
+                                     
+                                     <div 
+                                       className="rounded-lg p-6 ml-4"
+                                       style={{ 
+                                         background: `linear-gradient(to right, ${selectedTheme.accent}08, ${selectedTheme.primary}08)` 
+                                       }}
+                                     >
+                                       <div className="flex justify-between items-start mb-4">
+                                         <div>
+                                           <h4 className="text-lg font-bold text-foreground">{exp.title}</h4>
+                                           <p className="font-semibold text-lg" style={{ color: selectedTheme.accent }}>{exp.company}</p>
+                                         </div>
+                                         <Badge 
+                                           variant="secondary" 
+                                           className="border"
+                                           style={{ 
+                                             backgroundColor: `${selectedTheme.accent}10`, 
+                                             color: selectedTheme.accent,
+                                             borderColor: `${selectedTheme.accent}20`
+                                           }}
+                                         >
                                           {exp.duration}
                                         </Badge>
                                       </div>
@@ -420,10 +503,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           {/* Skills Chart */}
                           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                             <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                              <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-                                <Zap className="w-5 h-5" />
-                                Skills Proficiency
-                              </h3>
+                               <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                                 <Zap className="w-5 h-5" />
+                                 Skills Proficiency
+                               </h3>
                               
                               <div className="space-y-4">
                                 {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
@@ -456,10 +539,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                           {/* Experience Chart */}
                           <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-                              <TrendingUp className="w-5 h-5" />
-                              Career Growth
-                            </h3>
+                             <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                               <TrendingUp className="w-5 h-5" />
+                               Career Growth
+                             </h3>
                             
                             <div className="h-48">
                               <ResponsiveContainer width="100%" height="100%">
@@ -496,15 +579,22 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           {/* Education */}
                           {enhancedContent.education && enhancedContent.education.length > 0 && (
                             <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                              <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-                                <Award className="w-5 h-5" />
-                                Education
-                              </h3>
+                               <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                                 <Award className="w-5 h-5" />
+                                 Education
+                               </h3>
                               <div className="space-y-4">
                                 {enhancedContent.education.map((edu: any, index: number) => (
-                                  <div key={index} className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-primary/10">
-                                    <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
-                                    <p className="text-accent font-medium">{edu.institution}</p>
+                                   <div 
+                                     key={index} 
+                                     className="rounded-lg p-4 border"
+                                     style={{ 
+                                       background: `linear-gradient(to right, ${selectedTheme.primary}08, ${selectedTheme.accent}08)`,
+                                       borderColor: `${selectedTheme.primary}10`
+                                     }}
+                                   >
+                                     <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                                     <p className="font-medium" style={{ color: selectedTheme.accent }}>{edu.institution}</p>
                                     <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
                                   </div>
                                 ))}
