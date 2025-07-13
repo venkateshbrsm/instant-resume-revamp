@@ -331,7 +331,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                     </div>
                   ) : enhancedContent ? (
                      <div className="w-full overflow-x-auto border border-border/20 rounded-lg">
-                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-6 min-h-[600px] shadow-2xl border border-accent/20">
+                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-6 min-h-[600px] shadow-2xl border border-accent/20 min-w-[800px]">
                       
                         {/* Color Theme Selector */}
                         <div className="mb-4 p-3 bg-card/80 rounded-lg border border-border/50">
@@ -339,7 +339,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             <Sparkles className="w-4 h-4" />
                             Choose Your Color Theme
                           </h4>
-                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                          <div className="grid grid-cols-6 gap-2">
                            {colorThemes.map((theme) => (
                              <button
                                key={theme.id}
@@ -376,20 +376,20 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       </div>
 
                        {/* Modern Header with Visual Elements */}
-                        <div 
-                          className="relative rounded-xl p-4 sm:p-6 mb-6 text-white overflow-hidden"
+                       <div 
+                         className="relative rounded-xl p-6 mb-6 text-white overflow-hidden"
                          style={{
                            background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                          }}
                        >
                          <div className="absolute inset-0 bg-black/10"></div>
                           <div className="relative z-10">
-                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                               <div className="min-w-0 flex-1">
-                                 <h1 className="text-2xl sm:text-3xl font-bold mb-1">{enhancedContent.name}</h1>
-                                 <p className="text-lg sm:text-xl text-white/90 font-medium">{enhancedContent.title}</p>
-                               </div>
-                             </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <h1 className="text-3xl font-bold mb-1">{enhancedContent.name}</h1>
+                                <p className="text-xl text-white/90 font-medium">{enhancedContent.title}</p>
+                              </div>
+                            </div>
                            
                            <div className="flex flex-wrap items-center gap-4 mt-4">
                              <div className="flex items-center gap-2 text-white/90">
@@ -412,9 +412,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          </div>
                        </div>
 
-                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                       <div className="grid grid-cols-3 gap-6">
                          {/* Main Content */}
-                         <div className="lg:col-span-2 space-y-6">
+                         <div className="col-span-2 space-y-6">
                           
                            {/* Professional Summary with Visual Enhancement */}
                             <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
