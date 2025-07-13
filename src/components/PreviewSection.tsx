@@ -110,6 +110,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       } else {
         // User is not authenticated, redirect to login
         sessionStorage.setItem('attemptingPurchase', 'true');
+        sessionStorage.setItem('returnToPreview', 'true'); // Stay on preview after login
+        // Store file info to restore after login
+        sessionStorage.setItem('pendingFile', JSON.stringify({
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }));
         toast({
           title: "Authentication Required",
           description: "Please sign in to continue with your purchase.",

@@ -16,12 +16,19 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Check if user was trying to purchase before authentication
+        // Check if user was trying to purchase from preview screen
         const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
+        const shouldReturnToPreview = sessionStorage.getItem('returnToPreview');
+        
         if (wasAttemptingPurchase === 'true') {
           sessionStorage.removeItem('attemptingPurchase');
-          // Store that they should go to payment step
-          sessionStorage.setItem('redirectToPayment', 'true');
+          
+          if (shouldReturnToPreview === 'true') {
+            sessionStorage.removeItem('returnToPreview');
+            sessionStorage.setItem('redirectToPreview', 'true');
+          } else {
+            sessionStorage.setItem('redirectToPayment', 'true');
+          }
         }
         navigate('/');
       }
@@ -31,12 +38,19 @@ export default function Auth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        // Check if user was trying to purchase before authentication
+        // Check if user was trying to purchase from preview screen
         const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
+        const shouldReturnToPreview = sessionStorage.getItem('returnToPreview');
+        
         if (wasAttemptingPurchase === 'true') {
           sessionStorage.removeItem('attemptingPurchase');
-          // Store that they should go to payment step
-          sessionStorage.setItem('redirectToPayment', 'true');
+          
+          if (shouldReturnToPreview === 'true') {
+            sessionStorage.removeItem('returnToPreview');
+            sessionStorage.setItem('redirectToPreview', 'true');
+          } else {
+            sessionStorage.setItem('redirectToPayment', 'true');
+          }
         }
         navigate('/');
       }

@@ -24,18 +24,27 @@ const Index = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check if user should be redirected to payment after login
+        // Check if user should be redirected after login
         if (event === 'SIGNED_IN' && session?.user) {
           const shouldRedirectToPayment = sessionStorage.getItem('redirectToPayment');
+          const shouldRedirectToPreview = sessionStorage.getItem('redirectToPreview');
+          
           if (shouldRedirectToPayment === 'true') {
             sessionStorage.removeItem('redirectToPayment');
             // Restore file if available
             const pendingFileInfo = sessionStorage.getItem('pendingFile');
             if (pendingFileInfo) {
               sessionStorage.removeItem('pendingFile');
-              // Note: We can't restore the actual File object, but the payment flow will handle this
             }
             setCurrentStep('payment');
+          } else if (shouldRedirectToPreview === 'true') {
+            sessionStorage.removeItem('redirectToPreview');
+            // Restore file if available
+            const pendingFileInfo = sessionStorage.getItem('pendingFile');
+            if (pendingFileInfo) {
+              sessionStorage.removeItem('pendingFile');
+            }
+            setCurrentStep('preview');
           }
         }
       }
@@ -46,18 +55,27 @@ const Index = () => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // Check if user should be redirected to payment after page load
+      // Check if user should be redirected after page load
       if (session?.user) {
         const shouldRedirectToPayment = sessionStorage.getItem('redirectToPayment');
+        const shouldRedirectToPreview = sessionStorage.getItem('redirectToPreview');
+        
         if (shouldRedirectToPayment === 'true') {
           sessionStorage.removeItem('redirectToPayment');
           // Restore file if available
           const pendingFileInfo = sessionStorage.getItem('pendingFile');
           if (pendingFileInfo) {
             sessionStorage.removeItem('pendingFile');
-            // Note: We can't restore the actual File object, but the payment flow will handle this
           }
           setCurrentStep('payment');
+        } else if (shouldRedirectToPreview === 'true') {
+          sessionStorage.removeItem('redirectToPreview');
+          // Restore file if available
+          const pendingFileInfo = sessionStorage.getItem('pendingFile');
+          if (pendingFileInfo) {
+            sessionStorage.removeItem('pendingFile');
+          }
+          setCurrentStep('preview');
         }
       }
     });
