@@ -18,9 +18,15 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, fileContent, originalText } = await req.json();
+    const { fileName, originalText, extractedText } = await req.json();
 
     console.log('Enhancing resume for:', fileName);
+    console.log('Original text length:', originalText?.length || 0);
+    console.log('Extracted text length:', extractedText?.length || 0);
+
+    // Use the actual extracted text from the resume
+    const resumeContent = extractedText || originalText || 'No content available';
+    console.log('Using resume content (first 500 chars):', resumeContent.substring(0, 500));
 
     // Extract name from filename for better personalization
     const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
@@ -31,7 +37,7 @@ serve(async (req) => {
 IMPORTANT: Use ONLY the information provided in the original resume. Do NOT make up fake data, companies, or achievements. Extract and enhance the real information from the resume.
 
 Original Resume Content:
-${originalText}
+${resumeContent}
 
 Candidate Name from filename: ${candidateName}
 
