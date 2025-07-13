@@ -53,9 +53,9 @@ serve(async (req) => {
       firstname: user.user_metadata?.name || user.email.split('@')[0],
       email: user.email,
       phone: user.user_metadata?.phone || '9999999999',
-      surl: `https://49a75e18-0284-489f-a47c-649fdefa7e7a.lovableproject.com/payment-success`,
-      furl: `https://49a75e18-0284-489f-a47c-649fdefa7e7a.lovableproject.com/payment-failure`,
-      curl: `https://49a75e18-0284-489f-a47c-649fdefa7e7a.lovableproject.com/payment-failure`,
+      surl: `https://revivifymyresume.app/payment-success`,
+      furl: `https://revivifymyresume.app/payment-failure`,
+      curl: `https://revivifymyresume.app/payment-failure`,
       service_provider: 'payu_paisa',
     };
 
