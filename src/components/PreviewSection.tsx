@@ -31,7 +31,37 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const { toast } = useToast();
 
   useEffect(() => {
-    extractFileContent();
+    // Check if we're returning from login and restore state
+    const storedExtractedText = sessionStorage.getItem('extractedText');
+    const storedEnhancedContent = sessionStorage.getItem('enhancedContent');
+    const storedOriginalContent = sessionStorage.getItem('originalContent');
+    
+    if (storedExtractedText) {
+      setExtractedText(storedExtractedText);
+      sessionStorage.removeItem('extractedText');
+    }
+    
+    if (storedEnhancedContent) {
+      try {
+        setEnhancedContent(JSON.parse(storedEnhancedContent));
+        sessionStorage.removeItem('enhancedContent');
+      } catch (error) {
+        console.error('Error parsing stored enhanced content:', error);
+      }
+    }
+    
+    if (storedOriginalContent) {
+      setOriginalContent(storedOriginalContent);
+      sessionStorage.removeItem('originalContent');
+    }
+    
+    // Only extract file content if we don't have stored content
+    if (!storedExtractedText || !storedOriginalContent) {
+      extractFileContent();
+    } else {
+      setIsLoading(false);
+    }
+    
     checkAuth();
   }, [file]);
 
@@ -111,12 +141,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         // User is not authenticated, redirect to login
         sessionStorage.setItem('attemptingPurchase', 'true');
         sessionStorage.setItem('returnToPreview', 'true'); // Stay on preview after login
-        // Store file info to restore after login
+        // Store file info and preview state to restore after login
         sessionStorage.setItem('pendingFile', JSON.stringify({
           name: file.name,
           size: file.size,
           type: file.type
         }));
+        if (extractedText) {
+          sessionStorage.setItem('extractedText', extractedText);
+        }
+        if (enhancedContent) {
+          sessionStorage.setItem('enhancedContent', enhancedContent);
+        }
+        if (originalContent) {
+          sessionStorage.setItem('originalContent', originalContent);
+        }
         toast({
           title: "Authentication Required",
           description: "Please sign in to continue with your purchase.",
