@@ -23,55 +23,66 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const extractFileContent = async () => {
     setIsLoading(true);
     try {
+      // Extract name from filename for personalization
+      const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
+      const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
+      const extractedName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : fileName;
+      
       if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        // For PDF files, show a preview message
-        setOriginalContent("PDF content preview - Document uploaded successfully. The enhanced version will maintain all your content while improving formatting and structure.");
+        setOriginalContent(`📄 PDF Resume Document\n\nFilename: ${file.name}\nDocument Type: PDF Resume\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nYour PDF resume has been successfully uploaded and is ready for enhancement. The AI will analyze your content and improve:\n\n✓ Professional formatting and layout\n✓ ATS-optimized structure\n✓ Enhanced language and action verbs\n✓ Better visual hierarchy\n✓ Quantified achievements\n\nYour original content and all personal information will be preserved.`);
       } else if (file.type.includes('word') || file.name.toLowerCase().endsWith('.docx') || file.name.toLowerCase().endsWith('.doc')) {
-        // For Word documents, show a preview message
-        setOriginalContent("Word document uploaded successfully. Your resume content has been processed and will be enhanced with:\n\n• Professional formatting\n• ATS-optimized structure\n• Improved language and action verbs\n• Better visual hierarchy\n• Quantified achievements highlight\n\nOriginal content and information will be preserved while enhancing presentation.");
+        setOriginalContent(`📝 Word Resume Document\n\nCandidate: ${extractedName}\nFilename: ${file.name}\nDocument Type: Microsoft Word Resume\nSize: ${(file.size / 1024).toFixed(1)} KB\nUploaded: ${new Date().toLocaleDateString()}\n\nYour Word document has been successfully processed. This resume will be enhanced with:\n\n✓ Professional formatting and modern design\n✓ ATS-compliant structure for better parsing\n✓ Improved language with strong action verbs\n✓ Better visual hierarchy and readability\n✓ Quantified achievements highlighting\n✓ Industry-standard formatting\n\nAll your original information, experience, and achievements will be preserved while improving presentation and impact.`);
       } else {
-        setOriginalContent("Document uploaded successfully. Content will be enhanced while preserving all your original information.");
+        setOriginalContent(`📋 Resume Document\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nDocument uploaded successfully and ready for enhancement.`);
       }
     } catch (error) {
       console.error('Error processing file:', error);
-      setOriginalContent("Document uploaded. Preview processing...");
+      setOriginalContent("Document uploaded. Processing preview...");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock enhanced content for demonstration
-  const enhancedContent = {
-    name: "John Smith",
-    title: "Senior Software Engineer",
-    email: "john.smith@email.com",
-    phone: "+91 98765 43210",
-    location: "Mumbai, India",
-    summary: "Results-driven Senior Software Engineer with 7+ years of experience developing scalable web applications and leading cross-functional teams. Proven track record of delivering high-quality solutions that increased user engagement by 40% and reduced system downtime by 60%.",
-    experience: [
-      {
-        title: "Senior Software Engineer",
-        company: "Tech Solutions Pvt Ltd",
-        duration: "2020 - Present",
-        achievements: [
-          "Led development of microservices architecture reducing deployment time by 50%",
-          "Mentored team of 5 junior developers, improving code quality metrics by 35%",
-          "Implemented CI/CD pipeline resulting in 90% reduction in deployment errors"
-        ]
-      },
-      {
-        title: "Software Developer",
-        company: "Digital Innovations",
-        duration: "2017 - 2020",
-        achievements: [
-          "Developed responsive web applications serving 100K+ daily active users",
-          "Optimized database queries improving application performance by 60%",
-          "Collaborated with UX team to implement user-friendly interfaces"
-        ]
-      }
-    ],
-    skills: ["React", "Node.js", "Python", "AWS", "Docker", "MongoDB", "PostgreSQL", "TypeScript"]
+  // Generate personalized enhanced content based on the filename
+  const generateEnhancedContent = () => {
+    const fileName = file.name.replace(/\.(pdf|docx?|txt)$/i, '');
+    const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
+    const extractedName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : "Your Name";
+    
+    return {
+      name: extractedName,
+      title: "Professional Title", // This would be extracted from actual resume
+      email: "your.email@example.com",
+      phone: "+91 XXXXX XXXXX",
+      location: "Your City, India",
+      summary: `Results-driven professional with proven track record of success. This enhanced version of ${extractedName}'s resume features improved formatting, ATS optimization, and strategic content enhancement while preserving all original achievements and experience.`,
+      experience: [
+        {
+          title: "Current/Recent Position",
+          company: "Company Name",
+          duration: "Duration",
+          achievements: [
+            "Enhanced achievement statement with quantified results",
+            "Improved bullet point with action verbs and impact metrics", 
+            "Optimized description for ATS compatibility and readability"
+          ]
+        },
+        {
+          title: "Previous Position", 
+          company: "Previous Company",
+          duration: "Duration",
+          achievements: [
+            "Professional accomplishment with improved language",
+            "Enhanced achievement highlighting key contributions",
+            "Refined description emphasizing value and impact"
+          ]
+        }
+      ],
+      skills: ["Skill 1", "Skill 2", "Skill 3", "Skill 4", "Skill 5", "Skill 6", "Skill 7", "Skill 8"]
+    };
   };
+
+  const enhancedContent = generateEnhancedContent();
 
   return (
     <div className="min-h-screen bg-gradient-hero px-4 py-8">
@@ -153,8 +164,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-accent" />
-                    AI-Enhanced Resume
+                    AI-Enhanced Resume Preview
                   </CardTitle>
+                  <div className="text-sm text-muted-foreground">
+                    Sample enhancement for: {file.name} • Your actual enhanced resume will reflect your specific content
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="bg-background rounded-lg p-6 min-h-[400px] shadow-inner">
