@@ -58,15 +58,12 @@ export const formatResumeText = (text: string, fileName: string): string => {
     return `📄 Resume Document: ${fileName}\n\nFile uploaded successfully, but text extraction was limited. The AI enhancement will process the document content directly.\n\nNote: Some file formats may not display preview text, but the enhancement process will work with the original document content.`;
   }
 
-  // Clean and format the extracted text
+  // Clean and format the extracted text - show full content
   const cleanedText = text
     .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
-    .replace(/(.{100})/g, '$1\n') // Add line breaks for readability
+    .replace(/(.{80})/g, '$1\n') // Add line breaks for readability
     .trim();
 
-  const preview = cleanedText.length > 2000 
-    ? cleanedText.substring(0, 2000) + '\n\n... [Content truncated for preview. Full content will be processed for enhancement]'
-    : cleanedText;
-
-  return `📄 Original Resume Content\n\nFilename: ${fileName}\nExtracted Text:\n\n${preview}`;
+  // Show full content without truncation
+  return `📄 Original Resume Content\n\nFilename: ${fileName}\nExtracted Text:\n\n${cleanedText}`;
 };

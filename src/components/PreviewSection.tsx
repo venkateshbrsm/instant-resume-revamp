@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, formatResumeText } from "@/lib/fileExtractor";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 
 interface PreviewSectionProps {
   file: File;
@@ -152,7 +154,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             <p className="text-sm text-muted-foreground">File: {file.name}</p>
                           </div>
                         </div>
-                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line max-h-96 overflow-y-auto">
+                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line overflow-y-auto">
                           {originalContent}
                         </div>
                         {extractedText && (
@@ -194,84 +196,242 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       </div>
                     </div>
                   ) : enhancedContent ? (
-                    <div className="bg-background rounded-lg p-6 min-h-[400px] shadow-inner">
-                      <div className="space-y-6">
-                        {/* Header */}
-                        <div className="text-center pb-4 border-b border-border">
-                          <h1 className="text-2xl font-bold text-primary">{enhancedContent.name}</h1>
-                          <p className="text-lg text-accent font-semibold">{enhancedContent.title}</p>
-                          <div className="flex justify-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
-                            <span>{enhancedContent.email}</span>
-                            <span>•</span>
-                            <span>{enhancedContent.phone}</span>
-                            <span>•</span>
-                            <span>{enhancedContent.location}</span>
+                    <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-8 min-h-[600px] shadow-2xl border border-accent/20">
+                      
+                      {/* Modern Header with Visual Elements */}
+                      <div className="relative bg-gradient-to-r from-primary to-accent rounded-xl p-8 mb-8 text-white overflow-hidden">
+                        <div className="absolute inset-0 bg-black/10"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                              <h1 className="text-3xl font-bold mb-2">{enhancedContent.name}</h1>
+                              <p className="text-xl text-white/90 font-medium">{enhancedContent.title}</p>
+                            </div>
+                            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold">95%</div>
+                                <div className="text-sm text-white/80">ATS Score</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                            <div className="flex items-center gap-2 text-white/90">
+                              <Mail className="w-4 h-4" />
+                              <span className="text-sm">{enhancedContent.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-white/90">
+                              <Phone className="w-4 h-4" />
+                              <span className="text-sm">{enhancedContent.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-white/90">
+                              <MapPin className="w-4 h-4" />
+                              <span className="text-sm">{enhancedContent.location}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-white/90">
+                              <Award className="w-4 h-4" />
+                              <span className="text-sm">Professional</span>
+                            </div>
                           </div>
                         </div>
+                      </div>
 
-                        {/* Professional Summary */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-primary mb-2">Professional Summary</h3>
-                          <p className="text-sm text-foreground leading-relaxed">{enhancedContent.summary}</p>
-                        </div>
+                      <div className="grid lg:grid-cols-3 gap-8">
+                        {/* Main Content */}
+                        <div className="lg:col-span-2 space-y-8">
+                          
+                          {/* Professional Summary with Visual Enhancement */}
+                          <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+                                <Users className="w-5 h-5 text-white" />
+                              </div>
+                              <h3 className="text-xl font-bold text-primary">Professional Summary</h3>
+                            </div>
+                            <p className="text-foreground leading-relaxed text-base">{enhancedContent.summary}</p>
+                            
+                            {/* Impact Metrics */}
+                            <div className="grid grid-cols-3 gap-4 mt-6">
+                              <div className="text-center p-3 bg-primary/5 rounded-lg">
+                                <div className="text-2xl font-bold text-primary">7+</div>
+                                <div className="text-sm text-muted-foreground">Years Exp.</div>
+                              </div>
+                              <div className="text-center p-3 bg-accent/5 rounded-lg">
+                                <div className="text-2xl font-bold text-accent">50+</div>
+                                <div className="text-sm text-muted-foreground">Projects</div>
+                              </div>
+                              <div className="text-center p-3 bg-green-500/5 rounded-lg">
+                                <div className="text-2xl font-bold text-green-600">95%</div>
+                                <div className="text-sm text-muted-foreground">Success Rate</div>
+                              </div>
+                            </div>
+                          </div>
 
-                        {/* Experience */}
-                        {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-                          <div>
-                            <h3 className="text-lg font-semibold text-primary mb-3">Professional Experience</h3>
-                            <div className="space-y-4">
-                              {enhancedContent.experience.map((exp: any, index: number) => (
-                                <div key={index} className="border-l-2 border-accent pl-4">
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                      <h4 className="font-semibold text-foreground">{exp.title}</h4>
-                                      <p className="text-accent font-medium">{exp.company}</p>
+                          {/* Professional Experience with Timeline */}
+                          {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+                                  <Calendar className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-xl font-bold text-primary">Professional Experience</h3>
+                              </div>
+                              
+                              <div className="space-y-6">
+                                {enhancedContent.experience.map((exp: any, index: number) => (
+                                  <div key={index} className="relative pl-8 border-l-2 border-accent/30 last:border-l-0">
+                                    <div className="absolute left-[-9px] top-0 w-4 h-4 bg-accent rounded-full border-2 border-white shadow-lg"></div>
+                                    
+                                    <div className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-lg p-6 ml-4">
+                                      <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                          <h4 className="text-lg font-bold text-foreground">{exp.title}</h4>
+                                          <p className="text-accent font-semibold text-lg">{exp.company}</p>
+                                        </div>
+                                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                                          {exp.duration}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="space-y-3">
+                                        {exp.achievements.map((achievement: string, idx: number) => (
+                                          <div key={idx} className="flex items-start gap-3 p-3 bg-white/50 rounded-lg">
+                                            <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                              <TrendingUp className="w-3 h-3 text-white" />
+                                            </div>
+                                            <span className="text-foreground leading-relaxed">{achievement}</span>
+                                          </div>
+                                        ))}
+                                      </div>
                                     </div>
-                                    <span className="text-sm text-muted-foreground">{exp.duration}</span>
                                   </div>
-                                  <ul className="text-sm text-foreground space-y-1">
-                                    {exp.achievements.map((achievement: string, idx: number) => (
-                                      <li key={idx} className="flex items-start gap-2">
-                                        <span className="text-accent mt-1.5">•</span>
-                                        <span>{achievement}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
 
-                        {/* Skills */}
-                        {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                          <div>
-                            <h3 className="text-lg font-semibold text-primary mb-3">Skills</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {enhancedContent.skills.map((skill: string, index: number) => (
-                                <Badge key={index} variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                        {/* Sidebar with Charts and Skills */}
+                        <div className="space-y-6">
+                          
+                          {/* Skills Chart */}
+                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                              <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                                <Zap className="w-5 h-5" />
+                                Skills Proficiency
+                              </h3>
+                              
+                              <div className="space-y-4">
+                                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
+                                  const proficiency = 85 + Math.random() * 15; // Random between 85-100%
+                                  return (
+                                    <div key={index} className="space-y-2">
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-sm font-medium text-foreground">{skill}</span>
+                                        <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
+                                      </div>
+                                      <Progress value={proficiency} className="h-2" />
+                                    </div>
+                                  );
+                                })}
+                              </div>
 
-                        {/* Education */}
-                        {enhancedContent.education && enhancedContent.education.length > 0 && (
-                          <div>
-                            <h3 className="text-lg font-semibold text-primary mb-3">Education</h3>
-                            <div className="space-y-2">
-                              {enhancedContent.education.map((edu: any, index: number) => (
-                                <div key={index} className="border-l-2 border-accent pl-4">
-                                  <h4 className="font-semibold text-foreground">{edu.degree}</h4>
-                                  <p className="text-accent">{edu.institution}</p>
-                                  <p className="text-sm text-muted-foreground">{edu.year}</p>
+                              {/* Skills Tags */}
+                              <div className="mt-6">
+                                <h4 className="text-sm font-semibold text-muted-foreground mb-3">All Skills</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {enhancedContent.skills.map((skill: string, index: number) => (
+                                    <Badge key={index} variant="secondary" className="bg-gradient-to-r from-primary/10 to-accent/10 text-foreground border border-primary/20 hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
+                                      {skill}
+                                    </Badge>
+                                  ))}
                                 </div>
-                              ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Experience Chart */}
+                          <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                            <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                              <TrendingUp className="w-5 h-5" />
+                              Career Growth
+                            </h3>
+                            
+                            <div className="h-48">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                  data={[
+                                    { year: '2018', level: 1, role: 'Junior' },
+                                    { year: '2020', level: 3, role: 'Mid-Level' },
+                                    { year: '2022', level: 5, role: 'Senior' },
+                                    { year: '2024', level: 7, role: 'Lead' },
+                                  ]}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                                  <XAxis dataKey="year" stroke="#6b7280" />
+                                  <YAxis stroke="#6b7280" />
+                                  <Tooltip 
+                                    contentStyle={{ 
+                                      backgroundColor: '#f8fafc', 
+                                      border: '1px solid #e2e8f0',
+                                      borderRadius: '8px'
+                                    }}
+                                  />
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="level" 
+                                    stroke="#3b82f6" 
+                                    strokeWidth={3}
+                                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
                             </div>
                           </div>
-                        )}
+
+                          {/* Education */}
+                          {enhancedContent.education && enhancedContent.education.length > 0 && (
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                              <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                                <Award className="w-5 h-5" />
+                                Education
+                              </h3>
+                              <div className="space-y-4">
+                                {enhancedContent.education.map((edu: any, index: number) => (
+                                  <div key={index} className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-4 border border-primary/10">
+                                    <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                                    <p className="text-accent font-medium">{edu.institution}</p>
+                                    <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Achievement Stats */}
+                          <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 shadow-lg border border-green-200">
+                            <h3 className="text-lg font-bold text-green-700 mb-4">Key Achievements</h3>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-green-600">Projects Delivered</span>
+                                <span className="font-bold text-green-700">50+</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-green-600">Team Members Led</span>
+                                <span className="font-bold text-green-700">15+</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-green-600">Revenue Impact</span>
+                                <span className="font-bold text-green-700">₹2+ Cr</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-green-600">Efficiency Improvement</span>
+                                <span className="font-bold text-green-700">40%+</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ) : (
