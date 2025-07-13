@@ -1,15 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { FileUploadSection } from "@/components/FileUploadSection";
 import { PreviewSection } from "@/components/PreviewSection";
 import { PaymentSection } from "@/components/PaymentSection";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
 
 type AppStep = "hero" | "upload" | "preview" | "payment";
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState<AppStep>("hero");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleGetStarted = () => {
     setCurrentStep("upload");
@@ -86,6 +110,8 @@ const Index = () => {
         currentStep={currentStep} 
         onNavigate={handleNavigate}
         showSteps={true}
+        user={user}
+        onAuthAction={() => navigate('/auth')}
       />
       {renderCurrentStep()}
     </div>

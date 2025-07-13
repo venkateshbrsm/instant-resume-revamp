@@ -1,15 +1,37 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, Menu, X } from "lucide-react";
+import { Sparkles, Menu, X, User, LogOut } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface NavigationProps {
   currentStep: string;
   onNavigate?: (step: string) => void;
   showSteps?: boolean;
+  user?: SupabaseUser | null;
+  onAuthAction?: () => void;
 }
 
-export function Navigation({ currentStep, onNavigate, showSteps = true }: NavigationProps) {
+export function Navigation({ currentStep, onNavigate, showSteps = true, user, onAuthAction }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Sign Out Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
 
   const steps = [
     { id: "hero", label: "Home", enabled: true },
@@ -67,11 +89,25 @@ export function Navigation({ currentStep, onNavigate, showSteps = true }: Naviga
             </Button>
           </div>
 
-          {/* Contact/Support */}
-          <div className="hidden md:flex items-center">
-            <Button variant="ghost" size="sm">
-              Support
-            </Button>
+          {/* Authentication */}
+          <div className="hidden md:flex items-center gap-2">
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {user.email}
+                </span>
+                <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={onAuthAction} className="text-muted-foreground">
+                <User className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            )}
           </div>
         </div>
 
@@ -100,9 +136,23 @@ export function Navigation({ currentStep, onNavigate, showSteps = true }: Naviga
                   {step.label}
                 </button>
               ))}
-              <Button variant="ghost" size="sm" className="justify-start">
-                Support
-              </Button>
+               {user ? (
+                <>
+                  <div className="px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    {user.email}
+                  </div>
+                  <Button variant="ghost" size="sm" className="justify-start" onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+               ) : (
+                <Button variant="ghost" size="sm" className="justify-start" onClick={onAuthAction}>
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+               )}
             </div>
           </div>
         )}
