@@ -27,21 +27,41 @@ const Index = () => {
         // Check if user should be redirected after login
         if (event === 'SIGNED_IN' && session?.user) {
           const shouldRedirectToPayment = sessionStorage.getItem('redirectToPayment');
-          const shouldRedirectToPreview = sessionStorage.getItem('redirectToPreview');
+          const shouldReturnToPreview = sessionStorage.getItem('returnToPreview');
+          const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
           
           if (shouldRedirectToPayment === 'true') {
             sessionStorage.removeItem('redirectToPayment');
             // Restore file if available
             const pendingFileInfo = sessionStorage.getItem('pendingFile');
             if (pendingFileInfo) {
+              try {
+                const fileInfo = JSON.parse(pendingFileInfo);
+                // Create a placeholder file object for the preview
+                const blob = new Blob([''], { type: fileInfo.type });
+                const restoredFile = new File([blob], fileInfo.name, { type: fileInfo.type });
+                setUploadedFile(restoredFile);
+              } catch (error) {
+                console.error('Error restoring file info:', error);
+              }
               sessionStorage.removeItem('pendingFile');
             }
             setCurrentStep('payment');
-          } else if (shouldRedirectToPreview === 'true') {
-            sessionStorage.removeItem('redirectToPreview');
+          } else if (shouldReturnToPreview === 'true' || wasAttemptingPurchase === 'true') {
+            sessionStorage.removeItem('returnToPreview');
+            sessionStorage.removeItem('attemptingPurchase');
             // Restore file if available
             const pendingFileInfo = sessionStorage.getItem('pendingFile');
             if (pendingFileInfo) {
+              try {
+                const fileInfo = JSON.parse(pendingFileInfo);
+                // Create a placeholder file object for the preview
+                const blob = new Blob([''], { type: fileInfo.type });
+                const restoredFile = new File([blob], fileInfo.name, { type: fileInfo.type });
+                setUploadedFile(restoredFile);
+              } catch (error) {
+                console.error('Error restoring file info:', error);
+              }
               sessionStorage.removeItem('pendingFile');
             }
             setCurrentStep('preview');
@@ -58,21 +78,41 @@ const Index = () => {
       // Check if user should be redirected after page load
       if (session?.user) {
         const shouldRedirectToPayment = sessionStorage.getItem('redirectToPayment');
-        const shouldRedirectToPreview = sessionStorage.getItem('redirectToPreview');
+        const shouldReturnToPreview = sessionStorage.getItem('returnToPreview');
+        const wasAttemptingPurchase = sessionStorage.getItem('attemptingPurchase');
         
         if (shouldRedirectToPayment === 'true') {
           sessionStorage.removeItem('redirectToPayment');
           // Restore file if available
           const pendingFileInfo = sessionStorage.getItem('pendingFile');
           if (pendingFileInfo) {
+            try {
+              const fileInfo = JSON.parse(pendingFileInfo);
+              // Create a placeholder file object for the preview
+              const blob = new Blob([''], { type: fileInfo.type });
+              const restoredFile = new File([blob], fileInfo.name, { type: fileInfo.type });
+              setUploadedFile(restoredFile);
+            } catch (error) {
+              console.error('Error restoring file info:', error);
+            }
             sessionStorage.removeItem('pendingFile');
           }
           setCurrentStep('payment');
-        } else if (shouldRedirectToPreview === 'true') {
-          sessionStorage.removeItem('redirectToPreview');
+        } else if (shouldReturnToPreview === 'true' || wasAttemptingPurchase === 'true') {
+          sessionStorage.removeItem('returnToPreview');
+          sessionStorage.removeItem('attemptingPurchase');
           // Restore file if available
           const pendingFileInfo = sessionStorage.getItem('pendingFile');
           if (pendingFileInfo) {
+            try {
+              const fileInfo = JSON.parse(pendingFileInfo);
+              // Create a placeholder file object for the preview
+              const blob = new Blob([''], { type: fileInfo.type });
+              const restoredFile = new File([blob], fileInfo.name, { type: fileInfo.type });
+              setUploadedFile(restoredFile);
+            } catch (error) {
+              console.error('Error restoring file info:', error);
+            }
             sessionStorage.removeItem('pendingFile');
           }
           setCurrentStep('preview');
