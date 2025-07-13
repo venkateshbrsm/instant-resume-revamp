@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          email: string
+          file_name: string
+          id: string
+          payu_hash: string
+          payu_response: Json | null
+          payu_txnid: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          email: string
+          file_name: string
+          id?: string
+          payu_hash: string
+          payu_response?: Json | null
+          payu_txnid: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          email?: string
+          file_name?: string
+          id?: string
+          payu_hash?: string
+          payu_response?: Json | null
+          payu_txnid?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
