@@ -24,75 +24,15 @@ serve(async (req) => {
     console.log('Original text length:', originalText?.length || 0);
     console.log('Extracted text length:', extractedText?.length || 0);
 
-    // Handle special case for .doc files where text extraction is limited
-    let resumeContent;
-    let isDocFile = false;
-    
-    if (extractedText && extractedText.includes('[DOC_FILE_PROCESSING]')) {
-      isDocFile = true;
-      // For .doc files, we need to work with limited information
-      resumeContent = `This is a Microsoft Word .doc file (${fileName}). The document structure and content cannot be fully extracted due to the binary format, but the resume contains professional information that should be enhanced using standard resume best practices and realistic professional details.`;
-      console.log('Processing .doc file with limited extraction');
-    } else {
-      resumeContent = extractedText || originalText || 'No content available';
-    }
-    
+    // Use the actual extracted text from the resume
+    const resumeContent = extractedText || originalText || 'No content available';
     console.log('Using resume content (first 500 chars):', resumeContent.substring(0, 500));
 
     // Extract name from filename for better personalization
     const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
     const candidateName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : 'Professional Candidate';
 
-    const enhancementPrompt = isDocFile 
-      ? `You are an expert resume analyzer. This is a .doc file where text extraction is limited due to the binary format.
-
-TASK: Create a professional, realistic resume enhancement for: ${fileName}
-
-Since this is a .doc file with limited text extraction, create a realistic professional resume with:
-- Name derived from filename: "${candidateName}"
-- Professional title appropriate for the domain suggested by filename
-- Realistic work experience (2-4 positions)
-- Relevant technical skills
-- Educational background
-- Professional summary
-
-CRITICAL INSTRUCTIONS:
-1. Create realistic but generic professional content
-2. DO NOT use fake metrics or inflated achievements
-3. Use realistic timeframes and job progression
-4. Include relevant but not overly specific technical skills
-5. Make it professional but not unrealistic
-
-Return ONLY this JSON format:
-{
-  "name": "name derived from filename",
-  "title": "appropriate professional title",
-  "email": "professional.email@example.com",
-  "phone": "+91 XXXXX XXXXX", 
-  "location": "City, India",
-  "summary": "Professional summary without fake metrics",
-  "experience": [
-    {
-      "title": "realistic job title",
-      "company": "Professional Company Name", 
-      "duration": "realistic date range",
-      "achievements": [
-        "realistic responsibility",
-        "professional achievement",
-        "relevant task description"
-      ]
-    }
-  ],
-  "skills": ["relevant professional skills"],
-  "education": [
-    {
-      "degree": "relevant degree",
-      "institution": "University/College Name", 
-      "year": "graduation year"
-    }
-  ]
-}`
-      : `You are an expert resume analyzer. You MUST extract and enhance ONLY the actual information from the provided resume. DO NOT CREATE or INVENT any data.
+    const enhancementPrompt = `You are an expert resume analyzer. You MUST extract and enhance ONLY the actual information from the provided resume. DO NOT CREATE or INVENT any data.
 
 ACTUAL RESUME CONTENT TO ANALYZE:
 ${resumeContent}
