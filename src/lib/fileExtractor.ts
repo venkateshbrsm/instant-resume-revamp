@@ -17,9 +17,13 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       // Handle PDF files
       return await extractTextFromPDF(file);
     }
-    else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-      // Handle Word documents
+    else if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx')) {
+      // Handle DOCX files (XML format)
       return await extractTextFromWord(file);
+    }
+    else if (fileName.endsWith('.doc')) {
+      // Handle DOC files (binary format) - mammoth doesn't support these
+      return `Document: ${file.name}\n\nThis appears to be an older .doc file format. For best results, please convert to .docx format or save as PDF. The AI enhancement will still process the document, but preview text extraction is limited for this format.`;
     }
     else {
       throw new Error('Unsupported file type');
