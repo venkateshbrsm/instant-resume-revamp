@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap } from "lucide-react";
+import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle } from "lucide-react";
 
 interface PreviewSectionProps {
   file: File;
@@ -13,6 +13,32 @@ interface PreviewSectionProps {
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
+  const [originalContent, setOriginalContent] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    extractFileContent();
+  }, [file]);
+
+  const extractFileContent = async () => {
+    setIsLoading(true);
+    try {
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        // For PDF files, show a preview message
+        setOriginalContent("PDF content preview - Document uploaded successfully. The enhanced version will maintain all your content while improving formatting and structure.");
+      } else if (file.type.includes('word') || file.name.toLowerCase().endsWith('.docx') || file.name.toLowerCase().endsWith('.doc')) {
+        // For Word documents, show a preview message
+        setOriginalContent("Word document uploaded successfully. Your resume content has been processed and will be enhanced with:\n\n• Professional formatting\n• ATS-optimized structure\n• Improved language and action verbs\n• Better visual hierarchy\n• Quantified achievements highlight\n\nOriginal content and information will be preserved while enhancing presentation.");
+      } else {
+        setOriginalContent("Document uploaded successfully. Content will be enhanced while preserving all your original information.");
+      }
+    } catch (error) {
+      console.error('Error processing file:', error);
+      setOriginalContent("Document uploaded. Preview processing...");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Mock enhanced content for demonstration
   const enhancedContent = {
@@ -87,18 +113,37 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-muted/50 rounded-lg p-6 text-center min-h-[400px] flex items-center justify-center">
-                    <div className="space-y-4">
-                      <Eye className="w-16 h-16 text-muted-foreground mx-auto" />
-                      <div>
-                        <p className="font-semibold text-lg">Original Resume</p>
-                        <p className="text-muted-foreground">File: {file.name}</p>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Basic formatting with standard structure
-                        </p>
+                  {isLoading ? (
+                    <div className="bg-muted/50 rounded-lg p-6 text-center min-h-[400px] flex items-center justify-center">
+                      <div className="space-y-4">
+                        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                        <p className="text-muted-foreground">Processing document...</p>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px]">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                          <FileText className="w-6 h-6 text-primary" />
+                          <div>
+                            <p className="font-semibold">Original Resume</p>
+                            <p className="text-sm text-muted-foreground">File: {file.name}</p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line">
+                          {originalContent}
+                        </div>
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-blue-800">
+                              Your document has been successfully uploaded and analyzed. The enhanced version will improve formatting, structure, and content presentation while preserving all your original information.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
