@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { FileUploadSection } from "@/components/FileUploadSection";
 import { PreviewSection } from "@/components/PreviewSection";
@@ -34,6 +35,13 @@ const Index = () => {
 
   const handleBackToPreview = () => {
     setCurrentStep("preview");
+  };
+
+  const handleNavigate = (step: string) => {
+    const validSteps: AppStep[] = ["hero", "upload", "preview", "payment"];
+    if (validSteps.includes(step as AppStep)) {
+      setCurrentStep(step as AppStep);
+    }
   };
 
   const renderCurrentStep = () => {
@@ -72,7 +80,16 @@ const Index = () => {
     }
   };
 
-  return <div className="min-h-screen">{renderCurrentStep()}</div>;
+  return (
+    <div className="min-h-screen">
+      <Navigation 
+        currentStep={currentStep} 
+        onNavigate={handleNavigate}
+        showSteps={true}
+      />
+      {renderCurrentStep()}
+    </div>
+  );
 };
 
 export default Index;
