@@ -32,62 +32,68 @@ serve(async (req) => {
     const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
     const candidateName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : 'Professional Candidate';
 
-    const enhancementPrompt = `You are an expert resume writer and career coach. Analyze the following ACTUAL resume content and create a professional, ATS-optimized enhanced version.
+    const enhancementPrompt = `You are an expert resume analyzer. You MUST extract and enhance ONLY the actual information from the provided resume. DO NOT CREATE or INVENT any data.
 
-IMPORTANT: Use ONLY the information provided in the original resume. Do NOT make up fake data, companies, or achievements. Extract and enhance the real information from the resume.
-
-Original Resume Content:
+ACTUAL RESUME CONTENT TO ANALYZE:
 ${resumeContent}
 
-Candidate Name from filename: ${candidateName}
+CRITICAL INSTRUCTIONS:
+1. READ the resume content above carefully
+2. Extract ONLY the real information present in the resume
+3. DO NOT invent companies, achievements, or metrics not mentioned
+4. DO NOT create fake numbers, percentages, or project counts
+5. If a detail is missing, leave it out or use a generic placeholder
+6. Use the ACTUAL name, education, experience, and skills from the resume
 
-Instructions:
-- Extract ALL real information from the original resume (education, experience, skills, contact info, etc.)
-- Use the actual companies, institutions, and positions mentioned in the original resume
-- Enhance the language and formatting while keeping all factual information accurate
-- If specific details are missing, use general but realistic placeholders based on the actual content
-- Maintain the candidate's actual career progression and timeline
-- Use the real skills and technologies mentioned in the original resume
-- Keep the actual educational background and institutions if mentioned
+Based STRICTLY on the actual resume content above, create a JSON response with:
+- name: Extract from the resume or use "${candidateName}"
+- title: Based on actual job titles mentioned in resume
+- contact: Use realistic placeholders (email/phone/location)
+- summary: Write based on ACTUAL experience mentioned in resume
+- experience: Use ONLY actual companies and roles from the resume
+- skills: Use ONLY skills actually mentioned in the resume  
+- education: Use ONLY actual institutions and degrees from the resume
 
-Generate a complete professional resume with these sections based on the ACTUAL content:
-1. Contact Information (extract from original or use realistic details)
-2. Professional Summary (based on actual experience and skills)
-3. Professional Experience (use ACTUAL companies and positions, enhance descriptions)
-4. Skills (use ACTUAL skills mentioned, enhance presentation)
-5. Education (use ACTUAL institutions and degrees mentioned)
+If the resume mentions specific projects, companies, or achievements, use those. If not, write generic descriptions without fake metrics.
 
-Return ONLY a JSON object in this exact format:
+DO NOT INCLUDE:
+- Fake project counts (like "50+ projects")
+- Made-up percentages or metrics
+- Fictional companies or achievements
+- Revenue numbers not in original resume
+- Team size numbers not mentioned
+
+Return ONLY this JSON format:
 {
-  "name": "Actual name or ${candidateName}",
-  "title": "Job title based on actual experience",
+  "name": "actual name from resume",
+  "title": "actual or inferred job title",
   "email": "professional.email@example.com",
-  "phone": "+91 XXXXX XXXXX",
+  "phone": "+91 XXXXX XXXXX", 
   "location": "City, India",
-  "summary": "Professional summary based on actual experience and background",
+  "summary": "Summary based on actual experience without fake metrics",
   "experience": [
     {
-      "title": "ACTUAL job title from resume",
-      "company": "ACTUAL company name from resume",
-      "duration": "ACTUAL dates or estimated based on resume",
+      "title": "actual job title from resume",
+      "company": "actual company name from resume", 
+      "duration": "actual dates from resume",
       "achievements": [
-        "Enhanced version of actual responsibilities/achievements",
-        "Professional rewrite of actual work done",
-        "Quantified achievements based on actual experience"
+        "actual responsibility from resume",
+        "actual achievement from resume",
+        "generic but realistic task description"
       ]
     }
   ],
-  "skills": ["ACTUAL skills from resume", "Technologies mentioned", "Tools used"],
+  "skills": ["actual skills from resume"],
   "education": [
     {
-      "degree": "ACTUAL degree mentioned in resume",
-      "institution": "ACTUAL institution name from resume",
-      "year": "ACTUAL year or estimated"
+      "degree": "actual degree from resume",
+      "institution": "actual institution from resume", 
+      "year": "actual year from resume"
     }
   ]
 }
 
-CRITICAL: Base everything on the actual resume content provided. Do not invent companies, skills, or experiences not mentioned in the original resume.`;
+REMEMBER: Use ONLY information from the actual resume provided. Do not invent data.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -100,11 +106,11 @@ CRITICAL: Base everything on the actual resume content provided. Do not invent c
         messages: [
           { 
             role: 'system', 
-            content: 'You are a professional resume enhancement expert. Always return valid JSON format for enhanced resume data.' 
+            content: 'You are a professional resume enhancement expert. You MUST only use actual information from the provided resume. DO NOT invent or create fake data, metrics, achievements, or companies. Always return valid JSON format.' 
           },
           { role: 'user', content: enhancementPrompt }
         ],
-        temperature: 0.8,
+        temperature: 0.3, // Lower temperature for more consistent, factual output
         max_tokens: 2000
       }),
     });

@@ -259,21 +259,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                             <p className="text-foreground leading-relaxed text-base">{enhancedContent.summary}</p>
                             
-                            {/* Impact Metrics */}
-                            <div className="grid grid-cols-3 gap-4 mt-6">
-                              <div className="text-center p-3 bg-primary/5 rounded-lg">
-                                <div className="text-2xl font-bold text-primary">7+</div>
-                                <div className="text-sm text-muted-foreground">Years Exp.</div>
-                              </div>
-                              <div className="text-center p-3 bg-accent/5 rounded-lg">
-                                <div className="text-2xl font-bold text-accent">50+</div>
-                                <div className="text-sm text-muted-foreground">Projects</div>
-                              </div>
-                              <div className="text-center p-3 bg-green-500/5 rounded-lg">
-                                <div className="text-2xl font-bold text-green-600">95%</div>
-                                <div className="text-sm text-muted-foreground">Success Rate</div>
-                              </div>
-                            </div>
                           </div>
 
                           {/* Professional Experience with Timeline */}
@@ -418,28 +403,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                           )}
 
-                          {/* Achievement Stats */}
-                          <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 shadow-lg border border-green-200">
-                            <h3 className="text-lg font-bold text-green-700 mb-4">Key Achievements</h3>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-green-600">Projects Delivered</span>
-                                <span className="font-bold text-green-700">50+</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-green-600">Team Members Led</span>
-                                <span className="font-bold text-green-700">15+</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-green-600">Revenue Impact</span>
-                                <span className="font-bold text-green-700">₹2+ Cr</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-green-600">Efficiency Improvement</span>
-                                <span className="font-bold text-green-700">40%+</span>
-                              </div>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
