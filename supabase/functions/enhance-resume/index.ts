@@ -116,7 +116,12 @@ CRITICAL: Base everything on the actual resume content provided. Do not invent c
     const data = await response.json();
     const enhancedContent = data.choices[0].message.content;
 
-    console.log('Raw AI response:', enhancedContent);
+      console.log('Raw AI response:', enhancedContent);
+      console.log('Resume content used for enhancement (first 500 chars):', resumeContent.substring(0, 500));
+      
+      if (!enhancedContent || enhancedContent.trim() === '') {
+        throw new Error('Empty response from OpenAI');
+      }
 
     // Parse the JSON response
     let parsedContent;
@@ -130,49 +135,8 @@ CRITICAL: Base everything on the actual resume content provided. Do not invent c
       }
     } catch (parseError) {
       console.error('JSON parsing error:', parseError);
-      // Create a fallback enhanced resume using the candidate name
-      const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
-      const candidateName = nameMatch ? nameMatch[1].replace(/[-_]/g, ' ').trim() : 'Professional Candidate';
-      
-      parsedContent = {
-        name: candidateName,
-        title: "Senior Professional",
-        email: `${candidateName.toLowerCase().replace(/\s+/g, '.')}@email.com`,
-        phone: "+91 98765 43210",
-        location: "Mumbai, India",
-        summary: `Results-driven professional with 5+ years of experience in delivering exceptional results. Proven track record of leading successful projects and driving organizational growth. Strong analytical and problem-solving skills with expertise in strategic planning and team leadership.`,
-        experience: [
-          {
-            title: "Senior Professional",
-            company: "Leading Organization",
-            duration: "2020 - Present",
-            achievements: [
-              "Led cross-functional team of 8+ members to deliver projects worth ₹2+ crores",
-              "Implemented strategic initiatives resulting in 35% improvement in operational efficiency",
-              "Managed client relationships and achieved 95% customer satisfaction rating",
-              "Mentored junior team members and improved overall team productivity by 40%"
-            ]
-          },
-          {
-            title: "Associate Professional",
-            company: "Previous Company",
-            duration: "2018 - 2020",
-            achievements: [
-              "Successfully managed multiple projects with budgets exceeding ₹50 lakhs",
-              "Developed innovative solutions that reduced processing time by 25%",
-              "Collaborated with stakeholders to achieve 120% of annual targets"
-            ]
-          }
-        ],
-        skills: ["Project Management", "Strategic Planning", "Team Leadership", "Data Analysis", "Client Relations", "Process Improvement", "Budget Management", "Stakeholder Management"],
-        education: [
-          {
-            degree: "Bachelor's in Business Administration",
-            institution: "Prestigious University",
-            year: "2018"
-          }
-        ]
-      };
+      console.error('Failed AI response:', enhancedContent);
+      throw new Error('Failed to parse AI response - invalid JSON format');
     }
 
     console.log('Enhanced resume created successfully');

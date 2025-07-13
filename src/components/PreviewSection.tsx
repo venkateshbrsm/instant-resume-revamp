@@ -27,8 +27,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
   useEffect(() => {
     extractFileContent();
-    enhanceResume();
   }, [file]);
+
+  useEffect(() => {
+    // Only enhance after we have extracted text
+    if (extractedText && extractedText.length > 0) {
+      enhanceResume();
+    }
+  }, [extractedText]);
 
   const extractFileContent = async () => {
     setIsLoading(true);
@@ -58,14 +64,24 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const enhanceResume = async () => {
+    if (!extractedText || extractedText.length < 50) {
+      console.log('Skipping enhancement - insufficient text content');
+      toast({
+        title: "Content Required",
+        description: "Waiting for file content to be extracted before enhancement.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsEnhancing(true);
     try {
-      const originalText = extractedText || `Resume content from ${file.name}. Document analysis in progress.`;
+      console.log('Starting enhancement with extracted text length:', extractedText.length);
 
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
         body: {
           fileName: file.name,
-          originalText: originalText,
+          originalText: extractedText,
           extractedText: extractedText
         }
       });
