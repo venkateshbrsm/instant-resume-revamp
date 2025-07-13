@@ -207,12 +207,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                               <h1 className="text-3xl font-bold mb-2">{enhancedContent.name}</h1>
                               <p className="text-xl text-white/90 font-medium">{enhancedContent.title}</p>
                             </div>
-                            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                              <div className="text-center">
-                                <div className="text-2xl font-bold">95%</div>
-                                <div className="text-sm text-white/80">ATS Score</div>
-                              </div>
-                            </div>
                           </div>
                           
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
