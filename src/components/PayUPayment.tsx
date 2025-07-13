@@ -14,10 +14,27 @@ interface PayUPaymentProps {
 
 export function PayUPayment({ file, amount, onSuccess, onCancel }: PayUPaymentProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [lastAttempt, setLastAttempt] = useState<number>(0);
   const { toast } = useToast();
 
   const handlePayment = async () => {
+    // Check if enough time has passed since last attempt (60 seconds)
+    const now = Date.now();
+    const timeSinceLastAttempt = now - lastAttempt;
+    const cooldownPeriod = 60000; // 60 seconds
+
+    if (lastAttempt > 0 && timeSinceLastAttempt < cooldownPeriod) {
+      const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastAttempt) / 1000);
+      toast({
+        title: "Please Wait",
+        description: `Please wait ${remainingTime} seconds before trying again.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
+    setLastAttempt(now);
     
     try {
       // Get the current session
@@ -90,11 +107,24 @@ export function PayUPayment({ file, amount, onSuccess, onCancel }: PayUPaymentPr
         pollPaymentStatus(data.paymentData.txnid);
       }, 5000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment initiation error:', error);
+      
+      // Handle specific PayU errors
+      let errorMessage = "Failed to initiate payment. Please try again.";
+      let errorTitle = "Payment Error";
+      
+      if (error.message?.includes('Too many Requests')) {
+        errorTitle = "Rate Limit Exceeded";
+        errorMessage = "Too many payment requests. Please wait 60 seconds and try again.";
+      } else if (error.message?.includes('popup')) {
+        errorTitle = "Popup Blocked";
+        errorMessage = "Please allow popups for this site and try again.";
+      }
+      
       toast({
-        title: "Payment Error",
-        description: error.message || "Failed to initiate payment. Please try again.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
