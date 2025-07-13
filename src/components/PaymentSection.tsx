@@ -66,6 +66,12 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
       } else {
         // User is not authenticated, redirect to login
         sessionStorage.setItem('attemptingPayment', 'true');
+        // Store file info to restore after login
+        sessionStorage.setItem('pendingFile', JSON.stringify({
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }));
         toast({
           title: "Authentication Required",
           description: "Please sign in to continue with your payment.",

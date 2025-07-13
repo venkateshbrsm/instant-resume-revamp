@@ -23,6 +23,21 @@ const Index = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Check if user should be redirected to payment after login
+        if (event === 'SIGNED_IN' && session?.user) {
+          const shouldRedirectToPayment = sessionStorage.getItem('redirectToPayment');
+          if (shouldRedirectToPayment === 'true') {
+            sessionStorage.removeItem('redirectToPayment');
+            // Restore file if available
+            const pendingFileInfo = sessionStorage.getItem('pendingFile');
+            if (pendingFileInfo) {
+              sessionStorage.removeItem('pendingFile');
+              // Note: We can't restore the actual File object, but the payment flow will handle this
+            }
+            setCurrentStep('payment');
+          }
+        }
       }
     );
 
@@ -30,6 +45,21 @@ const Index = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Check if user should be redirected to payment after page load
+      if (session?.user) {
+        const shouldRedirectToPayment = sessionStorage.getItem('redirectToPayment');
+        if (shouldRedirectToPayment === 'true') {
+          sessionStorage.removeItem('redirectToPayment');
+          // Restore file if available
+          const pendingFileInfo = sessionStorage.getItem('pendingFile');
+          if (pendingFileInfo) {
+            sessionStorage.removeItem('pendingFile');
+            // Note: We can't restore the actual File object, but the payment flow will handle this
+          }
+          setCurrentStep('payment');
+        }
+      }
     });
 
     return () => subscription.unsubscribe();

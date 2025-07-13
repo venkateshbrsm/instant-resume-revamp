@@ -16,6 +16,13 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Check if user was trying to pay before authentication
+        const wasAttemptingPayment = sessionStorage.getItem('attemptingPayment');
+        if (wasAttemptingPayment === 'true') {
+          sessionStorage.removeItem('attemptingPayment');
+          // Store that they should go to payment step
+          sessionStorage.setItem('redirectToPayment', 'true');
+        }
         navigate('/');
       }
     };
@@ -24,6 +31,13 @@ export default function Auth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        // Check if user was trying to pay before authentication
+        const wasAttemptingPayment = sessionStorage.getItem('attemptingPayment');
+        if (wasAttemptingPayment === 'true') {
+          sessionStorage.removeItem('attemptingPayment');
+          // Store that they should go to payment step
+          sessionStorage.setItem('redirectToPayment', 'true');
+        }
         navigate('/');
       }
     });
