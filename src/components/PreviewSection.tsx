@@ -390,21 +390,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                           </div>
                           
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                            <div className="flex items-center gap-2 text-white/90">
-                              <Mail className="w-4 h-4" />
-                              <span className="text-sm">{enhancedContent.email}</span>
+                          <div className="flex flex-wrap items-center gap-6 mt-6">
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <Mail className="w-4 h-4 flex-shrink-0" />
+                              <span className="text-sm truncate">{enhancedContent.email}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-white/90">
-                              <Phone className="w-4 h-4" />
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <Phone className="w-4 h-4 flex-shrink-0" />
                               <span className="text-sm">{enhancedContent.phone}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-white/90">
-                              <MapPin className="w-4 h-4" />
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <MapPin className="w-4 h-4 flex-shrink-0" />
                               <span className="text-sm">{enhancedContent.location}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-white/90">
-                              <Award className="w-4 h-4" />
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <Award className="w-4 h-4 flex-shrink-0" />
                               <span className="text-sm">Professional</span>
                             </div>
                           </div>
