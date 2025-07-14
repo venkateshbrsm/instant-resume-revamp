@@ -118,7 +118,11 @@ serve(async (req) => {
     
     // Read file content and save to /tmp directory
     const fileArrayBuffer = await file.arrayBuffer();
-    const tempFileName = `/tmp/${file.name}`;
+    if (fileArrayBuffer.byteLength === 0) {
+      throw new Error('File content is empty');
+    }
+    
+    const tempFileName = `/tmp/${crypto.randomUUID()}_${file.name}`;
     
     console.log('Saving file to temp directory:', tempFileName, 'Size:', fileArrayBuffer.byteLength);
     await Deno.writeFile(tempFileName, new Uint8Array(fileArrayBuffer));
@@ -127,8 +131,18 @@ serve(async (req) => {
     const savedFileInfo = await Deno.stat(tempFileName);
     console.log('Saved file info:', { size: savedFileInfo.size, path: tempFileName });
     
+    if (savedFileInfo.size === 0) {
+      await Deno.remove(tempFileName);
+      throw new Error('Failed to write file to temp directory');
+    }
+    
     // Read file back and create new Blob
     const savedFileContent = await Deno.readFile(tempFileName);
+    if (savedFileContent.length === 0) {
+      await Deno.remove(tempFileName);
+      throw new Error('Failed to read file from temp directory');
+    }
+    
     const fileBlob = new Blob([savedFileContent], { type: file.type || 'application/pdf' });
     
     console.log('Created blob from saved file:', { size: fileBlob.size, type: fileBlob.type });
