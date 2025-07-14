@@ -47,6 +47,7 @@ serve(async (req) => {
     });
 
     // 1️⃣ Start task
+    console.log('Making API call to start extract task...');
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
       headers: {
@@ -58,9 +59,23 @@ serve(async (req) => {
     console.log("Start response status:", startRes.status);
     console.log("Start response headers:", Object.fromEntries(startRes.headers.entries()));
     
-    const startData = await startRes.json();
+    // Get the response text first to see what we're dealing with
+    const responseText = await startRes.text();
+    console.log("Raw response text:", responseText);
+    
+    let startData;
+    try {
+      startData = responseText ? JSON.parse(responseText) : null;
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      console.error("Response was:", responseText);
+      return new Response(
+        JSON.stringify({ success: false, error: `Invalid JSON response from iLovePDF: ${responseText}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    console.log("startData:", startData);
+    console.log("Parsed startData:", startData);
 
     if (!startRes.ok) {
       console.error("Start request failed with status:", startRes.status);
