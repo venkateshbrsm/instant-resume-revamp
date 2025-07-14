@@ -8,6 +8,7 @@ const corsHeaders = {
 serve(async (req) => {
   console.log('=== FUNCTION STARTED ===');
   console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
   
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request');
@@ -15,6 +16,13 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting to process request...');
+    
+    // Test basic environment first
+    console.log('Environment test:');
+    console.log('- Deno version available:', typeof Deno !== 'undefined');
+    console.log('- Environment keys:', Object.keys(Deno.env.toObject()).filter(k => k.includes('ILOVEPDF')));
+    
     console.log('Starting to process formData...');
     const formData = await req.formData();
     console.log('FormData processed successfully');
