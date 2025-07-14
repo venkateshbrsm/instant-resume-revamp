@@ -8,6 +8,11 @@ RUN apt-get update && apt-get install -y \
     libtesseract-dev \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    build-essential \
+    gcc \
+    g++ \
+    python3-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
