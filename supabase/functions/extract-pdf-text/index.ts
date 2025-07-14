@@ -1,105 +1,84 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+// Import PDF.js for proper PDF parsing
+import * as pdfjsLib from "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.min.mjs";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Simple PDF text extraction function
-const extractPDFText = async (pdfBuffer: ArrayBuffer): Promise<string> => {
+// Configure PDF.js worker - disable for server-side use
+pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+
+// PDF text extraction using PDF.js
+const extractPDFTextWithPDFJS = async (pdfBuffer: ArrayBuffer): Promise<string> => {
   try {
-    const uint8Array = new Uint8Array(pdfBuffer);
-    const decoder = new TextDecoder('latin1');
-    const pdfText = decoder.decode(uint8Array);
+    console.log('Starting PDF.js text extraction...');
     
-    console.log('PDF size:', pdfBuffer.byteLength, 'bytes');
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument({
+      data: new Uint8Array(pdfBuffer),
+      verbosity: 0, // Reduce console output
+      isEvalSupported: false, // Disable eval for security
+      disableFontFace: true, // Disable font loading
+      disableStream: true, // Disable streaming
+      disableAutoFetch: true, // Disable auto-fetch
+    });
     
-    // Extract text content using regex patterns
-    let extractedText = '';
+    const pdf = await loadingTask.promise;
+    console.log(`PDF loaded successfully. Pages: ${pdf.numPages}`);
     
-    // Method 1: Extract text from stream objects
-    const streamPattern = /stream\s*\n([\s\S]*?)\nendstream/g;
-    let streamMatch;
+    let fullText = '';
+    const maxPages = Math.min(pdf.numPages, 20); // Process up to 20 pages
     
-    while ((streamMatch = streamPattern.exec(pdfText)) !== null) {
-      const streamContent = streamMatch[1];
-      
-      // Look for text commands in the stream
-      const textCommands = streamContent.match(/\((.*?)\)\s*Tj/g);
-      if (textCommands) {
-        textCommands.forEach(command => {
-          const text = command.match(/\((.*?)\)/);
-          if (text && text[1]) {
-            extractedText += text[1] + ' ';
-          }
-        });
-      }
-      
-      // Look for text arrays
-      const textArrays = streamContent.match(/\[(.*?)\]\s*TJ/g);
-      if (textArrays) {
-        textArrays.forEach(array => {
-          const matches = array.match(/\((.*?)\)/g);
-          if (matches) {
-            matches.forEach(match => {
-              const text = match.replace(/[()]/g, '');
-              extractedText += text + ' ';
-            });
-          }
-        });
-      }
-    }
-    
-    // Method 2: Extract text from parentheses (simple text strings)
-    const textPattern = /\(([^)]+)\)/g;
-    let textMatch;
-    const foundTexts = new Set(); // Avoid duplicates
-    
-    while ((textMatch = textPattern.exec(pdfText)) !== null) {
-      const text = textMatch[1];
-      // Filter out non-readable content
-      if (text && 
-          text.length > 1 && 
-          /[a-zA-Z0-9]/.test(text) && 
-          !text.includes('\\') && 
-          !foundTexts.has(text)) {
-        foundTexts.add(text);
-        extractedText += text + ' ';
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      try {
+        console.log(`Processing page ${pageNum}/${maxPages}`);
+        
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        
+        // Extract text items and maintain structure
+        const pageTexts = textContent.items
+          .map((item: any) => {
+            if (item.str && typeof item.str === 'string') {
+              return item.str.trim();
+            }
+            return '';
+          })
+          .filter(text => text.length > 0);
+        
+        if (pageTexts.length > 0) {
+          const pageText = pageTexts.join(' ');
+          fullText += `\n\n--- Page ${pageNum} ---\n${pageText}`;
+        }
+        
+        // Clean up page reference
+        page.cleanup();
+        
+      } catch (pageError) {
+        console.error(`Error processing page ${pageNum}:`, pageError);
+        fullText += `\n\n--- Page ${pageNum} ---\n[Error extracting text from this page]`;
       }
     }
     
-    // Method 3: Look for BT...ET text blocks
-    const textBlockPattern = /BT\s*([\s\S]*?)\s*ET/g;
-    let blockMatch;
-    
-    while ((blockMatch = textBlockPattern.exec(pdfText)) !== null) {
-      const block = blockMatch[1];
-      const textInBlock = block.match(/\(([^)]+)\)/g);
-      if (textInBlock) {
-        textInBlock.forEach(text => {
-          const cleanText = text.replace(/[()]/g, '');
-          if (cleanText && cleanText.length > 1 && /[a-zA-Z]/.test(cleanText)) {
-            extractedText += cleanText + ' ';
-          }
-        });
-      }
+    // Add truncation note if needed
+    if (pdf.numPages > maxPages) {
+      fullText += `\n\n--- Note ---\nShowing first ${maxPages} pages of ${pdf.numPages} total pages.`;
     }
     
-    // Clean up the extracted text
-    extractedText = extractedText
-      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-      .replace(/\\/g, '') // Remove backslashes
-      .trim();
+    // Clean up PDF document
+    pdf.cleanup();
     
-    console.log('Extracted text length:', extractedText.length);
-    console.log('First 200 chars:', extractedText.substring(0, 200));
-    
-    return extractedText;
+    console.log(`Text extraction completed. Total length: ${fullText.length} characters`);
+    return fullText.trim();
     
   } catch (error) {
-    console.error('PDF text extraction error:', error);
-    throw error;
+    console.error('PDF.js extraction failed:', error);
+    throw new Error(`PDF parsing failed: ${error.message}`);
   }
 };
 
@@ -118,54 +97,58 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    console.log('Processing PDF:', pdfFile.name, 'Size:', pdfFile.size);
+    console.log(`Processing PDF: ${pdfFile.name}, Size: ${pdfFile.size} bytes`);
 
     // Get the PDF content as ArrayBuffer
     const arrayBuffer = await pdfFile.arrayBuffer();
     
-    // Extract text from PDF
-    const extractedText = await extractPDFText(arrayBuffer);
+    // Extract text using PDF.js
+    const extractedText = await extractPDFTextWithPDFJS(arrayBuffer);
     
     let finalContent = '';
     
     if (extractedText && extractedText.length > 50) {
-      // Successfully extracted text - format it nicely
+      // Successfully extracted meaningful text
       finalContent = `📄 ${pdfFile.name}
 
+EXTRACTED CONTENT:
 ${extractedText}
 
 ---
-File Details:
-• Size: ${(pdfFile.size / 1024).toFixed(1)} KB
-• Pages: Detected text content
-• Status: Text extracted successfully`;
+📊 Extraction Summary:
+• File Size: ${(pdfFile.size / 1024).toFixed(1)} KB
+• Text Length: ${extractedText.length} characters
+• Extraction Method: PDF.js
+• Status: ✅ Successfully extracted text content`;
       
-      console.log('Text extraction successful, length:', extractedText.length);
+      console.log('✅ Text extraction successful');
     } else {
-      // Minimal text extracted - provide helpful message
+      // Limited text extracted
       finalContent = `📄 ${pdfFile.name}
 
-⚠️ Limited text extraction from this PDF.
+⚠️ Limited text extraction results.
 
-This could be due to:
+Possible reasons:
 • Image-based PDF (scanned document)
-• Complex formatting or special encoding
-• Password protection or security settings
-• Non-standard PDF structure
+• Password-protected content
+• Complex formatting or non-standard encoding
+• Encrypted or secured PDF
 
-File Details:
+Extracted content (if any):
+${extractedText || '[No readable text found]'}
+
+---
+📊 File Details:
 • Size: ${(pdfFile.size / 1024).toFixed(1)} KB
 • Type: ${pdfFile.type || 'application/pdf'}
-• Uploaded: ${new Date().toLocaleString()}
+• Processing: PDF.js engine
 
-💡 For better text extraction, try:
+💡 For better results, try:
 • Converting to Word (.docx) format
-• Using a text (.txt) version
-• Ensuring the PDF contains selectable text
-
-The AI enhancement will still work with your document structure and any available content.`;
+• Ensuring PDF contains selectable text (not scanned images)
+• Using an unprotected PDF version`;
       
-      console.log('Limited text extraction - providing fallback message');
+      console.log('⚠️ Limited text extraction');
     }
 
     return new Response(
@@ -174,7 +157,8 @@ The AI enhancement will still work with your document structure and any availabl
         extractedText: finalContent,
         fileName: pdfFile.name,
         fileSize: pdfFile.size,
-        rawTextLength: extractedText.length
+        rawTextLength: extractedText.length,
+        extractionMethod: 'pdfjs'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -183,26 +167,34 @@ The AI enhancement will still work with your document structure and any availabl
     );
 
   } catch (error) {
-    console.error('Error in extract-pdf-text function:', error);
+    console.error('PDF extraction error:', error);
     
+    const errorContent = `📄 PDF Processing Error
+
+Error Details: ${error.message}
+
+This could be due to:
+• Corrupted PDF file
+• Unsupported PDF version
+• Network connectivity issues
+• Server processing limitations
+
+Please try:
+• Re-uploading the PDF file
+• Converting to .docx or .txt format
+• Using a different PDF version
+
+The AI enhancement may still work with the file structure.`;
+
     return new Response(
       JSON.stringify({ 
         success: false,
         error: error.message,
-        extractedText: `PDF Processing Error
-
-An error occurred while extracting text from your PDF:
-${error.message}
-
-Please try:
-• Uploading a different PDF format
-• Converting to .docx or .txt format
-• Ensuring the file is not corrupted
-
-The AI enhancement may still work with the document structure.`
+        extractedText: errorContent,
+        extractionMethod: 'pdfjs-failed'
       }),
       {
-        status: 200, // Still return 200 to not break the flow
+        status: 200, // Return 200 to not break the UI flow
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
