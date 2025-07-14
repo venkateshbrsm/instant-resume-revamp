@@ -378,7 +378,11 @@ serve(async (req) => {
 
     // 5️⃣ Step 4: Download the extraction results
     console.log('Downloading extraction results...');
-    const downloadUrl = resultData.asset?.downloadUri;
+    console.log('Full result data:', JSON.stringify(resultData, null, 2));
+    
+    // Adobe returns results in either content or resource downloadUri
+    const downloadUrl = resultData.content?.downloadUri || resultData.resource?.downloadUri;
+    
     if (!downloadUrl) {
       console.error("No download URL in result:", resultData);
       return new Response(
