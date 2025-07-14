@@ -5,6 +5,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { FileUploadSection } from "@/components/FileUploadSection";
 import { PreviewSection } from "@/components/PreviewSection";
 import { PaymentSection } from "@/components/PaymentSection";
+import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -193,7 +194,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navigation 
         currentStep={currentStep} 
         onNavigate={handleNavigate}
@@ -201,7 +202,10 @@ const Index = () => {
         user={user}
         onAuthAction={() => navigate('/auth')}
       />
-      {renderCurrentStep()}
+      <div className="flex-1">
+        {renderCurrentStep()}
+      </div>
+      <Footer />
     </div>
   );
 };
