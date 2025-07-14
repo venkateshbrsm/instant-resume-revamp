@@ -48,6 +48,8 @@ serve(async (req) => {
 
     // 1️⃣ Start task
     console.log('Making API call to start extract task...');
+    console.log('Using API key prefix:', iLovePdfPublicKey.substring(0, 20) + '...');
+    
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
       headers: {
@@ -57,15 +59,29 @@ serve(async (req) => {
     });
     
     console.log("Start response status:", startRes.status);
+    console.log("Start response statusText:", startRes.statusText);
     console.log("Start response headers:", Object.fromEntries(startRes.headers.entries()));
     
     // Get the response text first to see what we're dealing with
     const responseText = await startRes.text();
+    console.log("Raw response text length:", responseText.length);
     console.log("Raw response text:", responseText);
+    
+    // Check if response is empty
+    if (!responseText || responseText.trim() === '') {
+      console.error("Empty response from iLovePDF API");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Empty response from iLovePDF API. Status: ${startRes.status} ${startRes.statusText}` 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     let startData;
     try {
-      startData = responseText ? JSON.parse(responseText) : null;
+      startData = JSON.parse(responseText);
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
       console.error("Response was:", responseText);
