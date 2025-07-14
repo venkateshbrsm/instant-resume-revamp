@@ -46,10 +46,24 @@ serve(async (req) => {
       type: file.type
     });
 
-    // 1️⃣ Start task
+    // 1️⃣ Start task - Test with a simple API call first
     console.log('Making API call to start extract task...');
     console.log('Using API key prefix:', iLovePdfPublicKey.substring(0, 20) + '...');
+    console.log('Full API key length:', iLovePdfPublicKey.length);
     
+    // Test if the API key works with a simpler endpoint first
+    const testRes = await fetch("https://api.ilovepdf.com/v1/auth", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${iLovePdfPublicKey}`,
+      },
+    });
+    
+    console.log("Auth test response status:", testRes.status);
+    const testText = await testRes.text();
+    console.log("Auth test response:", testText);
+    
+    // Now try the actual extract endpoint
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
       headers: {
@@ -73,7 +87,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Empty response from iLovePDF API. Status: ${startRes.status} ${startRes.statusText}` 
+          error: `Empty response from iLovePDF API. Status: ${startRes.status} ${startRes.statusText}. Auth test status: ${testRes.status}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
