@@ -77,18 +77,30 @@ serve(async (req) => {
 
     // Step 2: Upload the file
     const uploadTask = jobData.data.tasks.find((task: any) => task.name === 'import-my-file');
+    
+    if (!uploadTask || !uploadTask.result || !uploadTask.result.form) {
+      console.error('Upload task not found in job response:', JSON.stringify(jobData, null, 2));
+      throw new Error('Upload task not properly configured in CloudConvert response');
+    }
+    
     const uploadForm = uploadTask.result.form;
+    console.log('Upload form details:', JSON.stringify(uploadForm, null, 2));
     
     const uploadFormData = new FormData();
     
     // Add all the required form fields from CloudConvert
-    for (const [key, value] of Object.entries(uploadForm.parameters)) {
-      uploadFormData.append(key, value as string);
+    if (uploadForm.parameters) {
+      for (const [key, value] of Object.entries(uploadForm.parameters)) {
+        uploadFormData.append(key, value as string);
+        console.log(`Added form parameter: ${key} = ${value}`);
+      }
     }
     
     // Add the file last
     uploadFormData.append('file', file);
+    console.log('Added file to form data:', file.name, file.size);
 
+    console.log('Uploading to:', uploadForm.url);
     const uploadResponse = await fetch(uploadForm.url, {
       method: 'POST',
       body: uploadFormData,
@@ -96,7 +108,8 @@ serve(async (req) => {
 
     if (!uploadResponse.ok) {
       const error = await uploadResponse.text();
-      console.error('File upload failed:', error);
+      console.error('File upload failed with status:', uploadResponse.status);
+      console.error('Upload error response:', error);
       throw new Error(`Failed to upload file: ${error}`);
     }
 
