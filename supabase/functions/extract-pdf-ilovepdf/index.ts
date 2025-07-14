@@ -198,7 +198,7 @@ serve(async (req) => {
     
     console.log("Job request body:", JSON.stringify(jobRequestBody, null, 2));
     
-    const jobRes = await fetch("https://pdf-services.adobe.io/operation/pdfServices/extract", {
+    const jobRes = await fetch("https://pdf-services.adobe.io/operation/extract-pdf", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
