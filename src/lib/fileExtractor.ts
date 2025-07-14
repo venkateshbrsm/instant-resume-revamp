@@ -57,14 +57,21 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
 
     console.log('Sending PDF to iLovePDF...');
 
-    const { data: extractionData, error: extractionError } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
+    // Use direct fetch instead of supabase.functions.invoke to preserve FormData
+    const response = await fetch('https://goorszhscvxywfigydfp.supabase.co/functions/v1/extract-pdf-ilovepdf', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
+      },
       body: formData,
     });
 
-    if (extractionError) {
-      console.error('iLovePDF extraction error:', extractionError);
-      throw new Error(`PDF extraction failed: ${extractionError.message}`);
+    if (!response.ok) {
+      console.error('iLovePDF request failed:', response.status, response.statusText);
+      throw new Error(`PDF extraction failed: ${response.statusText}`);
     }
+
+    const extractionData = await response.json();
 
     if (!extractionData.success) {
       console.error('PDF extraction failed:', extractionData.error);
