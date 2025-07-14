@@ -35,10 +35,10 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold text-foreground mb-4">Support</h3>
             <div className="space-y-2">
-              <a href="mailto:support@example.com" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="mailto:venkateshbrsm@gmail.com" className="block text-muted-foreground hover:text-foreground transition-colors">
                 Email Support
               </a>
-              <a href="tel:+1555123456" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="tel:+917760111184" className="block text-muted-foreground hover:text-foreground transition-colors">
                 Phone Support
               </a>
             </div>
