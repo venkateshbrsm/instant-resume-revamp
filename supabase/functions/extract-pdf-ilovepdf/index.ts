@@ -22,6 +22,26 @@ serve(async (req) => {
     console.log('Environment test:');
     console.log('- Deno version available:', typeof Deno !== 'undefined');
     
+    // Debug ALL environment variables
+    const allEnvVars = Deno.env.toObject();
+    console.log('=== ALL ENVIRONMENT VARIABLES ===');
+    console.log('Total env vars:', Object.keys(allEnvVars).length);
+    console.log('Environment variable keys:', Object.keys(allEnvVars));
+    
+    // Check for any keys containing "LOVE" or "PDF"
+    const relevantKeys = Object.keys(allEnvVars).filter(key => 
+      key.toLowerCase().includes('love') || 
+      key.toLowerCase().includes('pdf') ||
+      key.toLowerCase().includes('api')
+    );
+    console.log('Relevant env keys (containing love/pdf/api):', relevantKeys);
+    
+    // Show values for relevant keys (masked for security)
+    relevantKeys.forEach(key => {
+      const value = allEnvVars[key];
+      console.log(`${key}: ${value ? value.substring(0, 10) + '...' : 'undefined'}`);
+    });
+    
     // Get environment variables - check all possible key names
     const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY') || 
                               Deno.env.get('ILovePDF_PUBLIC_KEY') || 
