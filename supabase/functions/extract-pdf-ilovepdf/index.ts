@@ -65,6 +65,8 @@ serve(async (req) => {
 
     // 1️⃣ Start task for PDF to Word conversion
     console.log('Starting iLovePDF task...');
+    console.log('Using public key (first 20 chars):', iLovePdfPublicKey?.substring(0, 20));
+    
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/pdf2word", {
       method: "POST",
       headers: {
@@ -76,14 +78,33 @@ serve(async (req) => {
     const startText = await startRes.text();
     console.log("Start task status:", startRes.status);
     console.log("Start task response:", startText);
+    console.log("Start task headers:", Object.fromEntries(startRes.headers.entries()));
+
+    if (!startRes.ok) {
+      console.error(`iLovePDF API error: ${startRes.status} - ${startText}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `iLovePDF API error: ${startRes.status}`,
+          details: startText,
+          publicKeyUsed: iLovePdfPublicKey?.substring(0, 20) + '...'
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     let startData;
     try {
       startData = JSON.parse(startText);
     } catch (e) {
       console.error("Failed to parse start task response:", e);
+      console.error("Raw response text:", startText);
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to parse iLovePDF response" }),
+        JSON.stringify({ 
+          success: false, 
+          error: "Failed to parse iLovePDF response",
+          rawResponse: startText 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
