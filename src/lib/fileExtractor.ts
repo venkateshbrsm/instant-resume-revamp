@@ -1,5 +1,9 @@
 import * as mammoth from 'mammoth';
 import { supabase } from "@/integrations/supabase/client";
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
@@ -44,32 +48,33 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using iLovePDF:', file.name, 'Size:', file.size);
+  console.log('Extracting text from PDF using PDF.js:', file.name, 'Size:', file.size);
   
   try {
-    // Use iLovePDF to extract text from PDF
-    const formData = new FormData();
-    formData.append('file', file);
-
-    console.log('Sending PDF to iLovePDF...');
-
-    const { data: extractionData, error: extractionError } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
-      body: formData,
-    });
-
-    if (extractionError) {
-      console.error('iLovePDF extraction error:', extractionError);
-      throw new Error(`PDF extraction failed: ${extractionError.message}`);
+    // Use PDF.js to extract text from PDF client-side
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    console.log('PDF loaded, pages:', pdf.numPages);
+    
+    let fullText = '';
+    
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      
+      // Combine all text items from the page
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      
+      fullText += pageText + '\n\n';
+      console.log(`Extracted text from page ${pageNum}, length: ${pageText.length}`);
     }
-
-    if (!extractionData.success) {
-      console.error('PDF extraction failed:', extractionData.error);
-      throw new Error(`PDF extraction failed: ${extractionData.error}`);
-    }
-
-    // For now, return a placeholder - we'll need to parse the extracted data
-    console.log('PDF extraction completed');
-    return `Text extracted from ${file.name} using iLovePDF. Processing extracted data...`;
+    
+    console.log('PDF text extraction completed, total length:', fullText.length);
+    return fullText.trim();
 
   } catch (error) {
     console.error('PDF processing failed:', error);
@@ -83,7 +88,7 @@ File Details:
 
 ❌ PDF Processing Error
 
-Unable to process this PDF file with Google Cloud Document AI.
+Unable to extract text from this PDF file.
 
 💡 Try instead:
 • Save as .docx format from your word processor
