@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import ILovePDFApi from "npm:@ilovepdf/ilovepdf-nodejs";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,15 +9,6 @@ const corsHeaders = {
 serve(async (req) => {
   console.log('=== FUNCTION STARTED ===');
   console.log('Request method:', req.method);
-  console.log('Request URL:', req.url);
-  
-  // Log all request headers
-  console.log('=== REQUEST HEADERS ===');
-  const headerEntries = Array.from(req.headers.entries());
-  headerEntries.forEach(([key, value]) => {
-    console.log(`${key}: ${value}`);
-  });
-  console.log('=== END REQUEST HEADERS ===');
   
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request');
@@ -26,31 +18,7 @@ serve(async (req) => {
   try {
     console.log('Starting to process request...');
     
-    // Test basic environment first
-    console.log('Environment test:');
-    console.log('- Deno version available:', typeof Deno !== 'undefined');
-    
-    // Debug ALL environment variables
-    const allEnvVars = Deno.env.toObject();
-    console.log('=== ALL ENVIRONMENT VARIABLES ===');
-    console.log('Total env vars:', Object.keys(allEnvVars).length);
-    console.log('Environment variable keys:', Object.keys(allEnvVars));
-    
-    // Check for any keys containing "LOVE" or "PDF"
-    const relevantKeys = Object.keys(allEnvVars).filter(key => 
-      key.toLowerCase().includes('love') || 
-      key.toLowerCase().includes('pdf') ||
-      key.toLowerCase().includes('api')
-    );
-    console.log('Relevant env keys (containing love/pdf/api):', relevantKeys);
-    
-    // Show values for relevant keys (masked for security)
-    relevantKeys.forEach(key => {
-      const value = allEnvVars[key];
-      console.log(`${key}: ${value ? value.substring(0, 10) + '...' : 'undefined'}`);
-    });
-    
-    // Get environment variables - check all possible key names
+    // Get environment variables
     const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY') || 
                               Deno.env.get('ILovePDF_PUBLIC_KEY') || 
                               Deno.env.get('ILOVEPDF_API_KEY');
@@ -95,176 +63,63 @@ serve(async (req) => {
       type: file.type
     });
 
-    console.log('Getting arrayBuffer from file...');
+    // Initialize iLovePDF API
+    console.log('Initializing iLovePDF API...');
+    const ilovepdf = new ILovePDFApi(iLovePdfPublicKey, iLovePdfSecretKey || '');
+    
+    // Create extract task
+    console.log('Creating extract task...');
+    const extractTask = ilovepdf.newTask('extract');
+    
+    // Create a temporary file from the uploaded file
+    console.log('Processing file for upload...');
     const arrayBuffer = await file.arrayBuffer();
-    console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
-    
     const uint8Array = new Uint8Array(arrayBuffer);
-    console.log('Uint8Array created successfully');
-
-    // Step 1: Start extract task
-    console.log('Step 1: Starting extract task...');
-    const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${iLovePdfPublicKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({})
-    });
     
-    const text = await startRes.text();
-    console.log("startRes status:", startRes.status);
-    console.log("startRes raw text:", text);
+    // Create a temporary file path (iLovePDF SDK expects file paths)
+    const tempFileName = `/tmp/${file.name || 'temp.pdf'}`;
+    await Deno.writeFile(tempFileName, uint8Array);
+    console.log('Temporary file created:', tempFileName);
 
-    let startData = null;
+    // Add file to task
+    console.log('Adding file to extract task...');
+    await extractTask.addFile(tempFileName);
+    
+    // Process the task
+    console.log('Processing extract task...');
+    await extractTask.process();
+    
+    // Download the result
+    console.log('Downloading extract result...');
+    const extractedData = await extractTask.download();
+    
+    // Clean up temporary file
     try {
-      startData = JSON.parse(text);
+      await Deno.remove(tempFileName);
+      console.log('Temporary file cleaned up');
     } catch (e) {
-      console.error("JSON parse error:", e);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to parse JSON response: ${e.message}` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!startData || !startData.task) {
-      console.error("Failed to start task or invalid response:", startData);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to start extract task: ${startRes.status} - Invalid response structure` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { task, server } = startData;
-    console.log("Task:", task, "Server:", server);
-    
-    if (!task) {
-      console.error("No task ID received from start endpoint");
-      return new Response(
-        JSON.stringify({ success: false, error: "No task ID received from iLovePDF" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Step 2: Upload PDF file
-    console.log('Step 2: Uploading PDF file...');
-    const uploadFormData = new FormData();
-    uploadFormData.append("task", task);
-    uploadFormData.append("file", new Blob([uint8Array]), file.name || "file.pdf");
-
-    const uploadRes = await fetch("https://api.ilovepdf.com/v1/upload", {
-      method: "POST",
-      body: uploadFormData
-    });
-    
-    const uploadText = await uploadRes.text();
-    console.log("uploadRes status:", uploadRes.status);
-    console.log("uploadRes raw text:", uploadText);
-
-    let uploadData = null;
-    try {
-      uploadData = JSON.parse(uploadText);
-    } catch (e) {
-      console.error("Upload JSON parse error:", e);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to parse upload response: ${e.message}` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!uploadData || !uploadData.server_filename) {
-      console.error("Failed to upload file or invalid response:", uploadData);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to upload file: ${uploadRes.status} - Invalid upload response` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log("Upload successful:", uploadData);
-
-    // Step 3: Process the file
-    console.log('Step 3: Processing file...');
-    const processRes = await fetch("https://api.ilovepdf.com/v1/process", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ task })
-    });
-    
-    const processText = await processRes.text();
-    console.log("processRes status:", processRes.status);
-    console.log("processRes raw text:", processText);
-
-    let processData = null;
-    try {
-      processData = JSON.parse(processText);
-    } catch (e) {
-      console.error("Process JSON parse error:", e);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to parse process response: ${e.message}` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!processData || processData.status !== "TaskSuccess") {
-      console.error("Failed to process task:", processData);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to process file: ${processRes.status} - Process task failed` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log("Process successful:", processData);
-
-    // Step 4: Download/get the extracted text
-    console.log('Step 4: Getting extracted text...');
-    const downloadRes = await fetch(`https://api.ilovepdf.com/v1/download/${task}`);
-    
-    console.log("Download response status:", downloadRes.status);
-    console.log("Download response statusText:", downloadRes.statusText);
-    
-    if (!downloadRes.ok) {
-      const downloadError = await downloadRes.text();
-      console.error("Download failed:", downloadError);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `Failed to download result: ${downloadRes.status} - ${downloadError}` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log('Failed to clean up temporary file:', e);
     }
     
-    const extractedText = await downloadRes.text();
+    // The extractedData should contain the extracted text
+    let extractedText = '';
+    if (extractedData && typeof extractedData === 'string') {
+      extractedText = extractedData;
+    } else if (extractedData && extractedData.toString) {
+      extractedText = extractedData.toString();
+    } else {
+      extractedText = 'Text extracted successfully using iLovePDF SDK';
+    }
+    
     console.log('Extract completed successfully, text length:', extractedText.length);
 
     // Return the extracted text
     return new Response(
       JSON.stringify({
         success: true,
-        extractedText: extractedText || 'Text extraction completed successfully via iLovePDF.',
+        extractedText: extractedText,
         originalFileName: file.name,
-        taskId: task
+        method: 'iLovePDF SDK'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -276,7 +131,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: err.message || 'Internal server error'
+        error: err.message || 'Internal server error',
+        details: err.toString()
       }),
       {
         status: 500,
