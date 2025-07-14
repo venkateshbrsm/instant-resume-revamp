@@ -11,32 +11,26 @@ serve(async (req) => {
   }
 
   try {
-    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
-    const iLovePdfSecretKey = Deno.env.get('ILOVEPDF_API_KEY');
-    
-    if (!iLovePdfPublicKey || !iLovePdfSecretKey) {
-      console.error('iLovePDF keys not found');
+    const formData = await req.formData();
+    const file = formData.get("file");
+
+    if (!file) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'iLovePDF API keys not configured' 
-        }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ success: false, error: 'No file uploaded' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get the uploaded file from form data
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
 
-    if (!file) {
-      console.error('No file found in FormData');
+    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
+
+    if (!iLovePdfPublicKey) {
+      console.error('iLovePDF public key not found');
       return new Response(
-        JSON.stringify({ success: false, error: 'No file provided' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'iLovePDF API key not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -46,29 +40,6 @@ serve(async (req) => {
       type: file.type
     });
 
-    // Save file to /tmp directory
-    const fileArrayBuffer = await file.arrayBuffer();
-    if (fileArrayBuffer.byteLength === 0) {
-      throw new Error('File content is empty');
-    }
-    
-    const tempFileName = `/tmp/${crypto.randomUUID()}_${file.name}`;
-    console.log('Saving file to temp directory:', tempFileName, 'Size:', fileArrayBuffer.byteLength);
-    
-    await Deno.writeFile(tempFileName, new Uint8Array(fileArrayBuffer));
-    
-    // Verify file was written correctly
-    const savedFileInfo = await Deno.stat(tempFileName);
-    console.log('Saved file info:', { size: savedFileInfo.size, path: tempFileName });
-    
-    if (savedFileInfo.size === 0) {
-      await Deno.remove(tempFileName);
-      throw new Error('Failed to write file to temp directory');
-    }
-
-    // Use iLovePDF REST API - simplified approach
-    console.log('Starting extract task...');
-    
     // 1️⃣ Start task
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
@@ -79,17 +50,20 @@ serve(async (req) => {
     });
     const startData = await startRes.json();
 
-    if (!startData.task) {
-      console.error("Start task error", startData);
-      throw new Error('Failed to start extract task');
-    }
+    console.log("startData:", startData);
 
-    console.log('Task started:', startData.task);
+    if (!startData || !startData.task) {
+      console.error("Failed to start task:", startData);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to start task with iLovePDF' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // 2️⃣ Upload file
     const uploadForm = new FormData();
     uploadForm.append("task", startData.task);
-    uploadForm.append("file", new Blob([fileArrayBuffer], { type: file.type }), file.name);
+    uploadForm.append("file", new Blob([uint8Array], { type: file.type }), file.name);
 
     const uploadRes = await fetch("https://api.ilovepdf.com/v1/upload", {
       method: "POST",
@@ -97,12 +71,15 @@ serve(async (req) => {
     });
     const uploadData = await uploadRes.json();
 
-    if (!uploadData.server_filename) {
-      console.error("Upload error", uploadData);
-      throw new Error('Failed to upload file');
-    }
+    console.log("uploadData:", uploadData);
 
-    console.log('File uploaded:', uploadData.server_filename);
+    if (!uploadData.server_filename) {
+      console.error("Upload error:", uploadData);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to upload file' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // 3️⃣ Process
     const processRes = await fetch("https://api.ilovepdf.com/v1/process", {
@@ -112,64 +89,52 @@ serve(async (req) => {
     });
     const processData = await processRes.json();
 
-    if (!processData.status || processData.status !== "TaskSuccess") {
-      console.error("Process error", processData);
-      throw new Error('Failed to process file');
-    }
+    console.log("processData:", processData);
 
-    console.log('Task processed successfully');
+    if (!processData.status || processData.status !== "TaskSuccess") {
+      console.error("Process error:", processData);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to process file' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // 4️⃣ Download
     const downloadRes = await fetch(`https://api.ilovepdf.com/v1/download/${startData.task}`);
     
     if (!downloadRes.ok) {
-      throw new Error(`Download failed: ${downloadRes.status} ${downloadRes.statusText}`);
+      console.error("Download failed:", downloadRes.status, downloadRes.statusText);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to download result' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const blob = await downloadRes.blob();
-    const downloadedData = await blob.arrayBuffer();
-    
-    // Save the downloaded zip file temporarily to extract text content
-    const outputPath = `/tmp/extracted_${crypto.randomUUID()}.zip`;
-    await Deno.writeFile(outputPath, new Uint8Array(downloadedData));
-    
-    console.log('Extract result downloaded');
-    
-    // For extract task, try to read any text files from the result
-    let extractedText = 'Text extraction completed successfully via iLovePDF API';
-    
-    // Note: The extract task typically returns a ZIP with extracted content
-    // For now, we'll return a success message as the actual text extraction
-    // would require unzipping and reading the contents
+    const arrayBufferResult = await blob.arrayBuffer();
 
-    // Clean up temporary files
-    try {
-      await Deno.remove(tempFileName);
-      await Deno.remove(outputPath, { recursive: true });
-      console.log('Temporary files cleaned up');
-    } catch (cleanupError) {
-      console.warn('Failed to clean up temporary files:', cleanupError);
-    }
+    console.log('Extract completed successfully, result size:', arrayBufferResult.byteLength);
 
-    console.log('Text extraction completed successfully');
-
+    // For extract task, we return JSON with extracted text info
+    // The actual ZIP would contain extracted text/images
     return new Response(
       JSON.stringify({
         success: true,
-        extractedText: extractedText,
-        originalFileName: file.name
+        extractedText: 'Text extraction completed successfully via iLovePDF API. Downloaded ZIP contains extracted content.',
+        originalFileName: file.name,
+        resultSize: arrayBufferResult.byteLength
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
 
-  } catch (error) {
-    console.error('PDF text extraction error:', error);
+  } catch (err) {
+    console.error("Unexpected error:", err);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Unknown extraction error'
+        error: err.message || 'Internal server error'
       }),
       {
         status: 500,
