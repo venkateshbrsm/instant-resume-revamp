@@ -48,14 +48,14 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using iLovePDF:', file.name, 'Size:', file.size);
+  console.log('Extracting text from PDF using Adobe PDF Services:', file.name, 'Size:', file.size);
   
   try {
-    // Use iLovePDF to extract text from PDF
+    // Use Adobe PDF Services to extract text from PDF
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Sending PDF to iLovePDF...');
+    console.log('Sending PDF to Adobe PDF Services...');
 
     // Use direct fetch instead of supabase.functions.invoke to preserve FormData
     const response = await fetch('https://goorszhscvxywfigydfp.supabase.co/functions/v1/extract-pdf-ilovepdf', {
@@ -67,7 +67,7 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
     });
 
     if (!response.ok) {
-      console.error('iLovePDF request failed:', response.status, response.statusText);
+      console.error('Adobe PDF Services request failed:', response.status, response.statusText);
       throw new Error(`PDF extraction failed: ${response.statusText}`);
     }
 
@@ -93,7 +93,7 @@ File Details:
 
 ❌ PDF Processing Error
 
-Unable to process this PDF file with iLovePDF.
+Unable to process this PDF file with Adobe PDF Services.
 
 💡 Try instead:
 • Save as .docx format from your word processor
