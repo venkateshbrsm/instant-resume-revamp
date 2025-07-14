@@ -77,7 +77,7 @@ serve(async (req) => {
         client_id: adobeClientId,
         client_secret: adobeClientSecret,
         grant_type: "client_credentials",
-        scope: "openid,AdobeID,read_organizations"
+        scope: "openid,AdobeID,session,additional_info,read_organizations,firefly_api,ff_apis"
       }),
     });
 
@@ -125,20 +125,12 @@ serve(async (req) => {
     const accessToken = tokenData.access_token;
     console.log("Successfully obtained access token");
 
-    // 2️⃣ Upload PDF file to Adobe
-    console.log('Uploading PDF to Adobe...');
+    // 2️⃣ Step 1: Upload PDF file to Adobe
+    console.log('Uploading PDF file to Adobe...');
     const uploadForm = new FormData();
-    uploadForm.append("contentAnalyzerRequests", JSON.stringify({
-      cpf_assetID: "urn:aaid:cpf:Service-52dccc8d5ab946dfac96d3a9e635d05b",
-      elements: [
-        {
-          element: "text"
-        }
-      ]
-    }));
     uploadForm.append("file", new Blob([uint8Array], { type: "application/pdf" }), file.name || "document.pdf");
 
-    const uploadRes = await fetch("https://cpf-ue1.adobe.io/ops/:create?respondWith=%7B%22reltype%22%3A%22http%3A//ns.adobe.com/rel/primary%22%7D", {
+    const uploadRes = await fetch("https://pdf-services.adobe.io/assets", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
@@ -174,17 +166,58 @@ serve(async (req) => {
       );
     }
 
-    // 3️⃣ Poll for job completion
-    console.log('Polling for extraction completion...');
-    const jobLocation = uploadRes.headers.get("location");
+    const assetId = uploadData.assetID;
+    if (!assetId) {
+      console.error("No assetID in upload response:", uploadData);
+      return new Response(
+        JSON.stringify({ success: false, error: "No asset ID received from Adobe" }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 3️⃣ Step 2: Create extraction job
+    console.log('Creating extraction job...');
+    const jobRes = await fetch("https://pdf-services.adobe.io/operation/extractpdf", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "x-api-key": adobeClientId,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        assetID: assetId,
+        elementsToExtract: ["text"],
+        elementsToExtractRenditions: []
+      }),
+    });
+
+    const jobText = await jobRes.text();
+    console.log("Job creation status:", jobRes.status);
+    console.log("Job response:", jobText);
+
+    if (!jobRes.ok) {
+      console.error("Failed to create extraction job:", jobText);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Adobe job creation failed: ${jobRes.status}`,
+          details: jobText 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const jobLocation = jobRes.headers.get("location");
     if (!jobLocation) {
-      console.error("No job location in upload response");
+      console.error("No job location in response");
       return new Response(
         JSON.stringify({ success: false, error: "No job location received from Adobe" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // 4️⃣ Step 3: Poll for job completion
+    console.log('Polling for extraction completion...');
     let attempts = 0;
     const maxAttempts = 30; // 30 seconds max
     let resultData;
@@ -212,7 +245,7 @@ serve(async (req) => {
           } else if (resultData.status === "failed") {
             console.error("Adobe extraction failed:", resultData);
             return new Response(
-              JSON.stringify({ success: false, error: "Adobe PDF extraction failed" }),
+              JSON.stringify({ success: false, error: "Adobe PDF extraction failed", details: resultData }),
               { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
@@ -220,6 +253,8 @@ serve(async (req) => {
         } catch (e) {
           console.error("Failed to parse status response:", e);
         }
+      } else {
+        console.error(`Status check failed: ${statusRes.status} - ${statusText}`);
       }
     }
 
@@ -231,7 +266,7 @@ serve(async (req) => {
       );
     }
 
-    // 4️⃣ Download the extraction results
+    // 5️⃣ Step 4: Download the extraction results
     console.log('Downloading extraction results...');
     const downloadUrl = resultData.asset?.downloadUri;
     if (!downloadUrl) {
@@ -242,12 +277,7 @@ serve(async (req) => {
       );
     }
 
-    const downloadRes = await fetch(downloadUrl, {
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "x-api-key": adobeClientId,
-      },
-    });
+    const downloadRes = await fetch(downloadUrl);
 
     if (!downloadRes.ok) {
       console.error("Failed to download extraction results:", downloadRes.status);
@@ -258,7 +288,7 @@ serve(async (req) => {
     }
 
     const extractionResults = await downloadRes.json();
-    console.log('Downloaded extraction results');
+    console.log('Downloaded extraction results, elements count:', extractionResults.elements?.length || 0);
 
     // Extract text from the results
     let extractedText = "";
