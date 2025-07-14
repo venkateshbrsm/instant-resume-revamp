@@ -105,11 +105,11 @@ serve(async (req) => {
     // Use the direct extract API endpoint with GET
     console.log('Using direct extract API endpoint with GET...');
     console.log('Full request details:');
-    console.log('- URL: https://api.ilovepdf.com/v1/process/extract');
+    console.log('- URL: https://api.ilovepdf.com/v1/start/extract');
     console.log('- Method: GET');
     console.log('- Authorization header: Bearer [REDACTED]');
     
-    const extractRes = await fetch("https://api.ilovepdf.com/v1/process/extract", {
+    const extractRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${iLovePdfPublicKey}`,
