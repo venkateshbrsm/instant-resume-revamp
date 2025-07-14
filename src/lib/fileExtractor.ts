@@ -44,39 +44,31 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Converting PDF to DOCX for reliable text extraction:', file.name, 'Size:', file.size);
+  console.log('Processing PDF with Google Cloud Document AI:', file.name, 'Size:', file.size);
   
   try {
-    // Step 1: Convert PDF to DOCX using CloudConvert
+    // Use Google Cloud Document AI to extract text from PDF
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Converting PDF to DOCX...');
+    console.log('Sending PDF to Google Cloud Document AI...');
 
-    const { data: conversionData, error: conversionError } = await supabase.functions.invoke('convert-pdf-to-docx', {
+    const { data: processingData, error: processingError } = await supabase.functions.invoke('process-pdf-gcloud', {
       body: formData,
     });
 
-    if (conversionError) {
-      console.error('PDF to DOCX conversion error:', conversionError);
-      throw new Error(`PDF conversion failed: ${conversionError.message}`);
+    if (processingError) {
+      console.error('Google Cloud Document AI error:', processingError);
+      throw new Error(`PDF processing failed: ${processingError.message}`);
     }
 
-    if (!conversionData.success) {
-      console.error('PDF conversion failed:', conversionData.error);
-      throw new Error(`PDF conversion failed: ${conversionData.error}`);
+    if (!processingData.success) {
+      console.error('PDF processing failed:', processingData.error);
+      throw new Error(`PDF processing failed: ${processingData.error}`);
     }
 
-    console.log('PDF converted to DOCX successfully, processing text...');
-
-    // Step 2: Extract text from the converted DOCX
-    const docxBase64 = conversionData.docxData;
-    const docxArrayBuffer = Uint8Array.from(atob(docxBase64), c => c.charCodeAt(0)).buffer;
-    
-    const result = await mammoth.extractRawText({ arrayBuffer: docxArrayBuffer });
-    
-    console.log('Text extracted from converted DOCX, length:', result.value.length);
-    return result.value;
+    console.log('PDF processed successfully, text length:', processingData.extractedText.length);
+    return processingData.extractedText;
 
   } catch (error) {
     console.error('PDF processing failed:', error);
@@ -90,7 +82,7 @@ File Details:
 
 ❌ PDF Processing Error
 
-Unable to convert and process this PDF file.
+Unable to process this PDF file with Google Cloud Document AI.
 
 💡 Try instead:
 • Save as .docx format from your word processor
