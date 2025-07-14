@@ -160,7 +160,7 @@ serve(async (req) => {
     const uploadUrl = assetData.uploadUri;
     const assetId = assetData.assetID;
 
-    // ✅ ASSET ID VALIDATION
+    // ✅ ASSET ID VALIDATION AND PROCESSING
     if (!assetId || typeof assetId !== 'string') {
       console.error('❌ INVALID ASSET ID - Not a string or missing');
       console.error('Asset ID received:', assetId);
@@ -176,13 +176,31 @@ serve(async (req) => {
       );
     }
 
-    // Validate asset ID format (Adobe asset IDs are typically UUIDs)
-    const assetIdPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-    if (assetId.length < 20 || !assetIdPattern.test(assetId)) {
-      console.warn('⚠️ ASSET ID FORMAT WARNING - Unusual format detected');
-      console.warn('Asset ID:', assetId);
-      console.warn('Asset ID length:', assetId.length);
-      console.warn('Matches UUID pattern:', assetIdPattern.test(assetId));
+    // Extract UUID from URN format if needed
+    // Adobe returns: urn:aaid:AS:UE1:d2af6437-cab9-4eb7-b9b0-5e4510c0f19c
+    // But job creation needs: d2af6437-cab9-4eb7-b9b0-5e4510c0f19c
+    let processedAssetId = assetId;
+    if (assetId.startsWith('urn:aaid:AS:UE1:')) {
+      processedAssetId = assetId.replace('urn:aaid:AS:UE1:', '');
+      console.log('🔄 ASSET ID CONVERSION:');
+      console.log(`   Original URN: ${assetId}`);
+      console.log(`   Extracted UUID: ${processedAssetId}`);
+    }
+
+    // Validate final UUID format
+    const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+    if (!uuidPattern.test(processedAssetId)) {
+      console.error('❌ INVALID UUID FORMAT after processing');
+      console.error('Original asset ID:', assetId);
+      console.error('Processed asset ID:', processedAssetId);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid asset ID format after processing',
+          originalAssetId: assetId,
+          processedAssetId: processedAssetId
+        }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
     if (!uploadUrl) {
@@ -255,7 +273,7 @@ serve(async (req) => {
     }
     
     const jobRequestBody = {
-      assetID: assetId,
+      assetID: processedAssetId,  // Use the processed UUID, not the original URN
       elementsToExtract: ["text"],
       elementsToExtractRenditions: []
     };
