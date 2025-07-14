@@ -47,7 +47,7 @@ serve(async (req) => {
 
     // Use Google Cloud Document AI to process the PDF
     const documentAIResponse = await fetch(
-      `https://documentai.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us/processors/YOUR_PROCESSOR_ID:process?key=${googleCloudApiKey}`,
+      `https://us-documentai.googleapis.com/v1/projects/322176363206/locations/us/processors/511bd75e465fbf4d:process?key=${googleCloudApiKey}`,
       {
         method: 'POST',
         headers: {
