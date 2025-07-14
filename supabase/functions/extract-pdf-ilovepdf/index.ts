@@ -30,14 +30,35 @@ serve(async (req) => {
 
     // Get the uploaded file from form data
     const formData = await req.formData();
+    console.log('Received FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes, ${value.type})` : value);
+    }
+    
     const file = formData.get('file') as File;
 
     if (!file) {
+      console.error('No file found in FormData');
       return new Response(
         JSON.stringify({ success: false, error: 'No file provided' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    if (!(file instanceof File)) {
+      console.error('File is not a File instance:', typeof file, file);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid file format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    });
 
     console.log('Extracting text from PDF using iLovePDF:', file.name, 'Size:', file.size);
 
