@@ -102,23 +102,18 @@ serve(async (req) => {
     const uint8Array = new Uint8Array(arrayBuffer);
     console.log('Uint8Array created successfully');
 
-    // Use the direct extract API endpoint
-    console.log('Using direct extract API endpoint...');
+    // Use the direct extract API endpoint with GET
+    console.log('Using direct extract API endpoint with GET...');
     console.log('Full request details:');
     console.log('- URL: https://api.ilovepdf.com/v1/process/extract');
-    console.log('- Method: POST');
+    console.log('- Method: GET');
     console.log('- Authorization header: Bearer [REDACTED]');
     
-    // Create form data with the file
-    const extractForm = new FormData();
-    extractForm.append("file", new Blob([uint8Array], { type: file.type }), file.name);
-    
     const extractRes = await fetch("https://api.ilovepdf.com/v1/process/extract", {
-      method: "POST",
+      method: "GET",
       headers: {
         Authorization: `Bearer ${iLovePdfPublicKey}`,
-      },
-      body: extractForm
+      }
     });
     
     console.log("Extract response status:", extractRes.status);
