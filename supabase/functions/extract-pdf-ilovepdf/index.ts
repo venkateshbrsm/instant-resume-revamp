@@ -37,20 +37,21 @@ serve(async (req) => {
     const uint8Array = new Uint8Array(arrayBuffer);
     console.log('Uint8Array created successfully');
 
-    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_API_KEY') || Deno.env.get('ILovePDF_PUBLIC_KEY');
+    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
+    const iLovePdfSecretKey = Deno.env.get('ILOVEPDF_SECRET_KEY');
 
     console.log('Environment check:', {
-      hasILOVEPDF_API_KEY: !!Deno.env.get('ILOVEPDF_API_KEY'),
-      hasILovePDF_PUBLIC_KEY: !!Deno.env.get('ILovePDF_PUBLIC_KEY'),
-      finalKeyExists: !!iLovePdfPublicKey,
-      keyLength: iLovePdfPublicKey?.length || 0,
-      keyPrefix: iLovePdfPublicKey?.substring(0, 10) || 'none'
+      hasPublicKey: !!iLovePdfPublicKey,
+      hasSecretKey: !!iLovePdfSecretKey,
+      publicKeyLength: iLovePdfPublicKey?.length || 0,
+      secretKeyLength: iLovePdfSecretKey?.length || 0,
+      publicKeyPrefix: iLovePdfPublicKey?.substring(0, 10) || 'none'
     });
 
     if (!iLovePdfPublicKey) {
-      console.error('No iLovePDF API key found in either ILOVEPDF_API_KEY or ILovePDF_PUBLIC_KEY');
+      console.error('iLovePDF public key not found');
       return new Response(
-        JSON.stringify({ success: false, error: 'iLovePDF API key not configured in either ILOVEPDF_API_KEY or ILovePDF_PUBLIC_KEY' }),
+        JSON.stringify({ success: false, error: 'iLovePDF public key not configured. Please set ILOVEPDF_PUBLIC_KEY in Supabase secrets.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -66,23 +67,57 @@ serve(async (req) => {
     console.log('Using API key prefix:', iLovePdfPublicKey.substring(0, 20) + '...');
     console.log('Full API key length:', iLovePdfPublicKey.length);
     
-    // Test if the API key works with a simpler endpoint first
-    const testRes = await fetch("https://api.ilovepdf.com/v1/auth", {
-      method: "GET",
+    // First, get JWT token from auth endpoint using public key
+    console.log('Getting JWT token from auth endpoint...');
+    const authRes = await fetch("https://api.ilovepdf.com/v1/auth", {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${iLovePdfPublicKey}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        public_key: iLovePdfPublicKey
+      })
     });
     
-    console.log("Auth test response status:", testRes.status);
-    const testText = await testRes.text();
-    console.log("Auth test response:", testText);
+    console.log("Auth response status:", authRes.status);
+    const authText = await authRes.text();
+    console.log("Auth response text:", authText);
     
-    // Now try the actual extract endpoint
+    if (!authRes.ok) {
+      console.error("Authentication failed");
+      return new Response(
+        JSON.stringify({ success: false, error: `Authentication failed: ${authRes.status} - ${authText}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    let authData;
+    try {
+      authData = JSON.parse(authText);
+    } catch (e) {
+      console.error("Failed to parse auth response:", authText);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid auth response from iLovePDF' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const jwtToken = authData.token;
+    if (!jwtToken) {
+      console.error("No token in auth response:", authData);
+      return new Response(
+        JSON.stringify({ success: false, error: 'No JWT token received from iLovePDF auth' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('JWT token received, length:', jwtToken.length);
+    
+    // Now try the actual extract endpoint with JWT token
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${iLovePdfPublicKey}`,
+        Authorization: `Bearer ${jwtToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -103,7 +138,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Empty response from iLovePDF API. Status: ${startRes.status} ${startRes.statusText}. Auth test status: ${testRes.status}` 
+          error: `Empty response from iLovePDF API. Status: ${startRes.status} ${startRes.statusText}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
