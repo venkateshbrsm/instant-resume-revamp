@@ -1,10 +1,9 @@
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Use a simple inline worker to avoid CORS issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'data:application/javascript;base64,' + btoa(`
-  importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js');
-`);
+// Process PDFs without worker (synchronous processing)
+// This avoids all CORS and worker loading issues
+pdfjsLib.GlobalWorkerOptions.workerSrc = null;
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
