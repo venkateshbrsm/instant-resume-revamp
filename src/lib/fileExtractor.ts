@@ -1,6 +1,9 @@
 import * as mammoth from 'mammoth';
-import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
+
+// Set up PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
@@ -44,172 +47,94 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
   }
 };
 
-const convertPDFToDocx = async (file: File): Promise<File> => {
-  console.log('Converting PDF to DOCX:', file.name);
-  
-  try {
-    // Read the PDF file
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    
-    console.log('PDF loaded successfully, pages:', pdfDoc.getPageCount());
-    
-    // Extract text from each page
-    let allText = '';
-    const pageCount = Math.min(pdfDoc.getPageCount(), 10); // Limit to first 10 pages for performance
-    
-    for (let i = 0; i < pageCount; i++) {
-      try {
-        const page = pdfDoc.getPage(i);
-        
-        // Get page content - this is a simplified extraction
-        // For better results, we'll create a DOCX with the file info and let the backend handle full extraction
-        allText += `Page ${i + 1} content extracted\n\n`;
-        
-      } catch (pageError) {
-        console.warn(`Failed to process page ${i + 1}:`, pageError);
-        allText += `[Page ${i + 1}: Content extraction failed]\n\n`;
-      }
-    }
-    
-    // Create a DOCX document with the extracted content
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Resume Document: ${file.name}`,
-                bold: true,
-                size: 24
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Original file: ${file.name}`,
-                size: 20
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `File size: ${(file.size / 1024).toFixed(1)} KB`,
-                size: 20
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Pages: ${pdfDoc.getPageCount()}`,
-                size: 20
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Converted on: ${new Date().toLocaleString()}`,
-                size: 20
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: '\n\nNote: This is a converted version of your PDF resume. The AI enhancement process will work with your original PDF content to provide accurate improvements.',
-                italics: true,
-                size: 20
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `\n\nExtracted content preview:\n\n${allText}`,
-                size: 20
-              })
-            ]
-          })
-        ]
-      }]
-    });
-    
-    // Generate the DOCX buffer
-    const buffer = await Packer.toBuffer(doc);
-    
-    // Create a new File object with .docx extension
-    const docxFileName = file.name.replace(/\.pdf$/i, '.docx');
-    const docxFile = new File([buffer], docxFileName, {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-    
-    console.log('PDF successfully converted to DOCX:', docxFileName);
-    return docxFile;
-    
-  } catch (error) {
-    console.error('PDF to DOCX conversion failed:', error);
-    // Fall back to creating a simple DOCX with file info
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Resume Document: ${file.name}`,
-                bold: true,
-                size: 24
-              })
-            ]
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `\n\nPDF conversion encountered an issue, but your file was processed successfully.\n\nThe AI enhancement will work directly with your original PDF content to create an improved version.`,
-                size: 20
-              })
-            ]
-          })
-        ]
-      }]
-    });
-    
-    const buffer = await Packer.toBuffer(doc);
-    const docxFileName = file.name.replace(/\.pdf$/i, '.docx');
-    return new File([buffer], docxFileName, {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-  }
-};
-
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Converting PDF to DOCX and extracting text:', file.name);
+  console.log('Starting PDF text extraction for:', file.name, 'Size:', file.size);
   
-  try {
-    // Convert PDF to DOCX first
-    const docxFile = await convertPDFToDocx(file);
-    
-    // Now extract text from the generated DOCX
-    const docxText = await extractTextFromWord(docxFile);
-    
-    console.log('Successfully extracted text from converted DOCX, length:', docxText.length);
-    return docxText;
-    
-  } catch (error) {
-    console.error('PDF processing failed:', error);
-    
-    // Fallback response
-    return `📄 PDF Document: ${file.name}
+  return new Promise(async (resolve, reject) => {
+    const timeout = setTimeout(() => {
+      console.error('PDF extraction timeout after 20 seconds');
+      reject(new Error('PDF processing timed out. Please try a smaller PDF or convert to text format.'));
+    }, 20000);
 
-File uploaded successfully. PDF processing encountered an issue, but the AI enhancement will work directly with your original document content.
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      console.log('PDF arrayBuffer created, size:', arrayBuffer.byteLength);
+      
+      const loadingTask = pdfjsLib.getDocument({ 
+        data: arrayBuffer,
+        verbosity: 0,
+        disableAutoFetch: true,
+        disableStream: true
+      });
+      
+      const pdf = await loadingTask.promise;
+      console.log('PDF loaded successfully, pages:', pdf.numPages);
+      
+      let fullText = '';
+      const maxPages = Math.min(pdf.numPages, 20); // Process up to 20 pages for full content
+      
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        try {
+          console.log(`Processing page ${pageNum}/${maxPages}`);
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          
+          // Extract text items and maintain some structure
+          const pageText = textContent.items
+            .map((item: any) => {
+              if (item.str) {
+                return item.str;
+              }
+              return '';
+            })
+            .filter(text => text.trim().length > 0)
+            .join(' ');
+          
+          if (pageText.trim()) {
+            fullText += `\n\n--- Page ${pageNum} ---\n${pageText}`;
+          }
+          
+          // Clean up page reference
+          page.cleanup();
+        } catch (pageError) {
+          console.warn(`Failed to extract text from page ${pageNum}:`, pageError);
+          fullText += `\n\n--- Page ${pageNum} ---\n[Text extraction failed for this page]`;
+        }
+      }
 
-Note: The enhancement process will analyze your complete PDF resume to create an improved version.`;
-  }
+      // Add note if PDF was truncated
+      if (pdf.numPages > maxPages) {
+        fullText += `\n\n[Preview shows first ${maxPages} pages of ${pdf.numPages} total pages. Full document will be processed for enhancement.]`;
+      }
+
+      clearTimeout(timeout);
+      console.log('PDF extraction completed, text length:', fullText.length);
+      
+      const finalText = fullText.trim();
+      if (finalText.length < 50) {
+        resolve(`📄 PDF Document: ${file.name}\n\nPDF processed but minimal text was extracted. This may be due to:\n- Image-based PDF (scanned document)\n- Password protection\n- Complex formatting\n\nThe AI enhancement will still work with your document structure.`);
+      } else {
+        resolve(finalText);
+      }
+      
+    } catch (error) {
+      clearTimeout(timeout);
+      console.error('PDF extraction failed:', error);
+      
+      let errorMessage = 'Failed to extract text from PDF. ';
+      if (error.message?.includes('Invalid PDF')) {
+        errorMessage += 'The file appears to be corrupted or not a valid PDF.';
+      } else if (error.message?.includes('password')) {
+        errorMessage += 'The PDF is password-protected.';
+      } else if (error.message?.includes('fetch') || error.message?.includes('worker')) {
+        errorMessage += 'PDF processing service unavailable. Please try converting to DOCX format.';
+      } else {
+        errorMessage += 'Please try converting the PDF to text or DOCX format.';
+      }
+      
+      reject(new Error(errorMessage));
+    }
+  });
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
