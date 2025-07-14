@@ -22,16 +22,26 @@ export function PayUPayment({ file, amount, onSuccess, onCancel }: PayUPaymentPr
   const { toast } = useToast();
 
   const handlePayment = async () => {
-    // Check if enough time has passed since last attempt (60 seconds)
+    // Prevent double-click and rapid clicking (3 seconds cooldown)
     const now = Date.now();
     const timeSinceLastAttempt = now - lastAttempt;
-    const cooldownPeriod = 60000; // 60 seconds
+    const cooldownPeriod = 3000; // 3 seconds minimum between attempts
 
     if (lastAttempt > 0 && timeSinceLastAttempt < cooldownPeriod) {
       const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastAttempt) / 1000);
       toast({
         title: "Please Wait",
-        description: `Please wait ${remainingTime} seconds before trying again.`,
+        description: `Please wait ${remainingTime} seconds before trying again to prevent duplicate payments.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if payment is already in progress
+    if (isProcessing) {
+      toast({
+        title: "Payment in Progress",
+        description: "A payment is already being processed. Please wait.",
         variant: "destructive",
       });
       return;
@@ -123,6 +133,11 @@ export function PayUPayment({ file, amount, onSuccess, onCancel }: PayUPaymentPr
         description: errorMessage,
         variant: "destructive",
       });
+      
+      // Reset state to allow new attempts after error
+      setLastAttempt(0);
+      setShowPaymentModal(false);
+      setPaymentFormHtml("");
     } finally {
       setIsProcessing(false);
     }
@@ -141,16 +156,22 @@ export function PayUPayment({ file, amount, onSuccess, onCancel }: PayUPaymentPr
           .single();
 
         if (payment?.status === 'success') {
+          setShowPaymentModal(false);
+          setPaymentFormHtml("");
+          setLastAttempt(0); // Reset on success
           toast({
             title: "Payment Successful!",
             description: "Your payment has been processed successfully.",
           });
           onSuccess();
           return;
-        } else if (payment?.status === 'failure' || payment?.status === 'cancel') {
+        } else if (payment?.status === 'failure' || payment?.status === 'cancel' || payment?.status === 'cancelled') {
+          setShowPaymentModal(false);
+          setPaymentFormHtml("");
+          setLastAttempt(0); // Reset on failure to allow retry
           toast({
             title: "Payment Failed",
-            description: "Your payment was not successful. Please try again.",
+            description: "Your payment was not successful. You can try again with a new payment attempt.",
             variant: "destructive",
           });
           return;

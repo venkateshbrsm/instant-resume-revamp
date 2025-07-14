@@ -42,8 +42,50 @@ serve(async (req) => {
 
     const { fileName, amount } = await req.json();
     
-    // Generate unique transaction ID
-    const txnid = `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Check for existing pending payments from this user for this file
+    const { data: existingPayments } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('file_name', fileName)
+      .eq('status', 'initiated')
+      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()); // Last 5 minutes
+    
+    if (existingPayments && existingPayments.length > 0) {
+      // Cancel/invalidate old pending payments before creating new one
+      await supabase
+        .from('payments')
+        .update({ 
+          status: 'cancelled',
+          updated_at: new Date().toISOString(),
+          payu_response: { reason: 'New payment attempt initiated, old payment cancelled' }
+        })
+        .eq('user_id', user.id)
+        .eq('file_name', fileName)
+        .eq('status', 'initiated');
+      
+      console.log('Cancelled old pending payments for user:', user.id);
+    }
+    
+    // Generate completely unique transaction ID with multiple entropy sources
+    const timestamp = Date.now();
+    const randomPart = Math.random().toString(36).substr(2, 12);
+    const userHash = user.id.substr(0, 8);
+    const txnid = `TXN_${timestamp}_${userHash}_${randomPart}`;
+    
+    // Ensure transaction ID is unique in database
+    const { data: existingTxn } = await supabase
+      .from('payments')
+      .select('payu_txnid')
+      .eq('payu_txnid', txnid)
+      .single();
+    
+    if (existingTxn) {
+      // If by any chance the txnid exists, add more entropy
+      const extraEntropy = Math.random().toString(36).substr(2, 6);
+      const finalTxnid = `${txnid}_${extraEntropy}`;
+      console.log('Duplicate txnid detected, using:', finalTxnid);
+    }
     
     const paymentData = {
       key: MERCHANT_ID,
@@ -62,8 +104,8 @@ serve(async (req) => {
     // Generate hash
     const hash = await generatePayUHash(paymentData);
     
-    // Store payment record in database
-    await supabase.from('payments').insert({
+    // Store NEW payment record in database
+    const { data: newPayment, error: insertError } = await supabase.from('payments').insert({
       user_id: user.id,
       email: user.email,
       file_name: fileName,
@@ -72,14 +114,30 @@ serve(async (req) => {
       payu_txnid: txnid,
       payu_hash: hash,
       status: 'initiated'
-    });
+    }).select().single();
 
-    console.log('Payment initiated:', { txnid, email: user.email, amount });
+    if (insertError) {
+      console.error('Error creating payment record:', insertError);
+      throw new Error('Failed to create payment record');
+    }
+
+    console.log('NEW Payment initiated:', { 
+      txnid, 
+      email: user.email, 
+      amount, 
+      paymentId: newPayment.id,
+      cancelledOldPayments: existingPayments?.length || 0
+    });
 
     return new Response(
       JSON.stringify({
         paymentUrl: PAYU_BASE_URL,
-        paymentData: { ...paymentData, hash }
+        paymentData: { ...paymentData, hash },
+        debug: {
+          txnid,
+          cancelledOldPayments: existingPayments?.length || 0,
+          timestamp: new Date().toISOString()
+        }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

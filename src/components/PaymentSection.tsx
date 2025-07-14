@@ -57,12 +57,12 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   }, [toast]);
 
   const handlePaymentClick = async () => {
-    // Rate limiting: Prevent multiple clicks within 3 seconds
+    // Enhanced rate limiting: Prevent multiple clicks within 5 seconds
     const now = Date.now();
-    if (now - lastPaymentAttempt < 3000) {
+    if (now - lastPaymentAttempt < 5000) {
       toast({
         title: "Please wait",
-        description: "Please wait a few seconds before trying again.",
+        description: "Please wait 5 seconds between payment attempts to prevent duplicates.",
         variant: "destructive"
       });
       return;
