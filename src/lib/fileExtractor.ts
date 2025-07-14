@@ -58,11 +58,11 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
   console.log('Starting PDF extraction for:', file.name, 'Size:', file.size);
   
   return new Promise(async (resolve, reject) => {
-    // Set up 30-second timeout
+    // Set up 15-second timeout for faster processing
     const timeout = setTimeout(() => {
-      console.error('PDF extraction timeout after 30 seconds');
+      console.error('PDF extraction timeout after 15 seconds');
       reject(new Error('PDF processing timed out. The file may be too large or corrupted. Please try a smaller PDF or convert to text format.'));
-    }, 30000);
+    }, 15000);
 
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -80,8 +80,8 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
       console.log('PDF loaded successfully, pages:', pdf.numPages);
       
       let fullText = '';
-      // Limit to first 5 pages for large PDFs to prevent timeout
-      const maxPages = Math.min(pdf.numPages, 5);
+      // Limit to first 2 pages for very fast processing
+      const maxPages = Math.min(pdf.numPages, 2);
       
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         try {
@@ -102,8 +102,8 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
       }
 
       // Add note if PDF was truncated
-      if (pdf.numPages > 5) {
-        fullText += `\n[Preview shows first 5 pages of ${pdf.numPages} total pages. Full document will be processed for enhancement.]`;
+      if (pdf.numPages > 2) {
+        fullText += `\n[Preview shows first 2 pages of ${pdf.numPages} total pages. Full document will be processed for enhancement.]`;
       }
 
       clearTimeout(timeout);
