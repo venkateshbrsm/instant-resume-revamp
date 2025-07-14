@@ -176,28 +176,20 @@ serve(async (req) => {
       );
     }
 
-    // Extract UUID from URN format if needed
-    // Adobe returns: urn:aaid:AS:UE1:d2af6437-cab9-4eb7-b9b0-5e4510c0f19c
-    // But job creation needs: d2af6437-cab9-4eb7-b9b0-5e4510c0f19c
-    let processedAssetId = assetId;
-    if (assetId.startsWith('urn:aaid:AS:UE1:')) {
-      processedAssetId = assetId.replace('urn:aaid:AS:UE1:', '');
-      console.log('🔄 ASSET ID CONVERSION:');
-      console.log(`   Original URN: ${assetId}`);
-      console.log(`   Extracted UUID: ${processedAssetId}`);
-    }
-
-    // Validate final UUID format
-    const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-    if (!uuidPattern.test(processedAssetId)) {
-      console.error('❌ INVALID UUID FORMAT after processing');
-      console.error('Original asset ID:', assetId);
-      console.error('Processed asset ID:', processedAssetId);
+    // Keep the FULL URN format - Adobe expects the complete URN
+    console.log('✅ ASSET ID RECEIVED:');
+    console.log(`   Full URN: ${assetId}`);
+    console.log(`   Length: ${assetId.length}`);
+    
+    // Validate it starts with the expected URN prefix
+    if (!assetId.startsWith('urn:aaid:AS:UE1:')) {
+      console.error('❌ UNEXPECTED ASSET ID FORMAT');
+      console.error('Expected URN format starting with: urn:aaid:AS:UE1:');
+      console.error('Received:', assetId);
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid asset ID format after processing',
-          originalAssetId: assetId,
-          processedAssetId: processedAssetId
+          error: 'Unexpected asset ID format from Adobe',
+          assetId: assetId
         }),
         { status: 500, headers: corsHeaders }
       );
@@ -273,7 +265,7 @@ serve(async (req) => {
     }
     
     const jobRequestBody = {
-      assetID: processedAssetId,
+      assetID: assetId,  // Use the FULL URN format
       elementsToExtract: ["text"]
     };
     
