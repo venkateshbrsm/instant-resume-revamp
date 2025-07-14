@@ -21,8 +21,29 @@ serve(async (req) => {
     // Test basic environment first
     console.log('Environment test:');
     console.log('- Deno version available:', typeof Deno !== 'undefined');
-    console.log('- Environment keys:', Object.keys(Deno.env.toObject()).filter(k => k.includes('ILOVEPDF')));
     
+    // Get environment variables
+    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
+    const iLovePdfSecretKey = Deno.env.get('ILOVEPDF_SECRET_KEY');
+    
+    console.log('Environment variables check:', {
+      hasPublicKey: !!iLovePdfPublicKey,
+      hasSecretKey: !!iLovePdfSecretKey,
+      publicKeyLength: iLovePdfPublicKey?.length || 0,
+      publicKeyPrefix: iLovePdfPublicKey?.substring(0, 15) || 'none'
+    });
+
+    if (!iLovePdfPublicKey) {
+      console.error('ILOVEPDF_PUBLIC_KEY not found in environment');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'iLovePDF public key not configured. Please set ILOVEPDF_PUBLIC_KEY in Supabase secrets.' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Starting to process formData...');
     const formData = await req.formData();
     console.log('FormData processed successfully');
@@ -38,37 +59,18 @@ serve(async (req) => {
       );
     }
 
+    console.log('File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+
     console.log('Getting arrayBuffer from file...');
     const arrayBuffer = await file.arrayBuffer();
     console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
     
     const uint8Array = new Uint8Array(arrayBuffer);
     console.log('Uint8Array created successfully');
-
-    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
-    const iLovePdfSecretKey = Deno.env.get('ILOVEPDF_SECRET_KEY');
-
-    console.log('Environment check:', {
-      hasPublicKey: !!iLovePdfPublicKey,
-      hasSecretKey: !!iLovePdfSecretKey,
-      publicKeyLength: iLovePdfPublicKey?.length || 0,
-      secretKeyLength: iLovePdfSecretKey?.length || 0,
-      publicKeyPrefix: iLovePdfPublicKey?.substring(0, 10) || 'none'
-    });
-
-    if (!iLovePdfPublicKey) {
-      console.error('iLovePDF public key not found');
-      return new Response(
-        JSON.stringify({ success: false, error: 'iLovePDF public key not configured. Please set ILOVEPDF_PUBLIC_KEY in Supabase secrets.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('File details:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
 
     // 1️⃣ Start task - Test with a simple API call first
     console.log('Making API call to start extract task...');
