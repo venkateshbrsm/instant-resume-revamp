@@ -93,9 +93,16 @@ serve(async (req) => {
     console.log('Extract task started:', taskId);
 
     // Step 3: Upload file
+    console.log('Preparing file upload for:', file.name, 'Size:', file.size, 'Type:', file.type);
+    
     const uploadFormData = new FormData();
     uploadFormData.append('task', taskId);
-    uploadFormData.append('file', file);
+    uploadFormData.append('file', file, file.name);
+    
+    console.log('FormData entries for upload:');
+    for (const [key, value] of uploadFormData.entries()) {
+      console.log(`${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
+    }
 
     const uploadResponse = await fetch(`https://api.ilovepdf.com/v1/upload`, {
       method: 'POST',
