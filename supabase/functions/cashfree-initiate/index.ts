@@ -35,21 +35,39 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Cashfree initiate function called');
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const authHeader = req.headers.get('Authorization')!;
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      throw new Error('No authorization header provided');
+    }
+
     const token = authHeader.replace('Bearer ', '');
     const { data: userData } = await supabase.auth.getUser(token);
     const user = userData.user;
 
     if (!user?.email) {
+      console.error('User not authenticated or no email');
       throw new Error('User not authenticated');
     }
 
-    const { fileName, amount } = await req.json();
+    console.log('User authenticated:', user.email);
+
+    const requestBody = await req.json();
+    const { fileName, amount } = requestBody;
+    
+    console.log('Request data:', { fileName, amount });
+
+    if (!fileName || !amount) {
+      console.error('Missing required fields:', { fileName, amount });
+      throw new Error('Missing required fields: fileName and amount');
+    }
     
     // Check for existing pending payments from this user for this file
     const { data: existingPayments } = await supabase
@@ -114,6 +132,16 @@ serve(async (req) => {
       order_note: `Resume Enhancement - ${fileName}`
     };
 
+    console.log('Creating Cashfree order with data:', cashfreeOrderData);
+
+    // Check if credentials are available
+    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
+      console.error('Missing Cashfree credentials');
+      throw new Error('Payment service configuration error');
+    }
+
+    console.log('Using Cashfree credentials - App ID:', CASHFREE_APP_ID ? 'Present' : 'Missing');
+
     // Create order with Cashfree
     const orderResponse = await fetch(CASHFREE_BASE_URL, {
       method: 'POST',
@@ -126,14 +154,20 @@ serve(async (req) => {
       body: JSON.stringify(cashfreeOrderData)
     });
 
+    console.log('Cashfree API response status:', orderResponse.status);
+
     if (!orderResponse.ok) {
       const errorText = await orderResponse.text();
-      console.error('Cashfree order creation failed:', errorText);
-      throw new Error('Failed to create Cashfree order');
+      console.error('Cashfree order creation failed:', {
+        status: orderResponse.status,
+        statusText: orderResponse.statusText,
+        error: errorText
+      });
+      throw new Error(`Failed to create Cashfree order: ${orderResponse.status} - ${errorText}`);
     }
 
     const orderResult = await orderResponse.json();
-    console.log('Cashfree order created:', orderResult);
+    console.log('Cashfree order created successfully:', orderResult);
     
     // Store NEW payment record in database
     const { data: newPayment, error: insertError } = await supabase.from('payments').insert({

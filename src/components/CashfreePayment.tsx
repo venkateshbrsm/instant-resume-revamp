@@ -25,26 +25,57 @@ export const CashfreePayment = ({ fileName, amount, disabled }: CashfreePaymentP
     if (isLoading) return; // Prevent double clicks
     
     setIsLoading(true);
+    console.log('Starting Cashfree payment process...', { fileName, amount });
     
     try {
+      console.log('Calling cashfree-initiate function...');
       const { data, error } = await supabase.functions.invoke('cashfree-initiate', {
         body: { fileName, amount }
       });
 
       if (error) {
         console.error('Payment initiation error:', error);
-        throw error;
+        toast({
+          title: "Payment Error",
+          description: `Failed to initiate payment: ${error.message || 'Unknown error'}`,
+          variant: "destructive"
+        });
+        return;
       }
 
-      console.log('Cashfree response:', data);
+      console.log('Cashfree response received:', data);
+
+      if (!data || !data.payment_session_id) {
+        console.error('Invalid response from payment service:', data);
+        toast({
+          title: "Payment Error",
+          description: "Invalid response from payment service. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
 
       // Load Cashfree SDK if not already loaded
       if (!window.Cashfree) {
+        console.log('Loading Cashfree SDK...');
         const script = document.createElement('script');
         script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
-        script.onload = () => initiateCashfreePayment(data);
+        script.onload = () => {
+          console.log('Cashfree SDK loaded successfully');
+          initiateCashfreePayment(data);
+        };
+        script.onerror = () => {
+          console.error('Failed to load Cashfree SDK');
+          toast({
+            title: "Payment Error",
+            description: "Failed to load payment SDK. Please try again.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+        };
         document.head.appendChild(script);
       } else {
+        console.log('Using existing Cashfree SDK');
         initiateCashfreePayment(data);
       }
 
@@ -55,19 +86,26 @@ export const CashfreePayment = ({ fileName, amount, disabled }: CashfreePaymentP
         description: "Failed to initiate payment. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
 
   const initiateCashfreePayment = async (paymentData: any) => {
     try {
+      console.log('Initiating Cashfree payment with data:', paymentData);
+      
+      if (!paymentData.payment_session_id) {
+        throw new Error('No payment session ID received');
+      }
+
       const checkoutOptions = {
         paymentSessionId: paymentData.payment_session_id,
         redirectTarget: "_self"
       };
 
+      console.log('Cashfree checkout options:', checkoutOptions);
       const result = await window.Cashfree.checkout(checkoutOptions);
+      console.log('Cashfree checkout result:', result);
       
       if (result.error) {
         console.error('Cashfree checkout error:', result.error);
@@ -81,9 +119,11 @@ export const CashfreePayment = ({ fileName, amount, disabled }: CashfreePaymentP
       console.error('Cashfree payment error:', error);
       toast({
         title: "Payment Error",
-        description: "Payment processing failed. Please try again.",
+        description: `Payment processing failed: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
