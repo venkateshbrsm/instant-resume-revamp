@@ -48,33 +48,31 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using PDF.js:', file.name, 'Size:', file.size);
+  console.log('Extracting text from PDF using iLovePDF:', file.name, 'Size:', file.size);
   
   try {
-    // Use PDF.js to extract text from PDF client-side
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    
-    console.log('PDF loaded, pages:', pdf.numPages);
-    
-    let fullText = '';
-    
-    // Extract text from each page
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      
-      // Combine all text items from the page
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ');
-      
-      fullText += pageText + '\n\n';
-      console.log(`Extracted text from page ${pageNum}, length: ${pageText.length}`);
+    // Use iLovePDF to extract text from PDF
+    const formData = new FormData();
+    formData.append('file', file);
+
+    console.log('Sending PDF to iLovePDF...');
+
+    const { data: extractionData, error: extractionError } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
+      body: formData,
+    });
+
+    if (extractionError) {
+      console.error('iLovePDF extraction error:', extractionError);
+      throw new Error(`PDF extraction failed: ${extractionError.message}`);
     }
-    
-    console.log('PDF text extraction completed, total length:', fullText.length);
-    return fullText.trim();
+
+    if (!extractionData.success) {
+      console.error('PDF extraction failed:', extractionData.error);
+      throw new Error(`PDF extraction failed: ${extractionData.error}`);
+    }
+
+    console.log('PDF extraction completed successfully');
+    return extractionData.extractedText || 'Text extracted successfully from PDF';
 
   } catch (error) {
     console.error('PDF processing failed:', error);
@@ -88,7 +86,7 @@ File Details:
 
 ❌ PDF Processing Error
 
-Unable to extract text from this PDF file.
+Unable to process this PDF file with iLovePDF.
 
 💡 Try instead:
 • Save as .docx format from your word processor

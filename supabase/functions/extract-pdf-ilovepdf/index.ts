@@ -53,9 +53,9 @@ serve(async (req) => {
     });
 
     if (!authResponse.ok) {
-      const error = await authResponse.text();
-      console.error('iLovePDF auth failed:', error);
-      throw new Error(`Authentication failed: ${error}`);
+      const errorText = await authResponse.text();
+      console.error('iLovePDF auth failed:', authResponse.status, errorText);
+      throw new Error(`Authentication failed: ${errorText}`);
     }
 
     const authData = await authResponse.json();
