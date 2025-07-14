@@ -128,13 +128,20 @@ serve(async (req) => {
     // 2️⃣ Step 1: Upload PDF file to Adobe
     console.log('Uploading PDF file to Adobe...');
     const uploadForm = new FormData();
-    uploadForm.append("file", new Blob([uint8Array], { type: "application/pdf" }), file.name || "document.pdf");
+    
+    // Create a File object instead of Blob for better compatibility
+    const pdfFile = new File([uint8Array], file.name || "document.pdf", { 
+      type: "application/pdf" 
+    });
+    
+    uploadForm.append("file", pdfFile);
 
     const uploadRes = await fetch("https://pdf-services.adobe.io/assets", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "x-api-key": adobeClientId,
+        // Don't set Content-Type - let FormData handle it automatically
       },
       body: uploadForm,
     });
