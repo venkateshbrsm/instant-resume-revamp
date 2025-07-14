@@ -1,9 +1,8 @@
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Process PDFs without worker (synchronous processing)
-// This avoids all CORS and worker loading issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+// Use jsdelivr CDN as fallback - more reliable than cloudflare
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
