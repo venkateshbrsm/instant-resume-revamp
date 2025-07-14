@@ -125,8 +125,9 @@ serve(async (req) => {
     const accessToken = tokenData.access_token;
     console.log("Successfully obtained access token");
 
-    // 2️⃣ Step 1: Create asset and get upload URL
+    // 2️⃣ Step 1: Create asset and get upload URL with enhanced validation
     console.log('Creating asset and getting upload URL from Adobe...');
+    const assetCreationTime = Date.now();
     
     const createAssetRes = await fetch("https://pdf-services.adobe.io/assets", {
       method: "POST",
@@ -152,10 +153,55 @@ serve(async (req) => {
     }
 
     const assetData = await createAssetRes.json();
-    console.log('Asset created:', assetData);
+    console.log('=== ASSET CREATION RESPONSE ===');
+    console.log('Full asset response:', JSON.stringify(assetData, null, 2));
+    console.log(`Asset creation took: ${Date.now() - assetCreationTime}ms`);
     
     const uploadUrl = assetData.uploadUri;
     const assetId = assetData.assetID;
+
+    // ✅ ASSET ID VALIDATION
+    if (!assetId || typeof assetId !== 'string') {
+      console.error('❌ INVALID ASSET ID - Not a string or missing');
+      console.error('Asset ID received:', assetId);
+      console.error('Asset ID type:', typeof assetId);
+      console.error('Full asset data:', assetData);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid asset ID received from Adobe',
+          assetId: assetId,
+          assetData: assetData
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    // Validate asset ID format (Adobe asset IDs are typically UUIDs)
+    const assetIdPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+    if (assetId.length < 20 || !assetIdPattern.test(assetId)) {
+      console.warn('⚠️ ASSET ID FORMAT WARNING - Unusual format detected');
+      console.warn('Asset ID:', assetId);
+      console.warn('Asset ID length:', assetId.length);
+      console.warn('Matches UUID pattern:', assetIdPattern.test(assetId));
+    }
+
+    if (!uploadUrl) {
+      console.error('❌ MISSING UPLOAD URL');
+      console.error('Upload URL received:', uploadUrl);
+      console.error('Full asset data:', assetData);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing upload URL from Adobe asset creation',
+          assetData: assetData
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    console.log('✅ ASSET VALIDATION PASSED');
+    console.log(`✅ Asset ID: ${assetId}`);
+    console.log(`✅ Asset ID length: ${assetId.length}`);
+    console.log(`✅ Upload URL received: ${uploadUrl.substring(0, 50)}...`);
 
     // Step 2: Upload PDF file to the signed URL
     console.log('Uploading PDF file to signed URL...');
@@ -185,10 +231,28 @@ serve(async (req) => {
       );
     }
 
-    console.log('Upload successful, using asset ID:', assetId);
+    console.log('✅ Upload successful, verifying asset is ready...');
+    
+    // Wait a moment to ensure asset is fully processed by Adobe
+    console.log('⏳ Waiting 2 seconds for asset to be fully processed...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // 3️⃣ Step 2: Create extraction job
-    console.log('Creating extraction job...');
+    // 3️⃣ Step 2: Create extraction job with enhanced asset ID tracking
+    console.log('=== CREATING EXTRACTION JOB ===');
+    console.log(`🎯 Using Asset ID: ${assetId}`);
+    console.log(`🕒 Time since asset creation: ${Date.now() - assetCreationTime}ms`);
+    
+    // Final asset ID validation before job creation
+    if (!assetId || assetId.trim().length === 0) {
+      console.error('❌ CRITICAL: Asset ID is empty or null before job creation');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Asset ID became invalid before job creation',
+          assetId: assetId
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
     
     const jobRequestBody = {
       assetID: assetId,
@@ -196,7 +260,9 @@ serve(async (req) => {
       elementsToExtractRenditions: []
     };
     
-    console.log("Job request body:", JSON.stringify(jobRequestBody, null, 2));
+    console.log("📋 Job request body:", JSON.stringify(jobRequestBody, null, 2));
+    console.log(`📋 Asset ID in job body: "${jobRequestBody.assetID}"`);
+    console.log(`📋 Asset ID length: ${jobRequestBody.assetID.length}`);
     
     const jobRes = await fetch("https://pdf-services.adobe.io/operation/pdfServices/extract", {
       method: "POST",
@@ -213,12 +279,30 @@ serve(async (req) => {
     console.log("Job response:", jobText);
 
     if (!jobRes.ok) {
-      console.error("Failed to create extraction job:", jobText);
+      console.error("❌ EXTRACTION JOB CREATION FAILED");
+      console.error(`🔍 Status: ${jobRes.status}`);
+      console.error(`🔍 Response: ${jobText}`);
+      console.error(`🔍 Asset ID used: ${assetId}`);
+      console.error(`🔍 Asset ID length: ${assetId.length}`);
+      console.error(`🔍 Time since asset creation: ${Date.now() - assetCreationTime}ms`);
+      
+      // Try to parse the error response for more details
+      let errorDetails = jobText;
+      try {
+        const errorData = JSON.parse(jobText);
+        console.error('🔍 Parsed error data:', errorData);
+        errorDetails = errorData;
+      } catch (e) {
+        console.error('🔍 Could not parse error response as JSON');
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: `Adobe job creation failed: ${jobRes.status}`,
-          details: jobText 
+          details: errorDetails,
+          assetId: assetId,
+          timeSinceAssetCreation: Date.now() - assetCreationTime
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
