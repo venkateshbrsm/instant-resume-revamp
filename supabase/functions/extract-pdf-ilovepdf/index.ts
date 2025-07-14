@@ -192,8 +192,11 @@ serve(async (req) => {
     
     const jobRequestBody = {
       assetID: assetId,
-      elementsToExtract: ["text"],
-      elementsToExtractRenditions: []
+      operationName: "extract",
+      getElementsOptions: {
+        elementsToExtract: ["text"],
+        elementsToExtractRenditions: []
+      }
     };
     
     console.log("Job request body:", JSON.stringify(jobRequestBody, null, 2));
