@@ -48,9 +48,22 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
     });
+    
+    console.log("Start response status:", startRes.status);
+    console.log("Start response headers:", Object.fromEntries(startRes.headers.entries()));
+    
     const startData = await startRes.json();
 
     console.log("startData:", startData);
+
+    if (!startRes.ok) {
+      console.error("Start request failed with status:", startRes.status);
+      console.error("Start response body:", startData);
+      return new Response(
+        JSON.stringify({ success: false, error: `API request failed: ${startRes.status} - ${JSON.stringify(startData)}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!startData || !startData.task) {
       console.error("Failed to start task:", startData);
