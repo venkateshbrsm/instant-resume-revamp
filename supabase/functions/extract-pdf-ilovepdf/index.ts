@@ -12,14 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    const iLovePdfApiKey = Deno.env.get('ILOVEPDF_API_KEY');
+    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
     
-    if (!iLovePdfApiKey) {
-      console.error('iLovePDF API key not found');
+    if (!iLovePdfPublicKey) {
+      console.error('iLovePDF public key not found');
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'iLovePDF API key not configured' 
+          error: 'iLovePDF public key not configured' 
         }),
         { 
           status: 500, 
@@ -41,14 +41,32 @@ serve(async (req) => {
 
     console.log('Extracting text from PDF using iLovePDF:', file.name, 'Size:', file.size);
 
-    // For iLovePDF, we use the project key directly in headers
-    console.log('Using iLovePDF project key for authentication');
+    // Step 1: Authenticate with public key to get token
+    const authResponse = await fetch('https://api.ilovepdf.com/v1/auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        public_key: iLovePdfPublicKey
+      })
+    });
 
-    // Step 1: Start extract task
+    if (!authResponse.ok) {
+      const errorText = await authResponse.text();
+      console.error('iLovePDF auth failed:', authResponse.status, errorText);
+      throw new Error(`Authentication failed: ${errorText}`);
+    }
+
+    const authData = await authResponse.json();
+    const token = authData.token;
+    console.log('iLovePDF authentication successful');
+
+    // Step 2: Start extract task
     const startResponse = await fetch('https://api.ilovepdf.com/v1/start/extract', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${iLovePdfApiKey}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -70,7 +88,7 @@ serve(async (req) => {
     const uploadResponse = await fetch(`https://api.ilovepdf.com/v1/upload`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${iLovePdfApiKey}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: uploadFormData,
     });
@@ -88,7 +106,7 @@ serve(async (req) => {
     const processResponse = await fetch(`https://api.ilovepdf.com/v1/process`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${iLovePdfApiKey}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -114,7 +132,7 @@ serve(async (req) => {
     const downloadResponse = await fetch(`https://api.ilovepdf.com/v1/download/${taskId}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${iLovePdfApiKey}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
