@@ -251,13 +251,23 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
         {/* Comparison Tabs */}
         <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={(value) => {
+            // Auto-trigger enhancement when switching to "after" tab if not already done
+            if (value === "after" && !enhancedContent && !isEnhancing && extractedText) {
+              enhanceResume();
+            }
+            setActiveTab(value);
+          }} className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-4 sm:mb-6">
               <TabsTrigger value="before" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <FileText className="w-3 sm:w-4 h-3 sm:h-4" />
                 Original
               </TabsTrigger>
-              <TabsTrigger value="after" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <TabsTrigger 
+                value="after" 
+                className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                disabled={!extractedText}
+              >
                 <Zap className="w-3 sm:w-4 h-3 sm:h-4" />
                 Enhanced
               </TabsTrigger>
@@ -625,16 +635,22 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                     </div>
                   </div>
                   ) : (
-                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
-                      <div className="text-center space-y-4">
-                        <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-3 sm:space-y-4">
+                        <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 text-accent mx-auto" />
                         <div>
-                          <h3 className="text-xl font-semibold mb-2">Enhancement Failed</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Could not enhance your resume. Please try again.
+                          <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for AI Enhancement</h3>
+                          <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base px-4">
+                            Click the button below to enhance your resume with AI-powered improvements.
                           </p>
-                          <Button onClick={enhanceResume} variant="outline">
-                            Retry Enhancement
+                          <Button 
+                            onClick={enhanceResume} 
+                            variant="default"
+                            className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
+                            disabled={!extractedText}
+                          >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Enhance with AI
                           </Button>
                         </div>
                       </div>
