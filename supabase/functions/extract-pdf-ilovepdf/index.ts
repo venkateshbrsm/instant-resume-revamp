@@ -129,17 +129,42 @@ serve(async (req) => {
     console.log('JWT token received successfully, length:', jwtToken.length);
     console.log('JWT token prefix:', jwtToken.substring(0, 50) + '...');
     
-    // Now try the actual extract endpoint with JWT token
-    console.log('Making start/extract request with JWT token...');
-    const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
+    // Test the JWT token with a simple endpoint first
+    console.log('Testing JWT token with a simple request...');
+    const testRes = await fetch("https://api.ilovepdf.com/v1/start/compress", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${jwtToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        tool: "compress"
+      })
+    });
+    
+    console.log("Test endpoint response status:", testRes.status);
+    const testResponseText = await testRes.text();
+    console.log("Test endpoint response:", testResponseText);
+
+    // Now try the actual extract endpoint with JWT token
+    console.log('Making start/extract request with JWT token...');
+    console.log('JWT token being used:', jwtToken.substring(0, 50) + '...');
+    
+    const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
         tool: "extract"
       })
+    });
+    
+    console.log("Extract request headers sent:", {
+      Authorization: `Bearer ${jwtToken.substring(0, 30)}...`,
+      "Content-Type": "application/json"
     });
     
     console.log("Start response status:", startRes.status);
