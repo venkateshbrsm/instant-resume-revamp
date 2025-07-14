@@ -77,10 +77,19 @@ serve(async (req) => {
 
     // Step 2: Upload the file
     const uploadTask = jobData.data.tasks.find((task: any) => task.name === 'import-my-file');
+    const uploadForm = uploadTask.result.form;
+    
     const uploadFormData = new FormData();
+    
+    // Add all the required form fields from CloudConvert
+    for (const [key, value] of Object.entries(uploadForm.parameters)) {
+      uploadFormData.append(key, value as string);
+    }
+    
+    // Add the file last
     uploadFormData.append('file', file);
 
-    const uploadResponse = await fetch(uploadTask.result.form.url, {
+    const uploadResponse = await fetch(uploadForm.url, {
       method: 'POST',
       body: uploadFormData,
     });
