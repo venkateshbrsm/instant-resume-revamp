@@ -1,5 +1,8 @@
 import * as mammoth from 'mammoth';
-import { supabase } from "@/integrations/supabase/client";
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
@@ -44,91 +47,92 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting PDF text using server-side processing:', file.name, 'Size:', file.size);
+  console.log('Extracting PDF text using client-side processing:', file.name, 'Size:', file.size);
   
-  const maxRetries = 3;
-  const retryDelay = 3000; // 3 seconds
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`PDF extraction attempt ${attempt}/${maxRetries}`);
-      
-      // Create FormData to send the PDF file to our edge function
-      const formData = new FormData();
-      formData.append('file', file);
-
-      console.log('Calling PDF extraction edge function...');
-
-      // Call the edge function to extract PDF text
-      const { data, error } = await supabase.functions.invoke('extract-pdf-text', {
-        body: formData,
-      });
-
-      if (error) {
-        console.error('PDF extraction edge function error:', error);
-        throw new Error(`PDF processing failed: ${error.message}`);
-      }
-
-      if (data.success && data.extractedText) {
-        console.log('PDF text extracted successfully, length:', data.extractedText.length);
-        return data.extractedText;
-      } else {
-        console.error('PDF processing failed:', data.error);
+  try {
+    // Convert file to array buffer
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // Load PDF document
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    console.log(`PDF loaded successfully - ${pdf.numPages} pages`);
+    
+    let extractedText = '';
+    
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      try {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
         
-        // If service is unavailable and we have retries left, wait and retry
-        if (data.isServiceUnavailable && attempt < maxRetries) {
-          console.log(`Service unavailable, retrying in ${retryDelay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
-          continue;
+        // Combine text items into readable format
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ')
+          .trim();
+        
+        if (pageText) {
+          extractedText += pageText + '\n\n';
         }
         
-        // Return the error content from the server
-        return data.extractedText || `📄 PDF Processing Failed
-
-The PDF could not be processed. Please try:
-• Converting to .docx format for instant processing
-• Re-uploading the file
-• Waiting a moment and trying again`;
+        console.log(`Extracted text from page ${pageNum}, length: ${pageText.length}`);
+      } catch (pageError) {
+        console.error(`Error extracting text from page ${pageNum}:`, pageError);
+        // Continue with other pages
       }
-
-    } catch (error) {
-      console.error(`PDF extraction failed (attempt ${attempt}):`, error);
-      
-      // If it's a network/timeout error and we have retries left, wait and retry
-      if (attempt < maxRetries && error instanceof Error && (
-          error.message.includes('fetch') ||
-          error.message.includes('network') ||
-          error.message.includes('timeout') ||
-          error.message.includes('Failed to fetch')
-        )) {
-        console.log(`Network error, retrying in ${retryDelay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, retryDelay));
-        continue;
-      }
-      
-      // If we're out of retries or it's not a retryable error, return fallback
-      break;
     }
-  }
-  
-  // Fallback message if all attempts failed
-  return `📄 PDF Resume: ${file.name}
+    
+    // Clean up the extracted text
+    extractedText = extractedText.trim();
+    
+    if (extractedText && extractedText.length > 20) {
+      console.log('PDF text extracted successfully, total length:', extractedText.length);
+      return extractedText;
+    } else {
+      // PDF might be image-based or protected
+      return `📄 PDF Resume: ${file.name}
+
+File Details:
+- Size: ${(file.size / 1024).toFixed(1)} KB
+- Pages: ${pdf.numPages}
+- Uploaded: ${new Date().toLocaleString()}
+
+⚠️ Limited Text Extraction
+
+This PDF appears to be image-based or have limited extractable text. 
+
+💡 For best results, try:
+• Converting to .docx format using Word or Google Docs
+• Using a text-based PDF instead of a scanned image
+• Ensuring the PDF contains selectable text
+
+The AI will still process what it can from the document.`;
+    }
+    
+  } catch (error) {
+    console.error('PDF extraction failed:', error);
+    
+    return `📄 PDF Resume: ${file.name}
 
 File Details:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
 - Uploaded: ${new Date().toLocaleString()}
 
-🔄 OCR Service Temporarily Unavailable
+❌ PDF Processing Error
 
-The enhanced PDF processing service is currently starting up. This is normal for free hosting services.
+Unable to process this PDF file. This might be due to:
+• Password protection
+• Corrupted file
+• Unsupported PDF format
 
-⏱️ What to do:
-• Wait 1-2 minutes and try uploading again
-• Convert to .docx format for immediate processing
-• The service will stay active once warmed up
+💡 Try instead:
+• Converting to .docx format for instant processing
+• Using a different PDF file
+• Ensuring the file isn't password-protected
 
-💡 Tip: .docx files process instantly without needing the OCR service!`;
+The resume enhancement may still work with the original file.`;
+  }
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
