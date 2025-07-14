@@ -164,8 +164,7 @@ serve(async (req) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/pdf",
-        "Authorization": `Bearer ${accessToken}`,
-        "x-api-key": adobeClientId,
+        // Don't include Authorization or x-api-key - signed URL handles auth
       },
       body: uint8Array,
     });
