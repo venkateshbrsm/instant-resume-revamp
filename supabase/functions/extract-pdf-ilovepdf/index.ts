@@ -282,7 +282,7 @@ serve(async (req) => {
     console.log(`📋 Asset ID in job body: "${jobRequestBody.assetID}"`);
     console.log(`📋 Asset ID length: ${jobRequestBody.assetID.length}`);
     
-    const jobRes = await fetch("https://pdf-services.adobe.io/operation/pdfServices/extract", {
+    const jobRes = await fetch("https://pdf-services.adobe.io/operation/extractpdf", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
