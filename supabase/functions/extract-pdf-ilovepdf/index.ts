@@ -129,19 +129,21 @@ serve(async (req) => {
     console.log('Uploading PDF file to Adobe...');
     const uploadForm = new FormData();
     
-    // Create a File object instead of Blob for better compatibility
-    const pdfFile = new File([uint8Array], file.name || "document.pdf", { 
-      type: "application/pdf" 
-    });
+    // Use Blob with proper MIME type and ensure filename is set correctly
+    const pdfBlob = new Blob([uint8Array], { type: "application/pdf" });
+    uploadForm.append("file", pdfBlob, file.name || "document.pdf");
     
-    uploadForm.append("file", pdfFile);
+    console.log('FormData created with file:', {
+      blobSize: pdfBlob.size,
+      blobType: pdfBlob.type,
+      fileName: file.name || "document.pdf"
+    });
 
     const uploadRes = await fetch("https://pdf-services.adobe.io/assets", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "x-api-key": adobeClientId,
-        // Don't set Content-Type - let FormData handle it automatically
       },
       body: uploadForm,
     });
