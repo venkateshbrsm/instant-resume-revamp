@@ -79,7 +79,8 @@ serve(async (req) => {
     // Get the response text first to see what we're dealing with
     const responseText = await startRes.text();
     console.log("Raw response text length:", responseText.length);
-    console.log("Raw response text:", responseText);
+    console.log("Raw response text (first 500 chars):", responseText.substring(0, 500));
+    console.log("Raw response text (full):", responseText);
     
     // Check if response is empty
     if (!responseText || responseText.trim() === '') {
