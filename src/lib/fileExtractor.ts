@@ -1,18 +1,8 @@
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Set up PDF.js worker using the built-in worker
-try {
-  // Use the worker from the pdfjs-dist package itself
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.js',
-    import.meta.url
-  ).toString();
-} catch (error) {
-  console.warn('Failed to set PDF.js worker, trying alternative approach:', error);
-  // Fallback: disable worker (slower but should work)
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-}
+// Disable PDF.js worker to avoid CORS issues - slower but reliable
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
