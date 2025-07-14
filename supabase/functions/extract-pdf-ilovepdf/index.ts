@@ -41,32 +41,14 @@ serve(async (req) => {
 
     console.log('Extracting text from PDF using iLovePDF:', file.name, 'Size:', file.size);
 
-    // Step 1: Get auth token
-    const authResponse = await fetch('https://api.ilovepdf.com/v1/auth', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        public_key: iLovePdfApiKey
-      })
-    });
+    // For iLovePDF, we use the project key directly in headers
+    console.log('Using iLovePDF project key for authentication');
 
-    if (!authResponse.ok) {
-      const errorText = await authResponse.text();
-      console.error('iLovePDF auth failed:', authResponse.status, errorText);
-      throw new Error(`Authentication failed: ${errorText}`);
-    }
-
-    const authData = await authResponse.json();
-    const token = authData.token;
-    console.log('iLovePDF authentication successful');
-
-    // Step 2: Start extract task
+    // Step 1: Start extract task
     const startResponse = await fetch('https://api.ilovepdf.com/v1/start/extract', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${iLovePdfApiKey}`,
       },
     });
 
@@ -88,7 +70,7 @@ serve(async (req) => {
     const uploadResponse = await fetch(`https://api.ilovepdf.com/v1/upload`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${iLovePdfApiKey}`,
       },
       body: uploadFormData,
     });
@@ -106,7 +88,7 @@ serve(async (req) => {
     const processResponse = await fetch(`https://api.ilovepdf.com/v1/process`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${iLovePdfApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -132,7 +114,7 @@ serve(async (req) => {
     const downloadResponse = await fetch(`https://api.ilovepdf.com/v1/download/${taskId}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${iLovePdfApiKey}`,
       },
     });
 
