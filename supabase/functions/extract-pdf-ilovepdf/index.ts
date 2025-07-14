@@ -157,30 +157,43 @@ serve(async (req) => {
     console.log('Step 2: Uploading PDF file...');
     const uploadFormData = new FormData();
     uploadFormData.append("task", task);
-    uploadFormData.append("file", file);
+    uploadFormData.append("file", new Blob([uint8Array]), file.name || "file.pdf");
 
     const uploadRes = await fetch("https://api.ilovepdf.com/v1/upload", {
       method: "POST",
       body: uploadFormData
     });
     
-    console.log("Upload response status:", uploadRes.status);
-    console.log("Upload response statusText:", uploadRes.statusText);
-    
-    if (!uploadRes.ok) {
-      const uploadError = await uploadRes.text();
-      console.error("Upload failed:", uploadError);
+    const uploadText = await uploadRes.text();
+    console.log("uploadRes status:", uploadRes.status);
+    console.log("uploadRes raw text:", uploadText);
+
+    let uploadData = null;
+    try {
+      uploadData = JSON.parse(uploadText);
+    } catch (e) {
+      console.error("Upload JSON parse error:", e);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Failed to upload file: ${uploadRes.status} - ${uploadError}` 
+          error: `Failed to parse upload response: ${e.message}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    const uploadData = await uploadRes.json();
-    console.log("Upload data:", uploadData);
+
+    if (!uploadData || !uploadData.server_filename) {
+      console.error("Failed to upload file or invalid response:", uploadData);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to upload file: ${uploadRes.status} - Invalid upload response` 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log("Upload successful:", uploadData);
 
     // Step 3: Process the file
     console.log('Step 3: Processing file...');
@@ -192,23 +205,36 @@ serve(async (req) => {
       body: JSON.stringify({ task })
     });
     
-    console.log("Process response status:", processRes.status);
-    console.log("Process response statusText:", processRes.statusText);
-    
-    if (!processRes.ok) {
-      const processError = await processRes.text();
-      console.error("Process failed:", processError);
+    const processText = await processRes.text();
+    console.log("processRes status:", processRes.status);
+    console.log("processRes raw text:", processText);
+
+    let processData = null;
+    try {
+      processData = JSON.parse(processText);
+    } catch (e) {
+      console.error("Process JSON parse error:", e);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Failed to process file: ${processRes.status} - ${processError}` 
+          error: `Failed to parse process response: ${e.message}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    const processData = await processRes.json();
-    console.log("Process data:", processData);
+
+    if (!processData || processData.status !== "TaskSuccess") {
+      console.error("Failed to process task:", processData);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to process file: ${processRes.status} - Process task failed` 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log("Process successful:", processData);
 
     // Step 4: Download/get the extracted text
     console.log('Step 4: Getting extracted text...');
