@@ -54,11 +54,17 @@ serve(async (req) => {
 
     if (!authResponse.ok) {
       const errorText = await authResponse.text();
-      console.error('iLovePDF auth failed:', authResponse.status, errorText);
-      throw new Error(`Authentication failed: ${errorText}`);
+      console.error('iLovePDF auth failed:', {
+        status: authResponse.status,
+        statusText: authResponse.statusText,
+        headers: Object.fromEntries(authResponse.headers.entries()),
+        body: errorText
+      });
+      throw new Error(`Authentication failed: ${authResponse.status} - ${errorText}`);
     }
 
     const authData = await authResponse.json();
+    console.log('iLovePDF auth response:', JSON.stringify(authData, null, 2));
     const token = authData.token;
     console.log('iLovePDF authentication successful');
 
@@ -71,12 +77,18 @@ serve(async (req) => {
     });
 
     if (!startResponse.ok) {
-      const error = await startResponse.text();
-      console.error('iLovePDF start task failed:', error);
-      throw new Error(`Failed to start extract task: ${error}`);
+      const errorText = await startResponse.text();
+      console.error('iLovePDF start task failed:', {
+        status: startResponse.status,
+        statusText: startResponse.statusText,
+        headers: Object.fromEntries(startResponse.headers.entries()),
+        body: errorText
+      });
+      throw new Error(`Failed to start extract task: ${startResponse.status} - ${errorText}`);
     }
 
     const startData = await startResponse.json();
+    console.log('Start task response:', JSON.stringify(startData, null, 2));
     const taskId = startData.task;
     console.log('Extract task started:', taskId);
 
@@ -94,13 +106,18 @@ serve(async (req) => {
     });
 
     if (!uploadResponse.ok) {
-      const error = await uploadResponse.text();
-      console.error('File upload failed:', uploadResponse.status, error);
-      throw new Error(`Failed to upload file: ${uploadResponse.status} - ${error}`);
+      const errorText = await uploadResponse.text();
+      console.error('File upload failed:', {
+        status: uploadResponse.status,
+        statusText: uploadResponse.statusText,
+        headers: Object.fromEntries(uploadResponse.headers.entries()),
+        body: errorText
+      });
+      throw new Error(`Failed to upload file: ${uploadResponse.status} - ${errorText}`);
     }
 
     const uploadData = await uploadResponse.json();
-    console.log('File uploaded successfully:', JSON.stringify(uploadData, null, 2));
+    console.log('File upload response:', JSON.stringify(uploadData, null, 2));
 
     // Step 4: Process the file
     const processResponse = await fetch(`https://api.ilovepdf.com/v1/process`, {
@@ -116,12 +133,18 @@ serve(async (req) => {
     });
 
     if (!processResponse.ok) {
-      const error = await processResponse.text();
-      console.error('Processing failed:', error);
-      throw new Error(`Failed to process file: ${error}`);
+      const errorText = await processResponse.text();
+      console.error('Processing failed:', {
+        status: processResponse.status,
+        statusText: processResponse.statusText,
+        headers: Object.fromEntries(processResponse.headers.entries()),
+        body: errorText
+      });
+      throw new Error(`Failed to process file: ${processResponse.status} - ${errorText}`);
     }
 
     const processData = await processResponse.json();
+    console.log('Process response:', JSON.stringify(processData, null, 2));
     console.log('Processing completed');
 
     // Step 5: Download the result
@@ -133,9 +156,14 @@ serve(async (req) => {
     });
 
     if (!downloadResponse.ok) {
-      const error = await downloadResponse.text();
-      console.error('Download failed:', error);
-      throw new Error(`Failed to download result: ${error}`);
+      const errorText = await downloadResponse.text();
+      console.error('Download failed:', {
+        status: downloadResponse.status,
+        statusText: downloadResponse.statusText,
+        headers: Object.fromEntries(downloadResponse.headers.entries()),
+        body: errorText
+      });
+      throw new Error(`Failed to download result: ${downloadResponse.status} - ${errorText}`);
     }
 
     // The result should be a ZIP file containing extracted text
