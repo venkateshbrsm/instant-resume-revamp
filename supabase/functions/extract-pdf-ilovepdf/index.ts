@@ -6,7 +6,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('=== FUNCTION STARTED ===');
+  console.log('Request method:', req.method);
+  
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
