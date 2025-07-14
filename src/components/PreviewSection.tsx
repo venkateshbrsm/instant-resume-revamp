@@ -99,12 +99,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  useEffect(() => {
-    // Only enhance after we have extracted text
-    if (extractedText && extractedText.length > 0) {
-      enhanceResume();
-    }
-  }, [extractedText]);
+  // Remove auto-enhancement - let user trigger it manually
+  // useEffect(() => {
+  //   // Only enhance after we have extracted text
+  //   if (extractedText && extractedText.length > 0) {
+  //     enhanceResume();
+  //   }
+  // }, [extractedText]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -298,6 +299,26 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                               <p className="text-sm text-green-800">
                                 ✅ Successfully extracted {extractedText.length} characters from your resume. This content will be enhanced with AI.
                               </p>
+                            </div>
+                          </div>
+                          )}
+                        
+                        {/* Enhance with AI Button */}
+                        {extractedText && !enhancedContent && !isEnhancing && (
+                          <div className="mt-4 p-4 bg-gradient-to-r from-accent/10 to-primary/10 rounded-lg border border-accent/20">
+                            <div className="text-center space-y-3">
+                              <h4 className="font-semibold text-foreground">Ready for AI Enhancement!</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Transform your resume with our AI-powered enhancement that improves content, formatting, and ATS compatibility.
+                              </p>
+                              <Button 
+                                onClick={enhanceResume} 
+                                size="lg"
+                                className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium px-8 py-3"
+                              >
+                                <Sparkles className="w-5 h-5 mr-2" />
+                                Enhance with AI
+                              </Button>
                             </div>
                           </div>
                         )}
