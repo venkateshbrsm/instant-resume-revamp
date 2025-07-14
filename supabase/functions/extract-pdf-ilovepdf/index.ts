@@ -274,8 +274,10 @@ serve(async (req) => {
     
     const jobRequestBody = {
       assetID: processedAssetId,  // Use the processed UUID, not the original URN
-      elementsToExtract: ["text"],
-      elementsToExtractRenditions: []
+      getElementsOptions: {
+        elementsToExtract: ["text"],
+        elementsToExtractRenditions: []
+      }
     };
     
     console.log("📋 Job request body:", JSON.stringify(jobRequestBody, null, 2));
