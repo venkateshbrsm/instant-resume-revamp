@@ -189,6 +189,15 @@ serve(async (req) => {
 
     // 3️⃣ Step 2: Create extraction job
     console.log('Creating extraction job...');
+    
+    const jobRequestBody = {
+      assetID: assetId,
+      elementsToExtract: ["text"],
+      elementsToExtractRenditions: []
+    };
+    
+    console.log("Job request body:", JSON.stringify(jobRequestBody, null, 2));
+    
     const jobRes = await fetch("https://pdf-services.adobe.io/operation/extractpdf", {
       method: "POST",
       headers: {
@@ -196,13 +205,7 @@ serve(async (req) => {
         "x-api-key": adobeClientId,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        assetID: assetId,
-        getElementsOptions: {
-          elementsToExtract: ["text"],
-          elementsToExtractRenditions: []
-        }
-      }),
+      body: JSON.stringify(jobRequestBody),
     });
 
     const jobText = await jobRes.text();
