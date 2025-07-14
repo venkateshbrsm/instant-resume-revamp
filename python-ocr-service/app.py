@@ -21,14 +21,22 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({
-        'status': 'healthy',
-        'service': 'PDF OCR Service',
-        'libraries': {
-            'pymupdf': fitz.__version__,
-            'pytesseract': 'available'
-        }
-    })
+    try:
+        return jsonify({
+            'status': 'healthy',
+            'service': 'PDF OCR Service',
+            'libraries': {
+                'pymupdf': fitz.__version__,
+                'pytesseract': 'available'
+            },
+            'success': True
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'success': False
+        }), 500
 
 @app.route('/extract-pdf-text', methods=['POST'])
 def extract_pdf_text():
