@@ -4,6 +4,9 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 // Import PDF.js for proper PDF parsing
 import * as pdfjsLib from "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.min.mjs";
 
+// Import Tesseract.js for OCR functionality
+import Tesseract from "https://esm.sh/tesseract.js@5.0.4";
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,15 +86,10 @@ const extractPDFTextWithPDFJS = async (pdfBuffer: ArrayBuffer): Promise<string> 
   }
 };
 
-// OpenAI Vision API text extraction
-const extractTextWithOpenAIVision = async (pdfBuffer: ArrayBuffer): Promise<string> => {
+// Tesseract OCR text extraction
+const extractTextWithTesseractOCR = async (pdfBuffer: ArrayBuffer): Promise<string> => {
   try {
-    console.log('Starting OpenAI Vision text extraction...');
-    
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
+    console.log('Starting Tesseract OCR text extraction...');
     
     // Load the PDF document for image conversion
     const loadingTask = pdfjsLib.getDocument({
@@ -104,20 +102,20 @@ const extractTextWithOpenAIVision = async (pdfBuffer: ArrayBuffer): Promise<stri
     });
     
     const pdf = await loadingTask.promise;
-    console.log(`PDF loaded for Vision API. Pages: ${pdf.numPages}`);
+    console.log(`PDF loaded for OCR. Pages: ${pdf.numPages}`);
     
-    let visionText = '';
-    const maxPages = Math.min(pdf.numPages, 10); // Process up to 10 pages with Vision API
+    let ocrText = '';
+    const maxPages = Math.min(pdf.numPages, 5); // Process up to 5 pages for performance
     
-    // Process each page with OpenAI Vision
+    // Process each page with Tesseract OCR
     for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
       try {
-        console.log(`Vision API processing page ${pageNum}/${maxPages}`);
+        console.log(`OCR processing page ${pageNum}/${maxPages}`);
         
         const page = await pdf.getPage(pageNum);
         
-        // Render page to canvas
-        const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
+        // Render page to canvas with high resolution for better OCR
+        const viewport = page.getViewport({ scale: 3.0 }); // Higher scale for better OCR accuracy
         const canvas = new OffscreenCanvas(viewport.width, viewport.height);
         const context = canvas.getContext('2d');
         
@@ -126,87 +124,63 @@ const extractTextWithOpenAIVision = async (pdfBuffer: ArrayBuffer): Promise<stri
           viewport: viewport,
         }).promise;
         
-        // Convert canvas to base64 image
+        // Convert canvas to image blob
         const imageBlob = await canvas.convertToBlob({ type: 'image/png' });
         const imageBuffer = await imageBlob.arrayBuffer();
-        const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
         
-        // Call OpenAI Vision API
-        console.log(`Calling OpenAI Vision API for page ${pageNum}...`);
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini', // Vision-capable model
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  {
-                    type: 'text',
-                    text: `Please extract ALL text content from this resume/document image. Maintain the structure and formatting as much as possible. Include:
-- Personal information (name, contact details)
-- Professional summary/objective
-- Work experience with dates and descriptions
-- Education details
-- Skills and certifications
-- Any other text content visible
-
-Please provide the extracted text in a clean, readable format while preserving the document structure.`
-                  },
-                  {
-                    type: 'image_url',
-                    image_url: {
-                      url: `data:image/png;base64,${base64Image}`
-                    }
-                  }
-                ]
+        // Run Tesseract OCR on the image
+        console.log(`Running Tesseract OCR on page ${pageNum}...`);
+        const { data: { text } } = await Tesseract.recognize(
+          new Uint8Array(imageBuffer),
+          'eng',
+          {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                console.log(`OCR page ${pageNum} progress: ${Math.round(m.progress * 100)}%`);
               }
-            ],
-            max_tokens: 2000,
-            temperature: 0.1 // Low temperature for consistent extraction
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const extractedPageText = data.choices[0]?.message?.content;
-
-        if (extractedPageText && extractedPageText.trim().length > 10) {
-          visionText += `\n\n--- Page ${pageNum} (OpenAI Vision) ---\n${extractedPageText.trim()}`;
+            },
+            // OCR configuration for better accuracy
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?@#$%^&*()_+-=[]{}|;:\'",.<>/ ',
+            tessedit_pageseg_mode: '1', // Automatic page segmentation with OSD
+            tessedit_ocr_engine_mode: '1', // LSTM OCR Engine
+          }
+        );
+        
+        if (text && text.trim().length > 10) {
+          // Clean up the OCR text
+          const cleanedText = text
+            .replace(/\n+/g, '\n') // Remove excessive line breaks
+            .replace(/\s+/g, ' ') // Replace multiple spaces
+            .trim();
+          
+          ocrText += `\n\n--- Page ${pageNum} (OCR) ---\n${cleanedText}`;
         } else {
-          visionText += `\n\n--- Page ${pageNum} (OpenAI Vision) ---\n[No text detected on this page]`;
+          ocrText += `\n\n--- Page ${pageNum} (OCR) ---\n[No readable text detected on this page]`;
         }
         
-        // Clean up
+        // Clean up page reference
         page.cleanup();
         
       } catch (pageError) {
-        console.error(`Vision API error on page ${pageNum}:`, pageError);
-        visionText += `\n\n--- Page ${pageNum} (OpenAI Vision) ---\n[Vision API failed for this page: ${pageError.message}]`;
+        console.error(`OCR error on page ${pageNum}:`, pageError);
+        ocrText += `\n\n--- Page ${pageNum} (OCR) ---\n[OCR processing failed for this page]`;
       }
     }
     
     // Add truncation note if needed
     if (pdf.numPages > maxPages) {
-      visionText += `\n\n--- Vision API Note ---\nProcessed first ${maxPages} pages of ${pdf.numPages} total pages with OpenAI Vision.`;
+      ocrText += `\n\n--- OCR Note ---\nProcessed first ${maxPages} pages of ${pdf.numPages} total pages with Tesseract OCR.`;
     }
     
     // Clean up PDF document
     pdf.cleanup();
     
-    console.log(`OpenAI Vision extraction completed. Total length: ${visionText.length} characters`);
-    return visionText.trim();
+    console.log(`Tesseract OCR extraction completed. Total length: ${ocrText.length} characters`);
+    return ocrText.trim();
     
   } catch (error) {
-    console.error('OpenAI Vision extraction failed:', error);
-    throw error;
+    console.error('Tesseract OCR extraction failed:', error);
+    throw new Error(`OCR processing failed: ${error.message}`);
   }
 };
 
@@ -244,34 +218,34 @@ serve(async (req) => {
       const hasEnoughText = extractedText && extractedText.length > meaningfulTextThreshold;
       
       if (!hasEnoughText) {
-        console.log('🤖 PDF.js yielded insufficient text, trying OpenAI Vision API...');
+        console.log('📷 PDF.js yielded insufficient text, falling back to Tesseract OCR...');
         
         try {
-          const visionText = await extractTextWithOpenAIVision(arrayBuffer);
-          if (visionText && visionText.length > 50) {
-            extractedText = visionText;
-            extractionMethod = 'OpenAI Vision API';
-            console.log('✅ OpenAI Vision extraction successful');
+          const ocrText = await extractTextWithTesseractOCR(arrayBuffer);
+          if (ocrText && ocrText.length > 50) {
+            extractedText = ocrText;
+            extractionMethod = 'Tesseract OCR';
+            console.log('✅ Tesseract OCR extraction successful');
           } else {
             // Combine both results if available
-            extractedText = extractedText + '\n\n' + (visionText || '');
-            extractionMethod = 'PDF.js + OpenAI Vision (limited)';
+            extractedText = extractedText + '\n\n' + (ocrText || '');
+            extractionMethod = 'PDF.js + Tesseract OCR (limited)';
           }
-        } catch (visionError) {
-          console.error('OpenAI Vision fallback failed:', visionError);
-          extractionMethod = 'PDF.js only (Vision API failed)';
+        } catch (ocrError) {
+          console.error('Tesseract OCR fallback failed:', ocrError);
+          extractionMethod = 'PDF.js only (OCR failed)';
         }
       }
       
     } catch (pdfError) {
-      console.error('PDF.js failed, trying OpenAI Vision directly:', pdfError);
+      console.error('PDF.js failed, trying Tesseract OCR directly:', pdfError);
       
       try {
-        extractedText = await extractTextWithOpenAIVision(arrayBuffer);
-        extractionMethod = 'OpenAI Vision only';
-        console.log('✅ Vision-only extraction successful');
-      } catch (visionError) {
-        console.error('Both PDF.js and Vision API failed:', visionError);
+        extractedText = await extractTextWithTesseractOCR(arrayBuffer);
+        extractionMethod = 'Tesseract OCR only';
+        console.log('✅ OCR-only extraction successful');
+      } catch (ocrError) {
+        console.error('Both PDF.js and Tesseract OCR failed:', ocrError);
         throw new Error('Both text extraction methods failed');
       }
     }
@@ -294,14 +268,14 @@ ${extractedText}
       
       console.log(`✅ Text extraction successful using ${extractionMethod}`);
     } else {
-      // Very limited text extracted even with AI Vision
+      // Very limited text extracted even with OCR
       finalContent = `📄 ${pdfFile.name}
 
-⚠️ Limited text extraction results even with AI Vision processing.
+⚠️ Limited text extraction results even with Tesseract OCR processing.
 
 Attempted Methods:
 • PDF.js text extraction
-• OpenAI Vision API (GPT-4 Vision)
+• Tesseract OCR (Optical Character Recognition)
 
 Extracted content (if any):
 ${extractedText || '[No readable text found]'}
@@ -313,17 +287,17 @@ ${extractedText || '[No readable text found]'}
 • Methods Used: ${extractionMethod}
 
 Possible reasons for limited results:
-• Extremely poor image quality
-• Handwritten content in difficult script
-• Heavily corrupted or encrypted PDF
-• Non-text content (pure images/graphics)
-• Unusual document formatting
+• Very low quality scan/image
+• Handwritten content (not machine readable)
+• Extremely complex formatting
+• Non-standard fonts or languages
+• Heavily compressed images
 
 💡 Recommendations:
-• Try uploading a higher resolution/quality PDF
+• Try uploading a higher quality PDF
 • Convert to Word (.docx) format if possible
-• Ensure the document contains clear, machine-readable text
-• For handwritten content, consider manual text entry`;
+• Ensure the document has clear, readable text
+• Consider manual text entry for handwritten content`;
       
       console.log(`⚠️ Limited text extraction using ${extractionMethod}`);
     }
