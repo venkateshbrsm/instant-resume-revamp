@@ -15,18 +15,27 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting to process formData...');
     const formData = await req.formData();
+    console.log('FormData processed successfully');
+    
     const file = formData.get("file");
+    console.log('File extracted from formData:', !!file);
 
     if (!file) {
+      console.log('No file found in formData');
       return new Response(
         JSON.stringify({ success: false, error: 'No file uploaded' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('Getting arrayBuffer from file...');
     const arrayBuffer = await file.arrayBuffer();
+    console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
+    
     const uint8Array = new Uint8Array(arrayBuffer);
+    console.log('Uint8Array created successfully');
 
     const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_API_KEY') || Deno.env.get('ILovePDF_PUBLIC_KEY');
 
