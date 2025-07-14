@@ -10,6 +10,14 @@ serve(async (req) => {
   console.log('Request method:', req.method);
   console.log('Request URL:', req.url);
   
+  // Log all request headers
+  console.log('=== REQUEST HEADERS ===');
+  const headerEntries = Array.from(req.headers.entries());
+  headerEntries.forEach(([key, value]) => {
+    console.log(`${key}: ${value}`);
+  });
+  console.log('=== END REQUEST HEADERS ===');
+  
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
