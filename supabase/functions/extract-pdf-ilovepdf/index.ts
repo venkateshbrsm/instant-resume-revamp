@@ -111,15 +111,22 @@ serve(async (req) => {
       console.error("Start request failed with status:", startRes.status);
       console.error("Start response body:", startData);
       return new Response(
-        JSON.stringify({ success: false, error: `API request failed: ${startRes.status} - ${JSON.stringify(startData)}` }),
+        JSON.stringify({ 
+          success: false, 
+          error: `iLovePDF API error: ${startRes.status} - ${startData?.message || startData?.error || JSON.stringify(startData)}` 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!startData || !startData.task) {
-      console.error("Failed to start task:", startData);
+      console.error("Invalid response structure from iLovePDF:");
+      console.error("Full response:", JSON.stringify(startData, null, 2));
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to start task with iLovePDF' }),
+        JSON.stringify({ 
+          success: false, 
+          error: `iLovePDF API returned unexpected response structure: ${JSON.stringify(startData)}` 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
