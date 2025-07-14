@@ -17,23 +17,23 @@ serve(async (req) => {
   try {
     console.log('Starting to process request...');
     
-    // Get environment variables
-    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY') || 
-                              Deno.env.get('ILovePDF_PUBLIC_KEY') || 
-                              Deno.env.get('ILOVEPDF_API_KEY');
+    // Get Adobe PDF Services environment variables
+    const adobeClientId = Deno.env.get('ADOBE_CLIENT_ID');
+    const adobeClientSecret = Deno.env.get('ADOBE_CLIENT_SECRET');
     
     console.log('Environment variables check:', {
-      hasPublicKey: !!iLovePdfPublicKey,
-      publicKeyLength: iLovePdfPublicKey?.length || 0,
-      publicKeyPrefix: iLovePdfPublicKey?.substring(0, 15) || 'none'
+      hasClientId: !!adobeClientId,
+      hasClientSecret: !!adobeClientSecret,
+      clientIdLength: adobeClientId?.length || 0,
+      clientIdPrefix: adobeClientId?.substring(0, 15) || 'none'
     });
 
-    if (!iLovePdfPublicKey) {
-      console.error('ILOVEPDF_PUBLIC_KEY not found in environment');
+    if (!adobeClientId || !adobeClientSecret) {
+      console.error('Adobe PDF Services credentials not found in environment');
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'iLovePDF public key not configured. Please set ILOVEPDF_PUBLIC_KEY in Supabase secrets.' 
+          error: 'Adobe PDF Services credentials not configured. Please set ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET in Supabase secrets.' 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -63,72 +63,86 @@ serve(async (req) => {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
-    // 1️⃣ Start task for PDF to Word conversion
-    console.log('Starting iLovePDF task...');
-    console.log('Using public key (first 20 chars):', iLovePdfPublicKey?.substring(0, 20));
+    // 1️⃣ Get Adobe access token
+    console.log('Getting Adobe access token...');
+    console.log('Using client ID (first 20 chars):', adobeClientId?.substring(0, 20));
     
-    const startRes = await fetch("https://api.ilovepdf.com/v1/start/pdf2word", {
+    const tokenRes = await fetch("https://ims-na1.adobelogin.com/ims/token/v1", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${iLovePdfPublicKey}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
+      body: new URLSearchParams({
+        client_id: adobeClientId,
+        client_secret: adobeClientSecret,
+        grant_type: "client_credentials",
+        scope: "openid,AdobeID,read_organizations"
+      }),
     });
 
-    const startText = await startRes.text();
-    console.log("Start task status:", startRes.status);
-    console.log("Start task response:", startText);
-    console.log("Start task headers:", Object.fromEntries(startRes.headers.entries()));
+    const tokenText = await tokenRes.text();
+    console.log("Token request status:", tokenRes.status);
+    console.log("Token response:", tokenText);
 
-    if (!startRes.ok) {
-      console.error(`iLovePDF API error: ${startRes.status} - ${startText}`);
+    if (!tokenRes.ok) {
+      console.error(`Adobe token API error: ${tokenRes.status} - ${tokenText}`);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `iLovePDF API error: ${startRes.status}`,
-          details: startText,
-          publicKeyUsed: iLovePdfPublicKey?.substring(0, 20) + '...'
+          error: `Adobe authentication failed: ${tokenRes.status}`,
+          details: tokenText,
+          clientIdUsed: adobeClientId?.substring(0, 20) + '...'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    let startData;
+    let tokenData;
     try {
-      startData = JSON.parse(startText);
+      tokenData = JSON.parse(tokenText);
     } catch (e) {
-      console.error("Failed to parse start task response:", e);
-      console.error("Raw response text:", startText);
+      console.error("Failed to parse token response:", e);
+      console.error("Raw token response:", tokenText);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "Failed to parse iLovePDF response",
-          rawResponse: startText 
+          error: "Failed to parse Adobe token response",
+          rawResponse: tokenText 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!startData || !startData.task || !startData.server) {
-      console.error("Failed to start task or invalid response:", startData);
+    if (!tokenData.access_token) {
+      console.error("No access token in response:", tokenData);
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to start task with iLovePDF" }),
+        JSON.stringify({ success: false, error: "Failed to get Adobe access token" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const { task, server } = startData;
-    console.log("Task ID:", task, "Server:", server);
+    const accessToken = tokenData.access_token;
+    console.log("Successfully obtained access token");
 
-    // 2️⃣ Upload file to assigned server
-    console.log('Uploading file to iLovePDF server...');
+    // 2️⃣ Upload PDF file to Adobe
+    console.log('Uploading PDF to Adobe...');
     const uploadForm = new FormData();
-    uploadForm.append("task", task);
-    uploadForm.append("file", new Blob([uint8Array]), file.name || "file.pdf");
+    uploadForm.append("contentAnalyzerRequests", JSON.stringify({
+      cpf_assetID: "urn:aaid:cpf:Service-52dccc8d5ab946dfac96d3a9e635d05b",
+      elements: [
+        {
+          element: "text"
+        }
+      ]
+    }));
+    uploadForm.append("file", new Blob([uint8Array], { type: "application/pdf" }), file.name || "document.pdf");
 
-    const uploadUrl = `https://${server}.ilovepdf.com/v1/upload`;
-    const uploadRes = await fetch(uploadUrl, {
+    const uploadRes = await fetch("https://cpf-ue1.adobe.io/ops/:create?respondWith=%7B%22reltype%22%3A%22http%3A//ns.adobe.com/rel/primary%22%7D", {
       method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "x-api-key": adobeClientId,
+      },
       body: uploadForm,
     });
 
@@ -136,91 +150,140 @@ serve(async (req) => {
     console.log("Upload status:", uploadRes.status);
     console.log("Upload response:", uploadText);
 
+    if (!uploadRes.ok) {
+      console.error("Failed to upload to Adobe:", uploadText);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Adobe upload failed: ${uploadRes.status}`,
+          details: uploadText 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     let uploadData;
     try {
       uploadData = JSON.parse(uploadText);
     } catch (e) {
-      console.error("Failed to parse upload response:", e);
+      console.error("Failed to parse Adobe upload response:", e);
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to parse upload response" }),
+        JSON.stringify({ success: false, error: "Failed to parse Adobe upload response" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!uploadData || !uploadData.server_filename) {
-      console.error("Failed to upload file or invalid response:", uploadData);
+    // 3️⃣ Poll for job completion
+    console.log('Polling for extraction completion...');
+    const jobLocation = uploadRes.headers.get("location");
+    if (!jobLocation) {
+      console.error("No job location in upload response");
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to upload file to iLovePDF" }),
+        JSON.stringify({ success: false, error: "No job location received from Adobe" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 3️⃣ Process task
-    console.log('Processing conversion task...');
-    const processRes = await fetch("https://api.ilovepdf.com/v1/process", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ task }),
+    let attempts = 0;
+    const maxAttempts = 30; // 30 seconds max
+    let resultData;
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      attempts++;
+
+      const statusRes = await fetch(jobLocation, {
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "x-api-key": adobeClientId,
+        },
+      });
+
+      const statusText = await statusRes.text();
+      console.log(`Attempt ${attempts} - Status: ${statusRes.status}`);
+
+      if (statusRes.ok) {
+        try {
+          resultData = JSON.parse(statusText);
+          if (resultData.status === "done") {
+            console.log("Extraction completed successfully");
+            break;
+          } else if (resultData.status === "failed") {
+            console.error("Adobe extraction failed:", resultData);
+            return new Response(
+              JSON.stringify({ success: false, error: "Adobe PDF extraction failed" }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          console.log("Job still in progress, waiting...");
+        } catch (e) {
+          console.error("Failed to parse status response:", e);
+        }
+      }
+    }
+
+    if (!resultData || resultData.status !== "done") {
+      console.error("Extraction timed out or failed");
+      return new Response(
+        JSON.stringify({ success: false, error: "Adobe PDF extraction timed out" }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 4️⃣ Download the extraction results
+    console.log('Downloading extraction results...');
+    const downloadUrl = resultData.asset?.downloadUri;
+    if (!downloadUrl) {
+      console.error("No download URL in result:", resultData);
+      return new Response(
+        JSON.stringify({ success: false, error: "No download URL received from Adobe" }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const downloadRes = await fetch(downloadUrl, {
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "x-api-key": adobeClientId,
+      },
     });
 
-    const processText = await processRes.text();
-    console.log("Process status:", processRes.status);
-    console.log("Process response:", processText);
-
-    let processData;
-    try {
-      processData = JSON.parse(processText);
-    } catch (e) {
-      console.error("Failed to parse process response:", e);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to parse process response" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!processData || processData.status !== "TaskSuccess") {
-      console.error("Failed to process task:", processData);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to process file with iLovePDF" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 4️⃣ Download converted Word file
-    console.log('Downloading converted file...');
-    const downloadRes = await fetch(`https://api.ilovepdf.com/v1/download/${task}`);
-    
     if (!downloadRes.ok) {
-      console.error("Failed to download converted file:", downloadRes.status);
+      console.error("Failed to download extraction results:", downloadRes.status);
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to download converted file" }),
+        JSON.stringify({ success: false, error: "Failed to download extraction results" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const convertedFileBuffer = await downloadRes.arrayBuffer();
-    console.log('Downloaded converted file, size:', convertedFileBuffer.byteLength);
+    const extractionResults = await downloadRes.json();
+    console.log('Downloaded extraction results');
 
-    // For now, return a success message indicating the conversion worked
-    // In a real implementation, you'd extract text from the Word document here
-    const extractedText = `PDF successfully converted to Word format using iLovePDF Direct API. 
-Original file: ${file.name}
-Converted file size: ${convertedFileBuffer.byteLength} bytes
-Task ID: ${task}
+    // Extract text from the results
+    let extractedText = "";
+    if (extractionResults.elements) {
+      for (const element of extractionResults.elements) {
+        if (element.Text) {
+          extractedText += element.Text + "\n";
+        }
+      }
+    }
 
-Note: Text extraction from the converted Word document would require additional processing.`;
+    if (!extractedText.trim()) {
+      extractedText = "No text could be extracted from the PDF using Adobe PDF Services.";
+    }
     
-    console.log('Process completed successfully');
+    console.log('Text extraction completed successfully');
+    console.log('Extracted text length:', extractedText.length);
 
     // Return the result
     return new Response(
       JSON.stringify({
         success: true,
-        extractedText: extractedText,
+        extractedText: extractedText.trim(),
         originalFileName: file.name,
-        method: 'iLovePDF Direct API',
-        taskId: task,
-        convertedFileSize: convertedFileBuffer.byteLength
+        method: 'Adobe PDF Services',
+        textLength: extractedText.length
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
