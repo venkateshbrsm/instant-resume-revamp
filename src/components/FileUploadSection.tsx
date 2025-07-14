@@ -107,11 +107,11 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-8">
       <div className="max-w-2xl w-full">
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-2">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
             Upload Your Current Resume
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground px-4">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
             Supported formats: PDF, DOCX, TXT (Max 10MB)
           </p>
         </div>

@@ -236,15 +236,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     <div className="min-h-screen bg-gradient-hero px-4 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <Badge variant="secondary" className="mb-3 sm:mb-4 px-3 sm:px-4 py-2 text-xs sm:text-sm">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+          <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
             <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
             AI Enhancement Complete
           </Badge>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-2">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
             Your Enhanced Resume Preview
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Compare your original resume with our AI-enhanced version. Pay only if you're satisfied with the results.
           </p>
         </div>
@@ -398,34 +398,34 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                         {/* Modern Header with Visual Elements */}
                         <div 
-                          className="relative rounded-xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 text-white overflow-hidden"
+                          className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
                           style={{
                             background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                           }}
                         >
                           <div className="absolute inset-0 bg-black/10"></div>
                            <div className="relative z-10">
-                             <div className="flex items-center justify-between gap-2 sm:gap-3">
+                             <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
                                <div className="min-w-0 flex-1">
-                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 break-words">{enhancedContent.name}</h1>
-                                 <p className="text-base sm:text-lg md:text-xl text-white/90 font-medium break-words">{enhancedContent.title}</p>
+                                 <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
+                                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
                                </div>
                              </div>
                             
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mt-3 sm:mt-4">
-                              <div className="flex items-center gap-2 text-white/90">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
                                 <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm break-all">{enhancedContent.email}</span>
+                                <span className="text-xs sm:text-sm break-all truncate">{enhancedContent.email}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-white/90">
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
                                 <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="text-xs sm:text-sm">{enhancedContent.phone}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-white/90">
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
                                 <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm break-words">{enhancedContent.location}</span>
+                                <span className="text-xs sm:text-sm break-words truncate">{enhancedContent.location}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-white/90">
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
                                 <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="text-xs sm:text-sm">Professional</span>
                               </div>
@@ -438,19 +438,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                           
                             {/* Professional Summary with Visual Enhancement */}
-                             <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                             <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
+                              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
                                 <div 
-                                  className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
+                                  className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
                                   style={{
                                     background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                                   }}
                                 >
-                                  <Users className="w-4 sm:w-5 h-4 sm:h-5" />
+                                  <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
                                 </div>
-                                <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
+                                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
                               </div>
-                             <p className="text-foreground leading-relaxed text-sm sm:text-base">{enhancedContent.summary}</p>
+                             <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
                              
                            </div>
 
@@ -647,24 +647,24 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         </div>
 
         {/* Enhancement Features */}
-        <Card className="max-w-4xl mx-auto mb-8 bg-card/80 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4 text-center">What We Enhanced</h3>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-lg bg-accent/5 border border-accent/20">
-                <Sparkles className="w-8 h-8 text-accent mx-auto mb-2" />
-                <h4 className="font-semibold mb-1">Content Optimization</h4>
-                <p className="text-sm text-muted-foreground">Enhanced descriptions with action verbs and quantified achievements</p>
+        <Card className="max-w-4xl mx-auto mb-6 sm:mb-8 bg-card/80 backdrop-blur-sm">
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 text-center">What We Enhanced</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="text-center p-3 sm:p-4 rounded-lg bg-accent/5 border border-accent/20">
+                <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Content Optimization</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Enhanced descriptions with action verbs and quantified achievements</p>
               </div>
-              <div className="text-center p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <Eye className="w-8 h-8 text-primary mx-auto mb-2" />
-                <h4 className="font-semibold mb-1">Visual Appeal</h4>
-                <p className="text-sm text-muted-foreground">Professional formatting with better typography and layout</p>
+              <div className="text-center p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <Eye className="w-6 sm:w-8 h-6 sm:h-8 text-primary mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Visual Appeal</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Professional formatting with better typography and layout</p>
               </div>
-              <div className="text-center p-4 rounded-lg bg-accent/5 border border-accent/20">
-                <Zap className="w-8 h-8 text-accent mx-auto mb-2" />
-                <h4 className="font-semibold mb-1">ATS Optimization</h4>
-                <p className="text-sm text-muted-foreground">Structured for better parsing by applicant tracking systems</p>
+              <div className="text-center p-3 sm:p-4 rounded-lg bg-accent/5 border border-accent/20">
+                <Zap className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">ATS Optimization</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Structured for better parsing by applicant tracking systems</p>
               </div>
             </div>
           </CardContent>
@@ -672,10 +672,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
         {/* Purchase Section */}
         <Card className="max-w-md mx-auto bg-gradient-primary/5 border-primary/20">
-          <CardContent className="p-6 text-center">
-            <div className="mb-6">
-              <div className="text-3xl font-bold text-primary mb-2">₹299</div>
-              <p className="text-muted-foreground">One-time payment • Instant download</p>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="mb-4 sm:mb-6">
+              <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">₹299</div>
+              <p className="text-muted-foreground text-xs sm:text-sm">One-time payment • Instant download</p>
             </div>
             
             <div className="space-y-3 mb-6">
