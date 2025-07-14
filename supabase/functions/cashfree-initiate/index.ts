@@ -6,17 +6,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// PayU Production Configuration
-const PAYU_BASE_URL = "https://secure.payu.in/_payment";
-const MERCHANT_ID = "7d28f2fe47a4e49275bae7b2d54a1cebddaaadbe959e67602eb358e3a673439f";
-const MERCHANT_KEY = "85513e8faf409ab2ee7f8180d8f1489a04849d917d36ba92abbf2eb2d54b4171";
-const MERCHANT_SALT = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCzXT8uqHErzDcy8tgkrxWny/yyrxLvhCQhD+ARo3bC1bph9u0t3kSZjoatb4DjdVVIEizZg5PoJpBJp0G+QddZ0X/irtBL5XsswpudjPN6zXwCJHDm3tSO9ug1vOkEvjrBXicDd+e9XwtThSVB1d/N/NXBK8bkD2P5rYgJ4udQWrAmqeJabVuI5TqHyhYP1fu7oPUn/hLUvv9uRO2IIgXw+gg1/tlFgZRTlq8Gw/+RyAPnK0vn5sgK+FBq3CfDaCufzgKbYr2ET3zpkoHGRd7kgLrK8wKVQBDCw6uAeVYzgcryUC9nMfphrhoZZLKzDDntyMyWF7sRGPhNFWbuw94JAgMBAAECggEACVf0MKQJsTRkM70+0TplsGYJ9ez02ZFSqH5BN+oCB8hGe0/3rwoDHNS141cJqc+075oyx+n4zIElxxB1dknLxBwLw21D4JBFyGEi5iQvktgde6cWUpCNFh16n0IGCX83ZFdZRO78HXtUBbfL5xATJpHjOLrlE4BRvvHxQkKVtjPM0h9IvUb3gKE1G6hg8l7Dg9ruwBFaZSYi8NBGJlObBzo5V/Zu0DOKhXDh2KaiMxOqA+/n5H7UKWZnEMpCU3AYLDL9dwZ78J3eoSkk3diZOBtJjxepsdtS6cPrEYMrYabf58kyGr1AsOSy2Dgtln0Mw6EauIprGNaLiGdp4BVNYQKBgQDm3a4mLS+CMIW3w2Ccow8uhIAKIDnipTKOFReqJt/gEOfq3MzhE9WOfKs7R/8p4ujs0E81B/bRLpnIDvxTgFLVBUxQ1KBqkDww7az41qSBKRE3updFrcgvyBs3TnzloT4HV9lliJcy9cm5QLAJ8WfDQNGQKd+lWaNYN9Sb/beNXQKBgQDG5DH1uS+xe7aDc8QpSM4opqxYbxajLPWQxV1U4abToP051DAcluAojyDlKHZWFGluZvMyltj4MYKkA5ecC7ZvoGsS9M3Mpaeso0fp5JKW0XF8ljDJiakC8Nj7XI9YEIVVoBSQ4rO3g3u36SAz4RaltyxzCecguGLZ5oqOsOwcnQKBgDTwWGLAscg0wDTnRFwmt/B+ya2Ivj1OjE0wYQDPcT68IbIld4WVOr81rz4kwEomkirbiY4riVlmSjUp2op7PoNCd8GBQFevQ14k4ikdbxN/C0ewLcf4lZL/W95OzS0K0GJ2ro8txx4UZnFod/WPua94SZW5RGNyLpaoFsS+ZTyxAoGBAKdCfKlS5ULy8Rg3IP4/FfClykZMldMAGjt3XvflFHDg8FPTl+pTD4vMYjOVBX96hveraFZg+XIv4NehlbxLNU9GrwUwDmpN3WaXogCWkph25mOJwtmaBSJN/YvV2U6MBjVt/B2kKNLppf+R89ztLCiMlLrh1xdzON5avKcnLkkZAoGBAK2jkZ8xVFr2DxXQxlyMnRS5e8EDCg9jJkMw0Npe2rsvMwru+WAm2oNWP8VvVVwiJvDNWuojcA6RznHPWSrTmxMooLTvaIJuNW94phDUjyyDyROw1QQa4av3Y+J9I95Qi5GL68pWypo6UdECO2N8qhVqHnnbkySNQEvRrtsaF8Ar";
+// Cashfree Configuration
+const CASHFREE_BASE_URL = "https://api.cashfree.com/pg/orders";
+const CASHFREE_APP_ID = Deno.env.get("CASHFREE_APP_ID") || "";
+const CASHFREE_SECRET_KEY = Deno.env.get("CASHFREE_SECRET_KEY") || "";
 
-async function generatePayUHash(data: Record<string, string>): Promise<string> {
-  const hashString = `${MERCHANT_KEY}|${data.txnid}|${data.amount}|${data.productinfo}|${data.firstname}|${data.email}|||||||||||${MERCHANT_SALT}`;
+async function generateCashfreeSignature(data: string): Promise<string> {
   const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest('SHA-512', encoder.encode(hashString));
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const keyData = encoder.encode(CASHFREE_SECRET_KEY);
+  const messageData = encoder.encode(data);
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signature = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+  const hashArray = Array.from(new Uint8Array(signature));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
@@ -67,42 +76,64 @@ serve(async (req) => {
       console.log('Cancelled old pending payments for user:', user.id);
     }
     
-    // Generate completely unique transaction ID with multiple entropy sources
+    // Generate completely unique order ID with multiple entropy sources
     const timestamp = Date.now();
     const randomPart = Math.random().toString(36).substr(2, 12);
     const userHash = user.id.substr(0, 8);
-    const txnid = `TXN_${timestamp}_${userHash}_${randomPart}`;
+    const orderId = `order_${timestamp}_${userHash}_${randomPart}`;
     
-    // Ensure transaction ID is unique in database
-    const { data: existingTxn } = await supabase
+    // Ensure order ID is unique in database
+    const { data: existingOrder } = await supabase
       .from('payments')
       .select('payu_txnid')
-      .eq('payu_txnid', txnid)
+      .eq('payu_txnid', orderId)
       .single();
     
-    if (existingTxn) {
-      // If by any chance the txnid exists, add more entropy
+    if (existingOrder) {
+      // If by any chance the orderId exists, add more entropy
       const extraEntropy = Math.random().toString(36).substr(2, 6);
-      const finalTxnid = `${txnid}_${extraEntropy}`;
-      console.log('Duplicate txnid detected, using:', finalTxnid);
+      const finalOrderId = `${orderId}_${extraEntropy}`;
+      console.log('Duplicate orderId detected, using:', finalOrderId);
     }
     
-    const paymentData = {
-      key: MERCHANT_ID,
-      txnid,
-      amount: amount.toString(),
-      productinfo: `Resume Enhancement - ${fileName}`,
-      firstname: user.user_metadata?.name || user.email.split('@')[0],
-      email: user.email,
-      phone: user.user_metadata?.phone || '9999999999',
-      surl: `https://revivifymyresume.app/payment-success`,
-      furl: `https://revivifymyresume.app/payment-failure`,
-      curl: `https://revivifymyresume.app/payment-failure`,
-      service_provider: 'payu_paisa',
+    const cashfreeOrderData = {
+      order_id: orderId,
+      order_amount: parseFloat(amount.toString()),
+      order_currency: "INR",
+      customer_details: {
+        customer_id: user.id.substr(0, 8),
+        customer_name: user.user_metadata?.name || user.email.split('@')[0],
+        customer_email: user.email,
+        customer_phone: user.user_metadata?.phone || "9999999999"
+      },
+      order_meta: {
+        return_url: `https://revivifymyresume.app/payment-success`,
+        notify_url: `https://goorszhscvxywfigydfp.supabase.co/functions/v1/cashfree-verify`,
+        payment_methods: ""
+      },
+      order_note: `Resume Enhancement - ${fileName}`
     };
 
-    // Generate hash
-    const hash = await generatePayUHash(paymentData);
+    // Create order with Cashfree
+    const orderResponse = await fetch(CASHFREE_BASE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-version': '2023-08-01',
+        'x-client-id': CASHFREE_APP_ID,
+        'x-client-secret': CASHFREE_SECRET_KEY,
+      },
+      body: JSON.stringify(cashfreeOrderData)
+    });
+
+    if (!orderResponse.ok) {
+      const errorText = await orderResponse.text();
+      console.error('Cashfree order creation failed:', errorText);
+      throw new Error('Failed to create Cashfree order');
+    }
+
+    const orderResult = await orderResponse.json();
+    console.log('Cashfree order created:', orderResult);
     
     // Store NEW payment record in database
     const { data: newPayment, error: insertError } = await supabase.from('payments').insert({
@@ -111,8 +142,8 @@ serve(async (req) => {
       file_name: fileName,
       amount: parseFloat(amount.toString()),
       currency: 'INR',
-      payu_txnid: txnid,
-      payu_hash: hash,
+      payu_txnid: orderId,
+      payu_hash: orderResult.payment_session_id || '',
       status: 'initiated'
     }).select().single();
 
@@ -122,7 +153,7 @@ serve(async (req) => {
     }
 
     console.log('NEW Payment initiated:', { 
-      txnid, 
+      orderId, 
       email: user.email, 
       amount, 
       paymentId: newPayment.id,
@@ -131,10 +162,11 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        paymentUrl: PAYU_BASE_URL,
-        paymentData: { ...paymentData, hash },
+        payment_session_id: orderResult.payment_session_id,
+        order_id: orderId,
+        order_status: orderResult.order_status,
         debug: {
-          txnid,
+          orderId,
           cancelledOldPayments: existingPayments?.length || 0,
           timestamp: new Date().toISOString()
         }

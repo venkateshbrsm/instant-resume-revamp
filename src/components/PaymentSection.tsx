@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PayUPayment } from "./PayUPayment";
+import { CashfreePayment } from "./CashfreePayment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Download, CreditCard, FileDown, ArrowLeft, User } from "lucide-react";
@@ -98,7 +98,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
           if (timeDiff < 120) { // 2 minutes
             toast({
               title: "Payment in Progress",
-              description: "You have a recent payment attempt. Please check your PayU page or wait 2 minutes before trying again.",
+              description: "You have a recent payment attempt. Please check your Cashfree page or wait 2 minutes before trying again.",
               variant: "destructive"
             });
             setIsCheckingAuth(false);
@@ -158,12 +158,26 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
 
   if (showPayment) {
     return (
-      <PayUPayment
-        file={file}
-        amount={299}
-        onSuccess={handlePaymentSuccess}
-        onCancel={handlePaymentCancel}
-      />
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-6 sm:py-8">
+        <div className="max-w-md w-full">
+          <Card className="bg-card/80 backdrop-blur-sm">
+            <CardHeader className="pb-4 sm:pb-6">
+              <CardTitle className="text-center text-lg sm:text-xl">
+                Complete Payment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <CashfreePayment
+                fileName={file.name}
+                amount={299}
+              />
+              <Button variant="outline" onClick={handlePaymentCancel} className="w-full">
+                Cancel
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
   }
 
@@ -279,13 +293,13 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             >
               <CreditCard className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
               {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
-               user ? "Pay ₹299 with PayU" : "Sign In & Pay ₹299"}
+               user ? "Pay ₹299 with Cashfree" : "Sign In & Pay ₹299"}
             </Button>
 
             {/* Security Note */}
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                🔒 Secured by PayU • India's trusted payment gateway • No subscription
+                🔒 Secured by Cashfree • India's trusted payment gateway • No subscription
               </p>
             </div>
 
