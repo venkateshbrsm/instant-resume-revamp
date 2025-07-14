@@ -113,6 +113,13 @@ serve(async (req) => {
 
     // Start extract task using public key directly
     console.log('Making start/extract request with public key as Bearer token...');
+    console.log('Full request details:');
+    console.log('- URL: https://api.ilovepdf.com/v1/start/extract');
+    console.log('- Method: POST');
+    console.log('- Authorization header: Bearer [REDACTED]');
+    console.log('- Content-Type: application/json');
+    console.log('- Accept: application/json');
+    console.log('- Body:', JSON.stringify({ tool: "extract" }));
     
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
