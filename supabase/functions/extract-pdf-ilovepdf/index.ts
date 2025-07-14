@@ -24,7 +24,7 @@ serve(async (req) => {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
-    const iLovePdfPublicKey = Deno.env.get('ILovePDF_PUBLIC_KEY');
+    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_API_KEY') || Deno.env.get('ILovePDF_PUBLIC_KEY');
 
     console.log('Environment check:', {
       hasKey: !!iLovePdfPublicKey,
