@@ -80,8 +80,8 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
       console.log('PDF loaded successfully, pages:', pdf.numPages);
       
       let fullText = '';
-      // Limit to first 10 pages for preview to prevent hanging
-      const maxPages = Math.min(pdf.numPages, 10);
+      // Limit to first 5 pages for large PDFs to prevent timeout
+      const maxPages = Math.min(pdf.numPages, 5);
       
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         try {
@@ -102,8 +102,8 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
       }
 
       // Add note if PDF was truncated
-      if (pdf.numPages > 10) {
-        fullText += `\n[Preview shows first 10 pages of ${pdf.numPages} total pages. Full document will be processed for enhancement.]`;
+      if (pdf.numPages > 5) {
+        fullText += `\n[Preview shows first 5 pages of ${pdf.numPages} total pages. Full document will be processed for enhancement.]`;
       }
 
       clearTimeout(timeout);
