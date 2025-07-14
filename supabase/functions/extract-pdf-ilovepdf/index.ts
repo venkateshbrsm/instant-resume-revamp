@@ -99,105 +99,17 @@ serve(async (req) => {
     console.log('Using API key prefix:', iLovePdfPublicKey.substring(0, 20) + '...');
     console.log('Full API key length:', iLovePdfPublicKey.length);
     
-    // First, get JWT token from auth endpoint using public key
-    console.log('Getting JWT token from auth endpoint...');
-    console.log('ILovePDF_PUBLIC_KEY:', iLovePdfPublicKey?.substring(0, 15) + 'xxxxxxxx');
-    
-    // Check if this is a valid project key format (should start with "project_public_" or "live_")
-    if (!iLovePdfPublicKey?.startsWith('project_public_') && !iLovePdfPublicKey?.startsWith('live_')) {
-      console.error('Invalid public key format. Expected format: project_public_xxxxx or live_xxxxx');
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid iLovePDF public key format. Key should start with "project_public_" or "live_". Please check your iLovePDF developer account.' 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    const authRes = await fetch("https://api.ilovepdf.com/v1/auth", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        public_key: iLovePdfPublicKey
-      })
-    });
-    
-    console.log("Auth response status:", authRes.status);
-    console.log("Auth response headers:", Object.fromEntries(authRes.headers.entries()));
-    const authText = await authRes.text();
-    console.log("Auth response text length:", authText.length);
-    console.log("Auth response full text:", authText);
-    
-    if (!authRes.ok) {
-      console.error("Authentication failed with status:", authRes.status);
-      return new Response(
-        JSON.stringify({ success: false, error: `Authentication failed: ${authRes.status} - ${authText}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Check if auth response is empty
-    if (!authText || authText.trim() === '') {
-      console.error("Empty auth response from iLovePDF");
-      return new Response(
-        JSON.stringify({ success: false, error: 'Empty authentication response from iLovePDF API' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    let authData;
-    try {
-      authData = JSON.parse(authText);
-      console.log("Parsed auth data:", authData);
-    } catch (e) {
-      console.error("Failed to parse auth response:", e.message);
-      console.error("Raw auth response was:", authText);
-      return new Response(
-        JSON.stringify({ success: false, error: `Invalid auth response from iLovePDF: ${authText}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    const jwtToken = authData.token;
-    if (!jwtToken) {
-      console.error("No token in auth response. Full response:", JSON.stringify(authData, null, 2));
-      return new Response(
-        JSON.stringify({ success: false, error: `No JWT token received. Response: ${JSON.stringify(authData)}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    console.log('JWT token received successfully, length:', jwtToken.length);
-    console.log('JWT token prefix:', jwtToken.substring(0, 50) + '...');
-    
-    // Test the JWT token with a simple endpoint first
-    console.log('Testing JWT token with a simple request...');
-    const testRes = await fetch("https://api.ilovepdf.com/v1/start/compress", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tool: "compress"
-      })
-    });
-    
-    console.log("Test endpoint response status:", testRes.status);
-    const testResponseText = await testRes.text();
-    console.log("Test endpoint response:", testResponseText);
+    // Use public key directly as Bearer token (no JWT needed)
+    console.log('Using public key directly as Bearer token...');
+    console.log('Public key prefix:', iLovePdfPublicKey?.substring(0, 15) + 'xxxxxxxx');
 
-    // Now try the actual extract endpoint with JWT token
-    console.log('Making start/extract request with JWT token...');
-    console.log('JWT token being used:', jwtToken.substring(0, 50) + '...');
+    // Start extract task using public key directly
+    console.log('Making start/extract request with public key as Bearer token...');
     
     const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${iLovePdfPublicKey}`,
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
