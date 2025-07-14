@@ -1,4 +1,5 @@
 import * as mammoth from 'mammoth';
+import { supabase } from "@/integrations/supabase/client";
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
@@ -43,28 +44,49 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('PDF file detected:', file.name, 'Size:', file.size);
+  console.log('Extracting PDF text using server-side processing:', file.name, 'Size:', file.size);
   
-  // Since PDF.js has worker issues, provide a clear message about the file
-  const fileInfo = `📄 PDF Resume: ${file.name}
+  try {
+    // Create FormData to send the PDF file to our edge function
+    const formData = new FormData();
+    formData.append('file', file);
+
+    console.log('Calling PDF extraction edge function...');
+
+    // Call the edge function to extract PDF text
+    const { data, error } = await supabase.functions.invoke('extract-pdf-text', {
+      body: formData,
+    });
+
+    if (error) {
+      console.error('PDF extraction edge function error:', error);
+      throw new Error(`PDF processing failed: ${error.message}`);
+    }
+
+    if (data.success && data.extractedText) {
+      console.log('PDF text extracted successfully, length:', data.extractedText.length);
+      return data.extractedText;
+    } else {
+      throw new Error('PDF text extraction failed');
+    }
+
+  } catch (error) {
+    console.error('PDF extraction failed:', error);
+    
+    // Fallback message if server-side extraction fails
+    return `📄 PDF Resume: ${file.name}
 
 File Details:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
 - Uploaded: ${new Date().toLocaleString()}
 
-📋 Content Preview:
-Your PDF resume has been successfully uploaded and is ready for AI enhancement.
+⚠️ Text extraction encountered an issue, but your file was uploaded successfully.
 
-💡 Note: For better text preview display, consider uploading your resume as:
-• Microsoft Word (.docx) format
-• Plain text (.txt) format
+The AI enhancement process will work directly with your original PDF content to create an improved version.
 
-The AI enhancement process will analyze your complete PDF content regardless of the preview display. Your enhanced resume will include all the information from your original document.
-
-🚀 Click "Enhance with AI" to proceed with creating your improved resume!`;
-
-  return fileInfo;
+💡 For better text preview, consider uploading as .docx or .txt format.`;
+  }
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
