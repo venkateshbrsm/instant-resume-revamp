@@ -64,8 +64,9 @@ serve(async (req) => {
     const uint8Array = new Uint8Array(arrayBuffer);
 
     // 1️⃣ Get Adobe access token
+    console.log('=== USING ADOBE PDF SERVICES ===');
     console.log('Getting Adobe access token...');
-    console.log('Using client ID (first 20 chars):', adobeClientId?.substring(0, 20));
+    console.log('Using Adobe client ID (first 20 chars):', adobeClientId?.substring(0, 20));
     
     const tokenRes = await fetch("https://ims-na1.adobelogin.com/ims/token/v1", {
       method: "POST",
