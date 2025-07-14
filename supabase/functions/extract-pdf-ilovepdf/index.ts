@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import ILovePDF from "npm:@ilovepdf/ilovepdf-nodejs";
+import ILovePDF from "npm:ilovepdf";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,7 +70,7 @@ serve(async (req) => {
 
     // Use iLovePDF npm package
     console.log('Initializing iLovePDF with API keys...');
-    const ilovepdf = new ILovePDF(iLovePdfPublicKey, iLovePdfSecretKey);
+    const ilovepdf = ILovePDF(iLovePdfPublicKey, iLovePdfSecretKey);
     const task = ilovepdf.newTask('extract');
 
     console.log('Starting extract task...');
