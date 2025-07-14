@@ -97,7 +97,7 @@ serve(async (req) => {
     console.log("Auth response headers:", Object.fromEntries(authRes.headers.entries()));
     const authText = await authRes.text();
     console.log("Auth response text length:", authText.length);
-    console.log("Auth response text:", authText);
+    console.log("Auth response full text:", authText);
     
     if (!authRes.ok) {
       console.error("Authentication failed with status:", authRes.status);
