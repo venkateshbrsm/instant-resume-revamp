@@ -24,12 +24,13 @@ def health_check():
     try:
         return jsonify({
             'status': 'healthy',
-            'service': 'PDF OCR Service',
+            'service': 'PDF OCR Service v2.0',
             'libraries': {
                 'pymupdf': fitz.__version__,
                 'pytesseract': 'available'
             },
-            'success': True
+            'success': True,
+            'timestamp': '2025-07-14-v2'
         })
     except Exception as e:
         return jsonify({
@@ -37,6 +38,17 @@ def health_check():
             'error': str(e),
             'success': False
         }), 500
+
+@app.route('/debug', methods=['GET'])
+def debug_info():
+    """Debug endpoint to verify deployment"""
+    import sys
+    return jsonify({
+        'python_version': sys.version,
+        'installed_packages': str(sys.modules.keys()),
+        'app_version': 'v2.0-2025-07-14',
+        'success': True
+    })
 
 @app.route('/extract-pdf-text', methods=['POST'])
 def extract_pdf_text():
