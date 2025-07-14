@@ -279,8 +279,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px]">
-                      <div className="space-y-4">
+                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px] max-h-[800px] overflow-hidden flex flex-col">
+                      <div className="space-y-4 flex-1 overflow-hidden">
                         <div className="flex items-center gap-3 pb-3 border-b border-border/50">
                           <FileText className="w-6 h-6 text-primary" />
                           <div>
@@ -288,7 +288,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             <p className="text-sm text-muted-foreground">File: {file.name}</p>
                           </div>
                         </div>
-                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line overflow-y-auto">
+                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line overflow-y-auto flex-1 max-h-[600px] pr-2">
                           {originalContent}
                         </div>
                         {extractedText && (
