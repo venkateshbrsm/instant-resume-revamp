@@ -4,6 +4,9 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 // Import PDF.js for proper PDF parsing
 import * as pdfjsLib from "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.min.mjs";
 
+// Import Tesseract.js for OCR functionality
+import Tesseract from "https://esm.sh/tesseract.js@5.0.4";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -82,6 +85,94 @@ const extractPDFTextWithPDFJS = async (pdfBuffer: ArrayBuffer): Promise<string> 
   }
 };
 
+// OCR text extraction using Tesseract.js
+const extractTextWithOCR = async (pdfBuffer: ArrayBuffer): Promise<string> => {
+  try {
+    console.log('Starting OCR text extraction...');
+    
+    // Load the PDF document for image conversion
+    const loadingTask = pdfjsLib.getDocument({
+      data: new Uint8Array(pdfBuffer),
+      verbosity: 0,
+      isEvalSupported: false,
+      disableFontFace: true,
+      disableStream: true,
+      disableAutoFetch: true,
+    });
+    
+    const pdf = await loadingTask.promise;
+    console.log(`PDF loaded for OCR. Pages: ${pdf.numPages}`);
+    
+    let ocrText = '';
+    const maxPages = Math.min(pdf.numPages, 5); // Limit OCR to first 5 pages for performance
+    
+    // Process each page with OCR
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      try {
+        console.log(`OCR processing page ${pageNum}/${maxPages}`);
+        
+        const page = await pdf.getPage(pageNum);
+        
+        // Render page to canvas for OCR
+        const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better OCR
+        const canvas = new OffscreenCanvas(viewport.width, viewport.height);
+        const context = canvas.getContext('2d');
+        
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+        }).promise;
+        
+        // Convert canvas to image blob
+        const imageBlob = await canvas.convertToBlob({ type: 'image/png' });
+        const imageBuffer = await imageBlob.arrayBuffer();
+        
+        // Run OCR on the image
+        console.log(`Running OCR on page ${pageNum}...`);
+        const { data: { text } } = await Tesseract.recognize(
+          new Uint8Array(imageBuffer),
+          'eng',
+          {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                console.log(`OCR progress: ${Math.round(m.progress * 100)}%`);
+              }
+            }
+          }
+        );
+        
+        if (text && text.trim().length > 10) {
+          ocrText += `\n\n--- Page ${pageNum} (OCR) ---\n${text.trim()}`;
+        } else {
+          ocrText += `\n\n--- Page ${pageNum} (OCR) ---\n[No text detected on this page]`;
+        }
+        
+        // Clean up
+        page.cleanup();
+        
+      } catch (pageError) {
+        console.error(`OCR error on page ${pageNum}:`, pageError);
+        ocrText += `\n\n--- Page ${pageNum} (OCR) ---\n[OCR failed for this page]`;
+      }
+    }
+    
+    // Add truncation note if needed
+    if (pdf.numPages > maxPages) {
+      ocrText += `\n\n--- OCR Note ---\nProcessed first ${maxPages} pages of ${pdf.numPages} total pages with OCR.`;
+    }
+    
+    // Clean up PDF document
+    pdf.cleanup();
+    
+    console.log(`OCR extraction completed. Total length: ${ocrText.length} characters`);
+    return ocrText.trim();
+    
+  } catch (error) {
+    console.error('OCR extraction failed:', error);
+    throw new Error(`OCR processing failed: ${error.message}`);
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -102,8 +193,55 @@ serve(async (req) => {
     // Get the PDF content as ArrayBuffer
     const arrayBuffer = await pdfFile.arrayBuffer();
     
-    // Extract text using PDF.js
-    const extractedText = await extractPDFTextWithPDFJS(arrayBuffer);
+    let extractedText = '';
+    let extractionMethod = '';
+    let ocrUsed = false;
+    
+    try {
+      // First attempt: Extract text using PDF.js
+      console.log('🔍 Attempting PDF.js text extraction...');
+      extractedText = await extractPDFTextWithPDFJS(arrayBuffer);
+      extractionMethod = 'PDF.js';
+      
+      // Check if PDF.js extraction was successful
+      const meaningfulTextThreshold = 100; // Minimum characters for meaningful content
+      const hasEnoughText = extractedText && extractedText.length > meaningfulTextThreshold;
+      
+      if (!hasEnoughText) {
+        console.log('📷 PDF.js yielded insufficient text, falling back to OCR...');
+        
+        try {
+          const ocrText = await extractTextWithOCR(arrayBuffer);
+          if (ocrText && ocrText.length > 50) {
+            extractedText = ocrText;
+            extractionMethod = 'OCR (Tesseract)';
+            ocrUsed = true;
+            console.log('✅ OCR extraction successful');
+          } else {
+            // Combine both results if available
+            extractedText = extractedText + '\n\n' + (ocrText || '');
+            extractionMethod = 'PDF.js + OCR (limited)';
+            ocrUsed = true;
+          }
+        } catch (ocrError) {
+          console.error('OCR fallback failed:', ocrError);
+          extractionMethod = 'PDF.js only (OCR failed)';
+        }
+      }
+      
+    } catch (pdfError) {
+      console.error('PDF.js failed, trying OCR directly:', pdfError);
+      
+      try {
+        extractedText = await extractTextWithOCR(arrayBuffer);
+        extractionMethod = 'OCR only';
+        ocrUsed = true;
+        console.log('✅ OCR-only extraction successful');
+      } catch (ocrError) {
+        console.error('Both PDF.js and OCR failed:', ocrError);
+        throw new Error('Both text extraction methods failed');
+      }
+    }
     
     let finalContent = '';
     
@@ -118,37 +256,44 @@ ${extractedText}
 📊 Extraction Summary:
 • File Size: ${(pdfFile.size / 1024).toFixed(1)} KB
 • Text Length: ${extractedText.length} characters
-• Extraction Method: PDF.js
+• Extraction Method: ${extractionMethod}
+${ocrUsed ? '• OCR Processing: ✅ Applied for better text recognition' : ''}
 • Status: ✅ Successfully extracted text content`;
       
-      console.log('✅ Text extraction successful');
+      console.log(`✅ Text extraction successful using ${extractionMethod}`);
     } else {
-      // Limited text extracted
+      // Very limited text extracted even with OCR
       finalContent = `📄 ${pdfFile.name}
 
-⚠️ Limited text extraction results.
+⚠️ Limited text extraction results even with OCR processing.
 
-Possible reasons:
-• Image-based PDF (scanned document)
-• Password-protected content
-• Complex formatting or non-standard encoding
-• Encrypted or secured PDF
+Attempted Methods:
+• PDF.js text extraction
+• OCR (Optical Character Recognition)
 
 Extracted content (if any):
 ${extractedText || '[No readable text found]'}
 
 ---
-📊 File Details:
-• Size: ${(pdfFile.size / 1024).toFixed(1)} KB
+📊 Processing Details:
+• File Size: ${(pdfFile.size / 1024).toFixed(1)} KB
 • Type: ${pdfFile.type || 'application/pdf'}
-• Processing: PDF.js engine
+• Methods Used: ${extractionMethod}
 
-💡 For better results, try:
-• Converting to Word (.docx) format
-• Ensuring PDF contains selectable text (not scanned images)
-• Using an unprotected PDF version`;
+Possible reasons for limited results:
+• Very low quality scan/image
+• Handwritten content (not machine readable)
+• Extremely complex formatting
+• Non-standard fonts or languages
+• Heavily compressed images
+
+💡 Recommendations:
+• Try uploading a higher quality PDF
+• Convert to Word (.docx) format if possible
+• Ensure the document has clear, readable text
+• Consider manual text entry for handwritten content`;
       
-      console.log('⚠️ Limited text extraction');
+      console.log(`⚠️ Limited text extraction using ${extractionMethod}`);
     }
 
     return new Response(
