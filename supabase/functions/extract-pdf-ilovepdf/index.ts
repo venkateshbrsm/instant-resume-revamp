@@ -102,61 +102,49 @@ serve(async (req) => {
     const uint8Array = new Uint8Array(arrayBuffer);
     console.log('Uint8Array created successfully');
 
-    // 1️⃣ Start task - Test with a simple API call first
-    console.log('Making API call to start extract task...');
-    console.log('Using API key prefix:', iLovePdfPublicKey.substring(0, 20) + '...');
-    console.log('Full API key length:', iLovePdfPublicKey.length);
-    
-    // Use public key directly as Bearer token (no JWT needed)
-    console.log('Using public key directly as Bearer token...');
-    console.log('Public key prefix:', iLovePdfPublicKey?.substring(0, 15) + 'xxxxxxxx');
-
-    // Start extract task using public key directly
-    console.log('Making start/extract request with public key as Bearer token...');
+    // Use the direct extract API endpoint
+    console.log('Using direct extract API endpoint...');
     console.log('Full request details:');
-    console.log('- URL: https://api.ilovepdf.com/v1/start/extract');
+    console.log('- URL: https://api.ilovepdf.com/v1/process/extract');
     console.log('- Method: POST');
     console.log('- Authorization header: Bearer [REDACTED]');
-    console.log('- Content-Type: application/json');
-    console.log('- Accept: application/json');
-    console.log('- Body:', JSON.stringify({ tool: "extract" }));
     
-    const startRes = await fetch("https://api.ilovepdf.com/v1/start/extract", {
+    // Create form data with the file
+    const extractForm = new FormData();
+    extractForm.append("file", new Blob([uint8Array], { type: file.type }), file.name);
+    
+    const extractRes = await fetch("https://api.ilovepdf.com/v1/process/extract", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${iLovePdfPublicKey}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
       },
-      body: JSON.stringify({
-        tool: "extract"
-      })
-     });
+      body: extractForm
+    });
     
-    console.log("startRes status:", startRes.status);
-    console.log("Start response statusText:", startRes.statusText);
-    console.log("Start response headers:", Object.fromEntries(startRes.headers.entries()));
+    console.log("Extract response status:", extractRes.status);
+    console.log("Extract response statusText:", extractRes.statusText);
+    console.log("Extract response headers:", Object.fromEntries(extractRes.headers.entries()));
     
     // Get the response text first to see what we're dealing with
-    const responseText = await startRes.text();
-    console.log("startRes raw text:", responseText);
+    const responseText = await extractRes.text();
+    console.log("Extract response raw text:", responseText);
     
     // Check if response is empty
     if (!responseText || responseText.trim() === '') {
-      console.error("Empty response from iLovePDF API");
+      console.error("Empty response from iLovePDF extract API");
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Empty response from iLovePDF API. Status: ${startRes.status} ${startRes.statusText}` 
+          error: `Empty response from iLovePDF extract API. Status: ${extractRes.status} ${extractRes.statusText}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    let startData;
+    let extractData;
     try {
-      startData = JSON.parse(responseText);
-      console.log("Parsed startData:", startData);
+      extractData = JSON.parse(responseText);
+      console.log("Parsed extract data:", extractData);
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
       console.error("Response was:", responseText);
@@ -166,93 +154,27 @@ serve(async (req) => {
       );
     }
 
-    if (!startRes.ok) {
-      console.error("Start request failed with status:", startRes.status);
-      console.error("Start response body:", startData);
+    if (!extractRes.ok) {
+      console.error("Extract request failed with status:", extractRes.status);
+      console.error("Extract response body:", extractData);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `iLovePDF API error: ${startRes.status} - ${startData?.message || startData?.error || JSON.stringify(startData)}` 
+          error: `iLovePDF extract API error: ${extractRes.status} - ${extractData?.message || extractData?.error || JSON.stringify(extractData)}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!startData || !startData.task) {
-      console.error("Invalid response structure from iLovePDF:");
-      console.error("Full response:", JSON.stringify(startData, null, 2));
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: `iLovePDF API returned unexpected response structure: ${JSON.stringify(startData)}` 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('Extract completed successfully');
 
-    // 2️⃣ Upload file
-    const uploadForm = new FormData();
-    uploadForm.append("task", startData.task);
-    uploadForm.append("file", new Blob([uint8Array], { type: file.type }), file.name);
-
-    const uploadRes = await fetch("https://api.ilovepdf.com/v1/upload", {
-      method: "POST",
-      body: uploadForm,
-    });
-    const uploadData = await uploadRes.json();
-
-    console.log("uploadData:", uploadData);
-
-    if (!uploadData.server_filename) {
-      console.error("Upload error:", uploadData);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to upload file' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 3️⃣ Process
-    const processRes = await fetch("https://api.ilovepdf.com/v1/process", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ task: startData.task }),
-    });
-    const processData = await processRes.json();
-
-    console.log("processData:", processData);
-
-    if (!processData.status || processData.status !== "TaskSuccess") {
-      console.error("Process error:", processData);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to process file' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 4️⃣ Download
-    const downloadRes = await fetch(`https://api.ilovepdf.com/v1/download/${startData.task}`);
-    
-    if (!downloadRes.ok) {
-      console.error("Download failed:", downloadRes.status, downloadRes.statusText);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to download result' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const blob = await downloadRes.blob();
-    const arrayBufferResult = await blob.arrayBuffer();
-
-    console.log('Extract completed successfully, result size:', arrayBufferResult.byteLength);
-
-    // For extract task, we return JSON with extracted text info
-    // The actual ZIP would contain extracted text/images
+    // Return the extracted data
     return new Response(
       JSON.stringify({
         success: true,
-        extractedText: 'Text extraction completed successfully via iLovePDF API. Downloaded ZIP contains extracted content.',
+        extractedText: extractData?.text || 'Text extraction completed successfully via iLovePDF direct extract API.',
         originalFileName: file.name,
-        resultSize: arrayBufferResult.byteLength
+        extractData: extractData
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
