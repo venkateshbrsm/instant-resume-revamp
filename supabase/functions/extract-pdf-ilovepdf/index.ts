@@ -113,24 +113,37 @@ serve(async (req) => {
       body: JSON.stringify({})
     });
     
-    console.log("Start response status:", startRes.status);
-    console.log("Start response statusText:", startRes.statusText);
-    
-    if (!startRes.ok) {
-      const startError = await startRes.text();
-      console.error("Start task failed:", startError);
+    const text = await startRes.text();
+    console.log("startRes status:", startRes.status);
+    console.log("startRes raw text:", text);
+
+    let startData = null;
+    try {
+      startData = JSON.parse(text);
+    } catch (e) {
+      console.error("JSON parse error:", e);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Failed to start extract task: ${startRes.status} - ${startError}` 
+          error: `Failed to parse JSON response: ${e.message}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    const startData = await startRes.json();
-    console.log("Start task data:", startData);
+
+    if (!startData || !startData.task) {
+      console.error("Failed to start task or invalid response:", startData);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to start extract task: ${startRes.status} - Invalid response structure` 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { task, server } = startData;
+    console.log("Task:", task, "Server:", server);
     
     if (!task) {
       console.error("No task ID received from start endpoint");
