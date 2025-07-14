@@ -100,7 +100,7 @@ serve(async (req) => {
     }
 
     const uploadData = await uploadResponse.json();
-    console.log('File uploaded successfully, server filename:', uploadData.server_filename);
+    console.log('File uploaded successfully:', JSON.stringify(uploadData, null, 2));
 
     // Step 4: Process the file
     const processResponse = await fetch(`https://api.ilovepdf.com/v1/process`, {
@@ -111,11 +111,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         task: taskId,
-        tool: 'extract',
-        files: [{
-          server_filename: uploadData.server_filename,
-          filename: file.name
-        }]
+        tool: 'extract'
       }),
     });
 
