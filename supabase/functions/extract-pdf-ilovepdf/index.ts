@@ -192,15 +192,13 @@ serve(async (req) => {
     
     const jobRequestBody = {
       assetID: assetId,
-      getElementsOptions: {
-        elementsToExtract: ["text"],
-        elementsToExtractRenditions: []
-      }
+      elementsToExtract: ["text"],
+      elementsToExtractRenditions: []
     };
     
     console.log("Job request body:", JSON.stringify(jobRequestBody, null, 2));
     
-    const jobRes = await fetch("https://pdf-services.adobe.io/operation/extractpdf", {
+    const jobRes = await fetch("https://pdf-services.adobe.io/operation/pdfServices/extract", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
