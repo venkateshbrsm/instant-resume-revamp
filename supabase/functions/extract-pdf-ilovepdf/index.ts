@@ -69,15 +69,15 @@ serve(async (req) => {
     
     // First, get JWT token from auth endpoint using public key
     console.log('Getting JWT token from auth endpoint...');
-    console.log('Using public key:', iLovePdfPublicKey?.substring(0, 20) + '...');
+    console.log('ILovePDF_PUBLIC_KEY:', iLovePdfPublicKey?.substring(0, 15) + 'xxxxxxxx');
     
-    // Check if this is a valid project key format (should start with "project_public_")
-    if (!iLovePdfPublicKey?.startsWith('project_public_')) {
-      console.error('Invalid public key format. Expected format: project_public_xxxxx');
+    // Check if this is a valid project key format (should start with "project_public_" or "live_")
+    if (!iLovePdfPublicKey?.startsWith('project_public_') && !iLovePdfPublicKey?.startsWith('live_')) {
+      console.error('Invalid public key format. Expected format: project_public_xxxxx or live_xxxxx');
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Invalid iLovePDF public key format. Key should start with "project_public_". Please check your iLovePDF developer account.' 
+          error: 'Invalid iLovePDF public key format. Key should start with "project_public_" or "live_". Please check your iLovePDF developer account.' 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -172,22 +172,15 @@ serve(async (req) => {
       body: JSON.stringify({
         tool: "extract"
       })
-    });
+     });
     
-    console.log("Extract request headers sent:", {
-      Authorization: `Bearer ${jwtToken.substring(0, 30)}...`,
-      "Content-Type": "application/json"
-    });
-    
-    console.log("Start response status:", startRes.status);
+    console.log("startRes status:", startRes.status);
     console.log("Start response statusText:", startRes.statusText);
     console.log("Start response headers:", Object.fromEntries(startRes.headers.entries()));
     
     // Get the response text first to see what we're dealing with
     const responseText = await startRes.text();
-    console.log("Raw response text length:", responseText.length);
-    console.log("Raw response text (first 500 chars):", responseText.substring(0, 500));
-    console.log("Raw response text (full):", responseText);
+    console.log("startRes raw text:", responseText);
     
     // Check if response is empty
     if (!responseText || responseText.trim() === '') {
@@ -204,6 +197,7 @@ serve(async (req) => {
     let startData;
     try {
       startData = JSON.parse(responseText);
+      console.log("Parsed startData:", startData);
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
       console.error("Response was:", responseText);
@@ -212,8 +206,6 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log("Parsed startData:", startData);
 
     if (!startRes.ok) {
       console.error("Start request failed with status:", startRes.status);
