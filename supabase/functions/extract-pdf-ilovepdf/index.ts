@@ -113,6 +113,7 @@ serve(async (req) => {
       method: "GET",
       headers: {
         Authorization: `Bearer ${iLovePdfPublicKey}`,
+        'Content-Type': 'application/json',
       }
     });
     
