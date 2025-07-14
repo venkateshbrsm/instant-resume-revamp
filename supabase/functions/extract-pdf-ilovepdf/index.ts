@@ -26,6 +26,12 @@ serve(async (req) => {
 
     const iLovePdfPublicKey = Deno.env.get('ILovePDF_PUBLIC_KEY');
 
+    console.log('Environment check:', {
+      hasKey: !!iLovePdfPublicKey,
+      keyLength: iLovePdfPublicKey?.length || 0,
+      keyPrefix: iLovePdfPublicKey?.substring(0, 10) || 'none'
+    });
+
     if (!iLovePdfPublicKey) {
       console.error('iLovePDF public key not found');
       return new Response(
