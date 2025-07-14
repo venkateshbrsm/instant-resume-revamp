@@ -44,44 +44,42 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Processing PDF using cloud-based extraction:', file.name, 'Size:', file.size);
+  console.log('Converting PDF to DOCX for reliable text extraction:', file.name, 'Size:', file.size);
   
   try {
-    // Create FormData to send the PDF file to our edge function
+    // Step 1: Convert PDF to DOCX using CloudConvert
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Calling cloud PDF extraction edge function...');
+    console.log('Converting PDF to DOCX...');
 
-    // Call the edge function for cloud-based PDF processing
-    const { data, error } = await supabase.functions.invoke('extract-pdf-cloud', {
+    const { data: conversionData, error: conversionError } = await supabase.functions.invoke('convert-pdf-to-docx', {
       body: formData,
     });
 
-    if (error) {
-      console.error('Cloud PDF extraction error:', error);
-      throw new Error(`PDF cloud processing failed: ${error.message}`);
+    if (conversionError) {
+      console.error('PDF to DOCX conversion error:', conversionError);
+      throw new Error(`PDF conversion failed: ${conversionError.message}`);
     }
 
-    if (data.success && data.extractedText) {
-      console.log('PDF text extracted successfully via cloud API, length:', data.extractedText.length);
-      return data.extractedText;
-    } else {
-      console.error('Cloud PDF processing failed:', data.error);
-      return data.extractedText || `📄 PDF Processing Failed
-
-The cloud-based PDF processing could not extract text from this file.
-
-💡 Try instead:
-• Converting to .docx format for instant processing
-• Using a text-based PDF (not scanned images)
-• Ensuring the PDF isn't password-protected
-
-The AI enhancement may still work with the document structure.`;
+    if (!conversionData.success) {
+      console.error('PDF conversion failed:', conversionData.error);
+      throw new Error(`PDF conversion failed: ${conversionData.error}`);
     }
+
+    console.log('PDF converted to DOCX successfully, processing text...');
+
+    // Step 2: Extract text from the converted DOCX
+    const docxBase64 = conversionData.docxData;
+    const docxArrayBuffer = Uint8Array.from(atob(docxBase64), c => c.charCodeAt(0)).buffer;
+    
+    const result = await mammoth.extractRawText({ arrayBuffer: docxArrayBuffer });
+    
+    console.log('Text extracted from converted DOCX, length:', result.value.length);
+    return result.value;
 
   } catch (error) {
-    console.error('PDF cloud extraction failed:', error);
+    console.error('PDF processing failed:', error);
     
     return `📄 PDF Resume: ${file.name}
 
@@ -90,18 +88,17 @@ File Details:
 - Type: ${file.type}
 - Uploaded: ${new Date().toLocaleString()}
 
-❌ Cloud Processing Error
+❌ PDF Processing Error
 
-Unable to process this PDF using cloud services.
+Unable to convert and process this PDF file.
 
-💡 Alternative options:
-• Convert to .docx format for better processing
-• Try a different PDF file
+💡 Try instead:
+• Save as .docx format from your word processor
+• Use a different PDF file
 • Ensure the file isn't corrupted or password-protected
 
 The resume enhancement will still attempt to process the document.`;
   }
-
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
