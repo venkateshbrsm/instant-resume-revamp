@@ -113,16 +113,33 @@ serve(async (req) => {
     const taskId = startData.task;
     console.log('Extract task started:', taskId);
 
-    // Step 3: Upload file
+    // Step 3: Upload file - Save to /tmp first for proper handling in Deno
     console.log('Preparing file upload for:', file.name, 'Size:', file.size, 'Type:', file.type);
+    
+    // Read file content and save to /tmp directory
+    const fileArrayBuffer = await file.arrayBuffer();
+    const tempFileName = `/tmp/${file.name}`;
+    
+    console.log('Saving file to temp directory:', tempFileName, 'Size:', fileArrayBuffer.byteLength);
+    await Deno.writeFile(tempFileName, new Uint8Array(fileArrayBuffer));
+    
+    // Verify file was written correctly
+    const savedFileInfo = await Deno.stat(tempFileName);
+    console.log('Saved file info:', { size: savedFileInfo.size, path: tempFileName });
+    
+    // Read file back and create new Blob
+    const savedFileContent = await Deno.readFile(tempFileName);
+    const fileBlob = new Blob([savedFileContent], { type: file.type || 'application/pdf' });
+    
+    console.log('Created blob from saved file:', { size: fileBlob.size, type: fileBlob.type });
     
     const uploadFormData = new FormData();
     uploadFormData.append('task', taskId);
-    uploadFormData.append('file', file, file.name);
+    uploadFormData.append('file', fileBlob, file.name);
     
     console.log('FormData entries for upload:');
     for (const [key, value] of uploadFormData.entries()) {
-      console.log(`${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
+      console.log(`${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value instanceof Blob ? `Blob(${value.size} bytes, ${value.type})` : value);
     }
 
     const uploadResponse = await fetch(`https://api.ilovepdf.com/v1/upload`, {
@@ -207,6 +224,14 @@ Result contains ${resultArrayBuffer.byteLength} bytes of extracted data.
 File processed successfully and ready for analysis.`;
     
     console.log('Text extraction completed, result size:', resultArrayBuffer.byteLength);
+
+    // Clean up temporary file
+    try {
+      await Deno.remove(tempFileName);
+      console.log('Temporary file cleaned up:', tempFileName);
+    } catch (cleanupError) {
+      console.warn('Failed to clean up temporary file:', cleanupError);
+    }
 
     return new Response(
       JSON.stringify({
