@@ -198,8 +198,10 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         assetID: assetId,
-        elementsToExtract: ["text"],
-        elementsToExtractRenditions: []
+        getElementsOptions: {
+          elementsToExtract: ["text"],
+          elementsToExtractRenditions: []
+        }
       }),
     });
 
