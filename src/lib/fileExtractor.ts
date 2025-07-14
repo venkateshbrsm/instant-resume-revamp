@@ -1,4 +1,5 @@
 import * as mammoth from 'mammoth';
+import { supabase } from "@/integrations/supabase/client";
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
@@ -43,32 +44,64 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Processing PDF file:', file.name, 'Size:', file.size);
+  console.log('Processing PDF using cloud-based extraction:', file.name, 'Size:', file.size);
   
-  // For now, provide a helpful response that acknowledges the PDF upload
-  // and guides the user on next steps
-  return `📄 PDF Resume: ${file.name}
+  try {
+    // Create FormData to send the PDF file to our edge function
+    const formData = new FormData();
+    formData.append('file', file);
+
+    console.log('Calling cloud PDF extraction edge function...');
+
+    // Call the edge function for cloud-based PDF processing
+    const { data, error } = await supabase.functions.invoke('extract-pdf-cloud', {
+      body: formData,
+    });
+
+    if (error) {
+      console.error('Cloud PDF extraction error:', error);
+      throw new Error(`PDF cloud processing failed: ${error.message}`);
+    }
+
+    if (data.success && data.extractedText) {
+      console.log('PDF text extracted successfully via cloud API, length:', data.extractedText.length);
+      return data.extractedText;
+    } else {
+      console.error('Cloud PDF processing failed:', data.error);
+      return data.extractedText || `📄 PDF Processing Failed
+
+The cloud-based PDF processing could not extract text from this file.
+
+💡 Try instead:
+• Converting to .docx format for instant processing
+• Using a text-based PDF (not scanned images)
+• Ensuring the PDF isn't password-protected
+
+The AI enhancement may still work with the document structure.`;
+    }
+
+  } catch (error) {
+    console.error('PDF cloud extraction failed:', error);
+    
+    return `📄 PDF Resume: ${file.name}
 
 File Details:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
 - Uploaded: ${new Date().toLocaleString()}
 
-✅ PDF Upload Successful
+❌ Cloud Processing Error
 
-Your PDF has been uploaded and will be processed by our AI enhancement system. 
+Unable to process this PDF using cloud services.
 
-📋 Next Steps:
-• The AI will analyze your resume structure and content
-• Enhanced resume generation will proceed automatically
-• You'll receive an improved version of your resume
+💡 Alternative options:
+• Convert to .docx format for better processing
+• Try a different PDF file
+• Ensure the file isn't corrupted or password-protected
 
-💡 For Best Results:
-• .docx files provide optimal text extraction
-• Text-based PDFs work better than scanned images
-• Ensure your PDF contains selectable text
+The resume enhancement will still attempt to process the document.`;
+  }
 
-Your resume enhancement is ready to begin!`;
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
