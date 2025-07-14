@@ -19,6 +19,8 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [lastPaymentAttempt, setLastPaymentAttempt] = useState<number>(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -55,12 +57,56 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   }, [toast]);
 
   const handlePaymentClick = async () => {
+    // Rate limiting: Prevent multiple clicks within 3 seconds
+    const now = Date.now();
+    if (now - lastPaymentAttempt < 3000) {
+      toast({
+        title: "Please wait",
+        description: "Please wait a few seconds before trying again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLastPaymentAttempt(now);
     setIsCheckingAuth(true);
+    setIsPaymentProcessing(true);
     
     try {
+      // Check for any recent pending payments for this user
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
+        // Check for recent pending payments to prevent duplicates
+        const { data: recentPayments, error: paymentError } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('email', session.user.email)
+          .eq('status', 'initiated')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (paymentError) {
+          console.error('Error checking recent payments:', paymentError);
+        }
+
+        // If there's a payment within the last 2 minutes, warn user
+        if (recentPayments && recentPayments.length > 0) {
+          const lastPayment = new Date(recentPayments[0].created_at);
+          const timeDiff = (now - lastPayment.getTime()) / 1000; // seconds
+          
+          if (timeDiff < 120) { // 2 minutes
+            toast({
+              title: "Payment in Progress",
+              description: "You have a recent payment attempt. Please check your PayU page or wait 2 minutes before trying again.",
+              variant: "destructive"
+            });
+            setIsCheckingAuth(false);
+            setIsPaymentProcessing(false);
+            return;
+          }
+        }
+
         // User is authenticated, proceed with payment
         setShowPayment(true);
       } else {
@@ -79,14 +125,16 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
         navigate('/auth');
       }
     } catch (error) {
+      console.error('Payment error:', error);
       toast({
-        title: "Authentication Check Failed",
-        description: "Please try again.",
+        title: "Payment Error",
+        description: "Unable to process payment right now. Please try again in a few minutes.",
         variant: "destructive"
       });
     }
     
     setIsCheckingAuth(false);
+    setIsPaymentProcessing(false);
   };
 
   const handlePaymentSuccess = () => {
@@ -226,11 +274,11 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               variant="hero" 
               size="xl" 
               onClick={handlePaymentClick}
-              disabled={isCheckingAuth}
+              disabled={isCheckingAuth || isPaymentProcessing}
               className="w-full"
             >
               <CreditCard className="w-5 h-5 mr-2" />
-              {isCheckingAuth ? "Checking authentication..." : 
+              {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
                user ? "Pay ₹299 with PayU" : "Sign In & Pay ₹299"}
             </Button>
 
