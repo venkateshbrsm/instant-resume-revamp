@@ -125,27 +125,49 @@ serve(async (req) => {
     const accessToken = tokenData.access_token;
     console.log("Successfully obtained access token");
 
-    // 2️⃣ Step 1: Upload PDF file to Adobe
-    console.log('Uploading PDF file to Adobe...');
-    const uploadForm = new FormData();
+    // 2️⃣ Step 1: Create asset and get upload URL
+    console.log('Creating asset and getting upload URL from Adobe...');
     
-    // Use Blob with proper MIME type and ensure filename is set correctly
-    const pdfBlob = new Blob([uint8Array], { type: "application/pdf" });
-    uploadForm.append("file", pdfBlob, file.name || "document.pdf");
-    
-    console.log('FormData created with file:', {
-      blobSize: pdfBlob.size,
-      blobType: pdfBlob.type,
-      fileName: file.name || "document.pdf"
-    });
-
-    const uploadRes = await fetch("https://pdf-services.adobe.io/assets", {
+    const createAssetRes = await fetch("https://pdf-services.adobe.io/assets", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "x-api-key": adobeClientId,
+        "Content-Type": "application/json",
       },
-      body: uploadForm,
+      body: JSON.stringify({
+        mediaType: "application/pdf"
+      }),
+    });
+
+    if (!createAssetRes.ok) {
+      const errorText = await createAssetRes.text();
+      console.error('Asset creation failed:', createAssetRes.status, errorText);
+      return new Response(
+        JSON.stringify({ 
+          error: `Failed to create Adobe asset: ${createAssetRes.status} ${errorText}` 
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    const assetData = await createAssetRes.json();
+    console.log('Asset created:', assetData);
+    
+    const uploadUrl = assetData.uploadUri;
+    const assetId = assetData.assetID;
+
+    // Step 2: Upload PDF file to the signed URL
+    console.log('Uploading PDF file to signed URL...');
+    
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/pdf",
+        "Authorization": `Bearer ${accessToken}`,
+        "x-api-key": adobeClientId,
+      },
+      body: uint8Array,
     });
 
     const uploadText = await uploadRes.text();
@@ -164,25 +186,7 @@ serve(async (req) => {
       );
     }
 
-    let uploadData;
-    try {
-      uploadData = JSON.parse(uploadText);
-    } catch (e) {
-      console.error("Failed to parse Adobe upload response:", e);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to parse Adobe upload response" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const assetId = uploadData.assetID;
-    if (!assetId) {
-      console.error("No assetID in upload response:", uploadData);
-      return new Response(
-        JSON.stringify({ success: false, error: "No asset ID received from Adobe" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('Upload successful, using asset ID:', assetId);
 
     // 3️⃣ Step 2: Create extraction job
     console.log('Creating extraction job...');
