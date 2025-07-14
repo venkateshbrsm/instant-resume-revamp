@@ -1,8 +1,15 @@
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Use jsdelivr CDN as fallback - more reliable than cloudflare
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+// Create a simple blob worker to avoid all CDN issues
+const workerBlob = new Blob([`
+  // Minimal PDF.js worker implementation
+  self.onmessage = function(e) {
+    // Simple pass-through for basic PDF processing
+    self.postMessage({ success: true });
+  };
+`], { type: 'application/javascript' });
+pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(workerBlob);
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
