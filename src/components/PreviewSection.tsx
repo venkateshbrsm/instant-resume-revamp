@@ -509,20 +509,22 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                  Skills Proficiency
                                </h3>
                               
-                              <div className="space-y-4">
-                                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
-                                  const proficiency = 85 + Math.random() * 15; // Random between 85-100%
-                                  return (
-                                    <div key={index} className="space-y-2">
-                                      <div className="flex justify-between items-center">
-                                        <span className="text-sm font-medium text-foreground">{skill}</span>
-                                        <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
-                                      </div>
-                                      <Progress value={proficiency} className="h-2" />
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                               <div className="space-y-4">
+                                 {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
+                                   // Use a deterministic proficiency based on skill position and length
+                                   const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
+                                   const proficiency = Math.min(95, baseSkillLevel + (index * 2)); // Slight variation by position
+                                   return (
+                                     <div key={index} className="space-y-2">
+                                       <div className="flex justify-between items-center">
+                                         <span className="text-sm font-medium text-foreground">{skill}</span>
+                                         <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
+                                       </div>
+                                       <Progress value={proficiency} className="h-2" />
+                                     </div>
+                                   );
+                                 })}
+                               </div>
 
                               {/* Skills Tags */}
                               <div className="mt-6">
@@ -538,44 +540,38 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                           )}
 
-                          {/* Experience Chart */}
-                          <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                             <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                               <TrendingUp className="w-5 h-5" />
-                               Career Growth
-                             </h3>
-                            
-                            <div className="h-48">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <LineChart
-                                  data={[
-                                    { year: '2018', level: 1, role: 'Junior' },
-                                    { year: '2020', level: 3, role: 'Mid-Level' },
-                                    { year: '2022', level: 5, role: 'Senior' },
-                                    { year: '2024', level: 7, role: 'Lead' },
-                                  ]}
-                                >
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                                  <XAxis dataKey="year" stroke="#6b7280" />
-                                  <YAxis stroke="#6b7280" />
-                                  <Tooltip 
-                                    contentStyle={{ 
-                                      backgroundColor: '#f8fafc', 
-                                      border: '1px solid #e2e8f0',
-                                      borderRadius: '8px'
-                                    }}
-                                  />
-                                  <Line 
-                                    type="monotone" 
-                                    dataKey="level" 
-                                    stroke="#3b82f6" 
-                                    strokeWidth={3}
-                                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
-                                  />
-                                </LineChart>
-                              </ResponsiveContainer>
+                          {/* Skills Distribution Chart */}
+                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                              <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                                <TrendingUp className="w-5 h-5" />
+                                Skills Overview
+                              </h3>
+                              
+                              <div className="space-y-3">
+                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.primary}08` }}>
+                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.primary }}>
+                                    {enhancedContent.skills.length}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Total Skills</p>
+                                </div>
+                                
+                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.accent}08` }}>
+                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.accent }}>
+                                    {enhancedContent.experience?.length || 0}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Work Experiences</p>
+                                </div>
+                                
+                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.secondary}08` }}>
+                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.secondary }}>
+                                    {enhancedContent.education?.length || 0}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Educational Qualifications</p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          )}
 
                           {/* Education */}
                           {enhancedContent.education && enhancedContent.education.length > 0 && (
