@@ -22,8 +22,10 @@ serve(async (req) => {
     console.log('Environment test:');
     console.log('- Deno version available:', typeof Deno !== 'undefined');
     
-    // Get environment variables
-    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY');
+    // Get environment variables - check all possible key names
+    const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_PUBLIC_KEY') || 
+                              Deno.env.get('ILovePDF_PUBLIC_KEY') || 
+                              Deno.env.get('ILOVEPDF_API_KEY');
     const iLovePdfSecretKey = Deno.env.get('ILOVEPDF_SECRET_KEY');
     
     console.log('Environment variables check:', {
