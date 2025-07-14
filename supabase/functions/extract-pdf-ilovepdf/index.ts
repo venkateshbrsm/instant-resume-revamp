@@ -27,15 +27,17 @@ serve(async (req) => {
     const iLovePdfPublicKey = Deno.env.get('ILOVEPDF_API_KEY') || Deno.env.get('ILovePDF_PUBLIC_KEY');
 
     console.log('Environment check:', {
-      hasKey: !!iLovePdfPublicKey,
+      hasILOVEPDF_API_KEY: !!Deno.env.get('ILOVEPDF_API_KEY'),
+      hasILovePDF_PUBLIC_KEY: !!Deno.env.get('ILovePDF_PUBLIC_KEY'),
+      finalKeyExists: !!iLovePdfPublicKey,
       keyLength: iLovePdfPublicKey?.length || 0,
       keyPrefix: iLovePdfPublicKey?.substring(0, 10) || 'none'
     });
 
     if (!iLovePdfPublicKey) {
-      console.error('iLovePDF public key not found');
+      console.error('No iLovePDF API key found in either ILOVEPDF_API_KEY or ILovePDF_PUBLIC_KEY');
       return new Response(
-        JSON.stringify({ success: false, error: 'iLovePDF API key not configured' }),
+        JSON.stringify({ success: false, error: 'iLovePDF API key not configured in either ILOVEPDF_API_KEY or ILovePDF_PUBLIC_KEY' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
