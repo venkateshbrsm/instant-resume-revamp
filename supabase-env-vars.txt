@@ -1,0 +1,2 @@
+# Add this environment variable to your Supabase project
+PYTHON_OCR_SERVICE_URL=https://your-deployed-service-url.com
