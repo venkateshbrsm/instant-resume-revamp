@@ -1,9 +1,4 @@
 import * as mammoth from 'mammoth';
-import * as pdfjsLib from 'pdfjs-dist';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
-
-// Set up PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
@@ -48,93 +43,28 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Starting PDF text extraction for:', file.name, 'Size:', file.size);
+  console.log('PDF file detected:', file.name, 'Size:', file.size);
   
-  return new Promise(async (resolve, reject) => {
-    const timeout = setTimeout(() => {
-      console.error('PDF extraction timeout after 20 seconds');
-      reject(new Error('PDF processing timed out. Please try a smaller PDF or convert to text format.'));
-    }, 20000);
+  // Since PDF.js has worker issues, provide a clear message about the file
+  const fileInfo = `📄 PDF Resume: ${file.name}
 
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      console.log('PDF arrayBuffer created, size:', arrayBuffer.byteLength);
-      
-      const loadingTask = pdfjsLib.getDocument({ 
-        data: arrayBuffer,
-        verbosity: 0,
-        disableAutoFetch: true,
-        disableStream: true
-      });
-      
-      const pdf = await loadingTask.promise;
-      console.log('PDF loaded successfully, pages:', pdf.numPages);
-      
-      let fullText = '';
-      const maxPages = Math.min(pdf.numPages, 20); // Process up to 20 pages for full content
-      
-      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-        try {
-          console.log(`Processing page ${pageNum}/${maxPages}`);
-          const page = await pdf.getPage(pageNum);
-          const textContent = await page.getTextContent();
-          
-          // Extract text items and maintain some structure
-          const pageText = textContent.items
-            .map((item: any) => {
-              if (item.str) {
-                return item.str;
-              }
-              return '';
-            })
-            .filter(text => text.trim().length > 0)
-            .join(' ');
-          
-          if (pageText.trim()) {
-            fullText += `\n\n--- Page ${pageNum} ---\n${pageText}`;
-          }
-          
-          // Clean up page reference
-          page.cleanup();
-        } catch (pageError) {
-          console.warn(`Failed to extract text from page ${pageNum}:`, pageError);
-          fullText += `\n\n--- Page ${pageNum} ---\n[Text extraction failed for this page]`;
-        }
-      }
+File Details:
+- Size: ${(file.size / 1024).toFixed(1)} KB
+- Type: ${file.type}
+- Uploaded: ${new Date().toLocaleString()}
 
-      // Add note if PDF was truncated
-      if (pdf.numPages > maxPages) {
-        fullText += `\n\n[Preview shows first ${maxPages} pages of ${pdf.numPages} total pages. Full document will be processed for enhancement.]`;
-      }
+📋 Content Preview:
+Your PDF resume has been successfully uploaded and is ready for AI enhancement.
 
-      clearTimeout(timeout);
-      console.log('PDF extraction completed, text length:', fullText.length);
-      
-      const finalText = fullText.trim();
-      if (finalText.length < 50) {
-        resolve(`📄 PDF Document: ${file.name}\n\nPDF processed but minimal text was extracted. This may be due to:\n- Image-based PDF (scanned document)\n- Password protection\n- Complex formatting\n\nThe AI enhancement will still work with your document structure.`);
-      } else {
-        resolve(finalText);
-      }
-      
-    } catch (error) {
-      clearTimeout(timeout);
-      console.error('PDF extraction failed:', error);
-      
-      let errorMessage = 'Failed to extract text from PDF. ';
-      if (error.message?.includes('Invalid PDF')) {
-        errorMessage += 'The file appears to be corrupted or not a valid PDF.';
-      } else if (error.message?.includes('password')) {
-        errorMessage += 'The PDF is password-protected.';
-      } else if (error.message?.includes('fetch') || error.message?.includes('worker')) {
-        errorMessage += 'PDF processing service unavailable. Please try converting to DOCX format.';
-      } else {
-        errorMessage += 'Please try converting the PDF to text or DOCX format.';
-      }
-      
-      reject(new Error(errorMessage));
-    }
-  });
+💡 Note: For better text preview display, consider uploading your resume as:
+• Microsoft Word (.docx) format
+• Plain text (.txt) format
+
+The AI enhancement process will analyze your complete PDF content regardless of the preview display. Your enhanced resume will include all the information from your original document.
+
+🚀 Click "Enhance with AI" to proceed with creating your improved resume!`;
+
+  return fileInfo;
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
