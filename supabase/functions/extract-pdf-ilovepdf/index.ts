@@ -71,6 +71,18 @@ serve(async (req) => {
     console.log('Getting JWT token from auth endpoint...');
     console.log('Using public key:', iLovePdfPublicKey?.substring(0, 20) + '...');
     
+    // Check if this is a valid project key format (should start with "project_public_")
+    if (!iLovePdfPublicKey?.startsWith('project_public_')) {
+      console.error('Invalid public key format. Expected format: project_public_xxxxx');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid iLovePDF public key format. Key should start with "project_public_". Please check your iLovePDF developer account.' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     const authRes = await fetch("https://api.ilovepdf.com/v1/auth", {
       method: "POST",
       headers: {
