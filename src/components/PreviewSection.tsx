@@ -233,32 +233,32 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero px-4 py-8">
+    <div className="min-h-screen bg-gradient-hero px-4 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Badge variant="secondary" className="mb-4 px-4 py-2">
-            <Sparkles className="w-4 h-4 mr-2" />
+        <div className="text-center mb-6 sm:mb-8">
+          <Badge variant="secondary" className="mb-3 sm:mb-4 px-3 sm:px-4 py-2 text-xs sm:text-sm">
+            <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
             AI Enhancement Complete
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-2">
             Your Enhanced Resume Preview
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Compare your original resume with our AI-enhanced version. Pay only if you're satisfied with the results.
           </p>
         </div>
 
         {/* Comparison Tabs */}
-        <div className="max-w-4xl mx-auto mb-8">
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-6">
-              <TabsTrigger value="before" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
+            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-4 sm:mb-6">
+              <TabsTrigger value="before" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <FileText className="w-3 sm:w-4 h-3 sm:h-4" />
                 Original
               </TabsTrigger>
-              <TabsTrigger value="after" className="flex items-center gap-2">
-                <Zap className="w-4 h-4" />
+              <TabsTrigger value="after" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Zap className="w-3 sm:w-4 h-3 sm:h-4" />
                 Enhanced
               </TabsTrigger>
             </TabsList>

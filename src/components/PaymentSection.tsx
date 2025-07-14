@@ -169,46 +169,46 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
 
   if (paymentCompleted) {
     return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-6 sm:py-8">
         <div className="max-w-2xl w-full text-center">
           <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
-            <CardContent className="p-8">
-              <CheckCircle2 className="w-20 h-20 text-accent mx-auto mb-6" />
+            <CardContent className="p-6 sm:p-8">
+              <CheckCircle2 className="w-16 sm:w-20 h-16 sm:h-20 text-accent mx-auto mb-4 sm:mb-6" />
               
-              <h2 className="text-3xl font-bold mb-4">Payment Successful! 🎉</h2>
-              <p className="text-lg text-muted-foreground mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Payment Successful! 🎉</h2>
+              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 px-2">
                 Your AI-enhanced resume is ready for download. You'll receive both PDF and Word formats.
               </p>
 
-              <div className="space-y-4 mb-8">
+              <div className="space-y-4 mb-6 sm:mb-8">
                 <Button 
                   variant="success" 
                   size="xl" 
                   onClick={handleDownload}
                   className="w-full"
                 >
-                  <Download className="w-5 h-5 mr-2" />
-                  Download Enhanced Resume
+                  <Download className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+                  <span className="text-sm sm:text-base">Download Enhanced Resume</span>
                 </Button>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-                    <FileDown className="w-8 h-8 text-accent mx-auto mb-2" />
-                    <h4 className="font-semibold">PDF Format</h4>
-                    <p className="text-sm text-muted-foreground">Ready to submit</p>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="p-3 sm:p-4 rounded-lg bg-accent/5 border border-accent/20">
+                    <FileDown className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
+                    <h4 className="font-semibold text-sm sm:text-base">PDF Format</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Ready to submit</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                    <FileDown className="w-8 h-8 text-primary mx-auto mb-2" />
-                    <h4 className="font-semibold">Word Format</h4>
-                    <p className="text-sm text-muted-foreground">Easy to edit</p>
+                  <div className="p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <FileDown className="w-6 sm:w-8 h-6 sm:h-8 text-primary mx-auto mb-1 sm:mb-2" />
+                    <h4 className="font-semibold text-sm sm:text-base">Word Format</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Easy to edit</p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <h4 className="font-semibold mb-2">What's Included:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
+                <div className="p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
+                  <h4 className="font-semibold mb-2 text-sm sm:text-base">What's Included:</h4>
+                  <ul className="text-xs sm:text-sm text-muted-foreground space-y-1">
                     <li>• Professionally formatted PDF resume</li>
                     <li>• Editable Word document version</li>
                     <li>• ATS-optimized formatting</li>
@@ -217,7 +217,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
                   </ul>
                 </div>
 
-                <Button variant="outline" onClick={onStartOver} className="w-full">
+                <Button variant="outline" onClick={onStartOver} className="w-full text-sm sm:text-base">
                   Enhance Another Resume
                 </Button>
               </div>
@@ -229,30 +229,30 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-6 sm:py-8">
       <div className="max-w-md w-full">
         <Card className="bg-card/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-center">
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="text-center text-lg sm:text-xl">
               Complete Your Purchase
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Order Summary */}
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                <h4 className="font-semibold mb-2">Order Summary</h4>
+              <div className="p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
+                <h4 className="font-semibold mb-2 text-sm sm:text-base">Order Summary</h4>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm">AI Resume Enhancement</span>
-                  <span className="font-semibold">₹299</span>
+                  <span className="text-xs sm:text-sm">AI Resume Enhancement</span>
+                  <span className="font-semibold text-sm sm:text-base">₹299</span>
                 </div>
-                <div className="flex justify-between items-center text-sm text-muted-foreground">
-                  <span>Original file: {file.name}</span>
+                <div className="flex justify-between items-center text-xs sm:text-sm text-muted-foreground">
+                  <span className="break-all">Original file: {file.name}</span>
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center text-lg font-bold">
+              <div className="border-t pt-3 sm:pt-4">
+                <div className="flex justify-between items-center text-base sm:text-lg font-bold">
                   <span>Total</span>
                   <span className="text-primary">₹299</span>
                 </div>
@@ -275,9 +275,9 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               size="xl" 
               onClick={handlePaymentClick}
               disabled={isCheckingAuth || isPaymentProcessing}
-              className="w-full"
+              className="w-full text-sm sm:text-base"
             >
-              <CreditCard className="w-5 h-5 mr-2" />
+              <CreditCard className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
               {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
                user ? "Pay ₹299 with PayU" : "Sign In & Pay ₹299"}
             </Button>
@@ -290,8 +290,8 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             </div>
 
             {/* Features Reminder */}
-            <div className="space-y-2 text-sm">
-              <h5 className="font-semibold">You'll receive:</h5>
+            <div className="space-y-2 text-xs sm:text-sm">
+              <h5 className="font-semibold text-sm sm:text-base">You'll receive:</h5>
               <ul className="space-y-1 text-muted-foreground">
                 <li>✓ Professional PDF resume</li>
                 <li>✓ Editable Word document</li>

@@ -105,13 +105,13 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-8">
       <div className="max-w-2xl w-full">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-2">
             Upload Your Current Resume
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground px-4">
             Supported formats: PDF, DOCX, TXT (Max 10MB)
           </p>
         </div>
@@ -126,7 +126,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
           <CardContent>
             {!isProcessing ? (
               <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer
+                className={`border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 text-center transition-all duration-200 cursor-pointer
                   ${isDragging 
                     ? 'border-primary bg-primary/5' 
                     : 'border-border hover:border-primary/50 hover:bg-accent/20'
@@ -146,29 +146,29 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
                 />
                 
                 {uploadedFile ? (
-                  <div className="space-y-4">
-                    <CheckCircle2 className="w-16 h-16 text-accent mx-auto" />
+                  <div className="space-y-3 sm:space-y-4">
+                    <CheckCircle2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto" />
                     <div>
-                      <p className="font-semibold text-lg">{uploadedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-semibold text-base sm:text-lg break-all px-2">{uploadedFile.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                       Change File
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <Upload className="w-16 h-16 text-muted-foreground mx-auto" />
+                  <div className="space-y-3 sm:space-y-4">
+                    <Upload className="w-12 sm:w-16 h-12 sm:h-16 text-muted-foreground mx-auto" />
                     <div>
-                      <p className="text-lg font-semibold mb-2">
+                      <p className="text-base sm:text-lg font-semibold mb-2 px-2">
                         Drag and drop your resume here
                       </p>
-                      <p className="text-muted-foreground mb-4">
+                      <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 px-2">
                         or click to browse files
                       </p>
-                      <Button variant="outline">
+                      <Button variant="outline" className="text-xs sm:text-sm">
                         Choose File
                       </Button>
                     </div>
@@ -176,15 +176,15 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
                 )}
               </div>
             ) : (
-              <div className="text-center space-y-6 py-8">
-                <Loader2 className="w-12 h-12 text-primary mx-auto animate-spin" />
+              <div className="text-center space-y-4 sm:space-y-6 py-6 sm:py-8">
+                <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-primary mx-auto animate-spin" />
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Processing Your Resume</h3>
-                  <p className="text-muted-foreground mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 px-2">Processing Your Resume</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 px-4">
                     Our AI is analyzing and enhancing your resume...
                   </p>
                   <Progress value={uploadProgress} className="w-full max-w-md mx-auto" />
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                     {Math.round(uploadProgress)}% complete
                   </p>
                 </div>

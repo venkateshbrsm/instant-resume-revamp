@@ -17,13 +17,13 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       
       <div className="relative max-w-6xl mx-auto text-center">
         {/* Trust badge */}
-        <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
-          <Star className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" />
+        <Badge variant="secondary" className="mb-4 sm:mb-6 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+          <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 text-yellow-500" fill="currentColor" />
           Trusted by 10,000+ professionals
         </Badge>
 
         {/* Main headline */}
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight px-2">
           Transform Your Resume with{" "}
           <span className="bg-gradient-primary bg-clip-text text-transparent">
             AI Power
@@ -31,61 +31,61 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         </h1>
 
         {/* Subheadline */}
-        <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
           Upload your current resume and get a professionally redesigned version in minutes. 
           No sign-up required. Pay only if you love the result.
         </p>
 
         {/* Value propositions */}
-        <div className="flex flex-wrap justify-center gap-6 mb-10">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-10 px-4">
           {[
             "AI-Powered Enhancement",
             "Professional Templates",
             "ATS-Friendly Format",
             "Instant Preview"
           ].map((feature) => (
-            <div key={feature} className="flex items-center gap-2 text-foreground">
-              <CheckCircle className="w-5 h-5 text-accent" />
+            <div key={feature} className="flex items-center gap-1 sm:gap-2 text-foreground text-sm sm:text-base">
+              <CheckCircle className="w-4 sm:w-5 h-4 sm:h-5 text-accent flex-shrink-0" />
               <span className="font-medium">{feature}</span>
             </div>
           ))}
         </div>
 
         {/* CTA section */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 px-4">
           <Button 
             variant="hero" 
             size="xl" 
             onClick={onGetStarted}
-            className="shadow-glow animate-pulse-gentle"
+            className="shadow-glow animate-pulse-gentle w-full sm:w-auto"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Start Your Makeover
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+            <span className="text-sm sm:text-base">Start Your Makeover</span>
+            <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2" />
           </Button>
           
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Upload • Preview • Pay Only ₹299 if Satisfied
           </p>
         </div>
 
         {/* Social proof */}
-        <Card className="mt-16 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm border-border/50">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center gap-8 text-center">
+        <Card className="mt-12 sm:mt-16 max-w-2xl mx-4 sm:mx-auto bg-card/80 backdrop-blur-sm border-border/50">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-center gap-4 sm:gap-8 text-center">
               <div>
-                <div className="text-2xl font-bold text-primary">10,000+</div>
-                <div className="text-sm text-muted-foreground">Resumes Enhanced</div>
+                <div className="text-lg sm:text-2xl font-bold text-primary">10,000+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Resumes Enhanced</div>
               </div>
-              <div className="w-px h-12 bg-border" />
+              <div className="w-px h-8 sm:h-12 bg-border" />
               <div>
-                <div className="text-2xl font-bold text-accent">95%</div>
-                <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
+                <div className="text-lg sm:text-2xl font-bold text-accent">95%</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Satisfaction Rate</div>
               </div>
-              <div className="w-px h-12 bg-border" />
+              <div className="w-px h-8 sm:h-12 bg-border" />
               <div>
-                <div className="text-2xl font-bold text-primary">5 Min</div>
-                <div className="text-sm text-muted-foreground">Average Time</div>
+                <div className="text-lg sm:text-2xl font-bold text-primary">5 Min</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Average Time</div>
               </div>
             </div>
           </CardContent>
