@@ -33,7 +33,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingStage, setLoadingStage] = useState("Initializing...");
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancementProgress, setEnhancementProgress] = useState(0);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
@@ -114,11 +117,32 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
   const extractFileContent = async () => {
     setIsLoading(true);
+    setLoadingProgress(0);
+    setLoadingStage("Preparing file...");
+    
     try {
+      // Simulate realistic loading stages with progress
+      setLoadingProgress(10);
+      setLoadingStage("Reading file content...");
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setLoadingProgress(30);
+      setLoadingStage("Analyzing document structure...");
       console.log('Extracting content from file:', file.name);
+      
+      setLoadingProgress(60);
+      setLoadingStage("Extracting text content...");
       const text = await extractTextFromFile(file);
+      
+      setLoadingProgress(85);
+      setLoadingStage("Processing content...");
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       setExtractedText(text);
       setOriginalContent(text); // Keep original formatting and content
+      
+      setLoadingProgress(100);
+      setLoadingStage("Complete!");
       
       toast({
         title: "File Processed",
@@ -126,6 +150,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       });
     } catch (error) {
       console.error('Error extracting file content:', error);
+      setLoadingProgress(100);
+      setLoadingStage("Processing with fallback...");
+      
       const fallbackContent = `📄 Resume Document: ${file.name}\n\nFile Size: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}\nUploaded: ${new Date().toLocaleString()}\n\n⚠️ Content extraction encountered an issue, but the file was uploaded successfully.\n\nThe AI enhancement process will work directly with your original document to create an improved version.\n\nNote: Some file formats or protected documents may not display preview text, but enhancement will still work properly.`;
       setOriginalContent(fallbackContent);
       
@@ -135,6 +162,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         variant: "destructive"
       });
     } finally {
+      // Add a small delay to show completion
+      await new Promise(resolve => setTimeout(resolve, 500));
       setIsLoading(false);
     }
   };
@@ -195,9 +224,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
 
     setIsEnhancing(true);
+    setEnhancementProgress(0);
+    
     try {
       console.log('Starting enhancement with extracted text length:', extractedText.length);
-
+      
+      // Simulate enhancement progress stages
+      setEnhancementProgress(10);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      setEnhancementProgress(30);
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
         body: {
           fileName: file.name,
@@ -206,13 +242,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
       });
 
+      setEnhancementProgress(70);
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       if (error) {
         console.error('Enhancement error:', error);
         throw error;
       }
 
+      setEnhancementProgress(90);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       if (data.success && data.enhancedResume) {
         setEnhancedContent(data.enhancedResume);
+        setEnhancementProgress(100);
+        
         toast({
           title: "Enhancement Complete!",
           description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
@@ -222,6 +266,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       }
     } catch (error) {
       console.error('Error enhancing resume:', error);
+      setEnhancementProgress(0);
       toast({
         title: "Enhancement Error",
         description: "Could not enhance resume. Please try again.",
@@ -252,6 +297,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         {/* Comparison Tabs */}
         <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
           <Tabs value={activeTab} onValueChange={(value) => {
+            // Only allow switching to enhanced tab if original is fully loaded
+            if (value === "after" && isLoading) {
+              toast({
+                title: "Please Wait",
+                description: "Original preview is still loading. Please wait for it to complete.",
+                variant: "destructive"
+              });
+              return;
+            }
+            
             // Auto-trigger enhancement when switching to "after" tab if not already done
             if (value === "after" && !enhancedContent && !isEnhancing && extractedText) {
               enhanceResume();
@@ -262,14 +317,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               <TabsTrigger value="before" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <FileText className="w-3 sm:w-4 h-3 sm:h-4" />
                 Original
+                {isLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
               </TabsTrigger>
               <TabsTrigger 
                 value="after" 
-                className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-                disabled={!extractedText}
+                className={`flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isLoading}
               >
                 <Zap className="w-3 sm:w-4 h-3 sm:h-4" />
                 Enhanced
+                {isEnhancing && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
               </TabsTrigger>
             </TabsList>
 
@@ -283,10 +342,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
-                    <div className="bg-muted/50 rounded-lg p-6 text-center min-h-[400px] flex items-center justify-center">
-                      <div className="space-y-4">
-                        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
-                        <p className="text-muted-foreground">Extracting resume content...</p>
+                    <div className="bg-muted/50 rounded-lg p-4 sm:p-6 text-center min-h-[300px] sm:min-h-[400px] flex items-center justify-center">
+                      <div className="space-y-4 w-full max-w-md">
+                        <Loader2 className="w-8 sm:w-10 h-8 sm:h-10 text-primary mx-auto animate-spin" />
+                        <div>
+                          <p className="text-muted-foreground text-sm sm:text-base mb-3">{loadingStage}</p>
+                          <Progress value={loadingProgress} className="w-full h-2 sm:h-3" />
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                            {Math.round(loadingProgress)}% complete
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -349,13 +414,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 </CardHeader>
                 <CardContent>
                   {isEnhancing ? (
-                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
-                      <div className="text-center space-y-4">
-                        <Loader2 className="w-12 h-12 text-accent animate-spin mx-auto" />
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-4 w-full max-w-md">
+                        <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
                         <div>
-                          <h3 className="text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
-                          <p className="text-muted-foreground">
+                          <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                          <p className="text-muted-foreground text-sm sm:text-base mb-4">
                             Our AI is analyzing and enhancing your resume...
+                          </p>
+                          <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                            {Math.round(enhancementProgress)}% complete
                           </p>
                         </div>
                       </div>
