@@ -139,7 +139,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 300));
       
       setExtractedText(text);
-      setOriginalContent(text); // Keep original formatting and content
+      // Store original text without any formatting changes
+      setOriginalContent(text);
       
       setLoadingProgress(100);
       setLoadingStage("Complete!");
@@ -364,7 +365,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             <p className="text-sm text-muted-foreground">File: {file.name}</p>
                           </div>
                         </div>
-                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-line overflow-y-auto flex-1 max-h-[600px] pr-2">
+                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap overflow-y-auto flex-1 max-h-[600px] pr-2 font-mono">
                           {originalContent}
                         </div>
                         {extractedText && (
