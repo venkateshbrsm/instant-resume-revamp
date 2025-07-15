@@ -15,7 +15,7 @@ const Footer = () => {
                 Contact Us
               </Link>
               <p className="text-muted-foreground">
-                Billing Label as Hike
+                billing label-hike
               </p>
             </div>
           </div>
