@@ -33,7 +33,7 @@ const RefundPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold text-foreground mb-4">4. Processing Time</h2>
             <p>
-              Approved refunds will be processed within 7-10 business days and will be credited back to the original payment method.
+              Approved refunds will be credited within 7-10 business days and will be credited back to the original payment method.
             </p>
           </section>
 
