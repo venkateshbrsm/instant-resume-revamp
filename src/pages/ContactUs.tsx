@@ -38,7 +38,7 @@ const ContactUs = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">123 Business Street, Suite 100, City, ST 12345</span>
+                <span className="text-muted-foreground">734, 4th C cross, 9th A main, hampinagar, vijayanagar 2nd stage, bangalore 560104, India</span>
               </div>
             </div>
 
