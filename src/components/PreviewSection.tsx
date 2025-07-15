@@ -18,13 +18,31 @@ interface PreviewSectionProps {
   onBack: () => void;
 }
 
-const colorThemes = [
-  { id: 'navy', name: 'Navy Professional', primary: '#1e3a8a', secondary: '#1e40af', accent: '#3b82f6' },
-  { id: 'charcoal', name: 'Charcoal Gray', primary: '#374151', secondary: '#1f2937', accent: '#6b7280' },
-  { id: 'burgundy', name: 'Burgundy Wine', primary: '#7c2d12', secondary: '#991b1b', accent: '#dc2626' },
-  { id: 'forest', name: 'Forest Green', primary: '#166534', secondary: '#15803d', accent: '#22c55e' },
-  { id: 'bronze', name: 'Bronze Gold', primary: '#a16207', secondary: '#ca8a04', accent: '#eab308' },
-  { id: 'slate', name: 'Slate Blue', primary: '#475569', secondary: '#334155', accent: '#64748b' }
+const designTemplates = [
+  {
+    id: 'modern',
+    name: 'Modern Professional',
+    description: 'Clean, minimalist design with elegant typography',
+    primary: '#1e3a8a',
+    secondary: '#1e40af',
+    accent: '#3b82f6'
+  },
+  {
+    id: 'creative',
+    name: 'Creative Executive',
+    description: 'Bold design with visual elements and color gradients',
+    primary: '#7c2d12',
+    secondary: '#991b1b',
+    accent: '#dc2626'
+  },
+  {
+    id: 'classic',
+    name: 'Classic Corporate',
+    description: 'Traditional, ATS-friendly layout with clear structure',
+    primary: '#374151',
+    secondary: '#1f2937',
+    accent: '#6b7280'
+  }
 ];
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
@@ -39,7 +57,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [enhancementProgress, setEnhancementProgress] = useState(0);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
+  const [selectedDesign, setSelectedDesign] = useState(designTemplates[0]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -433,181 +451,290 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                      <div className="w-full border border-border/20 rounded-lg">
                        <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20">
                       
-                        {/* Color Theme Selector */}
-                        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
-                          <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 flex items-center gap-1 sm:gap-2">
-                            <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
-                            Choose Your Color Theme
-                          </h4>
-                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2">
-                           {colorThemes.map((theme) => (
-                             <button
-                               key={theme.id}
-                               onClick={() => setSelectedTheme(theme)}
-                               className={`p-1 sm:p-2 rounded border-2 transition-all duration-200 text-left ${
-                                 selectedTheme.id === theme.id 
-                                   ? 'border-primary bg-primary/5 shadow-sm' 
-                                   : 'border-border hover:border-primary/50 bg-background'
-                               }`}
-                             >
-                               <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                                 <div className="flex gap-0.5 sm:gap-1">
-                                   <div 
-                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                     style={{ backgroundColor: theme.primary }}
-                                   />
-                                   <div 
-                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                     style={{ backgroundColor: theme.secondary }}
-                                   />
-                                   <div 
-                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                     style={{ backgroundColor: theme.accent }}
-                                   />
-                                 </div>
-                                 {selectedTheme.id === theme.id && (
-                                   <Sparkles className="w-2 sm:w-3 h-2 sm:h-3 text-primary" />
-                                 )}
-                               </div>
-                               <p className="text-xs font-medium text-foreground leading-tight break-words">{theme.name}</p>
-                             </button>
-                           ))}
-                        </div>
-                      </div>
+                        {/* Design Template Selector */}
+                         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-card/80 rounded-lg border border-border/50">
+                           <h4 className="text-sm sm:text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+                             <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
+                             Choose Your Resume Design
+                           </h4>
+                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                            {designTemplates.map((design) => (
+                              <button
+                                key={design.id}
+                                onClick={() => setSelectedDesign(design)}
+                                className={`p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                                  selectedDesign.id === design.id 
+                                    ? 'border-primary bg-primary/5 shadow-lg scale-105' 
+                                    : 'border-border hover:border-primary/50 bg-background hover:shadow-md'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="flex gap-1">
+                                    <div 
+                                      className="w-3 h-3 rounded-full" 
+                                      style={{ backgroundColor: design.primary }}
+                                    />
+                                    <div 
+                                      className="w-3 h-3 rounded-full" 
+                                      style={{ backgroundColor: design.secondary }}
+                                    />
+                                    <div 
+                                      className="w-3 h-3 rounded-full" 
+                                      style={{ backgroundColor: design.accent }}
+                                    />
+                                  </div>
+                                  {selectedDesign.id === design.id && (
+                                    <Sparkles className="w-4 h-4 text-primary" />
+                                  )}
+                                </div>
+                                <h5 className="text-sm font-bold text-foreground mb-1">{design.name}</h5>
+                                <p className="text-xs text-muted-foreground leading-tight">{design.description}</p>
+                              </button>
+                            ))}
+                         </div>
+                       </div>
 
-                        {/* Modern Header with Visual Elements */}
-                        <div 
-                          className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
-                          style={{
-                            background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                          }}
-                        >
-                          <div className="absolute inset-0 bg-black/10"></div>
-                           <div className="relative z-10">
-                             <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
-                               <div className="min-w-0 flex-1">
-                                 <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
-                                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
-                               </div>
-                             </div>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm break-all truncate">{enhancedContent.email}</span>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm">{enhancedContent.phone}</span>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm break-words truncate">{enhancedContent.location}</span>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm">Professional</span>
+                        {/* Render selected design template */}
+                        {selectedDesign.id === 'modern' && (
+                          <div className="space-y-4">
+                            {/* Modern Header */}
+                            <div 
+                              className="relative rounded-xl p-6 mb-6 text-white overflow-hidden"
+                              style={{
+                                background: `linear-gradient(135deg, ${selectedDesign.primary}, ${selectedDesign.accent})`
+                              }}
+                            >
+                              <div className="absolute inset-0 bg-black/10"></div>
+                              <div className="relative z-10">
+                                <h1 className="text-3xl font-bold mb-2">{enhancedContent.name}</h1>
+                                <p className="text-xl text-white/90 font-medium mb-4">{enhancedContent.title}</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="flex items-center gap-2 text-white/90">
+                                    <Mail className="w-4 h-4" />
+                                    <span className="text-sm">{enhancedContent.email}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-white/90">
+                                    <Phone className="w-4 h-4" />
+                                    <span className="text-sm">{enhancedContent.phone}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-white/90">
+                                    <MapPin className="w-4 h-4" />
+                                    <span className="text-sm">{enhancedContent.location}</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                       </div>
+                        )}
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                          {/* Main Content */}
-                          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-                          
-                            {/* Professional Summary with Visual Enhancement */}
-                             <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
-                              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
-                                <div 
-                                  className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
-                                  style={{
-                                    background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                                  }}
-                                >
-                                  <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
-                                </div>
-                                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
-                              </div>
-                             <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
-                             
-                           </div>
-
-                          {/* Professional Experience with Timeline */}
-                          {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-                             <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                               <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                                 <div 
-                                   className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
-                                   style={{
-                                     background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                                   }}
-                                 >
-                                   <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
-                                 </div>
-                                 <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Experience</h3>
-                               </div>
-                              
-                              <div className="space-y-4 sm:space-y-6">
-                                 {enhancedContent.experience.map((exp: any, index: number) => (
-                                   <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedTheme.accent}30` }}>
-                                     <div 
-                                       className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
-                                       style={{ backgroundColor: selectedTheme.accent }}
-                                     ></div>
-                                     
-                                     <div 
-                                       className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
-                                       style={{ 
-                                         background: `linear-gradient(to right, ${selectedTheme.accent}08, ${selectedTheme.primary}08)` 
-                                       }}
-                                     >
-                                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
-                                         <div>
-                                           <h4 className="text-base sm:text-lg font-bold text-foreground break-words">{exp.title}</h4>
-                                           <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedTheme.accent }}>{exp.company}</p>
-                                         </div>
-                                         <Badge 
-                                           variant="secondary" 
-                                           className="border self-start text-xs"
-                                           style={{ 
-                                             backgroundColor: `${selectedTheme.accent}10`, 
-                                             color: selectedTheme.accent,
-                                             borderColor: `${selectedTheme.accent}20`
-                                           }}
-                                         >
-                                          {exp.duration}
-                                        </Badge>
-                                      </div>
-                                      
-                                      <div className="space-y-2 sm:space-y-3">
-                                        {exp.achievements.map((achievement: string, idx: number) => (
-                                          <div key={idx} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/50 rounded-lg">
-                                            <div className="w-5 sm:w-6 h-5 sm:h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                              <TrendingUp className="w-2 sm:w-3 h-2 sm:h-3 text-white" />
-                                            </div>
-                                            <span className="text-foreground leading-relaxed text-xs sm:text-sm break-words">{achievement}</span>
-                                          </div>
-                                        ))}
-                                      </div>
+                        {selectedDesign.id === 'creative' && (
+                          <div className="space-y-4">
+                            {/* Creative Header with Pattern */}
+                            <div className="relative overflow-hidden rounded-2xl">
+                              <div 
+                                className="absolute inset-0 opacity-10"
+                                style={{
+                                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                                }}
+                              ></div>
+                              <div 
+                                className="relative p-8 text-white"
+                                style={{
+                                  background: `linear-gradient(45deg, ${selectedDesign.primary}, ${selectedDesign.secondary}, ${selectedDesign.accent})`
+                                }}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <h1 className="text-4xl font-bold mb-2 leading-tight">{enhancedContent.name}</h1>
+                                    <div 
+                                      className="inline-block px-4 py-2 rounded-full text-lg font-semibold mb-4"
+                                      style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                                    >
+                                      {enhancedContent.title}
                                     </div>
                                   </div>
-                                ))}
+                                  <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
+                                    <Award className="w-12 h-12 text-white" />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                                  <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3">
+                                    <Mail className="w-5 h-5" />
+                                    <span className="text-sm">{enhancedContent.email}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3">
+                                    <Phone className="w-5 h-5" />
+                                    <span className="text-sm">{enhancedContent.phone}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3">
+                                    <MapPin className="w-5 h-5" />
+                                    <span className="text-sm">{enhancedContent.location}</span>
+                                  </div>
+                                </div>
                               </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedDesign.id === 'classic' && (
+                          <div className="space-y-4">
+                            {/* Classic Header */}
+                            <div className="border-b-4 pb-6 mb-6" style={{ borderColor: selectedDesign.primary }}>
+                              <div className="text-center">
+                                <h1 className="text-4xl font-bold mb-2" style={{ color: selectedDesign.primary }}>
+                                  {enhancedContent.name}
+                                </h1>
+                                <p className="text-xl font-semibold text-muted-foreground mb-4">
+                                  {enhancedContent.title}
+                                </p>
+                                <div className="flex justify-center items-center space-x-6 text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-2">
+                                    <Mail className="w-4 h-4" />
+                                    <span>{enhancedContent.email}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="w-4 h-4" />
+                                    <span>{enhancedContent.phone}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{enhancedContent.location}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                         <div className={`grid gap-4 sm:gap-6 ${selectedDesign.id === 'classic' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
+                           {/* Main Content */}
+                           <div className={`space-y-4 sm:space-y-6 ${selectedDesign.id === 'classic' ? '' : 'lg:col-span-2'}`}>
+                          
+                             {/* Professional Summary - Style varies by design */}
+                              <div className={`bg-card p-6 shadow-lg border border-border/50 ${
+                                selectedDesign.id === 'creative' ? 'rounded-2xl' : 
+                                selectedDesign.id === 'modern' ? 'rounded-xl' : 'rounded-lg'
+                              }`}>
+                               <div className="flex items-center gap-3 mb-4">
+                                 {selectedDesign.id !== 'classic' && (
+                                   <div 
+                                     className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                                     style={{
+                                       background: `linear-gradient(to right, ${selectedDesign.primary}, ${selectedDesign.accent})`
+                                     }}
+                                   >
+                                     <Users className="w-5 h-5" />
+                                   </div>
+                                 )}
+                                 <h3 className={`text-xl font-bold ${selectedDesign.id === 'classic' ? 'border-b-2 pb-2' : ''}`} 
+                                     style={{ color: selectedDesign.primary, borderColor: selectedDesign.id === 'classic' ? selectedDesign.primary : 'transparent' }}>
+                                   Professional Summary
+                                 </h3>
+                               </div>
+                              <p className="text-foreground leading-relaxed">{enhancedContent.summary}</p>
+                            </div>
+
+                           {/* Professional Experience - Style varies by design */}
+                           {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+                              <div className={`bg-card p-6 shadow-lg border border-border/50 ${
+                                selectedDesign.id === 'creative' ? 'rounded-2xl' : 
+                                selectedDesign.id === 'modern' ? 'rounded-xl' : 'rounded-lg'
+                              }`}>
+                                <div className="flex items-center gap-3 mb-6">
+                                  {selectedDesign.id !== 'classic' && (
+                                    <div 
+                                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                                      style={{
+                                        background: `linear-gradient(to right, ${selectedDesign.primary}, ${selectedDesign.accent})`
+                                      }}
+                                    >
+                                      <Calendar className="w-5 h-5" />
+                                    </div>
+                                  )}
+                                  <h3 className={`text-xl font-bold ${selectedDesign.id === 'classic' ? 'border-b-2 pb-2' : ''}`} 
+                                      style={{ color: selectedDesign.primary, borderColor: selectedDesign.id === 'classic' ? selectedDesign.primary : 'transparent' }}>
+                                    Professional Experience
+                                  </h3>
+                                </div>
+                              
+                               <div className="space-y-6">
+                                  {enhancedContent.experience.map((exp: any, index: number) => (
+                                    <div key={index} className={`
+                                      ${selectedDesign.id === 'modern' ? 'relative pl-8 border-l-2 last:border-l-0' : ''}
+                                      ${selectedDesign.id === 'creative' ? 'relative' : ''}
+                                      ${selectedDesign.id === 'classic' ? 'border-b border-border/30 pb-4 last:border-b-0' : ''}
+                                    `} style={{ borderColor: selectedDesign.id === 'modern' ? `${selectedDesign.accent}30` : 'transparent' }}>
+                                      
+                                      {selectedDesign.id === 'modern' && (
+                                        <div 
+                                          className="absolute left-[-9px] top-0 w-4 h-4 rounded-full border-2 border-white shadow-lg"
+                                          style={{ backgroundColor: selectedDesign.accent }}
+                                        ></div>
+                                      )}
+                                      
+                                      <div className={`
+                                        ${selectedDesign.id === 'modern' ? 'rounded-lg ml-4 p-6' : ''}
+                                        ${selectedDesign.id === 'creative' ? 'rounded-2xl p-6 border-l-4' : ''}
+                                        ${selectedDesign.id === 'classic' ? 'p-4' : ''}
+                                      `} style={{ 
+                                        background: selectedDesign.id === 'modern' ? `linear-gradient(to right, ${selectedDesign.accent}08, ${selectedDesign.primary}08)` : 'transparent',
+                                        borderColor: selectedDesign.id === 'creative' ? selectedDesign.primary : 'transparent'
+                                      }}>
+                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+                                          <div>
+                                            <h4 className="text-lg font-bold text-foreground">{exp.title}</h4>
+                                            <p className="font-semibold text-lg" style={{ color: selectedDesign.accent }}>{exp.company}</p>
+                                          </div>
+                                          <Badge 
+                                            variant="secondary" 
+                                            className={`border self-start ${selectedDesign.id === 'classic' ? 'bg-muted' : ''}`}
+                                            style={selectedDesign.id !== 'classic' ? { 
+                                              backgroundColor: `${selectedDesign.accent}10`, 
+                                              color: selectedDesign.accent,
+                                              borderColor: `${selectedDesign.accent}20`
+                                            } : {}}
+                                          >
+                                           {exp.duration}
+                                         </Badge>
+                                       </div>
+                                       
+                                       <div className="space-y-3">
+                                         {exp.achievements.map((achievement: string, idx: number) => (
+                                           <div key={idx} className={`flex items-start gap-3 ${
+                                             selectedDesign.id === 'creative' ? 'p-3 bg-white/50 rounded-lg' :
+                                             selectedDesign.id === 'modern' ? 'p-3 bg-white/50 rounded-lg' :
+                                             'p-2 border-l-2 pl-4 ml-2'
+                                           }`} style={{ borderColor: selectedDesign.id === 'classic' ? selectedDesign.accent : 'transparent' }}>
+                                             <div className={`w-6 h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                               selectedDesign.id === 'classic' ? 'w-3 h-3 mt-1' : ''
+                                             }`}>
+                                               <TrendingUp className={`text-white ${selectedDesign.id === 'classic' ? 'w-2 h-2' : 'w-3 h-3'}`} />
+                                             </div>
+                                             <span className="text-foreground leading-relaxed text-sm">{achievement}</span>
+                                           </div>
+                                         ))}
+                                       </div>
+                                     </div>
+                                   </div>
+                                 ))}
+                               </div>
                             </div>
                           )}
                         </div>
 
-                         {/* Sidebar with Charts and Skills */}
-                         <div className="space-y-4 sm:space-y-6">
+                          {/* Sidebar with Charts and Skills - Only for Modern and Creative designs */}
+                          {selectedDesign.id !== 'classic' && (
+                          <div className="space-y-4 sm:space-y-6">
                           
-                          {/* Skills Chart */}
-                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                            <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                               <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                                 <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
-                                 Skills Proficiency
-                               </h3>
+                           {/* Skills Chart */}
+                           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                             <div className={`bg-card p-6 shadow-lg border border-border/50 ${
+                               selectedDesign.id === 'creative' ? 'rounded-2xl' : 'rounded-xl'
+                             }`}>
+                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedDesign.primary }}>
+                                  <Zap className="w-5 h-5" />
+                                  Skills Proficiency
+                                </h3>
                               
                                <div className="space-y-3 sm:space-y-4">
                                  {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
@@ -640,66 +767,105 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                           )}
 
-                          {/* Skills Distribution Chart */}
-                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                              <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                                <TrendingUp className="w-5 h-5" />
-                                Skills Overview
-                              </h3>
-                              
-                              <div className="space-y-3">
-                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.primary}08` }}>
-                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.primary }}>
-                                    {enhancedContent.skills.length}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">Total Skills</p>
-                                </div>
-                                
-                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.accent}08` }}>
-                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.accent }}>
-                                    {enhancedContent.experience?.length || 0}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">Work Experiences</p>
-                                </div>
-                                
-                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.secondary}08` }}>
-                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.secondary }}>
-                                    {enhancedContent.education?.length || 0}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">Educational Qualifications</p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                           {/* Skills Distribution Chart */}
+                           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                             <div className={`bg-card p-6 shadow-lg border border-border/50 ${
+                               selectedDesign.id === 'creative' ? 'rounded-2xl' : 'rounded-xl'
+                             }`}>
+                               <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedDesign.primary }}>
+                                 <TrendingUp className="w-5 h-5" />
+                                 Skills Overview
+                               </h3>
+                               
+                               <div className="space-y-3">
+                                 <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedDesign.primary}08` }}>
+                                   <div className="text-2xl font-bold" style={{ color: selectedDesign.primary }}>
+                                     {enhancedContent.skills.length}
+                                   </div>
+                                   <p className="text-sm text-muted-foreground">Total Skills</p>
+                                 </div>
+                                 
+                                 <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedDesign.accent}08` }}>
+                                   <div className="text-2xl font-bold" style={{ color: selectedDesign.accent }}>
+                                     {enhancedContent.experience?.length || 0}
+                                   </div>
+                                   <p className="text-sm text-muted-foreground">Work Experiences</p>
+                                 </div>
+                                 
+                                 <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedDesign.secondary}08` }}>
+                                   <div className="text-2xl font-bold" style={{ color: selectedDesign.secondary }}>
+                                     {enhancedContent.education?.length || 0}
+                                   </div>
+                                   <p className="text-sm text-muted-foreground">Educational Qualifications</p>
+                                 </div>
+                               </div>
+                             </div>
+                           )}
 
-                          {/* Education */}
-                          {enhancedContent.education && enhancedContent.education.length > 0 && (
-                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                               <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                                 <Award className="w-5 h-5" />
+                           {/* Education */}
+                           {enhancedContent.education && enhancedContent.education.length > 0 && (
+                             <div className={`bg-card p-6 shadow-lg border border-border/50 ${
+                               selectedDesign.id === 'creative' ? 'rounded-2xl' : 'rounded-xl'
+                             }`}>
+                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedDesign.primary }}>
+                                  <Award className="w-5 h-5" />
+                                  Education
+                                </h3>
+                               <div className="space-y-4">
+                                 {enhancedContent.education.map((edu: any, index: number) => (
+                                    <div 
+                                      key={index} 
+                                      className="rounded-lg p-4 border"
+                                      style={{ 
+                                        background: `linear-gradient(to right, ${selectedDesign.primary}08, ${selectedDesign.accent}08)`,
+                                        borderColor: `${selectedDesign.primary}10`
+                                      }}
+                                    >
+                                      <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                                      <p className="font-medium" style={{ color: selectedDesign.accent }}>{edu.institution}</p>
+                                     <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
+
+                         </div>
+                           )}
+
+                           {/* Classic design skills section */}
+                           {selectedDesign.id === 'classic' && enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                             <div className="bg-card rounded-lg p-6 shadow-lg border border-border/50 mt-6">
+                               <h3 className="text-xl font-bold mb-4 border-b-2 pb-2" style={{ color: selectedDesign.primary, borderColor: selectedDesign.primary }}>
+                                 Skills
+                               </h3>
+                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                 {enhancedContent.skills.map((skill: string, index: number) => (
+                                   <div key={index} className="p-2 bg-muted rounded text-sm text-center">
+                                     {skill}
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
+
+                           {/* Classic design education section */}
+                           {selectedDesign.id === 'classic' && enhancedContent.education && enhancedContent.education.length > 0 && (
+                             <div className="bg-card rounded-lg p-6 shadow-lg border border-border/50 mt-6">
+                               <h3 className="text-xl font-bold mb-4 border-b-2 pb-2" style={{ color: selectedDesign.primary, borderColor: selectedDesign.primary }}>
                                  Education
                                </h3>
-                              <div className="space-y-4">
-                                {enhancedContent.education.map((edu: any, index: number) => (
-                                   <div 
-                                     key={index} 
-                                     className="rounded-lg p-4 border"
-                                     style={{ 
-                                       background: `linear-gradient(to right, ${selectedTheme.primary}08, ${selectedTheme.accent}08)`,
-                                       borderColor: `${selectedTheme.primary}10`
-                                     }}
-                                   >
-                                     <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
-                                     <p className="font-medium" style={{ color: selectedTheme.accent }}>{edu.institution}</p>
-                                    <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                        </div>
+                               <div className="space-y-4">
+                                 {enhancedContent.education.map((edu: any, index: number) => (
+                                   <div key={index} className="border-b border-border/30 pb-3 last:border-b-0">
+                                     <h4 className="font-bold text-foreground">{edu.degree}</h4>
+                                     <p className="font-medium text-muted-foreground">{edu.institution}</p>
+                                     <p className="text-sm text-muted-foreground">{edu.year}</p>
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
                       </div>
                     </div>
                   </div>
