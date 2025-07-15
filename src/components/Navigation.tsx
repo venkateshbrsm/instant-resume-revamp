@@ -35,9 +35,6 @@ export function Navigation({ currentStep, onNavigate, showSteps = true, user, on
 
   const steps = [
     { id: "hero", label: "Home", enabled: true },
-    { id: "upload", label: "Upload", enabled: currentStep !== "hero" },
-    { id: "preview", label: "Preview", enabled: currentStep === "preview" || currentStep === "payment" },
-    { id: "payment", label: "Payment", enabled: currentStep === "payment" },
   ];
 
   return (
