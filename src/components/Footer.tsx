@@ -14,6 +14,9 @@ const Footer = () => {
               <Link to="/contact" className="block text-muted-foreground hover:text-foreground transition-colors">
                 Contact Us
               </Link>
+              <p className="text-muted-foreground">
+                Billing Label as Hike
+              </p>
             </div>
           </div>
           
