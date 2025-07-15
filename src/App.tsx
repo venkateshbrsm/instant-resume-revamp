@@ -25,8 +25,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/payment/success" element={<PaymentSuccess />} />
-          <Route path="/payment/failure" element={<PaymentFailure />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-failure" element={<PaymentFailure />} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/refund" element={<RefundPolicy />} />
           <Route path="/about" element={<AboutUs />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CashfreePayment } from "./CashfreePayment";
+import { PayUPayment } from "./PayUPayment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Download, CreditCard, FileDown, ArrowLeft, User } from "lucide-react";
@@ -95,12 +95,12 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
           const lastPayment = new Date(recentPayments[0].created_at);
           const timeDiff = (now - lastPayment.getTime()) / 1000; // seconds
           
-          if (timeDiff < 120) { // 2 minutes
-            toast({
-              title: "Payment in Progress",
-              description: "You have a recent payment attempt. Please check your Cashfree page or wait 2 minutes before trying again.",
-              variant: "destructive"
-            });
+            if (timeDiff < 120) { // 2 minutes
+              toast({
+                title: "Payment in Progress",
+                description: "You have a recent payment attempt. Please check your PayU page or wait 2 minutes before trying again.",
+                variant: "destructive"
+              });
             setIsCheckingAuth(false);
             setIsPaymentProcessing(false);
             return;
@@ -167,7 +167,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <CashfreePayment
+              <PayUPayment
                 fileName={file.name}
                 amount={299}
               />
@@ -293,13 +293,13 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             >
               <CreditCard className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
               {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
-               user ? "Pay ₹299 with Cashfree" : "Sign In & Pay ₹299"}
+               user ? "Pay ₹299 with PayU" : "Sign In & Pay ₹299"}
             </Button>
 
             {/* Security Note */}
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                🔒 Secured by Cashfree • India's trusted payment gateway • No subscription
+                🔒 Secured by PayU • India's trusted payment gateway • No subscription
               </p>
             </div>
 

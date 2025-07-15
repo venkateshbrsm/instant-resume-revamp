@@ -56,7 +56,7 @@ export default function PaymentFailure() {
 
           <div className="space-y-3">
             <Button 
-              onClick={() => navigate('/payment')}
+              onClick={() => navigate('/')}
               className="w-full bg-primary hover:bg-primary/90"
               size="lg"
             >
