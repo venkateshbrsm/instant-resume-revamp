@@ -386,7 +386,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               {selectedDesign === (designNumber === '1' ? 'design1' : 'design2') && (
                 <CheckCircle className="w-4 h-4" />
               )}
-              Select Design {designNumber}
+              Select {enhancedContent.designStyle === 'modern' ? 'Modern' : 'Professional'} Design
             </Button>
           </div>
 
@@ -421,7 +421,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                </div>
                <div className="flex items-center gap-1 sm:gap-2 text-white/90">
                  <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                 <span className="text-xs sm:text-sm">Professional</span>
+                 <span className="text-xs sm:text-sm">{enhancedContent.designStyle === 'modern' ? 'Innovative' : 'Professional'}</span>
                </div>
              </div>
            </div>
@@ -447,6 +447,36 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
              <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
              
            </div>
+
+          {/* Key Achievements - Modern Design Only */}
+          {enhancedContent.designStyle === 'modern' && enhancedContent.achievements && enhancedContent.achievements.length > 0 && (
+            <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
+              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
+                <div 
+                  className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
+                  style={{
+                    background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                  }}
+                >
+                  <TrendingUp className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
+                </div>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Key Achievements</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                {enhancedContent.achievements.map((achievement: string, index: number) => (
+                  <div key={index} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border-l-4" style={{ 
+                    backgroundColor: `${selectedTheme.accent}05`,
+                    borderLeftColor: selectedTheme.accent
+                  }}>
+                    <div className="w-6 sm:w-8 h-6 sm:h-8 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <Award className="w-3 sm:w-4 h-3 sm:h-4 text-white" />
+                    </div>
+                    <span className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base break-words">{achievement}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Professional Experience with Timeline */}
           {enhancedContent.experience && enhancedContent.experience.length > 0 && (
