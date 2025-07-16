@@ -59,19 +59,49 @@ export default function PaymentSuccess() {
     }
   };
 
-  const handleDownload = () => {
-    // Simulate download - replace with actual enhanced CV download
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = 'enhanced-resume.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    try {
+      const paymentId = searchParams.get('razorpay_payment_id');
+      if (!paymentId) {
+        throw new Error('Payment ID not found');
+      }
 
-    toast({
-      title: "Download Started",
-      description: "Your enhanced resume is being downloaded.",
-    });
+      toast({
+        title: "Preparing Download",
+        description: "Your enhanced resume is being prepared...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
+        body: { paymentId }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Download failed');
+      }
+
+      // Create download link
+      const blob = new Blob([data], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Enhanced_Resume_${new Date().getTime()}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: "Your enhanced resume is being downloaded.",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: error instanceof Error ? error.message : "Failed to download resume",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isVerifying) {
