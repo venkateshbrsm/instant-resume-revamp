@@ -18,8 +18,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, originalText, extractedText, designStyle } = await req.json();
-    const requestedStyle = designStyle || 'professional';
+    const { fileName, originalText, extractedText } = await req.json();
 
     console.log('Enhancing resume for:', fileName);
     console.log('Original text length:', originalText?.length || 0);
@@ -38,8 +37,6 @@ serve(async (req) => {
 ACTUAL RESUME CONTENT TO ANALYZE:
 ${resumeContent}
 
-DESIGN STYLE REQUESTED: ${requestedStyle}
-
 CRITICAL INSTRUCTIONS:
 1. READ the resume content above carefully
 2. Extract ONLY the real information present in the resume
@@ -47,25 +44,6 @@ CRITICAL INSTRUCTIONS:
 4. DO NOT create fake numbers, percentages, or project counts
 5. If a detail is missing, leave it out or use a generic placeholder
 6. Use the ACTUAL name, education, experience, and skills from the resume
-
-DESIGN STYLE DIFFERENCES:
-${requestedStyle === 'professional' ? `
-PROFESSIONAL STYLE:
-- Focus on traditional, conservative presentation
-- Emphasize work experience chronologically
-- Use formal language and standard sections
-- Include more detailed job responsibilities
-- Add professional certifications and training if mentioned
-- Structure: Header, Summary, Experience (detailed), Skills (categorized), Education
-` : `
-MODERN STYLE:
-- Focus on skills and achievements over chronology
-- Use dynamic, results-oriented language
-- Include visual elements and metrics where available
-- Add modern sections like "Key Achievements" or "Core Competencies"
-- Reorganize content for impact
-- Structure: Header, Professional Highlights, Core Skills, Experience (impact-focused), Education, Additional Info
-`}
 
 Based STRICTLY on the actual resume content above, create a JSON response with:
 - name: Extract from the resume or use "${candidateName}"
@@ -75,7 +53,6 @@ Based STRICTLY on the actual resume content above, create a JSON response with:
 - experience: Use ONLY actual companies and roles from the resume
 - skills: Use ONLY skills actually mentioned in the resume  
 - education: Use ONLY actual institutions and degrees from the resume
-${requestedStyle === 'modern' ? '- achievements: Add a separate achievements array with top 3-4 accomplishments' : ''}
 
 If the resume mentions specific projects, companies, or achievements, use those. If not, write generic descriptions without fake metrics.
 
@@ -93,31 +70,30 @@ Return ONLY this JSON format:
   "email": "professional.email@example.com",
   "phone": "+91 XXXXX XXXXX", 
   "location": "City, India",
-  "summary": "${requestedStyle === 'professional' ? 'Detailed professional summary based on actual experience' : 'Dynamic, achievement-focused summary highlighting key impact areas'}",
-  ${requestedStyle === 'modern' ? '"achievements": ["Top achievement 1", "Top achievement 2", "Top achievement 3"],' : ''}
+  "summary": "Summary based on actual experience without fake metrics",
   "experience": [
     {
       "title": "actual job title from resume",
       "company": "actual company name from resume", 
       "duration": "actual dates from resume",
       "achievements": [
-        "${requestedStyle === 'professional' ? 'detailed responsibility from resume' : 'impact-focused achievement from resume'}",
-        "${requestedStyle === 'professional' ? 'comprehensive task description' : 'results-oriented accomplishment'}",
-        "${requestedStyle === 'professional' ? 'process or methodology used' : 'quantifiable outcome where possible'}"
+        "actual responsibility from resume",
+        "actual achievement from resume",
+        "generic but realistic task description"
       ]
     }
   ],
-  "skills": ["actual skills from resume arranged ${requestedStyle === 'professional' ? 'in traditional categories' : 'by proficiency and relevance'}"],
+  "skills": ["actual skills from resume"],
   "education": [
     {
       "degree": "actual degree from resume",
       "institution": "actual institution from resume", 
       "year": "actual year from resume"
     }
-  ]${requestedStyle === 'modern' ? ',\n  "designStyle": "modern"' : ',\n  "designStyle": "professional"'}
+  ]
 }
 
-REMEMBER: Use ONLY information from the actual resume provided. Do not invent data. Create genuinely different presentations based on the design style while maintaining factual accuracy.`;
+REMEMBER: Use ONLY information from the actual resume provided. Do not invent data.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
