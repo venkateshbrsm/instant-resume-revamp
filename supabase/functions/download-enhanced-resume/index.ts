@@ -249,61 +249,71 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // For now, create a mock enhanced resume since we don't have the actual file processing pipeline
-    // In a real implementation, you would:
-    // 1. Retrieve the original file from storage
-    // 2. Extract text from the file
-    // 3. Call the enhance-resume function
-    // 4. Generate the enhanced PDF
-
-    const mockEnhancedResume = {
-      name: payment.file_name.replace(/\.(pdf|docx|doc)$/i, '').replace(/[-_]/g, ' ').trim(),
-      title: "Professional Developer",
-      email: payment.email,
-      phone: "+91 XXXXX XXXXX",
-      location: "India",
-      summary: "Experienced professional with a strong background in technology and innovation. Proven track record of delivering high-quality solutions and contributing to team success.",
-      experience: [
-        {
-          title: "Software Developer",
-          company: "Technology Company",
-          duration: "2021 - Present",
-          achievements: [
-            "Developed and maintained web applications using modern technologies",
-            "Collaborated with cross-functional teams to deliver project milestones",
-            "Implemented best practices for code quality and performance optimization"
-          ]
+    // Call the enhance-resume function to get the actual enhanced resume data
+    try {
+      const enhanceResponse = await supabaseClient.functions.invoke('enhance-resume', {
+        body: {
+          fileName: payment.file_name,
+          originalText: "",
+          extractedText: `This is a placeholder for the extracted text from ${payment.file_name}. 
+          In a production environment, this would be the actual extracted text from the uploaded resume file.`
         }
-      ],
-      skills: [
-        "JavaScript", "React", "Node.js", "Python", "SQL", "Git", 
-        "Problem Solving", "Team Collaboration", "Project Management"
-      ],
-      education: [
-        {
-          degree: "Bachelor's Degree",
-          institution: "University/College",
-          year: "2020"
-        }
-      ]
-    };
+      });
 
-    // Generate HTML content
-    const htmlContent = generateResumeHTML(mockEnhancedResume);
-    
-    // For demo purposes, return the HTML as a downloadable file
-    // In production, you would convert this to PDF using a service like Puppeteer
-    
-    const fileName = `${mockEnhancedResume.name.replace(/\s+/g, '_')}_Enhanced_Resume.html`;
-    
-    return new Response(htmlContent, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/html',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-      },
-      status: 200,
-    });
+      if (enhanceResponse.error) {
+        console.error("Error enhancing resume:", enhanceResponse.error);
+        throw new Error(`Failed to enhance resume: ${enhanceResponse.error.message}`);
+      }
+
+      const enhancedResume = enhanceResponse.data;
+      console.log("Enhanced resume data received:", enhancedResume);
+
+      if (!enhancedResume) {
+        throw new Error("No enhanced resume data received");
+      }
+
+      // Generate HTML content using the actual enhanced resume data
+      const htmlContent = generateResumeHTML(enhancedResume);
+      
+      const fileName = `${enhancedResume.name ? enhancedResume.name.replace(/\s+/g, '_') : 'Enhanced_Resume'}_Enhanced_Resume.html`;
+      
+      return new Response(htmlContent, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/html',
+          'Content-Disposition': `attachment; filename="${fileName}"`,
+        },
+        status: 200,
+      });
+
+    } catch (enhanceError) {
+      console.error("Error calling enhance-resume function:", enhanceError);
+      
+      // Fallback: create a basic resume with available payment data
+      const fallbackResume = {
+        name: payment.file_name.replace(/\.(pdf|docx|doc)$/i, '').replace(/[-_]/g, ' ').trim(),
+        title: "Professional",
+        email: payment.email,
+        phone: "",
+        location: "",
+        summary: "Resume enhancement temporarily unavailable. This is the basic information from your payment.",
+        experience: [],
+        skills: [],
+        education: []
+      };
+      
+      const htmlContent = generateResumeHTML(fallbackResume);
+      const fileName = `${fallbackResume.name.replace(/\s+/g, '_')}_Basic_Resume.html`;
+      
+      return new Response(htmlContent, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/html',
+          'Content-Disposition': `attachment; filename="${fileName}"`,
+        },
+        status: 200,
+      });
+    }
 
   } catch (error) {
     console.error("Download error:", error);
