@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { chromium } from "https://deno.land/x/playwright@1.40.0/index.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,13 +20,7 @@ const colorThemes = {
   orange: { primary: '#f97316', secondary: '#fb923c', accent: '#fdba74' }
 };
 
-async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
-  const pdfshiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
-  
-  if (!pdfshiftApiKey) {
-    throw new Error('PDFShift API key not found');
-  }
-
+async function generatePDFWithPlaywright(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
   
   // Generate realistic skill proficiency percentages
@@ -682,34 +677,32 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
 </body>
 </html>`;
 
-  // Call PDFShift API
-  console.log("Calling PDFShift API to generate PDF...");
-  
-  const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${btoa(`api:${pdfshiftApiKey}`)}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      source: htmlContent,
-      format: 'A4',
-      margin: '0.75in 0.5in',
-      landscape: false,
-      use_print: true
-    }),
+  // Launch Playwright browser
+  const browser = await chromium.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("PDFShift API error:", response.status, errorText);
-    throw new Error(`PDFShift API error: ${response.status} ${errorText}`);
-  }
-
-  console.log("PDF generated successfully via PDFShift");
   
-  const pdfArrayBuffer = await response.arrayBuffer();
-  return new Uint8Array(pdfArrayBuffer);
+  try {
+    const page = await browser.newPage();
+    
+    // Set content and wait for it to load
+    await page.setContent(htmlContent);
+    await page.waitForLoadState('networkidle');
+    
+    // Generate PDF with A4 format
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      margin: { top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' },
+      printBackground: true,
+      preferCSSPageSize: true
+    });
+    
+    console.log("PDF generated successfully via Playwright");
+    
+    return new Uint8Array(pdfBuffer);
+  } finally {
+    await browser.close();
+  }
 }
 
 serve(async (req) => {
@@ -734,7 +727,7 @@ serve(async (req) => {
       const finalFileName = fileName || 'enhanced-resume';
       
       // Generate PDF using provided data
-      const pdfBytes = await generatePDFWithPDFShift(enhancedContent, finalThemeId);
+      const pdfBytes = await generatePDFWithPlaywright(enhancedContent, finalThemeId);
       
       console.log("PDF generated successfully from direct content, size:", pdfBytes.length, "bytes");
       
@@ -778,11 +771,11 @@ serve(async (req) => {
       throw new Error("Enhanced content not found for this payment");
     }
 
-    console.log("Generating PDF with PDFShift using database content...");
+    console.log("Generating PDF with Playwright using database content...");
     const finalThemeId = payment.theme_id || 'navy';
     
     // Generate PDF using database content
-    const pdfBytes = await generatePDFWithPDFShift(payment.enhanced_content, finalThemeId);
+    const pdfBytes = await generatePDFWithPlaywright(payment.enhanced_content, finalThemeId);
     
     console.log("PDF generated successfully from database, size:", pdfBytes.length, "bytes");
     
