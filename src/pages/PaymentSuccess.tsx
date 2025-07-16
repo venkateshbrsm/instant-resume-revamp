@@ -71,29 +71,29 @@ export default function PaymentSuccess() {
         description: "Your enhanced resume is being prepared...",
       });
 
-      const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
-        body: { paymentId }
+      // Use fetch directly to handle binary data properly
+      const response = await fetch(`https://goorszhscvxywfigydfp.supabase.co/functions/v1/download-enhanced-resume`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paymentId })
       });
 
-      if (error) {
-        throw new Error(error.message || 'Download failed');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Download failed');
       }
 
-      // The data is already a Uint8Array/ArrayBuffer for DOCX files
-      let blob: Blob;
-      let filename: string;
+      // Get the binary data as ArrayBuffer
+      const arrayBuffer = await response.arrayBuffer();
       
-      if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
-        // Binary DOCX data
-        blob = new Blob([data], { 
-          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-        });
-        filename = `Enhanced_Resume_${new Date().getTime()}.docx`;
-      } else {
-        // Fallback for any other format (shouldn't happen with the fixed function)
-        blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-        filename = `Enhanced_Resume_${new Date().getTime()}.json`;
-      }
+      // Create DOCX blob
+      const blob = new Blob([arrayBuffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+      });
+      const filename = `Enhanced_Resume_${new Date().getTime()}.docx`;
       
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
