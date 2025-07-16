@@ -249,7 +249,34 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // Check if enhanced content is already saved in the database
+    // First priority: Check if enhanced file exists in storage and download it directly
+    if (payment.enhanced_file_path) {
+      console.log('Downloading enhanced file from storage:', payment.enhanced_file_path);
+      
+      try {
+        const { data: fileData, error: downloadError } = await supabaseClient.storage
+          .from('resumes')
+          .download(payment.enhanced_file_path);
+
+        if (!downloadError && fileData) {
+          const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.html')}`;
+          
+          return new Response(fileData, {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'text/html',
+              'Content-Disposition': `attachment; filename="${fileName}"`,
+            },
+          });
+        } else {
+          console.error('Failed to download enhanced file from storage:', downloadError);
+        }
+      } catch (storageError) {
+        console.error('Error accessing enhanced file in storage:', storageError);
+      }
+    }
+
+    // Second priority: Check if enhanced content is saved in the database
     if (payment.enhanced_content) {
       console.log("Using saved enhanced content from database");
       

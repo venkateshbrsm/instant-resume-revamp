@@ -21,6 +21,7 @@ export type Database = {
           currency: string
           email: string
           enhanced_content: Json | null
+          enhanced_file_path: string | null
           file_name: string
           file_path: string | null
           id: string
@@ -38,6 +39,7 @@ export type Database = {
           currency?: string
           email: string
           enhanced_content?: Json | null
+          enhanced_file_path?: string | null
           file_name: string
           file_path?: string | null
           id?: string
@@ -55,6 +57,7 @@ export type Database = {
           currency?: string
           email?: string
           enhanced_content?: Json | null
+          enhanced_file_path?: string | null
           file_name?: string
           file_path?: string | null
           id?: string
