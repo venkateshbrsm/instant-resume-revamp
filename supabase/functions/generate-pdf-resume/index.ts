@@ -40,7 +40,8 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
   <style>
     @page {
       size: A4;
-      margin: 0.75in 0.5in;
+      margin: 0.75in;
+      padding: 0;
     }
     
     @media print {
@@ -50,45 +51,63 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         margin: 0;
         padding: 0;
         overflow: hidden;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
       }
       
       .container {
         width: 100%;
         max-width: none;
         margin: 0;
-        padding: 0;
+        padding: 0.75in;
         box-shadow: none;
         border-radius: 0;
+        page-break-inside: avoid;
       }
       
       .main-content {
         grid-template-columns: 65% 35%;
-        gap: 15pt;
+        gap: 20pt;
+        page-break-inside: avoid;
       }
       
       .header {
-        margin-bottom: 12pt;
-        padding: 15pt;
+        margin-bottom: 16pt;
+        padding: 16pt;
+        page-break-after: avoid;
       }
       
       .section {
-        margin-bottom: 15pt;
+        margin-bottom: 14pt;
+        page-break-inside: avoid;
       }
       
       .experience-item {
         margin-bottom: 12pt;
+        page-break-inside: avoid;
       }
       
       .skills-section {
-        margin-bottom: 12pt;
+        margin-bottom: 14pt;
+        page-break-inside: avoid;
       }
       
       .stats-grid {
         margin-bottom: 12pt;
+        page-break-inside: avoid;
       }
       
       .education-item {
-        margin-bottom: 8pt;
+        margin-bottom: 10pt;
+        page-break-inside: avoid;
+      }
+      
+      .achievement {
+        page-break-inside: avoid;
+      }
+      
+      .skill-item {
+        page-break-inside: avoid;
       }
     }
     
@@ -212,9 +231,9 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     }
     
     body {
-      font-family: 'Arial', 'Helvetica', sans-serif;
-      line-height: 1.4;
-      color: #2d3748;
+      font-family: 'Times', 'Times New Roman', serif;
+      line-height: 1.5;
+      color: #000000;
       background: white;
       font-size: 11pt;
       width: 210mm;
@@ -229,28 +248,30 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       background: white;
       width: 210mm;
       min-height: 297mm;
-      padding: 0.75in 0.5in;
+      padding: 0.75in;
     }
     
     .header {
-      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
+      background: #000000;
       color: white;
-      padding: 20pt;
-      margin: -0.75in -0.5in 15pt -0.5in;
+      padding: 18pt;
+      margin: -0.75in -0.75in 18pt -0.75in;
       border-radius: 0;
     }
     
     .header h1 {
-      font-size: 22pt;
+      font-size: 20pt;
       font-weight: bold;
-      margin-bottom: 5pt;
+      margin-bottom: 6pt;
       line-height: 1.2;
+      font-family: 'Times', 'Times New Roman', serif;
     }
     
     .header .title {
-      font-size: 14pt;
+      font-size: 13pt;
       margin-bottom: 12pt;
-      opacity: 0.9;
+      opacity: 0.95;
+      font-style: italic;
     }
     
     .contact-grid {
@@ -261,71 +282,71 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     }
     
     .contact-item {
-      font-size: 9pt;
-      opacity: 0.9;
+      font-size: 10pt;
+      opacity: 0.95;
       display: flex;
       align-items: center;
-      gap: 4pt;
+      gap: 5pt;
     }
     
     .contact-item.with-bullet::before {
-      content: "";
-      width: 6pt;
-      height: 6pt;
-      background: #3b82f6;
-      border-radius: 50%;
-      flex-shrink: 0;
+      content: "•";
+      font-weight: bold;
+      margin-right: 3pt;
     }
     
     .main-content {
       display: grid;
       grid-template-columns: 65% 35%;
-      gap: 18pt;
-      margin-top: 15pt;
+      gap: 20pt;
+      margin-top: 18pt;
     }
     
     .section {
-      margin-bottom: 18pt;
+      margin-bottom: 16pt;
       break-inside: avoid;
     }
     
     .section-title {
-      font-size: 14pt;
+      font-size: 13pt;
       font-weight: bold;
-      color: ${theme.primary};
-      margin-bottom: 8pt;
-      padding-bottom: 4pt;
-      border-bottom: 1.5pt solid ${theme.primary};
+      color: #000000;
+      margin-bottom: 10pt;
+      padding-bottom: 3pt;
+      border-bottom: 1pt solid #000000;
       display: flex;
       align-items: center;
-      gap: 6pt;
+      gap: 5pt;
+      font-family: 'Times', 'Times New Roman', serif;
     }
     
     .section-title::before {
-      content: "🎓";
-      font-size: 12pt;
+      content: "■";
+      font-size: 10pt;
+      color: #000000;
     }
     
     .section-title.summary-title::before {
-      content: "📝";
+      content: "■";
     }
     
     .section-title.skills-title::before {
-      content: "⚡";
+      content: "■";
     }
     
     .section-title.experience-title::before {
-      content: "💼";
+      content: "■";
     }
     
     .summary-text {
-      font-size: 10pt;
-      line-height: 1.5;
+      font-size: 11pt;
+      line-height: 1.6;
       text-align: justify;
+      color: #000000;
     }
     
     .experience-item {
-      margin-bottom: 15pt;
+      margin-bottom: 14pt;
       break-inside: avoid;
     }
     
@@ -337,25 +358,28 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     }
     
     .experience-title {
-      font-size: 13pt;
+      font-size: 12pt;
       font-weight: bold;
-      color: #2d3748;
+      color: #000000;
+      font-family: 'Times', 'Times New Roman', serif;
     }
     
     .experience-company {
-      font-size: 12pt;
+      font-size: 11pt;
       font-weight: 600;
-      color: ${theme.accent};
+      color: #333333;
       margin-top: 2pt;
+      font-style: italic;
     }
     
     .experience-duration {
-      background: ${theme.accent}20;
-      color: ${theme.accent};
-      padding: 3pt 8pt;
+      background: #f0f0f0;
+      color: #000000;
+      padding: 4pt 8pt;
       border-radius: 3pt;
       font-size: 9pt;
       font-weight: 600;
+      border: 1pt solid #cccccc;
     }
     
     .achievements {
@@ -364,42 +388,35 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     }
     
     .achievement {
-      margin-bottom: 6pt;
+      margin-bottom: 8pt;
       font-size: 10pt;
-      line-height: 1.4;
+      line-height: 1.5;
       display: flex;
       align-items: flex-start;
       gap: 6pt;
-      padding: 6pt 8pt;
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 6pt;
-      margin-bottom: 4pt;
+      padding: 6pt 0pt;
+      border-radius: 0pt;
+      margin-bottom: 6pt;
+      color: #000000;
     }
     
     .achievement-icon {
       flex-shrink: 0;
-      width: 16pt;
-      height: 16pt;
-      background: linear-gradient(135deg, #4ade80, #16a34a);
+      width: 4pt;
+      height: 4pt;
+      background: #000000;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1pt;
+      margin-top: 6pt;
     }
     
     .achievement-icon::after {
-      content: "↗";
-      color: white;
-      font-size: 10pt;
-      font-weight: bold;
-      line-height: 1;
+      content: "";
     }
     
     .achievement-text {
       flex: 1;
-      color: #374151;
-      line-height: 1.5;
+      color: #000000;
+      line-height: 1.6;
     }
     
     .sidebar {
@@ -407,11 +424,12 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     }
     
     .skills-section {
-      background: ${theme.primary}08;
-      padding: 15pt;
-      border-radius: 5pt;
-      margin-bottom: 15pt;
+      background: #f8f8f8;
+      padding: 12pt;
+      border-radius: 3pt;
+      margin-bottom: 12pt;
       break-inside: avoid;
+      border: 1pt solid #dddddd;
     }
     
     .skill-item {
@@ -431,53 +449,56 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     
     .skill-name {
       font-weight: 600;
-      color: #2d3748;
+      color: #000000;
       font-size: 9pt;
     }
     
     .skill-percentage {
       font-weight: bold;
-      color: ${theme.primary};
+      color: #000000;
       font-size: 9pt;
     }
     
     .skill-bar {
-      height: 4pt;
-      background: ${theme.primary}20;
-      border-radius: 2pt;
+      height: 3pt;
+      background: #e0e0e0;
+      border-radius: 1pt;
       overflow: hidden;
+      border: 0.5pt solid #cccccc;
     }
     
     .skill-progress {
       height: 100%;
-      background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
-      border-radius: 2pt;
+      background: #666666;
+      border-radius: 1pt;
       transition: width 0.3s ease;
     }
     
     .education-item {
-      background: ${theme.accent}08;
-      padding: 12pt;
-      border-radius: 5pt;
-      margin-bottom: 10pt;
+      background: #f8f8f8;
+      padding: 10pt;
+      border-radius: 3pt;
+      margin-bottom: 8pt;
       break-inside: avoid;
+      border: 1pt solid #dddddd;
     }
     
     .education-degree {
       font-weight: bold;
-      color: #2d3748;
-      font-size: 11pt;
+      color: #000000;
+      font-size: 10pt;
       margin-bottom: 3pt;
     }
     
     .education-institution {
       font-weight: 600;
-      color: ${theme.accent};
+      color: #333333;
       margin-bottom: 2pt;
+      font-style: italic;
     }
     
     .education-year {
-      color: #666;
+      color: #666666;
       font-size: 9pt;
     }
     
@@ -490,17 +511,19 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     
     .stat-card {
       text-align: center;
-      padding: 10pt;
-      border-radius: 5pt;
-      border: 1pt solid ${theme.primary}20;
+      padding: 8pt;
+      border-radius: 3pt;
+      border: 1pt solid #dddddd;
       position: relative;
+      background: #f8f8f8;
     }
     
     .stat-circle {
-      width: 40pt;
-      height: 40pt;
+      width: 35pt;
+      height: 35pt;
       border-radius: 50%;
-      background: conic-gradient(${theme.primary} 0deg, ${theme.primary} calc(var(--percentage) * 3.6deg), ${theme.primary}20 calc(var(--percentage) * 3.6deg));
+      background: #f0f0f0;
+      border: 2pt solid #cccccc;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -510,23 +533,19 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     
     .stat-circle::before {
       content: '';
-      width: 30pt;
-      height: 30pt;
-      border-radius: 50%;
-      background: white;
-      position: absolute;
+      display: none;
     }
     
     .stat-number {
-      font-size: 12pt;
+      font-size: 11pt;
       font-weight: bold;
-      color: ${theme.primary};
+      color: #000000;
       position: relative;
       z-index: 1;
     }
     
     .stat-label {
-      color: #666;
+      color: #666666;
       font-size: 8pt;
       margin-top: 2pt;
     }
@@ -537,29 +556,35 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         height: 297mm !important;
         margin: 0 !important;
         padding: 0 !important;
+        font-family: 'Times', 'Times New Roman', serif !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
       
       .container {
         width: 210mm !important;
         min-height: 297mm !important;
         margin: 0 !important;
-        padding: 0.75in 0.5in !important;
+        padding: 0.75in !important;
         box-shadow: none !important;
         border-radius: 0 !important;
       }
       
       .main-content {
         grid-template-columns: 65% 35% !important;
-        gap: 15pt !important;
+        gap: 20pt !important;
       }
       
       .header {
-        margin: -0.75in -0.5in 12pt -0.5in !important;
-        padding: 15pt !important;
+        margin: -0.75in -0.75in 16pt -0.75in !important;
+        padding: 16pt !important;
+        background: #000000 !important;
+        color: white !important;
       }
       
       .sidebar {
-        font-size: 9pt !important;
+        font-size: 10pt !important;
       }
       
       .left-column {
