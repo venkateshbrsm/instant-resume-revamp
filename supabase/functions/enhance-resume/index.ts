@@ -319,30 +319,65 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         
+        // Validate DOCX buffer before upload
+        if (!docxBuffer || docxBuffer.length === 0) {
+          console.error('DOCX buffer is empty or null');
+          throw new Error('Generated DOCX file is empty');
+        }
+        
+        console.log('DOCX buffer size:', docxBuffer.length, 'bytes');
+        
         // Save the enhanced DOCX file to storage
         const enhancedFileName = `enhanced_${fileName.replace(/\.[^/.]+$/, '.docx')}`;
-        const enhancedFilePath = `${filePath.split('/')[0]}/${enhancedFileName}`;
+        const userFolder = filePath.split('/')[0];
+        const enhancedFilePath = `${userFolder}/${enhancedFileName}`;
         
-        const { error: uploadError } = await supabase.storage
-          .from('resumes')
-          .upload(enhancedFilePath, docxBuffer, {
-            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            upsert: true
-          });
+        console.log('Uploading enhanced file to:', enhancedFilePath);
+        
+        // Upload with retry logic
+        let uploadSuccess = false;
+        let uploadError = null;
+        
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          console.log(`Upload attempt ${attempt}/3`);
+          
+          const { error } = await supabase.storage
+            .from('resumes')
+            .upload(enhancedFilePath, docxBuffer, {
+              contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              upsert: true
+            });
+            
+          if (!error) {
+            uploadSuccess = true;
+            console.log('Enhanced file uploaded successfully:', enhancedFilePath);
+            break;
+          } else {
+            uploadError = error;
+            console.error(`Upload attempt ${attempt} failed:`, error);
+            if (attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+            }
+          }
+        }
 
-        if (uploadError) {
-          console.error('Error uploading enhanced file:', uploadError);
-        } else {
-          console.log('Enhanced file uploaded successfully:', enhancedFilePath);
+        if (!uploadSuccess) {
+          console.error('All upload attempts failed. Final error:', uploadError);
         }
         
         // Update payment record with enhanced content and file path
+        const updateData: any = { 
+          enhanced_content: parsedContent
+        };
+        
+        // Only set enhanced_file_path if upload was successful
+        if (uploadSuccess) {
+          updateData.enhanced_file_path = enhancedFilePath;
+        }
+        
         const { error: updateError } = await supabase
           .from('payments')
-          .update({ 
-            enhanced_content: parsedContent,
-            enhanced_file_path: enhancedFilePath
-          })
+          .update(updateData)
           .eq('file_path', filePath)
           .eq('email', userEmail);
 
@@ -350,6 +385,11 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
           console.error('Error saving enhanced content:', updateError);
         } else {
           console.log('Enhanced content saved to database successfully');
+          if (uploadSuccess) {
+            console.log('Enhanced file path saved:', enhancedFilePath);
+          } else {
+            console.log('Enhanced content saved without file path due to upload failure');
+          }
         }
       } catch (saveError) {
         console.error('Failed to save enhanced content:', saveError);
