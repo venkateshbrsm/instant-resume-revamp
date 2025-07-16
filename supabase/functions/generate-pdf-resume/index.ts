@@ -40,7 +40,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
   <style>
     @page {
       size: A4;
-      margin: 1in;
+      margin: 0.75in 0.5in;
     }
     
     @media print {
@@ -56,9 +56,46 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         width: 100%;
         max-width: none;
         margin: 0;
-        padding: 1in;
+        padding: 0;
         box-shadow: none;
+        border-radius: 0;
       }
+      
+      .main-content {
+        grid-template-columns: 65% 35%;
+        gap: 15pt;
+      }
+      
+      .header {
+        margin-bottom: 12pt;
+        padding: 15pt;
+      }
+      
+      .section {
+        margin-bottom: 15pt;
+      }
+      
+      .experience-item {
+        margin-bottom: 12pt;
+      }
+      
+      .skills-section {
+        margin-bottom: 12pt;
+      }
+      
+      .stats-grid {
+        margin-bottom: 12pt;
+      }
+      
+      .education-item {
+        margin-bottom: 8pt;
+      }
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     
     /* Screen styles for responsive viewing */
@@ -70,9 +107,9 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       }
       
       body {
-        font-family: 'Times New Roman', 'Georgia', serif;
-        line-height: 1.6;
-        color: #000000;
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        line-height: 1.4;
+        color: #2d3748;
         background: #f5f5f5;
         font-size: 12pt;
         width: 100%;
@@ -85,35 +122,101 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       }
       
       .container {
-        max-width: min(95vw, 800px);
+        max-width: min(95vw, 1200px);
         margin: 0 auto;
         background: white;
         width: 100%;
         min-height: auto;
-        padding: 1in;
+        padding: 40px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
       }
+      
+      .main-content {
+        grid-template-columns: 1fr 380px;
+        gap: 30px;
+      }
+      
+      .header {
+        margin: -40px -40px 20px -40px;
+        padding: 30px 40px;
+      }
+      
+      .header h1 {
+        font-size: 28pt;
+      }
+      
+      .header .title {
+        font-size: 16pt;
+      }
+      
+      .section-title {
+        font-size: 16pt;
+      }
+      
+      .experience-title {
+        font-size: 14pt;
+      }
+      
+      .experience-company {
+        font-size: 13pt;
+      }
+      
+      .achievement {
+        font-size: 11pt;
+      }
+      
+      .skill-name {
+        font-size: 10pt;
+      }
+      
+      .summary-text {
+        font-size: 11pt;
+      }
+      
+      /* Responsive breakpoints */
+      @media screen and (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+        
+        .container {
+          padding: 20px;
+          max-width: 100%;
+        }
+        
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        
+        .header {
+          margin: -20px -20px 15px -20px;
+          padding: 20px;
+        }
+        
+        .header h1 {
+          font-size: 24pt;
+        }
+        
+        .contact-grid {
+          grid-template-columns: 1fr;
+        }
+      }
     }
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    /* Print styles - standard Word document */
+    /* Print styles - preserve A4 layout */
     html {
       width: 210mm;
       height: 297mm;
     }
     
     body {
-      font-family: 'Times New Roman', 'Georgia', serif;
-      line-height: 1.6;
-      color: #000000;
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      line-height: 1.4;
+      color: #2d3748;
       background: white;
-      font-size: 12pt;
+      font-size: 11pt;
       width: 210mm;
       min-height: 297mm;
       margin: 0;
@@ -126,46 +229,63 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       background: white;
       width: 210mm;
       min-height: 297mm;
-      padding: 1in;
+      padding: 0.75in 0.5in;
     }
     
-    /* Header styling */
     .header {
-      text-align: center;
-      margin-bottom: 24pt;
-      padding-bottom: 12pt;
-      border-bottom: 1pt solid ${theme.primary};
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
+      color: white;
+      padding: 20pt;
+      margin: -0.75in -0.5in 15pt -0.5in;
+      border-radius: 0;
     }
     
     .header h1 {
-      font-size: 20pt;
+      font-size: 22pt;
       font-weight: bold;
-      color: ${theme.primary};
-      margin-bottom: 6pt;
-      text-transform: uppercase;
-      letter-spacing: 1pt;
+      margin-bottom: 5pt;
+      line-height: 1.2;
     }
     
     .header .title {
       font-size: 14pt;
-      color: ${theme.secondary};
       margin-bottom: 12pt;
-      font-style: italic;
+      opacity: 0.9;
     }
     
-    .contact-info {
-      font-size: 11pt;
-      color: #333333;
-      line-height: 1.4;
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8pt;
+      margin-top: 8pt;
     }
     
-    .contact-line {
-      margin-bottom: 4pt;
+    .contact-item {
+      font-size: 9pt;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 4pt;
     }
     
-    /* Section styling */
+    .contact-item.with-bullet::before {
+      content: "";
+      width: 6pt;
+      height: 6pt;
+      background: #3b82f6;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 65% 35%;
+      gap: 18pt;
+      margin-top: 15pt;
+    }
+    
     .section {
-      margin-bottom: 20pt;
+      margin-bottom: 18pt;
       break-inside: avoid;
     }
     
@@ -174,119 +294,281 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       font-weight: bold;
       color: ${theme.primary};
       margin-bottom: 8pt;
-      text-transform: uppercase;
-      letter-spacing: 0.5pt;
-      border-bottom: 1pt solid ${theme.primary};
       padding-bottom: 4pt;
+      border-bottom: 1.5pt solid ${theme.primary};
+      display: flex;
+      align-items: center;
+      gap: 6pt;
     }
     
-    /* Summary styling */
+    .section-title::before {
+      content: "🎓";
+      font-size: 12pt;
+    }
+    
+    .section-title.summary-title::before {
+      content: "📝";
+    }
+    
+    .section-title.skills-title::before {
+      content: "⚡";
+    }
+    
+    .section-title.experience-title::before {
+      content: "💼";
+    }
+    
     .summary-text {
-      font-size: 11pt;
-      line-height: 1.6;
+      font-size: 10pt;
+      line-height: 1.5;
       text-align: justify;
-      margin-bottom: 12pt;
     }
     
-    /* Experience styling */
     .experience-item {
-      margin-bottom: 16pt;
+      margin-bottom: 15pt;
       break-inside: avoid;
     }
     
     .experience-header {
-      margin-bottom: 6pt;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8pt;
     }
     
     .experience-title {
       font-size: 13pt;
       font-weight: bold;
-      color: #000000;
-      display: inline;
+      color: #2d3748;
     }
     
     .experience-company {
       font-size: 12pt;
-      color: ${theme.secondary};
       font-weight: 600;
-      display: inline;
-      margin-left: 8pt;
+      color: ${theme.accent};
+      margin-top: 2pt;
     }
     
     .experience-duration {
-      font-size: 11pt;
-      color: #666666;
-      float: right;
-      font-style: italic;
+      background: ${theme.accent}20;
+      color: ${theme.accent};
+      padding: 3pt 8pt;
+      border-radius: 3pt;
+      font-size: 9pt;
+      font-weight: 600;
     }
     
     .achievements {
-      list-style: disc;
-      margin-left: 20pt;
-      margin-top: 6pt;
+      list-style: none;
+      margin-left: 0;
     }
     
     .achievement {
-      margin-bottom: 4pt;
-      font-size: 11pt;
+      margin-bottom: 6pt;
+      font-size: 10pt;
       line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 6pt;
+      padding: 6pt 8pt;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 6pt;
+      margin-bottom: 4pt;
     }
     
-    /* Skills styling */
-    .skills-container {
-      columns: 2;
-      column-gap: 30pt;
-      margin-bottom: 12pt;
+    .achievement-icon {
+      flex-shrink: 0;
+      width: 16pt;
+      height: 16pt;
+      background: linear-gradient(135deg, #4ade80, #16a34a);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1pt;
+    }
+    
+    .achievement-icon::after {
+      content: "↗";
+      color: white;
+      font-size: 10pt;
+      font-weight: bold;
+      line-height: 1;
+    }
+    
+    .achievement-text {
+      flex: 1;
+      color: #374151;
+      line-height: 1.5;
+    }
+    
+    .sidebar {
+      font-size: 10pt;
+    }
+    
+    .skills-section {
+      background: ${theme.primary}08;
+      padding: 15pt;
+      border-radius: 5pt;
+      margin-bottom: 15pt;
+      break-inside: avoid;
     }
     
     .skill-item {
-      break-inside: avoid;
-      margin-bottom: 4pt;
-      font-size: 11pt;
-      position: relative;
-      padding-left: 12pt;
+      margin-bottom: 8pt;
     }
     
-    .skill-item::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: ${theme.primary};
+    .skill-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3pt;
+    }
+    
+    .skill-name {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 9pt;
+    }
+    
+    .skill-percentage {
       font-weight: bold;
+      color: ${theme.primary};
+      font-size: 9pt;
     }
     
-    /* Education styling */
+    .skill-bar {
+      height: 4pt;
+      background: ${theme.primary}20;
+      border-radius: 2pt;
+      overflow: hidden;
+    }
+    
+    .skill-progress {
+      height: 100%;
+      background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
+      border-radius: 2pt;
+      transition: width 0.3s ease;
+    }
+    
     .education-item {
-      margin-bottom: 12pt;
+      background: ${theme.accent}08;
+      padding: 12pt;
+      border-radius: 5pt;
+      margin-bottom: 10pt;
       break-inside: avoid;
     }
     
     .education-degree {
       font-weight: bold;
-      color: #000000;
-      font-size: 12pt;
-      display: inline;
+      color: #2d3748;
+      font-size: 11pt;
+      margin-bottom: 3pt;
     }
     
     .education-institution {
-      color: ${theme.secondary};
-      font-size: 12pt;
-      display: inline;
-      margin-left: 8pt;
+      font-weight: 600;
+      color: ${theme.accent};
+      margin-bottom: 2pt;
     }
     
     .education-year {
-      color: #666666;
-      font-size: 11pt;
-      float: right;
-      font-style: italic;
+      color: #666;
+      font-size: 9pt;
     }
     
-    /* Clear floats */
-    .clearfix::after {
-      content: "";
-      display: table;
-      clear: both;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8pt;
+      margin-bottom: 15pt;
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 10pt;
+      border-radius: 5pt;
+      border: 1pt solid ${theme.primary}20;
+      position: relative;
+    }
+    
+    .stat-circle {
+      width: 40pt;
+      height: 40pt;
+      border-radius: 50%;
+      background: conic-gradient(${theme.primary} 0deg, ${theme.primary} calc(var(--percentage) * 3.6deg), ${theme.primary}20 calc(var(--percentage) * 3.6deg));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 5pt;
+      position: relative;
+    }
+    
+    .stat-circle::before {
+      content: '';
+      width: 30pt;
+      height: 30pt;
+      border-radius: 50%;
+      background: white;
+      position: absolute;
+    }
+    
+    .stat-number {
+      font-size: 12pt;
+      font-weight: bold;
+      color: ${theme.primary};
+      position: relative;
+      z-index: 1;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 8pt;
+      margin-top: 2pt;
+    }
+    
+    @media print {
+      body {
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .container {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        padding: 0.75in 0.5in !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      
+      .main-content {
+        grid-template-columns: 65% 35% !important;
+        gap: 15pt !important;
+      }
+      
+      .header {
+        margin: -0.75in -0.5in 12pt -0.5in !important;
+        padding: 15pt !important;
+      }
+      
+      .sidebar {
+        font-size: 9pt !important;
+      }
+      
+      .left-column {
+        grid-column: 1 !important;
+      }
+      
+      .sidebar {
+        grid-column: 2 !important;
+      }
     }
   </style>
 </head>
@@ -297,79 +579,154 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <h1>${resumeData.name || 'Enhanced Resume'}</h1>
       <div class="title">${resumeData.title || ''}</div>
       
-      <div class="contact-info">
-        ${resumeData.email ? `<div class="contact-line">Email: ${resumeData.email}</div>` : ''}
-        ${resumeData.phone ? `<div class="contact-line">Phone: ${resumeData.phone}</div>` : ''}
-        ${resumeData.location ? `<div class="contact-line">Location: ${resumeData.location}</div>` : ''}
+      <div class="contact-grid">
+        <div class="contact-item with-bullet">Email: ${resumeData.email || ''}</div>
+        <div class="contact-item">Phone: ${resumeData.phone || ''}</div>
+        <div class="contact-item">Location: ${resumeData.location || ''}</div>
+        <div class="contact-item">Professional Resume</div>
       </div>
     </div>
 
-    <!-- Professional Summary -->
-    <div class="section">
-      <h2 class="section-title">Professional Summary</h2>
-      <p class="summary-text">${resumeData.summary || 'Professional summary not available.'}</p>
-    </div>
-
-    <!-- Professional Experience -->
-    ${resumeData.experience && resumeData.experience.length > 0 ? `
-    <div class="section">
-      <h2 class="section-title">Professional Experience</h2>
-      
-      ${resumeData.experience.map((exp: any) => `
-      <div class="experience-item">
-        <div class="experience-header clearfix">
-          <span class="experience-title">${exp.title || ''}</span>
-          <span class="experience-company">${exp.company || ''}</span>
-          <span class="experience-duration">${exp.duration || ''}</span>
+    <div class="main-content">
+      <!-- Main Content -->
+      <div class="left-column">
+        <!-- Professional Summary -->
+        <div class="section">
+          <h3 class="section-title summary-title">Professional Summary</h3>
+          <p class="summary-text">${resumeData.summary || 'Professional summary not available.'}</p>
         </div>
-        
-        ${exp.achievements && exp.achievements.length > 0 ? `
-        <ul class="achievements">
-          ${exp.achievements.map((achievement: string) => `
-          <li class="achievement">${achievement}</li>
+
+        <!-- Professional Experience -->
+        ${resumeData.experience && resumeData.experience.length > 0 ? `
+        <div class="section">
+          <h3 class="section-title experience-title">Professional Experience</h3>
+          
+          ${resumeData.experience.map((exp: any) => `
+          <div class="experience-item">
+            <div class="experience-header">
+              <div>
+                <div class="experience-title">${exp.title || ''}</div>
+                <div class="experience-company">${exp.company || ''}</div>
+              </div>
+              <div class="experience-duration">${exp.duration || ''}</div>
+            </div>
+            
+            ${exp.achievements && exp.achievements.length > 0 ? `
+            <ul class="achievements">
+              ${exp.achievements.map((achievement: string) => `
+              <li class="achievement">
+                <div class="achievement-icon"></div>
+                <div class="achievement-text">${achievement}</div>
+              </li>
+              `).join('')}
+            </ul>
+            ` : ''}
+          </div>
           `).join('')}
-        </ul>
+        </div>
         ` : ''}
       </div>
-      `).join('')}
-    </div>
-    ` : ''}
 
-    <!-- Skills -->
-    <div class="section">
-      <h2 class="section-title">Skills</h2>
-      
-      <div class="skills-container">
-        ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
-          resumeData.skills.map((skill: string) => `
-          <div class="skill-item">${skill}</div>
-          `).join('') :
-          // Fallback skills if none found
-          `
-          <div class="skill-item">Communication</div>
-          <div class="skill-item">Problem Solving</div>
-          <div class="skill-item">Adaptability</div>
-          <div class="skill-item">Team Work</div>
-          <div class="skill-item">Leadership</div>
-          <div class="skill-item">Project Management</div>
-          `
-        }
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Skills -->
+        <div class="skills-section">
+          <h3 class="section-title skills-title">Skills</h3>
+          
+          ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
+            resumeData.skills.map((skill: string) => {
+              const proficiency = generateSkillProficiency(skill);
+              return `
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">${skill}</span>
+                  <span class="skill-percentage">${proficiency}%</span>
+                </div>
+                <div class="skill-bar">
+                  <div class="skill-progress" style="width: ${proficiency}%"></div>
+                </div>
+              </div>
+              `;
+            }).join('') :
+            // Fallback skills if none found
+            `
+            <div class="skill-item">
+              <div class="skill-header">
+                <span class="skill-name">Communication</span>
+                <span class="skill-percentage">85%</span>
+              </div>
+              <div class="skill-bar">
+                <div class="skill-progress" style="width: 85%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-header">
+                <span class="skill-name">Problem Solving</span>
+                <span class="skill-percentage">88%</span>
+              </div>
+              <div class="skill-bar">
+                <div class="skill-progress" style="width: 88%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-header">
+                <span class="skill-name">Adaptability</span>
+                <span class="skill-percentage">90%</span>
+              </div>
+              <div class="skill-bar">
+                <div class="skill-progress" style="width: 90%"></div>
+              </div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-header">
+                <span class="skill-name">Team Work</span>
+                <span class="skill-percentage">87%</span>
+              </div>
+              <div class="skill-bar">
+                <div class="skill-progress" style="width: 87%"></div>
+              </div>
+            </div>
+            `
+          }
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-circle" style="--percentage: ${Math.min(90, ((resumeData.skills?.length || 4) * 15))}">
+              <div class="stat-number">${resumeData.skills?.length || 4}</div>
+            </div>
+            <div class="stat-label">Skills</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-circle" style="--percentage: ${Math.min(85, ((resumeData.experience?.length || 1) * 30))}">
+              <div class="stat-number">${resumeData.experience?.length || 1}</div>
+            </div>
+            <div class="stat-label">Experience</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-circle" style="--percentage: ${Math.min(75, ((resumeData.education?.length || 3) * 25))}">
+              <div class="stat-number">${resumeData.education?.length || 3}</div>
+            </div>
+            <div class="stat-label">Education</div>
+          </div>
+        </div>
+
+        <!-- Education -->
+        ${resumeData.education && resumeData.education.length > 0 ? `
+        <div class="section">
+          <h3 class="section-title">Education</h3>
+          ${resumeData.education.map((edu: any) => `
+          <div class="education-item">
+            <div class="education-degree">${edu.degree || ''}</div>
+            <div class="education-institution">${edu.institution || ''}</div>
+            <div class="education-year">${edu.year || ''}</div>
+          </div>
+          `).join('')}
+        </div>
+        ` : ''}
       </div>
     </div>
-
-    <!-- Education -->
-    ${resumeData.education && resumeData.education.length > 0 ? `
-    <div class="section">
-      <h2 class="section-title">Education</h2>
-      ${resumeData.education.map((edu: any) => `
-      <div class="education-item clearfix">
-        <span class="education-degree">${edu.degree || ''}</span>
-        <span class="education-institution">${edu.institution || ''}</span>
-        <span class="education-year">${edu.year || ''}</span>
-      </div>
-      `).join('')}
-    </div>
-    ` : ''}
   </div>
 </body>
 </html>
