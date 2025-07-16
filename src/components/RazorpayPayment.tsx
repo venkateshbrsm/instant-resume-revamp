@@ -104,8 +104,8 @@ export const RazorpayPayment = ({ fileName, amount, disabled }: RazorpayPaymentP
               description: "Your payment has been processed successfully!",
             });
 
-            // Redirect to success page
-            window.location.href = `/payment-success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+            // Redirect to success page with all payment details
+            window.location.href = `/payment-success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`;
             
           } catch (error) {
             console.error('Payment verification error:', error);
@@ -114,6 +114,8 @@ export const RazorpayPayment = ({ fileName, amount, disabled }: RazorpayPaymentP
               description: "Payment was processed but verification failed. Please contact support.",
               variant: "destructive"
             });
+            // Redirect to failure page
+            window.location.href = `/payment-failure?razorpay_order_id=${response.razorpay_order_id}&error_description=${encodeURIComponent(error instanceof Error ? error.message : 'Verification failed')}`;
           }
         },
         modal: {
