@@ -107,34 +107,13 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
         handler: async (response: any) => {
           console.log('Payment successful:', response);
           
-          try {
-            // Verify payment
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify', {
-              body: response
-            });
+          toast({
+            title: "Payment Successful",
+            description: "Your payment has been processed successfully!",
+          });
 
-            if (verifyError || !verifyData?.success) {
-              throw new Error(verifyError?.message || 'Payment verification failed');
-            }
-
-            toast({
-              title: "Payment Successful",
-              description: "Your payment has been processed successfully!",
-            });
-
-            // Redirect to success page with all payment details
-            window.location.href = `/payment-success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`;
-            
-          } catch (error) {
-            console.error('Payment verification error:', error);
-            toast({
-              title: "Payment Verification Failed",
-              description: "Payment was processed but verification failed. Please contact support.",
-              variant: "destructive"
-            });
-            // Redirect to failure page
-            window.location.href = `/payment-failure?razorpay_order_id=${response.razorpay_order_id}&error_description=${encodeURIComponent(error instanceof Error ? error.message : 'Verification failed')}`;
-          }
+          // Redirect to success page with all payment details for verification
+          window.location.href = `/payment-success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${response.razorpay_signature}`;
         },
         modal: {
           ondismiss: () => {
