@@ -18,7 +18,8 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, originalText, extractedText } = await req.json();
+    const { fileName, originalText, extractedText, designStyle } = await req.json();
+    const requestedStyle = designStyle || 'professional';
 
     console.log('Enhancing resume for:', fileName);
     console.log('Original text length:', originalText?.length || 0);
