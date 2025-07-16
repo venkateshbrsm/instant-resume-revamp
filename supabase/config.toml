@@ -89,3 +89,15 @@ verify_jwt = true
 
 [functions.test-ilovepdf-env]
 verify_jwt = true
+
+[functions.generate-pdf-resume]
+verify_jwt = false
+
+[functions.download-enhanced-resume]
+verify_jwt = false
+
+[functions.razorpay-initiate]
+verify_jwt = true
+
+[functions.razorpay-verify]
+verify_jwt = false

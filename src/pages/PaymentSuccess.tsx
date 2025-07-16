@@ -59,7 +59,7 @@ export default function PaymentSuccess() {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (format: 'pdf' | 'docx' = 'pdf') => {
     try {
       const paymentId = searchParams.get('razorpay_payment_id');
       if (!paymentId) {
@@ -68,11 +68,13 @@ export default function PaymentSuccess() {
 
       toast({
         title: "Preparing Download",
-        description: "Your enhanced resume is being prepared...",
+        description: `Your enhanced resume ${format.toUpperCase()} is being prepared...`,
       });
 
+      const functionName = format === 'pdf' ? 'generate-pdf-resume' : 'download-enhanced-resume';
+      
       // Use fetch directly to handle binary data properly
-      const response = await fetch(`https://goorszhscvxywfigydfp.supabase.co/functions/v1/download-enhanced-resume`, {
+      const response = await fetch(`https://goorszhscvxywfigydfp.supabase.co/functions/v1/${functionName}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
@@ -89,11 +91,13 @@ export default function PaymentSuccess() {
       // Get the binary data as ArrayBuffer
       const arrayBuffer = await response.arrayBuffer();
       
-      // Create DOCX blob
-      const blob = new Blob([arrayBuffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-      });
-      const filename = `Enhanced_Resume_${new Date().getTime()}.docx`;
+      const mimeType = format === 'pdf' 
+        ? 'application/pdf' 
+        : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      
+      // Create blob
+      const blob = new Blob([arrayBuffer], { type: mimeType });
+      const filename = `Enhanced_Resume_${new Date().getTime()}.${format}`;
       
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -106,7 +110,7 @@ export default function PaymentSuccess() {
 
       toast({
         title: "Download Started",
-        description: "Your enhanced resume is being downloaded.",
+        description: `Your enhanced resume ${format.toUpperCase()} is being downloaded.`,
       });
     } catch (error) {
       console.error('Download error:', error);
@@ -175,12 +179,22 @@ export default function PaymentSuccess() {
 
           <div className="space-y-3">
             <Button 
-              onClick={handleDownload}
-              className="w-full bg-primary hover:bg-primary/90"
+              onClick={() => handleDownload('pdf')}
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold"
               size="lg"
             >
               <Download className="mr-2 h-4 w-4" />
-              Download Enhanced Resume
+              Download Enhanced Resume (PDF)
+            </Button>
+            
+            <Button 
+              onClick={() => handleDownload('docx')}
+              variant="outline"
+              className="w-full border-2 border-primary text-primary hover:bg-primary/5"
+              size="lg"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Enhanced Resume (DOCX)
             </Button>
 
             <Button 
