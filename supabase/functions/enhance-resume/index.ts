@@ -508,69 +508,44 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
         
         console.log('DOCX buffer size:', docxBuffer.length, 'bytes');
         
-        // Save the enhanced DOCX file to storage
-        const enhancedFileName = `enhanced_${fileName.replace(/\.[^/.]+$/, '.docx')}`;
+        // Create organized storage path with theme applied
         const userFolder = filePath.split('/')[0];
-        const enhancedFilePath = `${userFolder}/${enhancedFileName}`;
+        const timestamp = Date.now();
+        const enhancedFilePath = `enhanced-resumes/${userFolder}/${timestamp}/resume.docx`;
         
-        console.log('Uploading enhanced file to:', enhancedFilePath);
+        console.log('Uploading enhanced DOCX blob to:', enhancedFilePath);
         
-        // Upload with retry logic
-        let uploadSuccess = false;
-        let uploadError = null;
-        
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          console.log(`Upload attempt ${attempt}/3`);
-          
-          const { error } = await supabase.storage
-            .from('resumes')
-            .upload(enhancedFilePath, docxBuffer, {
-              contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              upsert: true
-            });
-            
-          if (!error) {
-            uploadSuccess = true;
-            console.log('Enhanced file uploaded successfully:', enhancedFilePath);
-            break;
-          } else {
-            uploadError = error;
-            console.error(`Upload attempt ${attempt} failed:`, error);
-            if (attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
-            }
-          }
+        // Upload the enhanced DOCX blob
+        const { error: uploadError } = await supabase.storage
+          .from('resumes')
+          .upload(enhancedFilePath, docxBuffer, {
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.error('Enhanced DOCX blob upload failed:', uploadError);
+          throw uploadError;
         }
 
-        if (!uploadSuccess) {
-          console.error('All upload attempts failed. Final error:', uploadError);
-        }
+        console.log('Enhanced DOCX blob uploaded successfully:', enhancedFilePath);
         
-        // Update payment record with enhanced content and file path
-        const updateData: any = { 
-          enhanced_content: parsedContent
-        };
-        
-        // Only set enhanced_file_path if upload was successful
-        if (uploadSuccess) {
-          updateData.enhanced_file_path = enhancedFilePath;
-        }
-        
+        // Update payment record with enhanced content (backup) and blob path
         const { error: updateError } = await supabase
           .from('payments')
-          .update(updateData)
+          .update({
+            enhanced_content: parsedContent,
+            enhanced_file_path: enhancedFilePath,
+            theme_id: theme,
+            updated_at: new Date().toISOString()
+          })
           .eq('file_path', filePath)
           .eq('email', userEmail);
 
         if (updateError) {
-          console.error('Error saving enhanced content:', updateError);
+          console.error('Error updating payment with blob path:', updateError);
         } else {
-          console.log('Enhanced content saved to database successfully');
-          if (uploadSuccess) {
-            console.log('Enhanced file path saved:', enhancedFilePath);
-          } else {
-            console.log('Enhanced content saved without file path due to upload failure');
-          }
+          console.log('Payment record updated with enhanced blob path and theme');
         }
       } catch (saveError) {
         console.error('Failed to save enhanced content:', saveError);

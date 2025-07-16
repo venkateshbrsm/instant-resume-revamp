@@ -273,9 +273,9 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // First priority: Check if enhanced file exists in storage and download it directly
+    // Priority 1: Download enhanced DOCX blob directly from storage (simplified approach)
     if (payment.enhanced_file_path) {
-      console.log('Downloading enhanced file from storage:', payment.enhanced_file_path);
+      console.log('Downloading enhanced DOCX blob from storage:', payment.enhanced_file_path);
       
       try {
         const { data: fileData, error: downloadError } = await supabaseClient.storage
@@ -284,26 +284,23 @@ serve(async (req) => {
 
         if (!downloadError && fileData) {
           const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
-          
-          // Convert blob to array buffer to ensure proper binary handling
           const arrayBuffer = await fileData.arrayBuffer();
-          const fileSize = arrayBuffer.byteLength;
           
-          console.log(`Downloaded DOCX file size: ${fileSize} bytes`);
+          console.log(`Enhanced DOCX blob downloaded successfully, size: ${arrayBuffer.byteLength} bytes`);
           
           return new Response(arrayBuffer, {
             headers: {
               ...corsHeaders,
               'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
               'Content-Disposition': `attachment; filename="${fileName}"`,
-              'Content-Length': fileSize.toString(),
+              'Content-Length': arrayBuffer.byteLength.toString(),
             },
           });
         } else {
-          console.error('Failed to download enhanced file from storage:', downloadError);
+          console.log('Enhanced blob not found in storage, falling back to generation:', downloadError);
         }
       } catch (storageError) {
-        console.error('Error accessing enhanced file in storage:', storageError);
+        console.error('Enhanced blob download error, falling back to generation:', storageError);
       }
     }
 
