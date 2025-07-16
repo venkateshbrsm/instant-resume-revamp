@@ -259,12 +259,12 @@ serve(async (req) => {
           .download(payment.enhanced_file_path);
 
         if (!downloadError && fileData) {
-          const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.html')}`;
+          const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
           
           return new Response(fileData, {
             headers: {
               ...corsHeaders,
-              'Content-Type': 'text/html',
+              'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
               'Content-Disposition': `attachment; filename="${fileName}"`,
             },
           });
