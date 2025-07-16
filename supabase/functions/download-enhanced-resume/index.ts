@@ -277,33 +277,89 @@ serve(async (req) => {
                 if (extractResponse.data && extractResponse.data.extracted_text) {
                   fileContent = extractResponse.data.extracted_text;
                   console.log("PDF text extracted successfully, length:", fileContent.length);
+                  console.log("PDF content preview:", fileContent.substring(0, 200));
                 } else {
-                  console.log("PDF extraction failed, using filename");
-                  fileContent = `PDF file: ${payment.file_name}`;
+                  console.log("PDF extraction failed, trying alternative approach");
+                  // Try the ilovepdf extraction as fallback
+                  const formData2 = new FormData();
+                  formData2.append('file', fileData, payment.file_name);
+                  
+                  const extractResponse2 = await supabaseClient.functions.invoke('extract-pdf-ilovepdf', {
+                    body: formData2,
+                  });
+                  
+                  if (extractResponse2.data && extractResponse2.data.text) {
+                    fileContent = extractResponse2.data.text;
+                    console.log("PDF text extracted via ilovepdf, length:", fileContent.length);
+                  } else {
+                    fileContent = `PDF file: ${payment.file_name}`;
+                  }
                 }
               } catch (pdfError) {
                 console.error("PDF extraction error:", pdfError);
                 fileContent = `PDF file: ${payment.file_name}`;
               }
             } else if (payment.file_name.toLowerCase().endsWith('.docx')) {
-              // For DOCX files, we'll read the binary content and convert to text
-              // This is a simplified approach - in production, you'd use a proper DOCX parser
+              // For DOCX files, use proper text extraction with mammoth-like approach
               try {
                 const arrayBuffer = await fileData.arrayBuffer();
-                const text = new TextDecoder('utf-8').decode(arrayBuffer);
-                // Extract readable text (this is basic - DOCX files are complex XML)
-                fileContent = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                
+                // Import mammoth for DOCX text extraction
+                const mammoth = await import('https://cdn.skypack.dev/mammoth@1.4.21');
+                
+                // Extract text from DOCX
+                const result = await mammoth.extractRawText({ arrayBuffer });
+                fileContent = result.value;
+                
+                console.log("DOCX text extracted with mammoth, length:", fileContent.length);
+                console.log("DOCX content preview:", fileContent.substring(0, 200));
+                
                 if (fileContent.length < 50) {
-                  fileContent = `DOCX file: ${payment.file_name} (content extraction limited)`;
+                  console.warn("DOCX extraction yielded very little text");
+                  fileContent = `DOCX file: ${payment.file_name} (limited content extracted)`;
                 }
-                console.log("DOCX text extracted, length:", fileContent.length);
               } catch (docxError) {
                 console.error("DOCX extraction error:", docxError);
-                fileContent = `DOCX file: ${payment.file_name}`;
+                console.log("Falling back to convert-docx-to-pdf approach");
+                
+                // Fallback: Convert DOCX to PDF first, then extract text
+                try {
+                  const formData = new FormData();
+                  formData.append('file', fileData, payment.file_name);
+                  
+                  const convertResponse = await supabaseClient.functions.invoke('convert-docx-to-pdf', {
+                    body: formData,
+                  });
+                  
+                  if (convertResponse.data && convertResponse.data.success && convertResponse.data.pdf_base64) {
+                    // Convert base64 PDF back to blob and extract text
+                    const pdfBlob = new Blob([Uint8Array.from(atob(convertResponse.data.pdf_base64), c => c.charCodeAt(0))], { type: 'application/pdf' });
+                    
+                    const pdfFormData = new FormData();
+                    pdfFormData.append('file', pdfBlob, payment.file_name.replace('.docx', '.pdf'));
+                    
+                    const pdfExtractResponse = await supabaseClient.functions.invoke('extract-pdf-text', {
+                      body: pdfFormData,
+                    });
+                    
+                    if (pdfExtractResponse.data && pdfExtractResponse.data.extracted_text) {
+                      fileContent = pdfExtractResponse.data.extracted_text;
+                      console.log("DOCX->PDF->text extraction successful, length:", fileContent.length);
+                    } else {
+                      fileContent = `DOCX file: ${payment.file_name}`;
+                    }
+                  } else {
+                    fileContent = `DOCX file: ${payment.file_name}`;
+                  }
+                } catch (fallbackError) {
+                  console.error("DOCX fallback extraction error:", fallbackError);
+                  fileContent = `DOCX file: ${payment.file_name}`;
+                }
               }
             } else {
               // For TXT files or others
               fileContent = await fileData.text();
+              console.log("TXT file content length:", fileContent.length);
             }
           }
         } catch (err) {
