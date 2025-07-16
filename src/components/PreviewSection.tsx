@@ -219,7 +219,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
-      console.log('Skipping enhancement - insufficient text content');
+      console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
       toast({
         title: "Content Required",
         description: "Waiting for file content to be extracted before enhancement.",
@@ -233,6 +233,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     try {
       console.log('Starting enhancement with extracted text length:', extractedText.length);
+      console.log('Content preview (first 200 chars):', extractedText.substring(0, 200));
       
       // Simulate enhancement progress stages
       setEnhancementProgress(10);
@@ -247,6 +248,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           const arrayBuffer = await file.arrayBuffer();
           const bytes = new Uint8Array(arrayBuffer);
           fileBase64 = btoa(String.fromCharCode(...bytes));
+          console.log('File converted to base64, size:', fileBase64.length);
         } catch (error) {
           console.warn('Failed to convert file to base64:', error);
         }
@@ -265,8 +267,35 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 300));
 
       if (error) {
-        console.error('Enhancement error:', error);
-        throw error;
+        console.error('Enhancement service error:', error);
+        
+        // Handle specific error messages from content validation
+        if (error.message?.includes('Insufficient resume content')) {
+          toast({
+            title: "Content Extraction Issue",
+            description: "Unable to extract enough readable content from your file. Please try re-saving your document or converting to PDF format.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('does not appear to contain resume information')) {
+          toast({
+            title: "File Content Issue", 
+            description: "The uploaded file doesn't appear to contain resume content. Please ensure you're uploading a valid resume document.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('Too few meaningful words')) {
+          toast({
+            title: "Content Quality Issue",
+            description: "The extracted content appears to be incomplete. Please try re-saving your document in a different format.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Enhancement Error",
+            description: error.message || "Could not enhance resume. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
       }
 
       setEnhancementProgress(90);
@@ -276,19 +305,41 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         setEnhancedContent(data.enhancedResume);
         setEnhancementProgress(100);
         
+        console.log('Enhancement successful, enhanced content:', data.enhancedResume);
+        
         toast({
           title: "Enhancement Complete!",
           description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
         });
       } else {
-        throw new Error('Enhancement failed');
+        console.error('Invalid enhancement response:', data);
+        throw new Error('Enhancement failed - invalid response');
       }
     } catch (error) {
       console.error('Error enhancing resume:', error);
       setEnhancementProgress(0);
+      
+      // Provide helpful guidance based on the error type
+      let errorMessage = "Could not enhance resume. Please try again.";
+      let errorTitle = "Enhancement Error";
+      
+      if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Network connection issue. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
+      } else if (error.message?.includes('OpenAI') || error.message?.includes('AI service')) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+        errorTitle = "Service Unavailable";
+      } else if (error.message?.includes('Insufficient') || error.message?.includes('content')) {
+        errorMessage = "Unable to extract enough content from your file. Try re-saving your document or converting to PDF format.";
+        errorTitle = "Content Extraction Issue";
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = "Request timed out. Please try again with a smaller file or check your connection.";
+        errorTitle = "Timeout Error";
+      }
+      
       toast({
-        title: "Enhancement Error",
-        description: "Could not enhance resume. Please try again.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

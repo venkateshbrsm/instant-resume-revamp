@@ -197,29 +197,196 @@ The resume enhancement will still attempt to process the document.`;
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
-  console.log('Extracting text from DOCX file:', file.name);
-  const arrayBuffer = await file.arrayBuffer();
+  console.log('Extracting text from DOCX file:', file.name, 'Size:', file.size);
+  
+  // Validate file first
+  if (file.size === 0) {
+    throw new Error('DOCX file is empty');
+  }
+  
+  if (file.size > 50 * 1024 * 1024) { // 50MB limit
+    throw new Error('DOCX file is too large (max 50MB)');
+  }
   
   try {
-    // Use extractRawText to get plain text content instead of HTML
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    console.log('DOCX extraction successful, text length:', result.value?.length || 0);
+    const arrayBuffer = await file.arrayBuffer();
+    console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
     
-    if (!result.value || result.value.trim().length < 10) {
-      console.warn('Very little text extracted from DOCX, trying HTML conversion as fallback');
-      const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
-      // Strip HTML tags to get plain text
-      const plainText = htmlResult.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      console.log('HTML fallback extraction, text length:', plainText.length);
-      return plainText || `DOCX file: ${file.name}`;
+    // Validate ArrayBuffer
+    if (arrayBuffer.byteLength === 0) {
+      throw new Error('Unable to read DOCX file content');
     }
     
-    return result.value;
+    // Multiple extraction strategies
+    const extractionResults = await tryMultipleExtractionMethods(arrayBuffer, file.name);
+    
+    // Validate extracted content
+    const bestResult = validateAndSelectBestContent(extractionResults, file.name);
+    
+    console.log('Final extracted content length:', bestResult.length);
+    console.log('Content preview (first 200 chars):', bestResult.substring(0, 200));
+    
+    return bestResult;
+    
   } catch (error) {
-    console.error('Error extracting text from DOCX:', error);
-    return `DOCX file: ${file.name}`;
+    console.error('Critical error extracting text from DOCX:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    
+    // Return formatted error with guidance instead of minimal fallback
+    return `📄 DOCX Resume: ${file.name}
+
+⚠️ Text Extraction Issues
+
+Unable to extract text content from this DOCX file.
+
+🔧 Please try:
+• Re-saving the document in your word processor
+• Saving as a different DOCX file
+• Converting to PDF format instead
+• Ensuring the file isn't corrupted or password-protected
+
+File Details:
+- Size: ${(file.size / 1024).toFixed(1)} KB
+- Type: ${file.type}
+
+The enhancement process will still attempt to work with the document.`;
   }
 };
+
+// Try multiple extraction methods for better compatibility
+async function tryMultipleExtractionMethods(arrayBuffer: ArrayBuffer, fileName: string) {
+  const results = [];
+  
+  // Method 1: extractRawText (preferred)
+  try {
+    console.log('Trying Method 1: extractRawText...');
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    if (result.value && result.value.trim().length > 0) {
+      console.log('Method 1 success, length:', result.value.length);
+      results.push({
+        method: 'extractRawText',
+        content: result.value.trim(),
+        messages: result.messages || []
+      });
+    }
+  } catch (error) {
+    console.warn('Method 1 (extractRawText) failed:', error.message);
+  }
+  
+  // Method 2: convertToHtml then strip tags
+  try {
+    console.log('Trying Method 2: HTML conversion...');
+    const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+    if (htmlResult.value) {
+      // More aggressive HTML tag removal and text cleaning
+      const plainText = htmlResult.value
+        .replace(/<[^>]*>/g, ' ')           // Remove HTML tags
+        .replace(/&[^;]+;/g, ' ')          // Remove HTML entities
+        .replace(/\s+/g, ' ')              // Normalize whitespace
+        .trim();
+      
+      if (plainText.length > 0) {
+        console.log('Method 2 success, length:', plainText.length);
+        results.push({
+          method: 'htmlConversion',
+          content: plainText,
+          messages: htmlResult.messages || []
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Method 2 (HTML conversion) failed:', error.message);
+  }
+  
+  // Method 3: Try HTML conversion with different options
+  try {
+    console.log('Trying Method 3: HTML conversion with image handling...');
+    const options = {
+      convertImage: mammoth.images.dataUri
+    };
+    const htmlResult = await mammoth.convertToHtml({ arrayBuffer }, options);
+    if (htmlResult.value) {
+      // Extract text more aggressively, preserving structure
+      const plainText = htmlResult.value
+        .replace(/<img[^>]*>/g, '[IMAGE]')   // Replace images with placeholder
+        .replace(/<br\s*\/?>/gi, '\n')      // Convert breaks to newlines
+        .replace(/<\/p>/gi, '\n\n')         // Convert paragraph ends to double newlines
+        .replace(/<[^>]*>/g, ' ')           // Remove remaining HTML tags
+        .replace(/&[^;]+;/g, ' ')          // Remove HTML entities
+        .replace(/\s+/g, ' ')              // Normalize whitespace
+        .replace(/\n\s+/g, '\n')           // Clean up line starts
+        .trim();
+      
+      if (plainText.length > 0) {
+        console.log('Method 3 success, length:', plainText.length);
+        results.push({
+          method: 'htmlConversionAdvanced',
+          content: plainText,
+          messages: htmlResult.messages || []
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Method 3 (HTML conversion advanced) failed:', error.message);
+  }
+  
+  console.log('Extraction methods completed. Results:', results.length);
+  return results;
+}
+
+// Validate and select the best extracted content
+function validateAndSelectBestContent(results: any[], fileName: string): string {
+  if (results.length === 0) {
+    console.warn('No extraction methods succeeded');
+    return `DOCX file: ${fileName}`;
+  }
+  
+  // Score each result based on content quality
+  const scoredResults = results.map(result => {
+    let score = 0;
+    const content = result.content;
+    
+    // Length score (longer is generally better, but with diminishing returns)
+    score += Math.min(content.length / 100, 50);
+    
+    // Content quality indicators
+    if (content.includes('@')) score += 10; // Email
+    if (/\b\d{4}\b/.test(content)) score += 5; // Years
+    if (/\b(experience|skills?|education|resume|cv)\b/i.test(content)) score += 15;
+    if (/\b(manager|engineer|developer|analyst|specialist)\b/i.test(content)) score += 10;
+    if (/\b(company|corporation|inc|ltd|llc)\b/i.test(content)) score += 5;
+    
+    // Penalty for very short content
+    if (content.length < 50) score -= 20;
+    
+    // Penalty for repetitive content
+    const words = content.toLowerCase().split(/\s+/);
+    const uniqueWords = new Set(words);
+    if (words.length > 0 && uniqueWords.size / words.length < 0.3) score -= 15;
+    
+    console.log(`Method ${result.method} scored: ${score}, length: ${content.length}`);
+    
+    return { ...result, score };
+  });
+  
+  // Sort by score and return the best result
+  scoredResults.sort((a, b) => b.score - a.score);
+  const bestResult = scoredResults[0];
+  
+  console.log(`Selected best method: ${bestResult.method} with score: ${bestResult.score}`);
+  
+  // Final validation - ensure minimum content quality
+  if (bestResult.content.trim().length < 10) {
+    console.warn('Best result still has minimal content');
+    return `DOCX file: ${fileName}\n\nMinimal text content detected. File may have formatting issues.`;
+  }
+  
+  return bestResult.content;
+}
 
 export const formatResumeText = (text: string, fileName: string): string => {
   if (!text || text.trim().length < 10) {

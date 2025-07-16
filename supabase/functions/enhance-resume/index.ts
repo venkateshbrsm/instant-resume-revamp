@@ -119,6 +119,150 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
   return await Packer.toBuffer(doc);
 }
 
+// Backend extraction methods helper function
+async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffer) {
+  const results = [];
+  
+  // Method 1: extractRawText
+  try {
+    console.log('Backend Method 1: extractRawText...');
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    if (result.value && result.value.trim().length > 0) {
+      console.log('Backend Method 1 success, length:', result.value.length);
+      results.push({
+        method: 'extractRawText',
+        content: result.value.trim(),
+        score: 0
+      });
+    }
+  } catch (error) {
+    console.warn('Backend Method 1 failed:', error.message);
+  }
+  
+  // Method 2: convertToHtml then strip tags
+  try {
+    console.log('Backend Method 2: HTML conversion...');
+    const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+    if (htmlResult.value) {
+      const plainText = htmlResult.value
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&[^;]+;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (plainText.length > 0) {
+        console.log('Backend Method 2 success, length:', plainText.length);
+        results.push({
+          method: 'htmlConversion',
+          content: plainText,
+          score: 0
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Backend Method 2 failed:', error.message);
+  }
+  
+  return results;
+}
+
+// Select best content from backend extraction results
+function selectBestBackendContent(results: any[], fileName: string): string {
+  if (results.length === 0) {
+    console.warn('No backend extraction methods succeeded');
+    return '';
+  }
+  
+  // Score each result
+  for (const result of results) {
+    let score = 0;
+    const content = result.content;
+    
+    // Length score
+    score += Math.min(content.length / 50, 100);
+    
+    // Content quality indicators
+    if (content.includes('@')) score += 20;
+    if (/\b\d{4}\b/.test(content)) score += 10;
+    if (/\b(experience|skills?|education|resume|cv)\b/i.test(content)) score += 30;
+    if (/\b(manager|engineer|developer|analyst|specialist|director)\b/i.test(content)) score += 20;
+    if (/\b(university|college|bachelor|master|degree)\b/i.test(content)) score += 15;
+    
+    // Penalty for very short content
+    if (content.length < 100) score -= 30;
+    
+    result.score = score;
+    console.log(`Backend method ${result.method} scored: ${score}, length: ${content.length}`);
+  }
+  
+  // Sort by score and return the best
+  results.sort((a, b) => b.score - a.score);
+  return results[0].content;
+}
+
+// Validate and prepare content for AI enhancement
+function validateAndPrepareContent(content: string, fileName: string) {
+  console.log('Validating content, length:', content.length);
+  
+  // Check minimum length
+  if (!content || content.trim().length < 10) {
+    return {
+      isValid: false,
+      reason: 'Content is too short or empty',
+      content: content
+    };
+  }
+  
+  // Check if content is just the filename
+  if (content.trim() === `DOCX file: ${fileName}` || content.trim() === fileName) {
+    return {
+      isValid: false,
+      reason: 'Only filename detected, no resume content extracted',
+      content: content
+    };
+  }
+  
+  // Check for meaningful content
+  const words = content.toLowerCase().split(/\s+/);
+  const meaningfulWords = words.filter(word => word.length > 2);
+  
+  if (meaningfulWords.length < 10) {
+    return {
+      isValid: false,
+      reason: 'Too few meaningful words detected',
+      content: content
+    };
+  }
+  
+  // Check for resume-like content
+  const resumeIndicators = [
+    'experience', 'education', 'skills', 'work', 'job', 'company', 
+    'university', 'college', 'degree', 'project', 'achievement',
+    'responsibility', 'manage', 'develop', 'design', 'implement',
+    'email', 'phone', 'address', 'linkedin'
+  ];
+  
+  const hasResumeContent = resumeIndicators.some(indicator => 
+    content.toLowerCase().includes(indicator)
+  );
+  
+  if (!hasResumeContent && content.length < 200) {
+    return {
+      isValid: false,
+      reason: 'Content does not appear to contain resume information',
+      content: content
+    };
+  }
+  
+  // Content is valid
+  console.log('Content validation passed');
+  return {
+    isValid: true,
+    reason: '',
+    content: content.trim()
+  };
+}
+
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -147,11 +291,19 @@ serve(async (req) => {
     // Use the actual extracted text from the resume
     let resumeContent = extractedText || originalText || '';
     
-    // If the extracted text is insufficient and we have file data, try to re-extract
-    if ((!resumeContent || resumeContent.length < 50) && file && fileName.toLowerCase().endsWith('.docx')) {
-      console.log('Extracted text is insufficient, attempting DOCX re-extraction...');
+    console.log('Initial content assessment:', {
+      extractedTextLength: extractedText?.length || 0,
+      originalTextLength: originalText?.length || 0,
+      hasFileData: !!file,
+      fileName: fileName
+    });
+    
+    // Enhanced re-extraction logic for insufficient content
+    if ((!resumeContent || resumeContent.length < 100) && file && fileName.toLowerCase().endsWith('.docx')) {
+      console.log('Content is insufficient, attempting advanced DOCX re-extraction...');
+      
       try {
-        // Convert base64 file data back to ArrayBuffer
+        // Convert base64 file data back to ArrayBuffer with validation
         const binaryString = atob(file);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
@@ -159,35 +311,49 @@ serve(async (req) => {
         }
         const arrayBuffer = bytes.buffer;
         
-        // Use different mammoth import approach
+        console.log('ArrayBuffer created for re-extraction, size:', arrayBuffer.byteLength);
+        
+        if (arrayBuffer.byteLength === 0) {
+          throw new Error('ArrayBuffer is empty');
+        }
+        
+        // Import mammoth with better error handling
         const mammothModule = await import('https://esm.sh/mammoth@1.4.21');
         const mammoth = mammothModule.default || mammothModule;
         
-        // Try extractRawText first
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        console.log('DOCX re-extraction successful, text length:', result.value?.length || 0);
+        // Try multiple extraction methods similar to frontend
+        const extractionResults = await tryBackendExtractionMethods(mammoth, arrayBuffer);
         
-        if (result.value && result.value.trim().length > 10) {
-          resumeContent = result.value;
-          console.log('Using re-extracted DOCX content (first 200 chars):', resumeContent.substring(0, 200));
+        // Validate and select best result
+        const bestContent = selectBestBackendContent(extractionResults, fileName);
+        
+        if (bestContent && bestContent.length > resumeContent.length) {
+          resumeContent = bestContent;
+          console.log('Successfully re-extracted content, length:', resumeContent.length);
+          console.log('Re-extracted content preview (first 300 chars):', resumeContent.substring(0, 300));
         } else {
-          console.warn('Re-extraction yielded minimal text, trying HTML conversion...');
-          const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
-          const plainText = htmlResult.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-          if (plainText.length > 10) {
-            resumeContent = plainText;
-            console.log('Using HTML conversion fallback (first 200 chars):', resumeContent.substring(0, 200));
-          }
+          console.warn('Re-extraction did not improve content quality');
         }
+        
       } catch (extractError) {
-        console.error('Failed to re-extract DOCX content:', extractError);
+        console.error('Backend DOCX re-extraction failed:', extractError);
+        console.error('Error details:', {
+          name: extractError.name,
+          message: extractError.message,
+          stack: extractError.stack
+        });
       }
     }
     
-    if (!resumeContent || resumeContent.length < 10) {
-      resumeContent = `DOCX file: ${fileName}`;
-      console.warn('Using minimal fallback content for:', fileName);
+    // Final content validation and preparation
+    const processedContent = validateAndPrepareContent(resumeContent, fileName);
+    
+    if (!processedContent.isValid) {
+      console.warn('Content validation failed, refusing to enhance with insufficient data');
+      throw new Error(`Insufficient resume content for enhancement. ${processedContent.reason}. Please ensure your file contains readable text and try uploading again.`);
     }
+    
+    resumeContent = processedContent.content;
     
     console.log('Final resume content length:', resumeContent.length);
     console.log('Using resume content (first 500 chars):', resumeContent.substring(0, 500));
