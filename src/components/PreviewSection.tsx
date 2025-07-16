@@ -239,11 +239,25 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
       
       setEnhancementProgress(30);
+      
+      // Convert file to base64 for potential re-extraction in edge function
+      let fileBase64 = '';
+      if (file.name.toLowerCase().endsWith('.docx')) {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          fileBase64 = btoa(String.fromCharCode(...bytes));
+        } catch (error) {
+          console.warn('Failed to convert file to base64:', error);
+        }
+      }
+      
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
         body: {
           fileName: file.name,
           originalText: extractedText,
-          extractedText: extractedText
+          extractedText: extractedText,
+          file: fileBase64 || null
         }
       });
 

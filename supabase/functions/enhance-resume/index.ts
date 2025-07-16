@@ -21,14 +21,53 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, originalText, extractedText, filePath, userEmail } = await req.json();
+    const { fileName, originalText, extractedText, filePath, userEmail, file } = await req.json();
 
     console.log('Enhancing resume for:', fileName);
     console.log('Original text length:', originalText?.length || 0);
     console.log('Extracted text length:', extractedText?.length || 0);
 
     // Use the actual extracted text from the resume
-    const resumeContent = extractedText || originalText || 'No content available';
+    let resumeContent = extractedText || originalText || '';
+    
+    // If the extracted text is insufficient and we have file data, try to re-extract
+    if ((!resumeContent || resumeContent.length < 50) && file && fileName.toLowerCase().endsWith('.docx')) {
+      console.log('Extracted text is insufficient, attempting DOCX re-extraction...');
+      try {
+        // Convert base64 file data back to ArrayBuffer
+        const fileData = Uint8Array.from(atob(file), c => c.charCodeAt(0));
+        const arrayBuffer = fileData.buffer;
+        
+        // Import mammoth for DOCX text extraction
+        const mammoth = await import('https://cdn.skypack.dev/mammoth@1.4.21');
+        
+        // Try extractRawText first
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        console.log('DOCX re-extraction successful, text length:', result.value?.length || 0);
+        
+        if (result.value && result.value.trim().length > 10) {
+          resumeContent = result.value;
+          console.log('Using re-extracted DOCX content (first 200 chars):', resumeContent.substring(0, 200));
+        } else {
+          console.warn('Re-extraction yielded minimal text, trying HTML conversion...');
+          const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+          const plainText = htmlResult.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          if (plainText.length > 10) {
+            resumeContent = plainText;
+            console.log('Using HTML conversion fallback (first 200 chars):', resumeContent.substring(0, 200));
+          }
+        }
+      } catch (extractError) {
+        console.error('Failed to re-extract DOCX content:', extractError);
+      }
+    }
+    
+    if (!resumeContent || resumeContent.length < 10) {
+      resumeContent = `DOCX file: ${fileName}`;
+      console.warn('Using minimal fallback content for:', fileName);
+    }
+    
+    console.log('Final resume content length:', resumeContent.length);
     console.log('Using resume content (first 500 chars):', resumeContent.substring(0, 500));
 
     // Extract name from filename for better personalization
