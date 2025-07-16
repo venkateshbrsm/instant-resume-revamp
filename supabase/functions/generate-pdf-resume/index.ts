@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -911,13 +912,57 @@ serve(async (req) => {
     
     console.log("Generated HTML content for PDF printing");
     
-    // Return HTML that will auto-print as PDF
-    return new Response(htmlContent, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/html',
-      },
+    // Launch Puppeteer browser
+    console.log("Launching Puppeteer browser...");
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--remote-debugging-port=9222'
+      ]
     });
+
+    try {
+      const page = await browser.newPage();
+      
+      // Set the HTML content
+      await page.setContent(htmlContent, { 
+        waitUntil: 'networkidle0' 
+      });
+      
+      console.log("Converting HTML to PDF...");
+      
+      // Generate PDF with high quality settings
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: {
+          top: '0.75in',
+          right: '0.5in',
+          bottom: '0.75in',
+          left: '0.5in'
+        }
+      });
+      
+      console.log("PDF generated successfully, size:", pdfBuffer.length, "bytes");
+      
+      // Return the PDF as a downloadable file
+      return new Response(pdfBuffer, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.pdf"`,
+        },
+      });
+      
+    } finally {
+      await browser.close();
+      console.log("Browser closed");
+    }
 
   } catch (error) {
     console.error("Error in PDF generation function:", error);
