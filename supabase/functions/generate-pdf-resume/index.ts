@@ -41,15 +41,26 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     @page {
       size: A4;
       margin: 0.75in 0.5in;
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     
     @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
       html, body {
         width: 210mm;
         height: 297mm;
         margin: 0;
         padding: 0;
         overflow: hidden;
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
       }
       
       .container {
@@ -59,36 +70,145 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         padding: 0;
         box-shadow: none;
         border-radius: 0;
+        page-break-inside: avoid;
       }
       
       .main-content {
-        grid-template-columns: 65% 35%;
+        grid-template-columns: 60% 40%;
         gap: 15pt;
+        page-break-inside: avoid;
       }
       
       .header {
-        margin-bottom: 12pt;
-        padding: 15pt;
+        margin-bottom: 15pt;
+        padding: 18pt;
+        page-break-after: avoid;
+        background: linear-gradient(135deg, #3b82f6, #93c5fd) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
       }
       
       .section {
         margin-bottom: 15pt;
+        page-break-inside: avoid;
+        orphans: 2;
+        widows: 2;
       }
       
       .experience-item {
         margin-bottom: 12pt;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       
       .skills-section {
         margin-bottom: 12pt;
+        page-break-inside: avoid;
+        background: rgba(59, 130, 246, 0.08) !important;
+        -webkit-print-color-adjust: exact !important;
       }
       
       .stats-grid {
         margin-bottom: 12pt;
+        page-break-inside: avoid;
       }
       
       .education-item {
         margin-bottom: 8pt;
+        page-break-inside: avoid;
+        background: rgba(147, 197, 253, 0.08) !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+      
+      .skill-bar {
+        background: rgba(59, 130, 246, 0.2) !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+      
+      .skill-progress {
+        background: linear-gradient(90deg, #3b82f6, #93c5fd) !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+      
+      .achievement {
+        background: rgba(255, 255, 255, 0.8) !important;
+        border: 1pt solid rgba(59, 130, 246, 0.1) !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+      
+      .achievement-icon {
+        background: linear-gradient(135deg, #4ade80, #16a34a) !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+      
+      /* Page numbering */
+      @page {
+        @bottom-right {
+          content: "Page " counter(page) " of " counter(pages);
+          font-size: 8pt;
+          color: #666;
+        }
+      }
+      
+      /* Improved spacing for print */
+      .section-title {
+        font-size: 13pt !important;
+        margin-bottom: 10pt !important;
+        color: #3b82f6 !important;
+        border-bottom: 1.5pt solid #3b82f6 !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+      
+      .header h1 {
+        font-size: 20pt !important;
+        line-height: 1.1 !important;
+      }
+      
+      .header .title {
+        font-size: 13pt !important;
+      }
+      
+      .contact-item {
+        font-size: 9pt !important;
+      }
+      
+      .summary-text {
+        font-size: 10pt !important;
+        line-height: 1.4 !important;
+      }
+      
+      .experience-title {
+        font-size: 12pt !important;
+      }
+      
+      .experience-company {
+        font-size: 11pt !important;
+      }
+      
+      .achievement {
+        font-size: 9pt !important;
+        margin-bottom: 3pt !important;
+        padding: 4pt 6pt !important;
+      }
+      
+      .skill-name {
+        font-size: 9pt !important;
+      }
+      
+      .skill-percentage {
+        font-size: 8pt !important;
+      }
+      
+      .education-degree {
+        font-size: 10pt !important;
+      }
+      
+      .education-institution {
+        font-size: 9pt !important;
+      }
+      
+      .education-year {
+        font-size: 8pt !important;
       }
     }
     
