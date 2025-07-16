@@ -28,9 +28,55 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
   <style>
     @page {
       size: A4;
-      margin: 0.5in;
-      @top-center {
-        content: "${resumeData.name} - Enhanced Resume";
+      margin: 0.75in 0.5in;
+    }
+    
+    @media print {
+      html, body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      
+      .container {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      
+      .main-content {
+        grid-template-columns: 65% 35%;
+        gap: 15pt;
+      }
+      
+      .header {
+        margin-bottom: 12pt;
+        padding: 15pt;
+      }
+      
+      .section {
+        margin-bottom: 15pt;
+      }
+      
+      .experience-item {
+        margin-bottom: 12pt;
+      }
+      
+      .skills-section {
+        margin-bottom: 12pt;
+      }
+      
+      .stats-grid {
+        margin-bottom: 12pt;
+      }
+      
+      .education-item {
+        margin-bottom: 8pt;
       }
     }
     
@@ -40,74 +86,88 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       box-sizing: border-box;
     }
     
+    html {
+      width: 210mm;
+      height: 297mm;
+    }
+    
     body {
       font-family: 'Arial', 'Helvetica', sans-serif;
       line-height: 1.4;
       color: #2d3748;
       background: white;
       font-size: 11pt;
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      padding: 0;
     }
     
     .container {
       max-width: 100%;
       margin: 0;
       background: white;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 0.75in 0.5in;
     }
     
     .header {
       background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
       color: white;
       padding: 20pt;
-      margin-bottom: 15pt;
-      border-radius: 5pt;
+      margin: -0.75in -0.5in 15pt -0.5in;
+      border-radius: 0;
     }
     
     .header h1 {
-      font-size: 24pt;
+      font-size: 22pt;
       font-weight: bold;
       margin-bottom: 5pt;
       line-height: 1.2;
     }
     
     .header .title {
-      font-size: 16pt;
-      margin-bottom: 15pt;
+      font-size: 14pt;
+      margin-bottom: 12pt;
       opacity: 0.9;
     }
     
     .contact-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10pt;
+      gap: 8pt;
+      margin-top: 8pt;
     }
     
     .contact-item {
-      font-size: 10pt;
+      font-size: 9pt;
       opacity: 0.9;
     }
     
     .main-content {
       display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20pt;
+      grid-template-columns: 65% 35%;
+      gap: 18pt;
+      margin-top: 15pt;
     }
     
     .section {
-      margin-bottom: 20pt;
+      margin-bottom: 18pt;
       break-inside: avoid;
     }
     
     .section-title {
-      font-size: 16pt;
+      font-size: 14pt;
       font-weight: bold;
       color: ${theme.primary};
-      margin-bottom: 10pt;
-      padding-bottom: 5pt;
-      border-bottom: 2pt solid ${theme.primary};
+      margin-bottom: 8pt;
+      padding-bottom: 4pt;
+      border-bottom: 1.5pt solid ${theme.primary};
     }
     
     .summary-text {
-      font-size: 11pt;
+      font-size: 10pt;
       line-height: 1.5;
       text-align: justify;
     }
@@ -263,16 +323,42 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     }
     
     @media print {
+      body {
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .container {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        padding: 0.75in 0.5in !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      
       .main-content {
-        grid-template-columns: 1fr;
+        grid-template-columns: 65% 35% !important;
+        gap: 15pt !important;
+      }
+      
+      .header {
+        margin: -0.75in -0.5in 12pt -0.5in !important;
+        padding: 15pt !important;
       }
       
       .sidebar {
-        grid-column: 1;
+        font-size: 9pt !important;
       }
       
       .left-column {
-        grid-column: 1;
+        grid-column: 1 !important;
+      }
+      
+      .sidebar {
+        grid-column: 2 !important;
       }
     }
   </style>
