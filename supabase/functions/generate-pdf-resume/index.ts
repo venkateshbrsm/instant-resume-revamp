@@ -37,7 +37,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
   <style>
     @page {
       size: A4;
-      margin: 0.25in;
+      margin: 0.15in;
     }
     
     * {
@@ -48,9 +48,9 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     body {
       font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.5;
+      line-height: 1.4;
       color: #1a202c;
-      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+      background: white;
       font-size: 9pt;
       width: 100%;
       min-height: auto;
@@ -58,11 +58,11 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .container {
       background: white;
-      border-radius: 6pt;
+      border-radius: 2pt;
       overflow: hidden;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
       width: 100%;
       max-width: none;
+      height: auto;
     }
     
     /* Header matching the enhanced preview exactly */
@@ -130,23 +130,33 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     /* Main content grid matching the preview layout */
     .main-content {
       display: grid;
-      grid-template-columns: 1.4fr 0.6fr;
-      gap: 12pt;
-      padding: 12pt;
-      min-height: calc(297mm - 60pt);
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 8pt;
+      padding: 8pt;
+      min-height: calc(297mm - 40pt);
       width: 100%;
     }
     
     .left-column {
-      space-y: 12pt;
+      margin-right: 4pt;
+    }
+    
+    .left-column > .section {
+      margin-bottom: 8pt;
     }
     
     .sidebar {
-      space-y: 12pt;
+      margin-left: 4pt;
+    }
+    
+    .sidebar > .skills-overview,
+    .sidebar > .skills-section,
+    .sidebar > .education-section {
+      margin-bottom: 8pt;
     }
     
     .section {
-      margin-bottom: 12pt;
+      margin-bottom: 8pt;
       break-inside: avoid;
     }
     
