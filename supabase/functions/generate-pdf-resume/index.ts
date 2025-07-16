@@ -696,7 +696,10 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       format: 'A4',
       margin: '0.75in 0.5in',
       landscape: false,
-      use_print: true
+      use_print: true,
+      media: 'print',
+      wait_for: 'load',
+      delay: 1000
     }),
   });
 
