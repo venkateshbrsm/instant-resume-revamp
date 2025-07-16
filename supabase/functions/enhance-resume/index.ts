@@ -3,18 +3,24 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "https://esm.sh/docx@8.5.0";
 
-// Theme color mapping
+// Theme color mapping - matches frontend exactly
 const themeColors = {
-  navy: { primary: '1e3a8a', secondary: '1e40af', accent: '3b82f6' },
-  charcoal: { primary: '374151', secondary: '1f2937', accent: '6b7280' },
-  burgundy: { primary: '7c2d12', secondary: '991b1b', accent: 'dc2626' },
-  forest: { primary: '166534', secondary: '15803d', accent: '22c55e' },
-  bronze: { primary: 'a16207', secondary: 'ca8a04', accent: 'eab308' },
-  slate: { primary: '475569', secondary: '334155', accent: '64748b' }
+  navy: { primary: '#1e3a8a', secondary: '#1e40af', accent: '#3b82f6' },
+  charcoal: { primary: '#374151', secondary: '#1f2937', accent: '#6b7280' },
+  burgundy: { primary: '#7c2d12', secondary: '#991b1b', accent: '#dc2626' },
+  forest: { primary: '#166534', secondary: '#15803d', accent: '#22c55e' },
+  bronze: { primary: '#a16207', secondary: '#ca8a04', accent: '#eab308' },
+  slate: { primary: '#475569', secondary: '#334155', accent: '#64748b' }
 };
 
 function getThemeColors(themeId: string) {
-  return themeColors[themeId as keyof typeof themeColors] || themeColors.navy;
+  const colors = themeColors[themeId as keyof typeof themeColors] || themeColors.navy;
+  // Convert hex colors to RGB values for DOCX (remove # and convert)
+  return {
+    primary: colors.primary.replace('#', ''),
+    secondary: colors.secondary.replace('#', ''),
+    accent: colors.accent.replace('#', '')
+  };
 }
 
 async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
@@ -297,7 +303,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, originalText, extractedText, filePath, userEmail, file } = await req.json();
+    const { fileName, originalText, extractedText, filePath, userEmail, file, themeId } = await req.json();
 
     console.log('Enhancing resume for:', fileName);
     console.log('Original text length:', originalText?.length || 0);
@@ -492,8 +498,9 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
 
     console.log('Enhanced resume created successfully');
 
-    // Generate DOCX for the enhanced resume with default theme (this function doesn't receive theme info yet)
-    const docxBuffer = await generateResumeDocx(parsedContent, 'navy');
+    // Generate DOCX for the enhanced resume with selected theme
+    const selectedTheme = themeId || 'navy';
+    const docxBuffer = await generateResumeDocx(parsedContent, selectedTheme);
 
     // Save enhanced content and DOCX file if filePath and userEmail are provided
     if (filePath && userEmail) {
@@ -536,7 +543,7 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
           .update({
             enhanced_content: parsedContent,
             enhanced_file_path: enhancedFilePath,
-            theme_id: theme,
+            theme_id: selectedTheme,
             updated_at: new Date().toISOString()
           })
           .eq('file_path', filePath)

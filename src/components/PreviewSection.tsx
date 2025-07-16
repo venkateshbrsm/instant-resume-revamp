@@ -269,7 +269,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           fileName: file.name,
           originalText: extractedText,
           extractedText: extractedText,
-          file: fileBase64 || null
+          file: fileBase64 || null,
+          themeId: selectedTheme.id
         }
       });
 
