@@ -19,8 +19,7 @@ const colorThemes = {
   orange: { primary: '#f97316', secondary: '#fb923c', accent: '#fdba74' }
 };
 
-async function generatePDFWithPuppeteerAPI(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
-  // Use a Puppeteer API service instead of local browser
+async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
   
   // Generate realistic skill proficiency percentages
@@ -677,61 +676,43 @@ async function generatePDFWithPuppeteerAPI(resumeData: any, themeId: string = 'n
 </body>
 </html>`;
 
-  // Use Puppeteer API service for PDF generation
-  const response = await fetch('https://chrome.browserless.io/pdf', {
+  // Use PDFShift as the reliable solution
+  const pdfshiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
+  
+  if (!pdfshiftApiKey) {
+    console.error('PDFShift API key not found');
+    throw new Error('PDF generation service not configured');
+  }
+
+  console.log("Generating PDF with PDFShift...");
+  
+  const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
     method: 'POST',
     headers: {
+      'Authorization': `Basic ${btoa(`api:${pdfshiftApiKey}`)}`,
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache'
     },
     body: JSON.stringify({
-      html: htmlContent,
-      options: {
-        format: 'A4',
-        margin: { 
-          top: '0.5in', 
-          right: '0.5in', 
-          bottom: '0.5in', 
-          left: '0.5in' 
-        },
-        printBackground: true,
-        preferCSSPageSize: true,
-        waitUntil: 'networkidle0'
-      }
-    })
+      source: htmlContent,
+      format: 'A4',
+      margin: '0.5in',
+      landscape: false,
+      use_print: true
+    }),
   });
 
   if (!response.ok) {
-    // Fallback to basic HTML-to-PDF conversion
-    console.log("Browserless API failed, using fallback PDF generation");
-    return await generateSimplePDF(htmlContent);
+    const errorText = await response.text();
+    console.error("PDFShift API error:", response.status, errorText);
+    throw new Error(`PDF generation failed: ${response.status} ${errorText}`);
   }
 
-  console.log("PDF generated successfully via Browserless API");
+  console.log("PDF generated successfully via PDFShift");
   
   const pdfArrayBuffer = await response.arrayBuffer();
   return new Uint8Array(pdfArrayBuffer);
 }
 
-// Fallback PDF generation using basic HTML encoding
-async function generateSimplePDF(htmlContent: string): Promise<Uint8Array> {
-  // Simple fallback - return HTML as text (not ideal but prevents crashes)
-  console.log("Using emergency fallback - returning HTML as bytes");
-  const encoder = new TextEncoder();
-  return encoder.encode(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>PDF Generation Failed</title>
-    </head>
-    <body>
-      <h1>PDF Generation Temporarily Unavailable</h1>
-      <p>We're experiencing technical difficulties with PDF generation. Please try again later.</p>
-      <p>Your resume data is safe and this issue will be resolved shortly.</p>
-    </body>
-    </html>
-  `);
-}
 
 serve(async (req) => {
   console.log("PDF Generation function started");
@@ -755,7 +736,7 @@ serve(async (req) => {
       const finalFileName = fileName || 'enhanced-resume';
       
       // Generate PDF using provided data
-      const pdfBytes = await generatePDFWithPuppeteerAPI(enhancedContent, finalThemeId);
+      const pdfBytes = await generatePDFWithPDFShift(enhancedContent, finalThemeId);
       
       console.log("PDF generated successfully from direct content, size:", pdfBytes.length, "bytes");
       
@@ -799,11 +780,11 @@ serve(async (req) => {
       throw new Error("Enhanced content not found for this payment");
     }
 
-    console.log("Generating PDF with Puppeteer API using database content...");
+    console.log("Generating PDF with PDFShift using database content...");
     const finalThemeId = payment.theme_id || 'navy';
     
     // Generate PDF using database content
-    const pdfBytes = await generatePDFWithPuppeteerAPI(payment.enhanced_content, finalThemeId);
+    const pdfBytes = await generatePDFWithPDFShift(payment.enhanced_content, finalThemeId);
     
     console.log("PDF generated successfully from database, size:", pdfBytes.length, "bytes");
     
