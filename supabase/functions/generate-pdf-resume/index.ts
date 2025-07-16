@@ -753,41 +753,54 @@ serve(async (req) => {
     console.log("Supabase client initialized");
 
     const requestBody = await req.json();
-    const { paymentId } = requestBody;
+    const { paymentId, isPreview, resumeData, themeId: requestThemeId } = requestBody;
     console.log("Payment ID:", paymentId);
+    console.log("Is Preview:", isPreview);
 
-    if (!paymentId) {
-      throw new Error("Payment ID is required");
-    }
+    let enhancedContent;
+    let themeId = requestThemeId || 'navy';
 
-    // Get payment details
-    console.log("Fetching payment details...");
-    const { data: payment, error: paymentError } = await supabaseClient
-      .from("payments")
-      .select("*")
-      .eq("razorpay_payment_id", paymentId)
-      .eq("status", "completed")
-      .single();
+    if (isPreview && resumeData) {
+      // Handle preview request with provided resume data
+      console.log("Generating preview with provided resume data");
+      enhancedContent = resumeData;
+    } else {
+      // Handle regular payment-based request
+      if (!paymentId) {
+        throw new Error("Payment ID is required");
+      }
 
-    if (paymentError || !payment) {
-      console.error("Payment not found:", paymentError);
-      throw new Error("Payment not found or not completed");
-    }
+      // Get payment details
+      console.log("Fetching payment details...");
+      const { data: payment, error: paymentError } = await supabaseClient
+        .from("payments")
+        .select("*")
+        .eq("razorpay_payment_id", paymentId)
+        .eq("status", "completed")
+        .single();
 
-    console.log("Found payment:", payment.id, "for file:", payment.file_name);
+      if (paymentError || !payment) {
+        console.error("Payment not found:", paymentError);
+        throw new Error("Payment not found or not completed");
+      }
 
-    if (!payment.enhanced_content) {
-      throw new Error("Enhanced content not found for this payment");
+      console.log("Found payment:", payment.id, "for file:", payment.file_name);
+
+      if (!payment.enhanced_content) {
+        throw new Error("Enhanced content not found for this payment");
+      }
+
+      enhancedContent = payment.enhanced_content;
+      themeId = payment.theme_id || 'navy';
     }
 
     console.log("Generating printable HTML...");
-    const themeId = payment.theme_id || 'navy';
     
     // Debug: Log the enhanced content structure
-    console.log("Enhanced content structure:", JSON.stringify(payment.enhanced_content, null, 2));
-    console.log("Skills data:", payment.enhanced_content?.skills || 'No skills found');
+    console.log("Enhanced content structure:", JSON.stringify(enhancedContent, null, 2));
+    console.log("Skills data:", enhancedContent?.skills || 'No skills found');
     
-    const htmlContent = generatePrintableHTML(payment.enhanced_content, themeId);
+    const htmlContent = generatePrintableHTML(enhancedContent, themeId);
     
     console.log("Generated HTML content for PDF printing");
     

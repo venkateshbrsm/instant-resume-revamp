@@ -28,13 +28,15 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
     let pdfUrl: string | undefined;
 
     if (fileType === 'pdf') {
-      // For PDFs, extract text and keep original file for visual preview
+      // For PDFs, extract text and generate enhanced preview
       text = await extractTextFromPDF(file);
-      pdfUrl = URL.createObjectURL(file);
+      // Generate enhanced HTML-to-PDF preview for PDFs too
+      pdfUrl = await generateEnhancedPreview(text, file.name) || URL.createObjectURL(file);
     } else if (fileType === 'docx') {
-      // For DOCX, extract text and convert to PDF for visual preview
+      // For DOCX, extract text and generate enhanced preview
       text = await extractTextFromWord(file);
-      pdfUrl = await convertDocxToPdf(file);
+      // Use enhanced preview generation instead of basic conversion
+      pdfUrl = await generateEnhancedPreview(text, file.name) || await convertDocxToPdf(file);
     } else {
       // For text files, just extract text
       text = await file.text();
@@ -94,6 +96,227 @@ const convertDocxToPdf = async (file: File): Promise<string | undefined> => {
     console.warn('DOCX to PDF conversion failed:', error);
     return undefined;
   }
+};
+
+// Generate enhanced HTML-to-PDF preview for both PDF and DOCX files
+const generateEnhancedPreview = async (extractedText: string, fileName: string): Promise<string | undefined> => {
+  try {
+    console.log('Generating enhanced preview for:', fileName);
+    
+    // Validate we have enough content for preview enhancement
+    if (!extractedText || extractedText.length < 50) {
+      console.warn('Insufficient text content for enhanced preview generation');
+      return undefined;
+    }
+
+    // Create a basic resume structure from the extracted text
+    const mockResumeData = createBasicResumeStructure(extractedText, fileName);
+    
+    // Generate HTML content locally and convert to blob URL
+    const htmlContent = generatePreviewHTML(mockResumeData, 'navy');
+    
+    // Create a blob URL for the HTML content that will render as a preview
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const htmlUrl = URL.createObjectURL(blob);
+    
+    console.log('Enhanced preview HTML generated successfully');
+    return htmlUrl;
+    
+  } catch (error) {
+    console.warn('Enhanced preview generation failed:', error);
+    return undefined;
+  }
+};
+
+// Create a basic resume structure from extracted text for preview enhancement
+const createBasicResumeStructure = (text: string, fileName: string) => {
+  // Extract basic information from the text
+  const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const phoneMatch = text.match(/[\+]?[1-9]?[\s\-\(\)]?\d{1,4}[\s\-\(\)]?\d{1,4}[\s\-\(\)]?\d{4,10}/);
+  
+  // Try to extract name (first few words before common resume sections)
+  const nameMatch = text.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
+  
+  return {
+    name: nameMatch?.[1] || fileName.replace(/\.[^/.]+$/, ''),
+    title: 'Professional',
+    email: emailMatch?.[0] || 'your.email@example.com',
+    phone: phoneMatch?.[0] || '+1 (555) 123-4567',
+    location: 'City, Country',
+    summary: text.substring(0, 300) + (text.length > 300 ? '...' : ''),
+    experience: [{
+      title: 'Professional Experience',
+      company: 'Previous Company',
+      duration: 'Duration',
+      achievements: [
+        'Professional experience and achievements',
+        'Key accomplishments and responsibilities'
+      ]
+    }],
+    skills: ['Professional Skills', 'Technical Abilities', 'Core Competencies'],
+    education: [{
+      degree: 'Education Background',
+      institution: 'Educational Institution',
+      year: 'Graduation Year'
+    }]
+  };
+};
+
+// Generate enhanced HTML preview content
+const generatePreviewHTML = (resumeData: any, themeId: string): string => {
+  const colorThemes = {
+    navy: { primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
+    charcoal: { primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
+    burgundy: { primary: '#dc2626', secondary: '#ef4444', accent: '#f87171' },
+    forest: { primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
+    bronze: { primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
+    slate: { primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' }
+  };
+  
+  const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
+  
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Resume Preview - ${resumeData.name}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}10);
+      padding: 20px;
+    }
+    .resume-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.secondary});
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    .name { font-size: 2.5rem; font-weight: bold; margin-bottom: 10px; }
+    .title { font-size: 1.2rem; opacity: 0.9; margin-bottom: 20px; }
+    .contact-info { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .contact-item { font-size: 0.9rem; opacity: 0.9; }
+    .content {
+      padding: 40px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      color: ${theme.primary};
+      border-bottom: 2px solid ${theme.accent};
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .summary {
+      font-style: italic;
+      color: #666;
+      line-height: 1.8;
+    }
+    .experience-item {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: ${theme.accent}10;
+      border-left: 4px solid ${theme.primary};
+      border-radius: 8px;
+    }
+    .job-title { font-weight: bold; font-size: 1.1rem; color: ${theme.primary}; }
+    .company { color: #666; margin: 5px 0; }
+    .duration { color: #888; font-size: 0.9rem; }
+    .achievements { margin-top: 15px; }
+    .achievements li { margin: 5px 0; }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .skill-item {
+      background: ${theme.accent}15;
+      padding: 10px 15px;
+      border-radius: 25px;
+      text-align: center;
+      border: 2px solid ${theme.accent}30;
+    }
+    .education-item {
+      background: ${theme.secondary}10;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .degree { font-weight: bold; color: ${theme.primary}; }
+    .institution { color: #666; }
+    .year { color: #888; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="resume-container">
+    <div class="header">
+      <div class="name">${resumeData.name}</div>
+      <div class="title">${resumeData.title}</div>
+      <div class="contact-info">
+        <div class="contact-item">📧 ${resumeData.email}</div>
+        <div class="contact-item">📱 ${resumeData.phone}</div>
+        <div class="contact-item">📍 ${resumeData.location}</div>
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <h2 class="section-title">Professional Summary</h2>
+        <p class="summary">${resumeData.summary}</p>
+      </div>
+      
+      <div class="section">
+        <h2 class="section-title">Experience</h2>
+        ${resumeData.experience.map((exp: any) => `
+          <div class="experience-item">
+            <div class="job-title">${exp.title}</div>
+            <div class="company">${exp.company}</div>
+            <div class="duration">${exp.duration}</div>
+            <ul class="achievements">
+              ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
+      
+      <div class="section">
+        <h2 class="section-title">Skills</h2>
+        <div class="skills-grid">
+          ${resumeData.skills.map((skill: string) => `
+            <div class="skill-item">${skill}</div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2 class="section-title">Education</h2>
+        ${resumeData.education.map((edu: any) => `
+          <div class="education-item">
+            <div class="degree">${edu.degree}</div>
+            <div class="institution">${edu.institution}</div>
+            <div class="year">${edu.year}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
 };
 
 // Keep the original function for backward compatibility
