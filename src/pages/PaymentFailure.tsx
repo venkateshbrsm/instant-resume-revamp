@@ -7,8 +7,8 @@ export default function PaymentFailure() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  const txnid = searchParams.get('txnid');
-  const errorMessage = searchParams.get('error_Message') || 'Payment failed';
+  const orderId = searchParams.get('razorpay_order_id');
+  const errorMessage = searchParams.get('error_description') || 'Payment failed';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center p-4">
@@ -27,10 +27,10 @@ export default function PaymentFailure() {
               <p className="text-muted-foreground mb-2">
                 We couldn't process your payment
               </p>
-              {txnid && (
+              {orderId && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Transaction ID:</span>
-                  <span className="font-mono text-sm">{txnid}</span>
+                  <span className="text-muted-foreground">Order ID:</span>
+                  <span className="font-mono text-sm">{orderId}</span>
                 </div>
               )}
               {errorMessage && (

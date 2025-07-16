@@ -19,34 +19,20 @@ export default function PaymentSuccess() {
 
   const verifyPayment = async () => {
     try {
-      // Get PayU response parameters
-      const payuResponse = {
-        txnid: searchParams.get('txnid'),
-        amount: searchParams.get('amount'),
-        productinfo: searchParams.get('productinfo'),
-        firstname: searchParams.get('firstname'),
-        email: searchParams.get('email'),
-        status: searchParams.get('status'),
-        hash: searchParams.get('hash'),
-        mihpayid: searchParams.get('mihpayid'),
-        mode: searchParams.get('mode'),
-        bankcode: searchParams.get('bankcode'),
-        bank_ref_num: searchParams.get('bank_ref_num'),
-        cardnum: searchParams.get('cardnum'),
-        cardhash: searchParams.get('cardhash'),
-        discount: searchParams.get('discount'),
-        error_Message: searchParams.get('error_Message'),
-        net_amount_debit: searchParams.get('net_amount_debit'),
-        addedon: searchParams.get('addedon')
+      // Get Razorpay response parameters
+      const razorpayResponse = {
+        razorpay_order_id: searchParams.get('razorpay_order_id'),
+        razorpay_payment_id: searchParams.get('razorpay_payment_id'),
+        razorpay_signature: searchParams.get('razorpay_signature')
       };
 
-      if (!payuResponse.txnid || !payuResponse.status) {
+      if (!razorpayResponse.razorpay_order_id || !razorpayResponse.razorpay_payment_id) {
         throw new Error('Invalid payment response');
       }
 
       // Verify payment with backend
-      const { data, error } = await supabase.functions.invoke('payu-verify', {
-        body: payuResponse
+      const { data, error } = await supabase.functions.invoke('razorpay-verify', {
+        body: razorpayResponse
       });
 
       if (error) throw error;
@@ -96,7 +82,7 @@ export default function PaymentSuccess() {
             <Loader2 className="h-8 w-8 animate-spin mb-4" />
             <h3 className="text-lg font-semibold">Verifying Payment...</h3>
             <p className="text-muted-foreground text-center mt-2">
-              Please wait while we verify your payment with PayU
+              Please wait while we verify your payment with Razorpay
             </p>
           </CardContent>
         </Card>
@@ -120,7 +106,7 @@ export default function PaymentSuccess() {
             <div className="bg-muted rounded-lg p-4 space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Transaction ID:</span>
-                <span className="font-mono text-sm">{payment.txnid}</span>
+                <span className="font-mono text-sm">{payment.paymentId}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Amount Paid:</span>
