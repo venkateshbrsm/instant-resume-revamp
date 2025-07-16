@@ -415,24 +415,43 @@ serve(async (req) => {
   try {
     console.log("Starting PDF resume generation...");
 
+    const requestBody = await req.json();
+    const { paymentId, enhancedContent, themeId, fileName } = requestBody;
+    console.log("Request data:", { paymentId, hasEnhancedContent: !!enhancedContent, themeId, fileName });
+
+    // If enhanced content is provided directly, use it (preferred method)
+    if (enhancedContent) {
+      console.log("Using provided enhanced content directly");
+      const finalThemeId = themeId || 'navy';
+      const finalFileName = fileName || 'enhanced-resume';
+      
+      // Generate PDF using provided data
+      const pdfBytes = await generatePDFWithPDFShift(enhancedContent, finalThemeId);
+      
+      console.log("PDF generated successfully from direct content, size:", pdfBytes.length, "bytes");
+      
+      return new Response(pdfBytes, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="enhanced-resume-${finalFileName.replace(/\.[^/.]+$/, "")}.pdf"`,
+          'Content-Length': pdfBytes.length.toString(),
+        },
+      });
+    }
+
+    // Fallback: use payment ID to fetch from database
+    if (!paymentId) {
+      throw new Error("Either enhancedContent or paymentId is required");
+    }
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    console.log("Supabase client initialized");
-
-    const requestBody = await req.json();
-    const { paymentId } = requestBody;
-    console.log("Payment ID:", paymentId);
-
-    if (!paymentId) {
-      throw new Error("Payment ID is required");
-    }
-
-    // Get payment details
-    console.log("Fetching payment details...");
+    console.log("Fallback: Fetching payment details from database...");
     const { data: payment, error: paymentError } = await supabaseClient
       .from("payments")
       .select("*")
@@ -451,13 +470,13 @@ serve(async (req) => {
       throw new Error("Enhanced content not found for this payment");
     }
 
-    console.log("Generating PDF with PDFShift...");
-    const themeId = payment.theme_id || 'navy';
+    console.log("Generating PDF with PDFShift using database content...");
+    const finalThemeId = payment.theme_id || 'navy';
     
-    // Generate PDF using PDFShift
-    const pdfBytes = await generatePDFWithPDFShift(payment.enhanced_content, themeId);
+    // Generate PDF using database content
+    const pdfBytes = await generatePDFWithPDFShift(payment.enhanced_content, finalThemeId);
     
-    console.log("PDF generated successfully, size:", pdfBytes.length, "bytes");
+    console.log("PDF generated successfully from database, size:", pdfBytes.length, "bytes");
     
     return new Response(pdfBytes, {
       headers: {

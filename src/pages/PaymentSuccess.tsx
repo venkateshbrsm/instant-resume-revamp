@@ -160,7 +160,31 @@ export default function PaymentSuccess() {
       });
 
       if (format === 'pdf') {
-        // For PDF, download directly as binary file
+        // Try to get enhanced content from session storage first
+        const enhancedContentStr = sessionStorage.getItem('enhancedContent');
+        const selectedTheme = sessionStorage.getItem('selectedTheme') || 'navy';
+        const originalFileName = sessionStorage.getItem('originalFileName') || 'resume';
+        
+        let requestBody: any = { paymentId };
+
+        // If we have session storage data, use it directly
+        if (enhancedContentStr) {
+          try {
+            const enhancedContent = JSON.parse(enhancedContentStr);
+            requestBody = {
+              paymentId, // Still include for logging
+              enhancedContent,
+              themeId: selectedTheme,
+              fileName: originalFileName
+            };
+            console.log('Using session storage data for PDF generation');
+          } catch (e) {
+            console.warn('Failed to parse session storage content, falling back to payment ID');
+          }
+        } else {
+          console.log('No session storage data found, using payment ID fallback');
+        }
+
         const pdfUrl = `https://goorszhscvxywfigydfp.supabase.co/functions/v1/generate-pdf-resume`;
         
         const response = await fetch(pdfUrl, {
@@ -169,7 +193,7 @@ export default function PaymentSuccess() {
             'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ paymentId })
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
