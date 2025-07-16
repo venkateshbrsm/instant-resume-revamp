@@ -53,7 +53,7 @@ export default function PaymentSuccess() {
         description: "Unable to verify payment. Please contact support.",
         variant: "destructive",
       });
-      navigate('/payment/failure');
+      navigate('/payment-failure');
     } finally {
       setIsVerifying(false);
     }
