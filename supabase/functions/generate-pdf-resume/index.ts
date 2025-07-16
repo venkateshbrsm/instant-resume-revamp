@@ -331,17 +331,30 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       font-size: 10pt;
       line-height: 1.4;
       position: relative;
-      padding-left: 12pt;
+      padding-left: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6pt;
     }
     
-    .achievement:before {
+    .achievement-icon {
+      flex-shrink: 0;
+      width: 12pt;
+      height: 12pt;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2pt;
+    }
+    
+    .achievement-icon::after {
       content: "✓";
-      position: absolute;
-      left: 0;
-      color: #10b981;
+      color: white;
       font-size: 8pt;
-      top: 1pt;
       font-weight: bold;
+      line-height: 1;
     }
     
     .sidebar {
@@ -556,7 +569,10 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
             ${exp.achievements && exp.achievements.length > 0 ? `
             <ul class="achievements">
               ${exp.achievements.map((achievement: string) => `
-              <li class="achievement">${achievement}</li>
+              <li class="achievement">
+                <div class="achievement-icon"></div>
+                <div>${achievement}</div>
+              </li>
               `).join('')}
             </ul>
             ` : ''}
