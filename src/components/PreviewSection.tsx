@@ -20,12 +20,12 @@ interface PreviewSectionProps {
 }
 
 const colorThemes = [
-  { id: 'navy', name: 'Navy Professional', primary: '#1e3a8a', secondary: '#1e40af', accent: '#3b82f6' },
-  { id: 'charcoal', name: 'Charcoal Gray', primary: '#374151', secondary: '#1f2937', accent: '#6b7280' },
-  { id: 'burgundy', name: 'Burgundy Wine', primary: '#7c2d12', secondary: '#991b1b', accent: '#dc2626' },
-  { id: 'forest', name: 'Forest Green', primary: '#166534', secondary: '#15803d', accent: '#22c55e' },
-  { id: 'bronze', name: 'Bronze Gold', primary: '#a16207', secondary: '#ca8a04', accent: '#eab308' },
-  { id: 'slate', name: 'Slate Blue', primary: '#475569', secondary: '#334155', accent: '#64748b' }
+  { id: 'navy', name: 'Navy Professional', primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
+  { id: 'charcoal', name: 'Charcoal Gray', primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
+  { id: 'burgundy', name: 'Burgundy Wine', primary: '#dc2626', secondary: '#ef4444', accent: '#f87171' },
+  { id: 'forest', name: 'Forest Green', primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
+  { id: 'bronze', name: 'Bronze Gold', primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
+  { id: 'slate', name: 'Slate Blue', primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' }
 ];
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {

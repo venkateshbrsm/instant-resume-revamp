@@ -236,16 +236,6 @@ export default function PaymentSuccess() {
               <Download className="mr-2 h-4 w-4" />
               View Enhanced Resume (PDF Format)
             </Button>
-            
-            <Button 
-              onClick={() => handleDownload('docx')}
-              variant="outline"
-              className="w-full border-2 border-primary text-primary hover:bg-primary/5"
-              size="lg"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Download Enhanced Resume (DOCX)
-            </Button>
 
             <Button 
               variant="outline" 
