@@ -696,7 +696,104 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           </Card>
         </div>
 
-        {/* Enhancement Features */}
+        {/* Comparison Section */}
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+          <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-primary" />
+                Before & After Comparison
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="before" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Original Resume
+                  </TabsTrigger>
+                  <TabsTrigger value="after" className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Enhanced Resume
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="before" className="mt-4">
+                  {isLoading ? (
+                    <div className="bg-gradient-to-br from-muted/50 to-background rounded-lg p-6 sm:p-8 min-h-[400px] flex items-center justify-center border border-border/20">
+                      <div className="text-center space-y-4 w-full max-w-md">
+                        <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-primary animate-spin mx-auto" />
+                        <div>
+                          <h3 className="text-lg sm:text-xl font-semibold mb-2">Processing Original Document</h3>
+                          <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                            {loadingStage}
+                          </p>
+                          <Progress value={loadingProgress} className="w-full h-2 sm:h-3" />
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                            {Math.round(loadingProgress)}% complete
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-muted/50 to-background rounded-lg p-4 min-h-[400px] border border-border/20">
+                      <RichDocumentPreview 
+                        content={originalContent} 
+                        fileName={file.name}
+                        fileType={getFileType(file)}
+                      />
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="after" className="mt-4">
+                  {isEnhancing ? (
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-4 w-full max-w-md">
+                        <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
+                        <div>
+                          <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                          <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                            Our AI is analyzing and enhancing your resume...
+                          </p>
+                          <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                            {Math.round(enhancementProgress)}% complete
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : enhancedContent ? (
+                    <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-inner border border-accent/20">
+                      <div className="text-center">
+                        <Badge variant="secondary" className="mb-3 px-3 py-1">
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          AI Enhanced
+                        </Badge>
+                        <h3 className="text-lg font-semibold mb-4">View full enhanced resume after purchase</h3>
+                        <p className="text-muted-foreground text-sm mb-6">
+                          This is a preview. Purchase to download the complete enhanced resume.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-3 sm:space-y-4">
+                        <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 text-accent mx-auto" />
+                        <div>
+                          <h3 className="text-lg sm:text-xl font-semibold mb-2">Enhancement Pending</h3>
+                          <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base px-4">
+                            AI enhancement will begin automatically once your file is processed.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
         <Card className="max-w-4xl mx-auto mb-6 sm:mb-8 bg-card/80 backdrop-blur-sm">
           <CardContent className="p-3 sm:p-4 md:p-6">
             <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 text-center">What We Enhanced</h3>
