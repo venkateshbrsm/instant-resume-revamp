@@ -197,11 +197,28 @@ The resume enhancement will still attempt to process the document.`;
 };
 
 const extractTextFromWord = async (file: File): Promise<string> => {
+  console.log('Extracting text from DOCX file:', file.name);
   const arrayBuffer = await file.arrayBuffer();
-  // Use convertToHtml to preserve structure and formatting
-  const result = await mammoth.convertToHtml({ arrayBuffer });
-  // Return HTML content to preserve formatting
-  return result.value;
+  
+  try {
+    // Use extractRawText to get plain text content instead of HTML
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    console.log('DOCX extraction successful, text length:', result.value?.length || 0);
+    
+    if (!result.value || result.value.trim().length < 10) {
+      console.warn('Very little text extracted from DOCX, trying HTML conversion as fallback');
+      const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+      // Strip HTML tags to get plain text
+      const plainText = htmlResult.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      console.log('HTML fallback extraction, text length:', plainText.length);
+      return plainText || `DOCX file: ${file.name}`;
+    }
+    
+    return result.value;
+  } catch (error) {
+    console.error('Error extracting text from DOCX:', error);
+    return `DOCX file: ${file.name}`;
+  }
 };
 
 export const formatResumeText = (text: string, fileName: string): string => {
