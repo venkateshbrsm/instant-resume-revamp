@@ -29,12 +29,10 @@ const colorThemes = [
 ];
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
-  const [activeTab, setActiveTab] = useState("design1");
+  const [activeTab, setActiveTab] = useState("before");
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
   const [extractedText, setExtractedText] = useState<string>("");
-  const [enhancedContent1, setEnhancedContent1] = useState<any>(null);
-  const [enhancedContent2, setEnhancedContent2] = useState<any>(null);
-  const [selectedDesign, setSelectedDesign] = useState<'design1' | 'design2' | null>(null);
+  const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStage, setLoadingStage] = useState("Initializing...");
@@ -59,9 +57,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     if (storedEnhancedContent) {
       try {
-        const content = JSON.parse(storedEnhancedContent);
-        setEnhancedContent1(content);
-        setEnhancedContent2(content); // For now, use same content
+        setEnhancedContent(JSON.parse(storedEnhancedContent));
         sessionStorage.removeItem('enhancedContent');
       } catch (error) {
         console.error('Error parsing stored enhanced content:', error);
@@ -106,6 +102,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
+
+  // Remove auto-enhancement - let user trigger it manually
+  // useEffect(() => {
+  //   // Only enhance after we have extracted text
+  //   if (extractedText && extractedText.length > 0) {
+  //     enhanceResume();
+  //   }
+  // }, [extractedText]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -190,8 +194,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         if (extractedText) {
           sessionStorage.setItem('extractedText', extractedText);
         }
-        if (enhancedContent1) {
-          sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent1));
+        if (enhancedContent) {
+          sessionStorage.setItem('enhancedContent', enhancedContent);
         }
         if (originalContent) {
           const contentToStore = typeof originalContent === 'string' ? originalContent : JSON.stringify(originalContent);
@@ -213,7 +217,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     setIsCheckingAuth(false);
   };
-
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content');
@@ -236,55 +239,36 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
       
       setEnhancementProgress(30);
-      
-      // Generate two different designs
-      const [response1, response2] = await Promise.all([
-        supabase.functions.invoke('enhance-resume', {
-          body: {
-            fileName: file.name,
-            originalText: extractedText,
-            extractedText: extractedText,
-            designStyle: 'professional'
-          }
-        }),
-        supabase.functions.invoke('enhance-resume', {
-          body: {
-            fileName: file.name,
-            originalText: extractedText,
-            extractedText: extractedText,
-            designStyle: 'modern'
-          }
-        })
-      ]);
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          fileName: file.name,
+          originalText: extractedText,
+          extractedText: extractedText
+        }
+      });
 
       setEnhancementProgress(70);
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      if (response1.error || response2.error) {
-        console.error('Enhancement error:', response1.error || response2.error);
-        throw new Error('Enhancement failed');
+      if (error) {
+        console.error('Enhancement error:', error);
+        throw error;
       }
 
       setEnhancementProgress(90);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      if (response1.data?.success && response1.data?.enhancedResume) {
-        setEnhancedContent1(response1.data.enhancedResume);
-      }
-      
-      if (response2.data?.success && response2.data?.enhancedResume) {
-        setEnhancedContent2(response2.data.enhancedResume);
+      if (data.success && data.enhancedResume) {
+        setEnhancedContent(data.enhancedResume);
+        setEnhancementProgress(100);
+        
+        toast({
+          title: "Enhancement Complete!",
+          description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
+        });
       } else {
-        // Fallback: use same content for both designs for now
-        setEnhancedContent2(response1.data.enhancedResume);
+        throw new Error('Enhancement failed');
       }
-      
-      setEnhancementProgress(100);
-      
-      toast({
-        title: "Enhancement Complete!",
-        description: "Two enhanced designs created! Choose your preferred version.",
-      });
     } catch (error) {
       console.error('Error enhancing resume:', error);
       setEnhancementProgress(0);
@@ -305,57 +289,61 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
           <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
             <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-            Choose Your Design
+            AI Enhancement Complete
           </Badge>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
-            Two Enhanced Designs Created
+            Your Enhanced Resume Preview
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            Choose your preferred enhanced design and pay only for the one you want to download.
+            Compare your original resume with our AI-enhanced version. Pay only if you're satisfied with the results.
           </p>
         </div>
 
-        {/* Enhanced Design Tabs */}
-        <div className="max-w-6xl mx-auto mb-6 sm:mb-8">
+        {/* Comparison Tabs */}
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
           <Tabs value={activeTab} onValueChange={(value) => {
-            // Auto-trigger enhancement when switching to design tabs if not already done
-            if ((value === "design1" || value === "design2") && !enhancedContent1 && !isEnhancing && extractedText) {
+            // Only allow switching to enhanced tab if original is fully loaded
+            if (value === "after" && isLoading) {
+              toast({
+                title: "Please Wait",
+                description: "Original preview is still loading. Please wait for it to complete.",
+                variant: "destructive"
+              });
+              return;
+            }
+            
+            // Auto-trigger enhancement when switching to "after" tab if not already done
+            if (value === "after" && !enhancedContent && !isEnhancing && extractedText) {
               enhanceResume();
             }
             setActiveTab(value);
           }} className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-4 sm:mb-6">
-              <TabsTrigger value="design1" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
-                Design 1
-                {isEnhancing && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
+              <TabsTrigger value="before" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <FileText className="w-3 sm:w-4 h-3 sm:h-4" />
+                Original
+                {isLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
               </TabsTrigger>
               <TabsTrigger 
-                value="design2" 
-                className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                value="after" 
+                className={`flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isLoading}
               >
                 <Zap className="w-3 sm:w-4 h-3 sm:h-4" />
-                Design 2
+                Enhanced
                 {isEnhancing && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="design1">
-              <Card className={`bg-card/80 backdrop-blur-sm border-2 ${selectedDesign === 'design1' ? 'border-accent' : 'border-border'}`}>
+            <TabsContent value="before">
+              <Card className="bg-card/80 backdrop-blur-sm">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-accent" />
-                      Professional Design
-                    </CardTitle>
-                    <Button
-                      variant={selectedDesign === 'design1' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedDesign('design1')}
-                    >
-                      {selectedDesign === 'design1' ? 'Selected' : 'Select'}
-                    </Button>
-                  </div>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-muted-foreground" />
+                    Original Resume
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
@@ -371,92 +359,350 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         </div>
                       </div>
                     </div>
-                  ) : !enhancedContent1 && !isEnhancing && extractedText ? (
-                    <div className="mt-4 p-4 bg-gradient-to-r from-accent/10 to-primary/10 rounded-lg border border-accent/20">
-                      <div className="text-center space-y-3">
-                        <h4 className="font-semibold text-foreground">Ready for AI Enhancement!</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Create two enhanced designs with our AI-powered enhancement that improves content, formatting, and ATS compatibility.
-                        </p>
-                        <Button 
-                          onClick={enhanceResume} 
-                          size="lg"
-                          className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium px-8 py-3"
-                        >
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          Create Enhanced Designs
-                        </Button>
-                      </div>
-                    </div>
                   ) : (
-                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px] max-h-[800px] overflow-hidden">
-                      {isEnhancing ? (
-                        <div className="text-center min-h-[400px] flex items-center justify-center">
-                          <div className="space-y-4 w-full max-w-md">
-                            <Loader2 className="w-10 h-10 text-accent mx-auto animate-spin" />
-                            <div>
-                              <p className="text-muted-foreground mb-3">Creating enhanced designs...</p>
-                              <Progress value={enhancementProgress} className="w-full h-3" />
-                              <p className="text-sm text-muted-foreground mt-2">
-                                {Math.round(enhancementProgress)}% complete
+                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px] max-h-[800px] overflow-hidden flex flex-col">
+                      <div className="space-y-4 flex-1 overflow-hidden">
+                        <RichDocumentPreview 
+                          content={originalContent} 
+                          fileType={getFileType(file)} 
+                          fileName={file.name} 
+                        />
+                        {extractedText && (
+                          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-green-800">
+                                ✅ Successfully extracted {extractedText.length} characters from your resume. This content will be enhanced with AI.
                               </p>
                             </div>
                           </div>
-                        </div>
-                      ) : enhancedContent1 ? (
-                        <div className="space-y-4">
-                          <div className="prose prose-sm max-w-none">
-                            <h3 className="text-lg font-bold mb-4">{enhancedContent1.name}</h3>
-                            <p className="text-muted-foreground mb-4">{enhancedContent1.summary}</p>
+                          )}
+                        
+                        {/* Enhance with AI Button */}
+                        {extractedText && !enhancedContent && !isEnhancing && (
+                          <div className="mt-4 p-4 bg-gradient-to-r from-accent/10 to-primary/10 rounded-lg border border-accent/20">
+                            <div className="text-center space-y-3">
+                              <h4 className="font-semibold text-foreground">Ready for AI Enhancement!</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Transform your resume with our AI-powered enhancement that improves content, formatting, and ATS compatibility.
+                              </p>
+                              <Button 
+                                onClick={enhanceResume} 
+                                size="lg"
+                                className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium px-8 py-3"
+                              >
+                                <Sparkles className="w-5 h-5 mr-2" />
+                                Enhance with AI
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      ) : null}
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="design2">
-              <Card className={`bg-card/80 backdrop-blur-sm border-2 ${selectedDesign === 'design2' ? 'border-accent' : 'border-border'}`}>
+            <TabsContent value="after">
+              <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-primary" />
-                      Modern Design
-                    </CardTitle>
-                    <Button
-                      variant={selectedDesign === 'design2' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedDesign('design2')}
-                    >
-                      {selectedDesign === 'design2' ? 'Selected' : 'Select'}
-                    </Button>
-                  </div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-accent" />
+                    AI-Enhanced Resume
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {isEnhancing ? (
-                    <div className="text-center min-h-[400px] flex items-center justify-center">
-                      <div className="space-y-4 w-full max-w-md">
-                        <Loader2 className="w-10 h-10 text-primary mx-auto animate-spin" />
+                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                      <div className="text-center space-y-4 w-full max-w-md">
+                        <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
                         <div>
-                          <p className="text-muted-foreground mb-3">Creating enhanced designs...</p>
-                          <Progress value={enhancementProgress} className="w-full h-3" />
-                          <p className="text-sm text-muted-foreground mt-2">
+                          <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                          <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                            Our AI is analyzing and enhancing your resume...
+                          </p>
+                          <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                             {Math.round(enhancementProgress)}% complete
                           </p>
                         </div>
                       </div>
                     </div>
-                  ) : enhancedContent2 ? (
-                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px] max-h-[800px] overflow-hidden">
-                      <div className="space-y-4">
-                        <div className="prose prose-sm max-w-none">
-                          <h3 className="text-lg font-bold mb-4">{enhancedContent2.name}</h3>
-                          <p className="text-muted-foreground mb-4">{enhancedContent2.summary}</p>
+                  ) : enhancedContent ? (
+                     <div className="w-full border border-border/20 rounded-lg">
+                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20">
+                      
+                        {/* Color Theme Selector */}
+                        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
+                          <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 flex items-center gap-1 sm:gap-2">
+                            <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
+                            Choose Your Color Theme
+                          </h4>
+                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2">
+                           {colorThemes.map((theme) => (
+                             <button
+                               key={theme.id}
+                               onClick={() => setSelectedTheme(theme)}
+                               className={`p-1 sm:p-2 rounded border-2 transition-all duration-200 text-left ${
+                                 selectedTheme.id === theme.id 
+                                   ? 'border-primary bg-primary/5 shadow-sm' 
+                                   : 'border-border hover:border-primary/50 bg-background'
+                               }`}
+                             >
+                               <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                                 <div className="flex gap-0.5 sm:gap-1">
+                                   <div 
+                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
+                                     style={{ backgroundColor: theme.primary }}
+                                   />
+                                   <div 
+                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
+                                     style={{ backgroundColor: theme.secondary }}
+                                   />
+                                   <div 
+                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
+                                     style={{ backgroundColor: theme.accent }}
+                                   />
+                                 </div>
+                                 {selectedTheme.id === theme.id && (
+                                   <Sparkles className="w-2 sm:w-3 h-2 sm:h-3 text-primary" />
+                                 )}
+                               </div>
+                               <p className="text-xs font-medium text-foreground leading-tight break-words">{theme.name}</p>
+                             </button>
+                           ))}
+                        </div>
+                      </div>
+
+                        {/* Modern Header with Visual Elements */}
+                        <div 
+                          className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                          style={{
+                            background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-black/10"></div>
+                           <div className="relative z-10">
+                             <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
+                               <div className="min-w-0 flex-1">
+                                 <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
+                                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
+                               </div>
+                             </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                                <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm break-all truncate">{enhancedContent.email}</span>
+                              </div>
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                                <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm">{enhancedContent.phone}</span>
+                              </div>
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm break-words truncate">{enhancedContent.location}</span>
+                              </div>
+                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                                <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm">Professional</span>
+                              </div>
+                            </div>
+                          </div>
+                       </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                          {/* Main Content */}
+                          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                          
+                            {/* Professional Summary with Visual Enhancement */}
+                             <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
+                              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
+                                <div 
+                                  className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
+                                  style={{
+                                    background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                                  }}
+                                >
+                                  <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
+                                </div>
+                                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
+                              </div>
+                             <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
+                             
+                           </div>
+
+                          {/* Professional Experience with Timeline */}
+                          {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+                             <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
+                               <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                                 <div 
+                                   className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
+                                   style={{
+                                     background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                                   }}
+                                 >
+                                   <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
+                                 </div>
+                                 <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Experience</h3>
+                               </div>
+                              
+                              <div className="space-y-4 sm:space-y-6">
+                                 {enhancedContent.experience.map((exp: any, index: number) => (
+                                   <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedTheme.accent}30` }}>
+                                     <div 
+                                       className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
+                                       style={{ backgroundColor: selectedTheme.accent }}
+                                     ></div>
+                                     
+                                     <div 
+                                       className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
+                                       style={{ 
+                                         background: `linear-gradient(to right, ${selectedTheme.accent}08, ${selectedTheme.primary}08)` 
+                                       }}
+                                     >
+                                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
+                                         <div>
+                                           <h4 className="text-base sm:text-lg font-bold text-foreground break-words">{exp.title}</h4>
+                                           <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedTheme.accent }}>{exp.company}</p>
+                                         </div>
+                                         <Badge 
+                                           variant="secondary" 
+                                           className="border self-start text-xs"
+                                           style={{ 
+                                             backgroundColor: `${selectedTheme.accent}10`, 
+                                             color: selectedTheme.accent,
+                                             borderColor: `${selectedTheme.accent}20`
+                                           }}
+                                         >
+                                          {exp.duration}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="space-y-2 sm:space-y-3">
+                                        {exp.achievements.map((achievement: string, idx: number) => (
+                                          <div key={idx} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/50 rounded-lg">
+                                            <div className="w-5 sm:w-6 h-5 sm:h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                              <TrendingUp className="w-2 sm:w-3 h-2 sm:h-3 text-white" />
+                                            </div>
+                                            <span className="text-foreground leading-relaxed text-xs sm:text-sm break-words">{achievement}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                         {/* Sidebar with Charts and Skills */}
+                         <div className="space-y-4 sm:space-y-6">
+                          
+                          {/* Skills Chart */}
+                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                            <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
+                               <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                                 <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
+                                 Skills Proficiency
+                               </h3>
+                              
+                               <div className="space-y-3 sm:space-y-4">
+                                 {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
+                                   // Use a deterministic proficiency based on skill position and length
+                                   const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
+                                   const proficiency = Math.min(95, baseSkillLevel + (index * 2)); // Slight variation by position
+                                   return (
+                                     <div key={index} className="space-y-1 sm:space-y-2">
+                                       <div className="flex justify-between items-center">
+                                         <span className="text-xs sm:text-sm font-medium text-foreground break-words">{skill}</span>
+                                         <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
+                                       </div>
+                                       <Progress value={proficiency} className="h-1.5 sm:h-2" />
+                                     </div>
+                                   );
+                                 })}
+                               </div>
+
+                              {/* Skills Tags */}
+                              <div className="mt-4 sm:mt-6">
+                                <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3">All Skills</h4>
+                                <div className="flex flex-wrap gap-1 sm:gap-2">
+                                  {enhancedContent.skills.map((skill: string, index: number) => (
+                                    <Badge key={index} variant="secondary" className="bg-gradient-to-r from-primary/10 to-accent/10 text-foreground border border-primary/20 hover:from-primary/20 hover:to-accent/20 transition-all duration-200 text-xs break-words">
+                                      {skill}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Skills Distribution Chart */}
+                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                              <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                                <TrendingUp className="w-5 h-5" />
+                                Skills Overview
+                              </h3>
+                              
+                              <div className="space-y-3">
+                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.primary}08` }}>
+                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.primary }}>
+                                    {enhancedContent.skills.length}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Total Skills</p>
+                                </div>
+                                
+                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.accent}08` }}>
+                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.accent }}>
+                                    {enhancedContent.experience?.length || 0}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Work Experiences</p>
+                                </div>
+                                
+                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.secondary}08` }}>
+                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.secondary }}>
+                                    {enhancedContent.education?.length || 0}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Educational Qualifications</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Education */}
+                          {enhancedContent.education && enhancedContent.education.length > 0 && (
+                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                               <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                                 <Award className="w-5 h-5" />
+                                 Education
+                               </h3>
+                              <div className="space-y-4">
+                                {enhancedContent.education.map((edu: any, index: number) => (
+                                   <div 
+                                     key={index} 
+                                     className="rounded-lg p-4 border"
+                                     style={{ 
+                                       background: `linear-gradient(to right, ${selectedTheme.primary}08, ${selectedTheme.accent}08)`,
+                                       borderColor: `${selectedTheme.primary}10`
+                                     }}
+                                   >
+                                     <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                                     <p className="font-medium" style={{ color: selectedTheme.accent }}>{edu.institution}</p>
+                                    <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                         </div>
                       </div>
                     </div>
+                  </div>
                   ) : (
                     <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
                       <div className="text-center space-y-3 sm:space-y-4">
@@ -485,37 +731,86 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           </Tabs>
         </div>
 
-        {/* Action Buttons */}
-        <div className="max-w-md mx-auto mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 px-4">
-          <Button 
-            onClick={onBack} 
-            variant="outline" 
-            className="flex-1 flex items-center justify-center gap-2 min-h-[48px]"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          <Button 
-            onClick={handlePurchaseClick}
-            disabled={isCheckingAuth || !selectedDesign}
-            className="flex-1 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isCheckingAuth ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Checking...
-              </>
-            ) : !selectedDesign ? (
-              <>
-                <Eye className="w-4 h-4" />
-                Select a Design First
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-4 h-4" />
-                Pay ₹49 & Download {selectedDesign === 'design1' ? 'Design 1' : 'Design 2'}
-              </>
-            )}
+        {/* Enhancement Features */}
+        <Card className="max-w-4xl mx-auto mb-6 sm:mb-8 bg-card/80 backdrop-blur-sm">
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 text-center">What We Enhanced</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="text-center p-3 sm:p-4 rounded-lg bg-accent/5 border border-accent/20">
+                <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Content Optimization</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Enhanced descriptions with action verbs and quantified achievements</p>
+              </div>
+              <div className="text-center p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <Eye className="w-6 sm:w-8 h-6 sm:h-8 text-primary mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Visual Appeal</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Professional formatting with better typography and layout</p>
+              </div>
+              <div className="text-center p-3 sm:p-4 rounded-lg bg-accent/5 border border-accent/20">
+                <Zap className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">ATS Optimization</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Structured for better parsing by applicant tracking systems</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Purchase Section */}
+        <Card className="max-w-md mx-auto bg-gradient-primary/5 border-primary/20">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="mb-4 sm:mb-6">
+              <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">₹299</div>
+              <p className="text-muted-foreground text-xs sm:text-sm">One-time payment • Instant download</p>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <Button 
+                variant="success" 
+                size="xl" 
+                onClick={handlePurchaseClick}
+                className="w-full"
+                disabled={!enhancedContent || isCheckingAuth}
+              >
+                <CreditCard className="w-5 h-5 mr-2" />
+                {isCheckingAuth ? 'Checking authentication...' : 
+                 !enhancedContent ? 'Processing Enhancement...' :
+                 user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
+              </Button>
+              
+              <p className="text-xs text-muted-foreground">
+                {enhancedContent 
+                  ? 'Secure payment • Download the enhanced version immediately' 
+                  : 'Enhancement in progress • Payment will be enabled once complete'
+                }
+              </p>
+            </div>
+
+            <div className="text-left space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-accent rounded-full" />
+                <span>Professional PDF format</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-accent rounded-full" />
+                <span>Editable Word document</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-accent rounded-full" />
+                <span>ATS-friendly formatting</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-accent rounded-full" />
+                <span>Lifetime access</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Back Button */}
+        <div className="flex justify-center mt-8">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Upload Different Resume
           </Button>
         </div>
       </div>
