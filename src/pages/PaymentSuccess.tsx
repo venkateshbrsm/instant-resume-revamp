@@ -71,9 +71,64 @@ export default function PaymentSuccess() {
         description: `Your enhanced resume ${format.toUpperCase()} is being prepared...`,
       });
 
-      const functionName = format === 'pdf' ? 'generate-pdf-resume' : 'download-enhanced-resume';
+      if (format === 'pdf') {
+        // For PDF, open in new tab for print-to-PDF
+        const pdfUrl = `https://goorszhscvxywfigydfp.supabase.co/functions/v1/generate-pdf-resume`;
+        
+        const newTab = window.open('', '_blank');
+        if (newTab) {
+          newTab.document.write(`
+            <html>
+              <head><title>Preparing PDF...</title></head>
+              <body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h2>Preparing your enhanced resume...</h2>
+                <p>Please wait while we generate your PDF.</p>
+                <div style="margin: 20px 0;">Loading...</div>
+              </body>
+            </html>
+          `);
+          
+          // Fetch the PDF content and replace the tab content
+          fetch(pdfUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ paymentId })
+          })
+          .then(response => response.text())
+          .then(html => {
+            newTab.document.open();
+            newTab.document.write(html);
+            newTab.document.close();
+          })
+          .catch(error => {
+            newTab.document.open();
+            newTab.document.write(`
+              <html>
+                <head><title>Error</title></head>
+                <body style="font-family: Arial; text-align: center; padding: 50px;">
+                  <h2>Error generating PDF</h2>
+                  <p>Please try again or contact support.</p>
+                  <p style="color: red; font-size: 12px;">${error.message}</p>
+                </body>
+              </html>
+            `);
+            newTab.document.close();
+          });
+        }
+        
+        toast({
+          title: "PDF Opening",
+          description: "Your resume is opening in a new tab. Use Ctrl+P or Cmd+P to save as PDF.",
+        });
+        return;
+      }
+
+      // For DOCX, use the existing download method
+      const functionName = 'download-enhanced-resume';
       
-      // Use fetch directly to handle binary data properly
       const response = await fetch(`https://goorszhscvxywfigydfp.supabase.co/functions/v1/${functionName}`, {
         method: 'POST',
         headers: {
@@ -88,14 +143,9 @@ export default function PaymentSuccess() {
         throw new Error(errorText || 'Download failed');
       }
 
-      // Get the binary data as ArrayBuffer
       const arrayBuffer = await response.arrayBuffer();
+      const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       
-      const mimeType = format === 'pdf' 
-        ? 'application/pdf' 
-        : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      
-      // Create blob
       const blob = new Blob([arrayBuffer], { type: mimeType });
       const filename = `Enhanced_Resume_${new Date().getTime()}.${format}`;
       
@@ -184,7 +234,7 @@ export default function PaymentSuccess() {
               size="lg"
             >
               <Download className="mr-2 h-4 w-4" />
-              Download Enhanced Resume (PDF)
+              View Resume for PDF Save (Recommended)
             </Button>
             
             <Button 
