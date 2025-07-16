@@ -50,20 +50,44 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
 
       console.log('Calling razorpay-initiate function...');
       
-      // First upload the file to storage
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
+      // Check authentication first
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error('Authentication error:', authError);
+        throw new Error('User not authenticated. Please sign in again.');
       }
 
+      console.log('User authenticated:', user.email);
+
+      // Upload file to storage with better error handling
       const filePath = `${user.id}/${Date.now()}_${file.name}`;
+      console.log('Uploading file to path:', filePath);
+      
       const { error: uploadError } = await supabase.storage
         .from('resumes')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('File upload error:', uploadError);
-        throw new Error('Failed to upload file');
+        if (uploadError.message.includes('already exists')) {
+          // Try with a different filename
+          const newFilePath = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2)}_${file.name}`;
+          const { error: retryUploadError } = await supabase.storage
+            .from('resumes')
+            .upload(newFilePath, file);
+          
+          if (retryUploadError) {
+            throw new Error(`Failed to upload file: ${retryUploadError.message}`);
+          }
+          console.log('File uploaded successfully on retry to:', newFilePath);
+        } else {
+          throw new Error(`Failed to upload file: ${uploadError.message}`);
+        }
+      } else {
+        console.log('File uploaded successfully to:', filePath);
       }
 
       // Get enhanced content and theme from session storage if available
@@ -84,7 +108,6 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
           if (selectedThemeString) {
             selectedTheme = JSON.parse(selectedThemeString);
             console.log('Found selected theme for payment:', selectedTheme);
-            console.log('Theme object structure:', JSON.stringify(selectedTheme, null, 2));
           } else {
             console.log('No theme found in sessionStorage, will default to navy');
           }
@@ -98,7 +121,13 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
         }
       }
 
-      console.log('Payment data being sent:', { fileName, amount, filePath, hasEnhanced: !!enhancedContent, themeData: selectedTheme });
+      console.log('Initiating payment with data:', { 
+        fileName, 
+        amount, 
+        filePath, 
+        hasEnhanced: !!enhancedContent, 
+        hasTheme: !!selectedTheme 
+      });
 
       const { data, error } = await supabase.functions.invoke('razorpay-initiate', {
         body: { 
@@ -113,9 +142,19 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
 
       if (error) {
         console.error('Payment initiation error:', error);
+        let errorMessage = 'Failed to initiate payment. Please try again.';
+        
+        if (error.message.includes('credentials')) {
+          errorMessage = 'Payment system configuration error. Please contact support.';
+        } else if (error.message.includes('authentication')) {
+          errorMessage = 'Authentication failed. Please sign in again.';
+        } else if (error.message) {
+          errorMessage = `Payment error: ${error.message}`;
+        }
+        
         toast({
           title: "Payment Error",
-          description: `Failed to initiate payment: ${error.message || 'Unknown error'}`,
+          description: errorMessage,
           variant: "destructive"
         });
         return;
@@ -169,9 +208,10 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
 
     } catch (error) {
       console.error('Payment error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to initiate payment. Please try again.';
       toast({
         title: "Payment Error",
-        description: "Failed to initiate payment. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
       setIsLoading(false);
