@@ -567,30 +567,25 @@ Experience: Professional experience in relevant industry`;
   
   // Check minimum length with file-type specific requirements
   if (!content || content.trim().length < 5) {
-    if (isPDF) {
-      console.log('PDF content too short, creating fallback content');
-      return {
-        isValid: true,
-        reason: 'Using fallback content for PDF',
-        content: createFallbackContent(),
-        usedFallback: true
-      };
-    }
     return {
       isValid: false,
-      reason: 'Content is too short or empty',
+      reason: 'Content is too short or empty - needs re-extraction',
       content: content
     };
   }
   
-  // Check if content is just the filename
-  if (content.trim() === `DOCX file: ${fileName}` || content.trim() === fileName) {
-    console.log('Only filename detected, creating fallback content');
+  // Check if content is just the filename or contains only file type info
+  const trimmedContent = content.trim();
+  if (trimmedContent === `DOCX file: ${fileName}` || 
+      trimmedContent === `PDF file: ${fileName}` ||
+      trimmedContent === fileName ||
+      trimmedContent.startsWith('DOCX file:') ||
+      trimmedContent.startsWith('PDF file:')) {
+    console.log('Only filename/file type detected - needs proper re-extraction');
     return {
-      isValid: true,
-      reason: 'Using fallback content for filename-only extraction',
-      content: createFallbackContent(),
-      usedFallback: true
+      isValid: false,
+      reason: 'Content extraction failed - only filename detected',
+      content: content
     };
   }
   
@@ -715,7 +710,7 @@ serve(async (req) => {
     });
     
     // Enhanced re-extraction logic for insufficient content with stricter thresholds
-    if ((!resumeContent || resumeContent.length < 200)) {
+    if ((!resumeContent || resumeContent.length < 500 || resumeContent.startsWith('DOCX file:') || resumeContent.startsWith('PDF file:'))) {
       console.log(`Content insufficient (${resumeContent.length} chars), attempting re-extraction...`);
       
       if (file && fileName.toLowerCase().endsWith('.docx')) {
