@@ -39,8 +39,8 @@ serve(async (req) => {
     console.log("User authenticated:", user.email);
 
     // Get request body
-    const { fileName, amount } = await req.json();
-    console.log("Payment details:", { fileName, amount });
+    const { fileName, amount, filePath } = await req.json();
+    console.log("Payment details:", { fileName, amount, filePath });
 
     if (!fileName || !amount) {
       throw new Error("Missing fileName or amount");
@@ -100,21 +100,24 @@ serve(async (req) => {
     console.log("Razorpay order created:", razorpayOrder.id);
 
     // Insert payment record in database
-    const { error: insertError } = await supabaseClient
+    const { data: payment, error: paymentError } = await supabaseClient
       .from("payments")
       .insert({
         user_id: user.id,
         email: user.email || "",
         file_name: fileName,
+        file_path: filePath || null,
         amount: amount,
         currency: "INR",
         razorpay_order_id: razorpayOrder.id,
         status: "pending"
-      });
+      })
+      .select()
+      .single();
 
-    if (insertError) {
-      console.error("Database insert error:", insertError);
-      throw new Error(`Database error: ${insertError.message}`);
+    if (paymentError) {
+      console.error("Database insert error:", paymentError);
+      throw new Error(`Database error: ${paymentError.message}`);
     }
 
     console.log("Payment record created successfully");

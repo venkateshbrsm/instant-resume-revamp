@@ -249,14 +249,60 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // Call the enhance-resume function to get the actual enhanced resume data
+    // Download the original file from storage and extract text
+    let extractedText = '';
+    if (payment.file_path) {
+      try {
+        console.log("Downloading file from storage:", payment.file_path);
+        
+        const { data: fileData, error: fileError } = await supabaseClient.storage
+          .from('resumes')
+          .download(payment.file_path);
+
+        if (fileError || !fileData) {
+          console.error("Error downloading file:", fileError);
+          throw new Error("Could not download original file");
+        }
+
+        // Extract text based on file type
+        const fileName = payment.file_name.toLowerCase();
+        if (fileName.endsWith('.pdf')) {
+          // For PDF, use the extract-pdf-ilovepdf function
+          const formData = new FormData();
+          formData.append('file', fileData, payment.file_name);
+
+          const extractResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/extract-pdf-ilovepdf`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: formData,
+          });
+
+          if (extractResponse.ok) {
+            const extractResult = await extractResponse.json();
+            extractedText = extractResult.extractedText || '';
+          }
+        } else if (fileName.endsWith('.docx')) {
+          // For DOCX, we'd need to implement text extraction
+          // For now, use a placeholder
+          extractedText = `DOCX file: ${payment.file_name} - Content extraction in progress...`;
+        }
+
+        console.log("Extracted text length:", extractedText.length);
+      } catch (fileError) {
+        console.error("Error processing file:", fileError);
+        extractedText = `Error processing file: ${payment.file_name}`;
+      }
+    }
+
+    // Call the enhance-resume function with the actual extracted text
     try {
       const enhanceResponse = await supabaseClient.functions.invoke('enhance-resume', {
         body: {
           fileName: payment.file_name,
-          originalText: "",
-          extractedText: `This is a placeholder for the extracted text from ${payment.file_name}. 
-          In a production environment, this would be the actual extracted text from the uploaded resume file.`
+          originalText: extractedText,
+          extractedText: extractedText
         }
       });
 

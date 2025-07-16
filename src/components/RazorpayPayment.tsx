@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface RazorpayPaymentProps {
   fileName: string;
   amount: number;
+  file: File;
   disabled?: boolean;
 }
 
@@ -15,7 +16,7 @@ declare global {
   }
 }
 
-export const RazorpayPayment = ({ fileName, amount, disabled }: RazorpayPaymentProps) => {
+export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPaymentProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -48,8 +49,25 @@ export const RazorpayPayment = ({ fileName, amount, disabled }: RazorpayPaymentP
       }
 
       console.log('Calling razorpay-initiate function...');
+      
+      // First upload the file to storage
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const filePath = `${user.id}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('resumes')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('File upload error:', uploadError);
+        throw new Error('Failed to upload file');
+      }
+
       const { data, error } = await supabase.functions.invoke('razorpay-initiate', {
-        body: { fileName, amount }
+        body: { fileName, amount, filePath }
       });
 
       if (error) {

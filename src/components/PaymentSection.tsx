@@ -170,6 +170,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               <RazorpayPayment
                 fileName={file.name}
                 amount={299}
+                file={file}
               />
               <Button variant="outline" onClick={handlePaymentCancel} className="w-full">
                 Cancel

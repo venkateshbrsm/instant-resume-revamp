@@ -21,6 +21,7 @@ export type Database = {
           currency: string
           email: string
           file_name: string
+          file_path: string | null
           id: string
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
@@ -36,6 +37,7 @@ export type Database = {
           currency?: string
           email: string
           file_name: string
+          file_path?: string | null
           id?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
@@ -51,6 +53,7 @@ export type Database = {
           currency?: string
           email?: string
           file_name?: string
+          file_path?: string | null
           id?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
