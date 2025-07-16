@@ -378,16 +378,19 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
   return await Packer.toBuffer(doc);
 }
 
-// Enhanced backend extraction methods with multiple approaches
+// Advanced DOCX extraction with XML parsing and binary analysis
 async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffer) {
   const results = [];
+  console.log('=== ADVANCED DOCX EXTRACTION STARTED ===');
+  console.log('File size:', arrayBuffer.byteLength, 'bytes');
   
-  // Method 1: extractRawText
+  // Method 1: Raw text extraction
   try {
-    console.log('Backend Method 1: extractRawText...');
+    console.log('Method 1: Mammoth extractRawText...');
     const result = await mammoth.extractRawText({ arrayBuffer });
     if (result.value && result.value.trim().length > 0) {
-      console.log('Backend Method 1 success, length:', result.value.length);
+      console.log('Method 1 success, length:', result.value.length);
+      console.log('First 200 chars:', result.value.substring(0, 200));
       results.push({
         method: 'extractRawText',
         content: result.value.trim(),
@@ -395,26 +398,28 @@ async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffe
       });
     }
   } catch (error) {
-    console.warn('Backend Method 1 failed:', error.message);
+    console.error('Method 1 failed:', error.message);
   }
   
-  // Method 2: convertToHtml then strip tags with enhanced cleaning
+  // Method 2: HTML conversion with aggressive cleaning
   try {
-    console.log('Backend Method 2: HTML conversion...');
+    console.log('Method 2: HTML conversion...');
     const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
     if (htmlResult.value) {
+      console.log('Raw HTML length:', htmlResult.value.length);
       const plainText = htmlResult.value
-        .replace(/<style[^>]*>.*?<\/style>/gi, '') // Remove style blocks
-        .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script blocks
-        .replace(/<[^>]*>/g, ' ') // Remove HTML tags
-        .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-        .replace(/&[a-zA-Z][a-zA-Z0-9]*;/g, ' ') // Replace HTML entities
-        .replace(/&#[0-9]+;/g, ' ') // Replace numeric entities
-        .replace(/\s+/g, ' ') // Normalize whitespace
+        .replace(/<style[^>]*>.*?<\/style>/gis, '')
+        .replace(/<script[^>]*>.*?<\/script>/gis, '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&[a-zA-Z][a-zA-Z0-9]*;/g, ' ')
+        .replace(/&#[0-9]+;/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
       
-      if (plainText.length > 0) {
-        console.log('Backend Method 2 success, length:', plainText.length);
+      if (plainText.length > 50) {
+        console.log('Method 2 success, length:', plainText.length);
+        console.log('First 200 chars:', plainText.substring(0, 200));
         results.push({
           method: 'htmlConversion',
           content: plainText,
@@ -423,120 +428,248 @@ async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffe
       }
     }
   } catch (error) {
-    console.warn('Backend Method 2 failed:', error.message);
+    console.error('Method 2 failed:', error.message);
   }
 
-  // Method 3: convertToHtml with style mapping for better formatting
+  // Method 3: XML Document parsing (DOCX is ZIP with XML)
   try {
-    console.log('Backend Method 3: HTML conversion with style mapping...');
-    const htmlResult = await mammoth.convertToHtml({ 
-      arrayBuffer,
-      styleMap: [
-        "p[style-name='Heading 1'] => h1:fresh",
-        "p[style-name='Heading 2'] => h2:fresh",
-        "p[style-name='Normal'] => p:fresh"
-      ]
-    });
+    console.log('Method 3: Direct XML extraction...');
+    const uint8Array = new Uint8Array(arrayBuffer);
     
-    if (htmlResult.value) {
-      const plainText = htmlResult.value
-        .replace(/<h[1-6][^>]*>/gi, '\n\n') // Add line breaks before headings
-        .replace(/<\/h[1-6]>/gi, '\n') // Add line breaks after headings
-        .replace(/<p[^>]*>/gi, '\n') // Add line breaks for paragraphs
-        .replace(/<li[^>]*>/gi, '\n• ') // Convert list items to bullet points
-        .replace(/<[^>]*>/g, ' ') // Remove remaining HTML tags
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&[a-zA-Z][a-zA-Z0-9]*;/g, ' ')
-        .replace(/&#[0-9]+;/g, ' ')
-        .replace(/\n\s*\n\s*\n/g, '\n\n') // Normalize multiple line breaks
-        .replace(/\s+/g, ' ') // Normalize spaces but preserve line breaks
+    // Look for document.xml content within the DOCX file
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    const fullText = decoder.decode(uint8Array);
+    
+    // Find XML content patterns typical in DOCX files
+    const xmlMatches = fullText.match(/<w:t[^>]*>([^<]+)<\/w:t>/g);
+    if (xmlMatches && xmlMatches.length > 0) {
+      let extractedText = xmlMatches
+        .map(match => match.replace(/<w:t[^>]*>([^<]+)<\/w:t>/, '$1'))
+        .join(' ')
+        .replace(/\s+/g, ' ')
         .trim();
       
-      if (plainText.length > 0) {
-        console.log('Backend Method 3 success, length:', plainText.length);
+      if (extractedText.length > 50) {
+        console.log('Method 3 success, length:', extractedText.length);
+        console.log('First 200 chars:', extractedText.substring(0, 200));
         results.push({
-          method: 'htmlStyleMapping',
-          content: plainText,
+          method: 'xmlDirectParsing',
+          content: extractedText,
           score: 0
         });
       }
     }
   } catch (error) {
-    console.warn('Backend Method 3 failed:', error.message);
+    console.error('Method 3 failed:', error.message);
   }
 
-  // Method 4: Direct buffer extraction with different encoding
+  // Method 4: Binary pattern matching for text extraction
   try {
-    console.log('Backend Method 4: Direct buffer text extraction...');
+    console.log('Method 4: Binary pattern extraction...');
     const uint8Array = new Uint8Array(arrayBuffer);
-    
-    // Try to find readable text patterns in the buffer
     let extractedText = '';
-    const decoder = new TextDecoder('utf-8', { fatal: false });
     
-    // Extract text in chunks to handle large files
-    const chunkSize = 1024;
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const chunk = uint8Array.slice(i, i + chunkSize);
-      const text = decoder.decode(chunk);
+    // Look for readable text sequences in the binary data
+    let currentText = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+      const byte = uint8Array[i];
       
-      // Filter for readable ASCII characters and common resume terms
-      const readableText = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      if (readableText.length > 10) {
-        extractedText += readableText + ' ';
+      // Check if it's a printable ASCII character
+      if ((byte >= 32 && byte <= 126) || byte === 10 || byte === 13 || byte === 9) {
+        currentText += String.fromCharCode(byte);
+      } else {
+        // If we have accumulated text, save it
+        if (currentText.length > 5) {
+          extractedText += currentText + ' ';
+        }
+        currentText = '';
       }
     }
     
-    if (extractedText.trim().length > 50) {
-      console.log('Backend Method 4 success, length:', extractedText.trim().length);
+    // Add any remaining text
+    if (currentText.length > 5) {
+      extractedText += currentText;
+    }
+    
+    // Clean and filter the extracted text
+    extractedText = extractedText
+      .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Look for meaningful content patterns
+    const meaningfulParts = extractedText.split(' ')
+      .filter(part => part.length > 2)
+      .filter(part => /[a-zA-Z]/.test(part))
+      .join(' ');
+    
+    if (meaningfulParts.length > 100) {
+      console.log('Method 4 success, length:', meaningfulParts.length);
+      console.log('First 200 chars:', meaningfulParts.substring(0, 200));
       results.push({
-        method: 'directBuffer',
-        content: extractedText.trim(),
+        method: 'binaryPatternMatching',
+        content: meaningfulParts,
         score: 0
       });
     }
   } catch (error) {
-    console.warn('Backend Method 4 failed:', error.message);
+    console.error('Method 4 failed:', error.message);
+  }
+
+  // Method 5: Try different encoding approaches
+  try {
+    console.log('Method 5: Multiple encoding attempts...');
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const encodings = ['utf-8', 'utf-16le', 'utf-16be', 'iso-8859-1'];
+    
+    for (const encoding of encodings) {
+      try {
+        const decoder = new TextDecoder(encoding, { fatal: false });
+        const text = decoder.decode(uint8Array);
+        
+        // Look for readable text patterns
+        const readableText = text
+          .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        // Check if this encoding produced meaningful content
+        const words = readableText.split(' ').filter(word => 
+          word.length > 2 && /^[a-zA-Z@.]+$/.test(word)
+        );
+        
+        if (words.length > 20 && readableText.length > 100) {
+          console.log(`Method 5 success with ${encoding}, length:`, readableText.length);
+          console.log('First 200 chars:', readableText.substring(0, 200));
+          results.push({
+            method: `multipleEncoding_${encoding}`,
+            content: readableText,
+            score: 0
+          });
+          break; // Use first successful encoding
+        }
+      } catch (encError) {
+        // Try next encoding
+        continue;
+      }
+    }
+  } catch (error) {
+    console.error('Method 5 failed:', error.message);
   }
   
+  console.log(`=== EXTRACTION COMPLETE: ${results.length} methods succeeded ===`);
   return results;
 }
 
-// Select best content from backend extraction results
+// Advanced content scoring and selection
 function selectBestBackendContent(results: any[], fileName: string): string {
   if (results.length === 0) {
-    console.warn('No backend extraction methods succeeded');
+    console.warn('❌ No backend extraction methods succeeded');
     return '';
   }
   
-  // Score each result
+  console.log('=== SCORING EXTRACTION RESULTS ===');
+  
+  // Score each result with detailed analysis
   for (const result of results) {
     let score = 0;
     const content = result.content;
+    const words = content.split(/\s+/).filter(word => word.length > 2);
     
-    // Length score
-    score += Math.min(content.length / 50, 100);
+    console.log(`\nScoring method: ${result.method}`);
+    console.log(`Content length: ${content.length} chars, ${words.length} words`);
     
-    // Content quality indicators
-    if (content.includes('@')) score += 20;
-    if (/\b\d{4}\b/.test(content)) score += 10;
-    if (/\b(experience|skills?|education|resume|cv)\b/i.test(content)) score += 30;
-    if (/\b(manager|engineer|developer|analyst|specialist|director)\b/i.test(content)) score += 20;
-    if (/\b(university|college|bachelor|master|degree)\b/i.test(content)) score += 15;
+    // Base length score (up to 100 points)
+    const lengthScore = Math.min(content.length / 100, 100);
+    score += lengthScore;
+    console.log(`Length score: ${lengthScore.toFixed(1)}`);
     
-    // Penalty for very short content
-    if (content.length < 100) score -= 30;
+    // Email detection (strong indicator of real resume)
+    const emailCount = (content.match(/@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []).length;
+    if (emailCount > 0) {
+      score += 50;
+      console.log(`Email bonus: +50 (found ${emailCount} emails)`);
+    }
+    
+    // Phone number patterns
+    const phonePattern = /(\+?[\d\s\-\(\)]{10,})/g;
+    const phoneCount = (content.match(phonePattern) || []).length;
+    if (phoneCount > 0) {
+      score += 30;
+      console.log(`Phone bonus: +30 (found ${phoneCount} phones)`);
+    }
+    
+    // Years (dates in resume)
+    const yearMatches = content.match(/\b(19|20)\d{2}\b/g) || [];
+    if (yearMatches.length > 0) {
+      score += yearMatches.length * 5;
+      console.log(`Year bonus: +${yearMatches.length * 5} (found ${yearMatches.length} years)`);
+    }
+    
+    // Professional terms
+    const professionalTerms = [
+      'experience', 'skills?', 'education', 'resume', 'cv', 'profile',
+      'manager', 'engineer', 'developer', 'analyst', 'specialist', 'director',
+      'university', 'college', 'bachelor', 'master', 'degree', 'certification',
+      'project', 'team', 'leadership', 'responsible', 'achieved', 'managed'
+    ];
+    
+    let termScore = 0;
+    for (const term of professionalTerms) {
+      const regex = new RegExp(`\\b${term}\\b`, 'gi');
+      const matches = content.match(regex);
+      if (matches) {
+        termScore += matches.length * 3;
+      }
+    }
+    score += termScore;
+    console.log(`Professional terms bonus: +${termScore}`);
+    
+    // Proper name detection (capitalized words that aren't common words)
+    const namePattern = /\b[A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}\b/g;
+    const nameMatches = content.match(namePattern) || [];
+    if (nameMatches.length > 0) {
+      score += nameMatches.length * 10;
+      console.log(`Name bonus: +${nameMatches.length * 10} (found names: ${nameMatches.slice(0, 3).join(', ')})`);
+    }
+    
+    // LinkedIn/social profiles
+    if (/linkedin\.com|github\.com|twitter\.com/i.test(content)) {
+      score += 25;
+      console.log('Social profile bonus: +25');
+    }
+    
+    // Penalties for poor quality
+    if (content.length < 200) {
+      score -= 50;
+      console.log('Short content penalty: -50');
+    }
+    
+    // Penalty for too much repetition
+    const uniqueWords = new Set(words.map(w => w.toLowerCase()));
+    const repetitionRatio = words.length > 0 ? uniqueWords.size / words.length : 0;
+    if (repetitionRatio < 0.3) {
+      score -= 30;
+      console.log(`High repetition penalty: -30 (ratio: ${repetitionRatio.toFixed(2)})`);
+    }
     
     result.score = score;
-    console.log(`Backend method ${result.method} scored: ${score}, length: ${content.length}`);
+    console.log(`Final score for ${result.method}: ${score.toFixed(1)}`);
   }
   
   // Sort by score and return the best
   results.sort((a, b) => b.score - a.score);
-  return results[0].content;
+  
+  console.log('\n=== FINAL RANKING ===');
+  results.forEach((result, index) => {
+    console.log(`${index + 1}. ${result.method}: ${result.score.toFixed(1)} points`);
+  });
+  
+  const bestResult = results[0];
+  console.log(`\n✅ Selected best method: ${bestResult.method} with score ${bestResult.score.toFixed(1)}`);
+  console.log(`Best content preview: ${bestResult.content.substring(0, 300)}...`);
+  
+  return bestResult.content;
 }
 
 // Multiple PDF extraction methods with timeouts
