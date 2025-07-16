@@ -160,56 +160,41 @@ export default function PaymentSuccess() {
       });
 
       if (format === 'pdf') {
-        // For PDF, open in new tab for print-to-PDF
+        // For PDF, download directly as binary file
         const pdfUrl = `https://goorszhscvxywfigydfp.supabase.co/functions/v1/generate-pdf-resume`;
         
-        const newTab = window.open('', '_blank');
-        if (newTab) {
-          newTab.document.write(`
-            <html>
-              <head><title>Preparing PDF...</title></head>
-              <body style="font-family: Arial; text-align: center; padding: 50px;">
-                <h2>Preparing your enhanced resume...</h2>
-                <p>Please wait while we generate your PDF.</p>
-                <div style="margin: 20px 0;">Loading...</div>
-              </body>
-            </html>
-          `);
-          
-          // Fetch the PDF content and replace the tab content
-          fetch(pdfUrl, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ paymentId })
-          })
-          .then(response => response.text())
-          .then(html => {
-            newTab.document.open();
-            newTab.document.write(html);
-            newTab.document.close();
-          })
-          .catch(error => {
-            newTab.document.open();
-            newTab.document.write(`
-              <html>
-                <head><title>Error</title></head>
-                <body style="font-family: Arial; text-align: center; padding: 50px;">
-                  <h2>Error generating PDF</h2>
-                  <p>Please try again or contact support.</p>
-                  <p style="color: red; font-size: 12px;">${error.message}</p>
-                </body>
-              </html>
-            `);
-            newTab.document.close();
-          });
+        const response = await fetch(pdfUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ paymentId })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'PDF generation failed');
         }
+
+        // Get the PDF as binary data
+        const arrayBuffer = await response.arrayBuffer();
+        const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+        const filename = `Enhanced_Resume_${new Date().getTime()}.pdf`;
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
         
         toast({
-          title: "Resume Ready",
-          description: "Your enhanced resume is open in a new tab. Follow the instructions to save as PDF.",
+          title: "Download Started",
+          description: "Your enhanced resume PDF is being downloaded.",
         });
         return;
       }
