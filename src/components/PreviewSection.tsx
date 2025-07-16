@@ -299,436 +299,352 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           </p>
         </div>
 
-        {/* Comparison Tabs */}
+        {/* Enhanced Resume Display */}
         <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
-          <Tabs value={activeTab} onValueChange={(value) => {
-            // Only allow switching to enhanced tab if original is fully loaded
-            if (value === "after" && isLoading) {
-              toast({
-                title: "Please Wait",
-                description: "Original preview is still loading. Please wait for it to complete.",
-                variant: "destructive"
-              });
-              return;
-            }
-            
-            // Auto-trigger enhancement when switching to "after" tab if not already done
-            if (value === "after" && !enhancedContent && !isEnhancing && extractedText) {
-              enhanceResume();
-            }
-            setActiveTab(value);
-          }} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-4 sm:mb-6">
-              <TabsTrigger value="before" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <FileText className="w-3 sm:w-4 h-3 sm:h-4" />
-                Original
-                {isLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="after" 
-                className={`flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                disabled={isLoading}
-              >
-                <Zap className="w-3 sm:w-4 h-3 sm:h-4" />
-                Enhanced
-                {isEnhancing && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="before">
-              <Card className="bg-card/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-muted-foreground" />
-                    Original Resume
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="bg-muted/50 rounded-lg p-4 sm:p-6 text-center min-h-[300px] sm:min-h-[400px] flex items-center justify-center">
-                      <div className="space-y-4 w-full max-w-md">
-                        <Loader2 className="w-8 sm:w-10 h-8 sm:h-10 text-primary mx-auto animate-spin" />
-                        <div>
-                          <p className="text-muted-foreground text-sm sm:text-base mb-3">{loadingStage}</p>
-                          <Progress value={loadingProgress} className="w-full h-2 sm:h-3" />
-                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                            {Math.round(loadingProgress)}% complete
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-muted/50 rounded-lg p-6 min-h-[400px] max-h-[800px] overflow-hidden flex flex-col">
-                      <div className="space-y-4 flex-1 overflow-hidden">
-                        <RichDocumentPreview 
-                          content={originalContent} 
-                          fileType={getFileType(file)} 
-                          fileName={file.name} 
-                        />
-                        {extractedText && (
-                          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="flex items-start gap-2">
-                              <AlertCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <p className="text-sm text-green-800">
-                                ✅ Successfully extracted {extractedText.length} characters from your resume. This content will be enhanced with AI.
-                              </p>
-                            </div>
-                          </div>
-                          )}
-                        
-                        {/* Enhance with AI Button */}
-                        {extractedText && !enhancedContent && !isEnhancing && (
-                          <div className="mt-4 p-4 bg-gradient-to-r from-accent/10 to-primary/10 rounded-lg border border-accent/20">
-                            <div className="text-center space-y-3">
-                              <h4 className="font-semibold text-foreground">Ready for AI Enhancement!</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Transform your resume with our AI-powered enhancement that improves content, formatting, and ATS compatibility.
-                              </p>
-                              <Button 
-                                onClick={enhanceResume} 
-                                size="lg"
-                                className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium px-8 py-3"
-                              >
-                                <Sparkles className="w-5 h-5 mr-2" />
-                                Enhance with AI
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+          {/* Auto-trigger enhancement when page loads */}
+          {extractedText && !isLoading && !enhancedContent && !isEnhancing && (
+            <div className="mb-6">
+              <Card className="bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
+                <CardContent className="p-6 text-center space-y-4">
+                  <h4 className="font-semibold text-foreground">Ready for AI Enhancement!</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Transform your resume with our AI-powered enhancement that improves content, formatting, and ATS compatibility.
+                  </p>
+                  <Button 
+                    onClick={enhanceResume} 
+                    size="lg"
+                    className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium px-8 py-3"
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Enhance with AI
+                  </Button>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="after">
-              <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-accent" />
-                    AI-Enhanced Resume
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isEnhancing ? (
-                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
-                      <div className="text-center space-y-4 w-full max-w-md">
-                        <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
-                        <div>
-                          <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
-                          <p className="text-muted-foreground text-sm sm:text-base mb-4">
-                            Our AI is analyzing and enhancing your resume...
-                          </p>
-                          <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
-                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                            {Math.round(enhancementProgress)}% complete
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : enhancedContent ? (
-                     <div className="w-full border border-border/20 rounded-lg">
-                       <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20">
-                      
-                        {/* Color Theme Selector */}
-                        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
-                          <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 flex items-center gap-1 sm:gap-2">
-                            <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
-                            Choose Your Color Theme
-                          </h4>
-                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2">
-                           {colorThemes.map((theme) => (
-                             <button
-                               key={theme.id}
-                               onClick={() => setSelectedTheme(theme)}
-                               className={`p-1 sm:p-2 rounded border-2 transition-all duration-200 text-left ${
-                                 selectedTheme.id === theme.id 
-                                   ? 'border-primary bg-primary/5 shadow-sm' 
-                                   : 'border-border hover:border-primary/50 bg-background'
-                               }`}
-                             >
-                               <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                                 <div className="flex gap-0.5 sm:gap-1">
-                                   <div 
-                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                     style={{ backgroundColor: theme.primary }}
-                                   />
-                                   <div 
-                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                     style={{ backgroundColor: theme.secondary }}
-                                   />
-                                   <div 
-                                     className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                     style={{ backgroundColor: theme.accent }}
-                                   />
-                                 </div>
-                                 {selectedTheme.id === theme.id && (
-                                   <Sparkles className="w-2 sm:w-3 h-2 sm:h-3 text-primary" />
-                                 )}
-                               </div>
-                               <p className="text-xs font-medium text-foreground leading-tight break-words">{theme.name}</p>
-                             </button>
-                           ))}
-                        </div>
-                      </div>
-
-                        {/* Modern Header with Visual Elements */}
-                        <div 
-                          className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
-                          style={{
-                            background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                          }}
-                        >
-                          <div className="absolute inset-0 bg-black/10"></div>
-                           <div className="relative z-10">
-                             <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
-                               <div className="min-w-0 flex-1">
-                                 <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
-                                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
-                               </div>
-                             </div>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm break-all truncate">{enhancedContent.email}</span>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm">{enhancedContent.phone}</span>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm break-words truncate">{enhancedContent.location}</span>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2 text-white/90">
-                                <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm">Professional</span>
-                              </div>
-                            </div>
-                          </div>
-                       </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                          {/* Main Content */}
-                          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-                          
-                            {/* Professional Summary with Visual Enhancement */}
-                             <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
-                              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
-                                <div 
-                                  className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
-                                  style={{
-                                    background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                                  }}
-                                >
-                                  <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
-                                </div>
-                                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
-                              </div>
-                             <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
-                             
-                           </div>
-
-                          {/* Professional Experience with Timeline */}
-                          {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-                             <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                               <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                                 <div 
-                                   className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
-                                   style={{
-                                     background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                                   }}
-                                 >
-                                   <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
-                                 </div>
-                                 <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Experience</h3>
-                               </div>
-                              
-                              <div className="space-y-4 sm:space-y-6">
-                                 {enhancedContent.experience.map((exp: any, index: number) => (
-                                   <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedTheme.accent}30` }}>
-                                     <div 
-                                       className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
-                                       style={{ backgroundColor: selectedTheme.accent }}
-                                     ></div>
-                                     
-                                     <div 
-                                       className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
-                                       style={{ 
-                                         background: `linear-gradient(to right, ${selectedTheme.accent}08, ${selectedTheme.primary}08)` 
-                                       }}
-                                     >
-                                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
-                                         <div>
-                                           <h4 className="text-base sm:text-lg font-bold text-foreground break-words">{exp.title}</h4>
-                                           <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedTheme.accent }}>{exp.company}</p>
-                                         </div>
-                                         <Badge 
-                                           variant="secondary" 
-                                           className="border self-start text-xs"
-                                           style={{ 
-                                             backgroundColor: `${selectedTheme.accent}10`, 
-                                             color: selectedTheme.accent,
-                                             borderColor: `${selectedTheme.accent}20`
-                                           }}
-                                         >
-                                          {exp.duration}
-                                        </Badge>
-                                      </div>
-                                      
-                                      <div className="space-y-2 sm:space-y-3">
-                                        {exp.achievements.map((achievement: string, idx: number) => (
-                                          <div key={idx} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/50 rounded-lg">
-                                            <div className="w-5 sm:w-6 h-5 sm:h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                              <TrendingUp className="w-2 sm:w-3 h-2 sm:h-3 text-white" />
-                                            </div>
-                                            <span className="text-foreground leading-relaxed text-xs sm:text-sm break-words">{achievement}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                         {/* Sidebar with Charts and Skills */}
-                         <div className="space-y-4 sm:space-y-6">
-                          
-                          {/* Skills Chart */}
-                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                            <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                               <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                                 <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
-                                 Skills Proficiency
-                               </h3>
-                              
-                               <div className="space-y-3 sm:space-y-4">
-                                 {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
-                                   // Use a deterministic proficiency based on skill position and length
-                                   const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
-                                   const proficiency = Math.min(95, baseSkillLevel + (index * 2)); // Slight variation by position
-                                   return (
-                                     <div key={index} className="space-y-1 sm:space-y-2">
-                                       <div className="flex justify-between items-center">
-                                         <span className="text-xs sm:text-sm font-medium text-foreground break-words">{skill}</span>
-                                         <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
-                                       </div>
-                                       <Progress value={proficiency} className="h-1.5 sm:h-2" />
-                                     </div>
-                                   );
-                                 })}
-                               </div>
-
-                              {/* Skills Tags */}
-                              <div className="mt-4 sm:mt-6">
-                                <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3">All Skills</h4>
-                                <div className="flex flex-wrap gap-1 sm:gap-2">
-                                  {enhancedContent.skills.map((skill: string, index: number) => (
-                                    <Badge key={index} variant="secondary" className="bg-gradient-to-r from-primary/10 to-accent/10 text-foreground border border-primary/20 hover:from-primary/20 hover:to-accent/20 transition-all duration-200 text-xs break-words">
-                                      {skill}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Skills Distribution Chart */}
-                          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                              <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                                <TrendingUp className="w-5 h-5" />
-                                Skills Overview
-                              </h3>
-                              
-                              <div className="space-y-3">
-                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.primary}08` }}>
-                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.primary }}>
-                                    {enhancedContent.skills.length}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">Total Skills</p>
-                                </div>
-                                
-                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.accent}08` }}>
-                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.accent }}>
-                                    {enhancedContent.experience?.length || 0}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">Work Experiences</p>
-                                </div>
-                                
-                                <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.secondary}08` }}>
-                                  <div className="text-2xl font-bold" style={{ color: selectedTheme.secondary }}>
-                                    {enhancedContent.education?.length || 0}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">Educational Qualifications</p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Education */}
-                          {enhancedContent.education && enhancedContent.education.length > 0 && (
-                            <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                               <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                                 <Award className="w-5 h-5" />
-                                 Education
-                               </h3>
-                              <div className="space-y-4">
-                                {enhancedContent.education.map((edu: any, index: number) => (
-                                   <div 
-                                     key={index} 
-                                     className="rounded-lg p-4 border"
-                                     style={{ 
-                                       background: `linear-gradient(to right, ${selectedTheme.primary}08, ${selectedTheme.accent}08)`,
-                                       borderColor: `${selectedTheme.primary}10`
-                                     }}
-                                   >
-                                     <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
-                                     <p className="font-medium" style={{ color: selectedTheme.accent }}>{edu.institution}</p>
-                                    <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                        </div>
-                      </div>
+          <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-accent" />
+                AI-Enhanced Resume
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isEnhancing ? (
+                <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                  <div className="text-center space-y-4 w-full max-w-md">
+                    <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                      <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                        Our AI is analyzing and enhancing your resume...
+                      </p>
+                      <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                        {Math.round(enhancementProgress)}% complete
+                      </p>
                     </div>
                   </div>
-                  ) : (
-                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
-                      <div className="text-center space-y-3 sm:space-y-4">
-                        <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 text-accent mx-auto" />
-                        <div>
-                          <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for AI Enhancement</h3>
-                          <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base px-4">
-                            Click the button below to enhance your resume with AI-powered improvements.
-                          </p>
-                          <Button 
-                            onClick={enhanceResume} 
-                            variant="default"
-                            className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
-                            disabled={!extractedText}
-                          >
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Enhance with AI
-                          </Button>
+                </div>
+              ) : enhancedContent ? (
+                 <div className="w-full border border-border/20 rounded-lg">
+                   <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20">
+                  
+                    {/* Color Theme Selector */}
+                    <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
+                      <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 flex items-center gap-1 sm:gap-2">
+                        <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
+                        Choose Your Color Theme
+                      </h4>
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2">
+                       {colorThemes.map((theme) => (
+                         <button
+                           key={theme.id}
+                           onClick={() => setSelectedTheme(theme)}
+                           className={`p-1 sm:p-2 rounded border-2 transition-all duration-200 text-left ${
+                             selectedTheme.id === theme.id 
+                               ? 'border-primary bg-primary/5 shadow-sm' 
+                               : 'border-border hover:border-primary/50 bg-background'
+                           }`}
+                         >
+                           <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                             <div className="flex gap-0.5 sm:gap-1">
+                               <div 
+                                 className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
+                                 style={{ backgroundColor: theme.primary }}
+                               />
+                               <div 
+                                 className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
+                                 style={{ backgroundColor: theme.secondary }}
+                               />
+                               <div 
+                                 className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
+                                 style={{ backgroundColor: theme.accent }}
+                               />
+                             </div>
+                             {selectedTheme.id === theme.id && (
+                               <Sparkles className="w-2 sm:w-3 h-2 sm:h-3 text-primary" />
+                             )}
+                           </div>
+                           <p className="text-xs font-medium text-foreground leading-tight break-words">{theme.name}</p>
+                         </button>
+                       ))}
+                    </div>
+                  </div>
+
+                    {/* Modern Header with Visual Elements */}
+                    <div 
+                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                      style={{
+                        background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-black/10"></div>
+                       <div className="relative z-10">
+                         <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
+                           <div className="min-w-0 flex-1">
+                             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
+                             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
+                           </div>
+                         </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
+                          <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                            <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm break-all truncate">{enhancedContent.email}</span>
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                            <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm">{enhancedContent.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                            <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm break-words truncate">{enhancedContent.location}</span>
+                          </div>
+                          <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                            <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm">Professional</span>
+                          </div>
                         </div>
                       </div>
+                   </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {/* Main Content */}
+                      <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                      
+                        {/* Professional Summary with Visual Enhancement */}
+                         <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
+                          <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
+                            <div 
+                              className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
+                              style={{
+                                background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                              }}
+                            >
+                              <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
+                            </div>
+                            <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
+                          </div>
+                         <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
+                         
+                       </div>
+
+                      {/* Professional Experience with Timeline */}
+                      {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+                         <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
+                           <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                             <div 
+                               className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
+                               style={{
+                                 background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                               }}
+                             >
+                               <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
+                             </div>
+                             <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Experience</h3>
+                           </div>
+                          
+                          <div className="space-y-4 sm:space-y-6">
+                             {enhancedContent.experience.map((exp: any, index: number) => (
+                               <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedTheme.accent}30` }}>
+                                 <div 
+                                   className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
+                                   style={{ backgroundColor: selectedTheme.accent }}
+                                 ></div>
+                                 
+                                 <div 
+                                   className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
+                                   style={{ 
+                                     background: `linear-gradient(to right, ${selectedTheme.accent}08, ${selectedTheme.primary}08)` 
+                                   }}
+                                 >
+                                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
+                                     <div>
+                                       <h4 className="text-base sm:text-lg font-bold text-foreground break-words">{exp.title}</h4>
+                                       <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedTheme.accent }}>{exp.company}</p>
+                                     </div>
+                                     <Badge 
+                                       variant="secondary" 
+                                       className="border self-start text-xs"
+                                       style={{ 
+                                         backgroundColor: `${selectedTheme.accent}10`, 
+                                         color: selectedTheme.accent,
+                                         borderColor: `${selectedTheme.accent}20`
+                                       }}
+                                     >
+                                      {exp.duration}
+                                    </Badge>
+                                  </div>
+                                  
+                                  <div className="space-y-2 sm:space-y-3">
+                                    {exp.achievements.map((achievement: string, idx: number) => (
+                                      <div key={idx} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/50 rounded-lg">
+                                        <div className="w-5 sm:w-6 h-5 sm:h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                          <TrendingUp className="w-2 sm:w-3 h-2 sm:h-3 text-white" />
+                                        </div>
+                                        <span className="text-foreground leading-relaxed text-xs sm:text-sm break-words">{achievement}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+
+                     {/* Sidebar with Charts and Skills */}
+                     <div className="space-y-4 sm:space-y-6">
+                      
+                      {/* Skills Chart */}
+                      {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                        <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
+                           <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                             <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
+                             Skills Proficiency
+                           </h3>
+                          
+                           <div className="space-y-3 sm:space-y-4">
+                             {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
+                               // Use a deterministic proficiency based on skill position and length
+                               const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
+                               const proficiency = Math.min(95, baseSkillLevel + (index * 2)); // Slight variation by position
+                               return (
+                                 <div key={index} className="space-y-1 sm:space-y-2">
+                                   <div className="flex justify-between items-center">
+                                     <span className="text-xs sm:text-sm font-medium text-foreground break-words">{skill}</span>
+                                     <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
+                                   </div>
+                                   <Progress value={proficiency} className="h-1.5 sm:h-2" />
+                                 </div>
+                               );
+                             })}
+                           </div>
+
+                          {/* Skills Tags */}
+                          <div className="mt-4 sm:mt-6">
+                            <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3">All Skills</h4>
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
+                              {enhancedContent.skills.map((skill: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="bg-gradient-to-r from-primary/10 to-accent/10 text-foreground border border-primary/20 hover:from-primary/20 hover:to-accent/20 transition-all duration-200 text-xs break-words">
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Skills Distribution Chart */}
+                      {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                        <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                          <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                            <TrendingUp className="w-5 h-5" />
+                            Skills Overview
+                          </h3>
+                          
+                          <div className="space-y-3">
+                            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.primary}08` }}>
+                              <div className="text-2xl font-bold" style={{ color: selectedTheme.primary }}>
+                                {enhancedContent.skills.length}
+                              </div>
+                              <p className="text-sm text-muted-foreground">Total Skills</p>
+                            </div>
+                            
+                            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.accent}08` }}>
+                              <div className="text-2xl font-bold" style={{ color: selectedTheme.accent }}>
+                                {enhancedContent.experience?.length || 0}
+                              </div>
+                              <p className="text-sm text-muted-foreground">Work Experiences</p>
+                            </div>
+                            
+                            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.secondary}08` }}>
+                              <div className="text-2xl font-bold" style={{ color: selectedTheme.secondary }}>
+                                {enhancedContent.education?.length || 0}
+                              </div>
+                              <p className="text-sm text-muted-foreground">Educational Qualifications</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Education */}
+                      {enhancedContent.education && enhancedContent.education.length > 0 && (
+                        <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
+                           <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
+                             <Award className="w-5 h-5" />
+                             Education
+                           </h3>
+                          <div className="space-y-4">
+                            {enhancedContent.education.map((edu: any, index: number) => (
+                               <div 
+                                 key={index} 
+                                 className="rounded-lg p-4 border"
+                                 style={{ 
+                                   background: `linear-gradient(to right, ${selectedTheme.primary}08, ${selectedTheme.accent}08)`,
+                                   borderColor: `${selectedTheme.primary}10`
+                                 }}
+                               >
+                                 <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                                 <p className="font-medium" style={{ color: selectedTheme.accent }}>{edu.institution}</p>
+                                <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              ) : (
+                <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                  <div className="text-center space-y-3 sm:space-y-4">
+                    <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 text-accent mx-auto" />
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for AI Enhancement</h3>
+                      <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base px-4">
+                        Click the button below to enhance your resume with AI-powered improvements.
+                      </p>
+                      <Button 
+                        onClick={enhanceResume} 
+                        variant="default"
+                        className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
+                        disabled={!extractedText}
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Enhance with AI
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Enhancement Features */}
