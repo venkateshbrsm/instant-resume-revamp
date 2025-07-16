@@ -83,7 +83,10 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
           
           if (selectedThemeString) {
             selectedTheme = JSON.parse(selectedThemeString);
-            console.log('Found selected theme for payment:', selectedTheme.name);
+            console.log('Found selected theme for payment:', selectedTheme);
+            console.log('Theme object structure:', JSON.stringify(selectedTheme, null, 2));
+          } else {
+            console.log('No theme found in sessionStorage, will default to navy');
           }
           
           // Clear from storage after using

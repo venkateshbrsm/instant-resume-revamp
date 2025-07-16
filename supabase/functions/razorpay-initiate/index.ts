@@ -41,6 +41,18 @@ serve(async (req) => {
     // Get request body
     const { fileName, amount, filePath, enhancedContent, extractedText, selectedTheme } = await req.json();
     console.log("Payment details:", { fileName, amount, filePath, hasEnhancedContent: !!enhancedContent, themeData: selectedTheme });
+    console.log("Received theme object:", JSON.stringify(selectedTheme, null, 2));
+    
+    // Extract theme ID - handle both old format (string) and new format (object)
+    let themeId = 'navy'; // default
+    if (selectedTheme) {
+      if (typeof selectedTheme === 'string') {
+        themeId = selectedTheme;
+      } else if (selectedTheme.id) {
+        themeId = selectedTheme.id;
+      }
+    }
+    console.log("Extracted theme ID for database:", themeId);
 
     if (!fileName || !amount) {
       throw new Error("Missing fileName or amount");
@@ -112,7 +124,7 @@ serve(async (req) => {
         razorpay_order_id: razorpayOrder.id,
         status: "pending",
         enhanced_content: enhancedContent || null,
-        theme_id: selectedTheme?.id || 'navy'
+        theme_id: themeId
       })
       .select()
       .single();

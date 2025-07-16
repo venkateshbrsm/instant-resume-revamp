@@ -25,12 +25,25 @@ function getThemeColors(themeId: string) {
 async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
   const colors = getThemeColors(themeId);
   
-  // Helper function to clean text and remove special characters
+  // Enhanced helper function to clean text and handle special characters
   const cleanText = (text: string) => {
     if (!text) return '';
     return text
-      .replace(/[^\w\s.,;:()?!@#$%&*+=\-'"/\\]/g, '') // Remove problematic characters
-      .replace(/\s+/g, ' ') // Normalize spaces
+      // Handle common problematic characters first
+      .replace(/[""]/g, '"') // Smart quotes to regular quotes
+      .replace(/['']/g, "'") // Smart apostrophes
+      .replace(/[—–]/g, '-') // Em dash and en dash to regular dash
+      .replace(/[…]/g, '...') // Ellipsis
+      .replace(/[•]/g, '*') // Bullet points
+      .replace(/[\u00A0]/g, ' ') // Non-breaking space
+      .replace(/[\u2000-\u206F]/g, ' ') // Various Unicode spaces
+      .replace(/[\u2070-\u209F]/g, '') // Superscripts/subscripts
+      .replace(/[\uFEFF]/g, '') // Zero width no-break space
+      // Normalize text and clean remaining problematic characters
+      .normalize('NFKD') // Normalize Unicode
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/[^\w\s.,;:()?!@#$%&*+=\-'"/\\]/g, ' ') // Replace remaining special chars with space
+      .replace(/\s+/g, ' ') // Normalize multiple spaces
       .trim();
   };
 

@@ -183,6 +183,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         if (enhancedContent) {
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
+          console.log('Saving theme to sessionStorage for payment:', selectedTheme);
           sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
         }
         onPurchase();
@@ -203,6 +204,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
+          console.log('Saving theme to sessionStorage for login flow:', selectedTheme);
           sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
         }
         if (originalContent) {
@@ -413,7 +415,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        {colorThemes.map((theme) => (
                          <button
                            key={theme.id}
-                           onClick={() => setSelectedTheme(theme)}
+                            onClick={() => {
+                              console.log('Theme selected:', theme);
+                              setSelectedTheme(theme);
+                            }}
                            className={`p-1 sm:p-2 rounded border-2 transition-all duration-200 text-left ${
                              selectedTheme.id === theme.id 
                                ? 'border-primary bg-primary/5 shadow-sm' 
