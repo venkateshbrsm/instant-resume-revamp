@@ -24,6 +24,16 @@ function getThemeColors(themeId: string) {
 // Generate DOCX resume from enhanced data
 async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
   const colors = getThemeColors(themeId);
+  
+  // Helper function to clean text and remove special characters
+  const cleanText = (text: string) => {
+    if (!text) return '';
+    return text
+      .replace(/[^\w\s.,;:()?!@#$%&*+=\-'"/\\]/g, '') // Remove problematic characters
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim();
+  };
+
   const doc = new Document({
     sections: [{
       children: [
@@ -31,7 +41,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
         new Paragraph({
           children: [
             new TextRun({
-              text: (resumeData.name || "Professional Resume").normalize(),
+              text: cleanText(resumeData.name || "Professional Resume"),
               bold: true,
               size: 32,
               color: colors.primary,
@@ -42,99 +52,107 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
         new Paragraph({
           children: [
             new TextRun({
-              text: resumeData.title || "Professional",
+              text: cleanText(resumeData.title || "Professional"),
+              size: 24,
+              color: colors.secondary,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+        }),
+        
+        // Contact Information
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: cleanText(`Email: ${resumeData.email || ""} | Phone: ${resumeData.phone || ""} | Location: ${resumeData.location || ""}`),
+              size: 20,
+              color: colors.accent,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+        }),
+        
+        // Empty line
+        new Paragraph({
+          children: [new TextRun({ text: "", size: 12 })],
+        }),
+        
+        // Professional Summary
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "PROFESSIONAL SUMMARY",
+              bold: true,
               size: 24,
               color: colors.primary,
             }),
           ],
-          alignment: AlignmentType.CENTER,
         }),
-        // Contact info
         new Paragraph({
           children: [
             new TextRun({
-              text: [
-                resumeData.email && `Email: ${resumeData.email}`,
-                resumeData.phone && `Phone: ${resumeData.phone}`,
-                resumeData.location && `Location: ${resumeData.location}`
-              ].filter(Boolean).join(" | "),
+              text: cleanText(resumeData.summary || "Professional with extensive experience in their field."),
               size: 20,
             }),
           ],
-          alignment: AlignmentType.CENTER,
         }),
-        new Paragraph({ text: "" }), // Empty line
-
-        // Professional Summary
-        ...(resumeData.summary ? [
+        
+        // Empty line
+        new Paragraph({
+          children: [new TextRun({ text: "", size: 12 })],
+        }),
+        
+        // Professional Experience
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "PROFESSIONAL EXPERIENCE",
+              bold: true,
+              size: 24,
+              color: colors.primary,
+            }),
+          ],
+        }),
+        
+        // Experience entries
+        ...(resumeData.experience || []).flatMap((exp: any) => [
           new Paragraph({
             children: [
               new TextRun({
-                text: "PROFESSIONAL SUMMARY",
+                text: cleanText(`${exp.title || "Position"} at ${exp.company || "Company"}`),
                 bold: true,
-                size: 24,
-                color: colors.primary,
-              }),
-            ],
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: resumeData.summary,
                 size: 22,
+                color: colors.secondary,
               }),
             ],
           }),
-          new Paragraph({ text: "" }), // Empty line
-        ] : []),
-
-        // Experience
-        ...(resumeData.experience && resumeData.experience.length > 0 ? [
           new Paragraph({
             children: [
               new TextRun({
-                text: "PROFESSIONAL EXPERIENCE",
-                bold: true,
-                size: 24,
-                color: colors.primary,
+                text: cleanText(exp.duration || "Duration"),
+                size: 18,
+                italics: true,
+                color: colors.accent,
               }),
             ],
           }),
-          ...resumeData.experience.flatMap((exp: any) => [
+          ...(exp.achievements || []).map((achievement: string) => 
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `${exp.title || "Position"} at ${exp.company || "Company"}`,
-                  bold: true,
-                  size: 22,
-                  color: colors.accent,
+                  text: cleanText(`• ${achievement}`),
+                  size: 18,
                 }),
               ],
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: exp.duration || "Duration",
-                  size: 20,
-                  italics: true,
-                }),
-              ],
-            }),
-            ...(exp.achievements || []).map((achievement: string) => 
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${achievement}`,
-                    size: 20,
-                  }),
-                ],
-              })
-            ),
-            new Paragraph({ text: "" }), // Empty line
-          ]),
-        ] : []),
-
-        // Skills
+            })
+          ),
+          // Empty line after each experience
+          new Paragraph({
+            children: [new TextRun({ text: "", size: 12 })],
+          }),
+        ]),
+        
+        // Skills Section
         ...(resumeData.skills && resumeData.skills.length > 0 ? [
           new Paragraph({
             children: [
@@ -149,15 +167,18 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           new Paragraph({
             children: [
               new TextRun({
-                text: resumeData.skills.join(", "),
-                size: 22,
+                text: cleanText(resumeData.skills.join(", ")),
+                size: 20,
               }),
             ],
           }),
-          new Paragraph({ text: "" }), // Empty line
+          // Empty line
+          new Paragraph({
+            children: [new TextRun({ text: "", size: 12 })],
+          }),
         ] : []),
-
-        // Education
+        
+        // Education Section
         ...(resumeData.education && resumeData.education.length > 0 ? [
           new Paragraph({
             children: [
@@ -173,22 +194,26 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
             new Paragraph({
               children: [
                 new TextRun({
-                  text: edu.degree || "Degree",
+                  text: cleanText(edu.degree || "Degree"),
                   bold: true,
                   size: 22,
-                  color: colors.accent,
+                  color: colors.secondary,
                 }),
               ],
             }),
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `${edu.institution || "Institution"} - ${edu.year || "Year"}`,
-                  size: 20,
+                  text: cleanText(`${edu.institution || "Institution"} - ${edu.year || "Year"}`),
+                  size: 18,
+                  color: colors.accent,
                 }),
               ],
             }),
-            new Paragraph({ text: "" }), // Empty line
+            // Empty line
+            new Paragraph({
+              children: [new TextRun({ text: "", size: 12 })],
+            }),
           ]),
         ] : []),
       ],
