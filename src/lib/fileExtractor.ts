@@ -106,23 +106,10 @@ The resume enhancement will still attempt to process the document.`;
 
 const extractTextFromWord = async (file: File): Promise<string> => {
   const arrayBuffer = await file.arrayBuffer();
-  // Use convertToHtml to preserve structure and formatting better than raw text
+  // Use convertToHtml to preserve structure and formatting
   const result = await mammoth.convertToHtml({ arrayBuffer });
-  // Convert HTML to text while preserving line breaks and structure
-  return result.value
-    .replace(/<\/p>/g, '\n\n') // Convert paragraph endings to double line breaks
-    .replace(/<br\s*\/?>/g, '\n') // Convert line breaks
-    .replace(/<\/li>/g, '\n') // Convert list item endings to line breaks
-    .replace(/<li[^>]*>/g, '• ') // Convert list items to bullet points
-    .replace(/<\/h[1-6]>/g, '\n\n') // Convert heading endings to double line breaks
-    .replace(/<[^>]*>/g, '') // Remove all remaining HTML tags
-    .replace(/&nbsp;/g, ' ') // Convert non-breaking spaces
-    .replace(/&amp;/g, '&') // Convert HTML entities
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/\n{3,}/g, '\n\n') // Limit excessive line breaks
-    .trim();
+  // Return HTML content to preserve formatting
+  return result.value;
 };
 
 export const formatResumeText = (text: string, fileName: string): string => {
@@ -130,6 +117,19 @@ export const formatResumeText = (text: string, fileName: string): string => {
     return `📄 Resume Document: ${fileName}\n\nFile uploaded successfully, but text extraction was limited. The AI enhancement will process the document content directly.\n\nNote: Some file formats may not display preview text, but the enhancement process will work with the original document content.`;
   }
 
-  // Preserve original formatting - minimal processing
-  return text.trim();
+  // Return content as-is to preserve original formatting
+  return text;
+};
+
+export const getFileType = (file: File): 'docx' | 'pdf' | 'txt' => {
+  const fileName = file.name.toLowerCase();
+  const fileType = file.type.toLowerCase();
+  
+  if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx')) {
+    return 'docx';
+  } else if (fileType.includes('pdf') || fileName.endsWith('.pdf')) {
+    return 'pdf';
+  } else {
+    return 'txt';
+  }
 };

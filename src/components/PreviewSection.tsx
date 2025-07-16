@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { extractTextFromFile, formatResumeText } from "@/lib/fileExtractor";
+import { extractTextFromFile, formatResumeText, getFileType } from "@/lib/fileExtractor";
+import { RichDocumentPreview } from "./RichDocumentPreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -358,16 +359,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   ) : (
                     <div className="bg-muted/50 rounded-lg p-6 min-h-[400px] max-h-[800px] overflow-hidden flex flex-col">
                       <div className="space-y-4 flex-1 overflow-hidden">
-                        <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                          <FileText className="w-6 h-6 text-primary" />
-                          <div>
-                            <p className="font-semibold">Original Resume Content</p>
-                            <p className="text-sm text-muted-foreground">File: {file.name}</p>
-                          </div>
-                        </div>
-                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap overflow-y-auto flex-1 max-h-[600px] pr-2 font-mono">
-                          {originalContent}
-                        </div>
+                        <RichDocumentPreview 
+                          content={originalContent} 
+                          fileType={getFileType(file)} 
+                          fileName={file.name} 
+                        />
                         {extractedText && (
                           <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                             <div className="flex items-start gap-2">
