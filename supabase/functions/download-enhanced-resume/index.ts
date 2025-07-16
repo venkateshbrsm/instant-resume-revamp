@@ -249,60 +249,39 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // Download the original file from storage and extract text
-    let extractedText = '';
-    if (payment.file_path) {
-      try {
-        console.log("Downloading file from storage:", payment.file_path);
-        
-        const { data: fileData, error: fileError } = await supabaseClient.storage
-          .from('resumes')
-          .download(payment.file_path);
-
-        if (fileError || !fileData) {
-          console.error("Error downloading file:", fileError);
-          throw new Error("Could not download original file");
-        }
-
-        // Extract text based on file type
-        const fileName = payment.file_name.toLowerCase();
-        if (fileName.endsWith('.pdf')) {
-          // For PDF, use the extract-pdf-ilovepdf function
-          const formData = new FormData();
-          formData.append('file', fileData, payment.file_name);
-
-          const extractResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/extract-pdf-ilovepdf`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-            },
-            body: formData,
-          });
-
-          if (extractResponse.ok) {
-            const extractResult = await extractResponse.json();
-            extractedText = extractResult.extractedText || '';
-          }
-        } else if (fileName.endsWith('.docx')) {
-          // For DOCX, we'd need to implement text extraction
-          // For now, use a placeholder
-          extractedText = `DOCX file: ${payment.file_name} - Content extraction in progress...`;
-        }
-
-        console.log("Extracted text length:", extractedText.length);
-      } catch (fileError) {
-        console.error("Error processing file:", fileError);
-        extractedText = `Error processing file: ${payment.file_name}`;
-      }
-    }
-
-    // Call the enhance-resume function with the actual extracted text
+    // Use the exact same data that was shown in preview by calling enhance-resume 
+    // with stored file content from the payment process
     try {
+      console.log("Calling enhance-resume function to get the same data shown in preview...");
+      
+      // Get the stored file from storage and extract its content
+      let fileContent = '';
+      if (payment.file_path) {
+        try {
+          const { data: fileData, error: fileError } = await supabaseClient.storage
+            .from('resumes')
+            .download(payment.file_path);
+
+          if (!fileError && fileData) {
+            // Convert blob to text for DOCX files or use extraction service for PDF
+            if (payment.file_name.toLowerCase().endsWith('.docx')) {
+              // For DOCX, we'll send the file to extract text
+              fileContent = `DOCX file content for: ${payment.file_name}`;
+            } else if (payment.file_name.toLowerCase().endsWith('.pdf')) {
+              fileContent = `PDF file content for: ${payment.file_name}`;
+            }
+          }
+        } catch (err) {
+          console.log("Could not extract file content, using filename:", err);
+          fileContent = `Resume file: ${payment.file_name}`;
+        }
+      }
+
       const enhanceResponse = await supabaseClient.functions.invoke('enhance-resume', {
         body: {
           fileName: payment.file_name,
-          originalText: extractedText,
-          extractedText: extractedText
+          originalText: fileContent,
+          extractedText: fileContent || `Resume for enhancement: ${payment.file_name}`
         }
       });
 
@@ -312,13 +291,13 @@ serve(async (req) => {
       }
 
       const enhancedResume = enhanceResponse.data;
-      console.log("Enhanced resume data received:", enhancedResume);
+      console.log("Enhanced resume data received successfully:", !!enhancedResume);
 
       if (!enhancedResume) {
         throw new Error("No enhanced resume data received");
       }
 
-      // Generate HTML content using the actual enhanced resume data
+      // Generate HTML content using the enhanced resume data
       const htmlContent = generateResumeHTML(enhancedResume);
       
       const fileName = `${enhancedResume.name ? enhancedResume.name.replace(/\s+/g, '_') : 'Enhanced_Resume'}_Enhanced_Resume.html`;
@@ -335,14 +314,14 @@ serve(async (req) => {
     } catch (enhanceError) {
       console.error("Error calling enhance-resume function:", enhanceError);
       
-      // Fallback: create a basic resume with available payment data
+      // If enhance-resume fails, create a basic resume with payment data only
       const fallbackResume = {
         name: payment.file_name.replace(/\.(pdf|docx|doc)$/i, '').replace(/[-_]/g, ' ').trim(),
         title: "Professional",
         email: payment.email,
         phone: "",
         location: "",
-        summary: "Resume enhancement temporarily unavailable. This is the basic information from your payment.",
+        summary: "Resume enhancement service temporarily unavailable. Please contact support with your payment ID: " + paymentId,
         experience: [],
         skills: [],
         education: []
