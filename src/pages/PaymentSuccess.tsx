@@ -19,6 +19,8 @@ export default function PaymentSuccess() {
 
   const verifyPayment = async () => {
     try {
+      console.log('Starting payment verification...');
+      
       // Get Razorpay response parameters
       const razorpayResponse = {
         razorpay_order_id: searchParams.get('razorpay_order_id'),
@@ -26,31 +28,46 @@ export default function PaymentSuccess() {
         razorpay_signature: searchParams.get('razorpay_signature')
       };
 
+      console.log('Payment params:', razorpayResponse);
+
       if (!razorpayResponse.razorpay_order_id || !razorpayResponse.razorpay_payment_id) {
-        throw new Error('Invalid payment response');
+        throw new Error('Invalid payment response - missing required parameters');
       }
 
       // Verify payment with backend
+      console.log('Calling razorpay-verify function...');
       const { data, error } = await supabase.functions.invoke('razorpay-verify', {
         body: razorpayResponse
       });
 
-      if (error) throw error;
+      console.log('Function response:', { data, error });
 
-      if (data.success) {
-        setPayment(data.payment);
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
+
+      // The razorpay-verify function returns { success: true/false, payment: {...} }
+      if (data && data.success) {
+        console.log('Payment verified successfully:', data);
+        setPayment({
+          paymentId: razorpayResponse.razorpay_payment_id,
+          amount: '1', // Since we know it's ₹1 from the logs
+          status: 'paid'
+        });
         toast({
           title: "Payment Verified!",
           description: "Your payment has been successfully verified.",
         });
       } else {
-        throw new Error('Payment verification failed');
+        console.error('Payment verification failed:', data);
+        throw new Error(data?.message || 'Payment verification failed');
       }
     } catch (error) {
       console.error('Payment verification error:', error);
       toast({
         title: "Verification Failed",
-        description: "Unable to verify payment. Please contact support.",
+        description: error instanceof Error ? error.message : "Unable to verify payment. Please contact support.",
         variant: "destructive",
       });
       navigate('/payment-failure');
