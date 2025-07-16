@@ -1,24 +1,30 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { Document, Paragraph, TextRun, AlignmentType, Packer } from "https://esm.sh/docx@9.5.1";
+import { Document, Paragraph, TextRun, AlignmentType, Packer, Table, TableRow, TableCell, WidthType, BorderStyle, HeadingLevel } from "https://esm.sh/docx@9.5.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Theme color mapping
+// Theme color mapping - matches frontend exactly
 const themeColors = {
-  navy: { primary: '1e3a8a', secondary: '1e40af', accent: '3b82f6' },
-  charcoal: { primary: '374151', secondary: '1f2937', accent: '6b7280' },
-  burgundy: { primary: '7c2d12', secondary: '991b1b', accent: 'dc2626' },
-  forest: { primary: '166534', secondary: '15803d', accent: '22c55e' },
-  bronze: { primary: 'a16207', secondary: 'ca8a04', accent: 'eab308' },
-  slate: { primary: '475569', secondary: '334155', accent: '64748b' }
+  navy: { primary: '#1e3a8a', secondary: '#1e40af', accent: '#3b82f6' },
+  charcoal: { primary: '#374151', secondary: '#1f2937', accent: '#6b7280' },
+  burgundy: { primary: '#7c2d12', secondary: '#991b1b', accent: '#dc2626' },
+  forest: { primary: '#166534', secondary: '#15803d', accent: '#22c55e' },
+  bronze: { primary: '#a16207', secondary: '#ca8a04', accent: '#eab308' },
+  slate: { primary: '#475569', secondary: '#334155', accent: '#64748b' }
 };
 
 function getThemeColors(themeId: string) {
-  return themeColors[themeId as keyof typeof themeColors] || themeColors.navy;
+  const theme = themeColors[themeId as keyof typeof themeColors] || themeColors.navy;
+  // Remove # prefix for docx library
+  return {
+    primary: theme.primary.replace('#', ''),
+    secondary: theme.secondary.replace('#', ''),
+    accent: theme.accent.replace('#', '')
+  };
 }
 
 // Generate DOCX resume from enhanced data
@@ -50,56 +56,134 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
   const doc = new Document({
     sections: [{
       children: [
-        // Header with name and title
+        // Header with name and title - enhanced with better spacing
         new Paragraph({
           children: [
             new TextRun({
               text: cleanText(resumeData.name || "Professional Resume"),
               bold: true,
-              size: 32,
+              size: 36,
               color: colors.primary,
             }),
           ],
           alignment: AlignmentType.CENTER,
+          spacing: {
+            after: 200,
+          },
         }),
         new Paragraph({
           children: [
             new TextRun({
               text: cleanText(resumeData.title || "Professional"),
-              size: 24,
+              size: 26,
               color: colors.secondary,
+              bold: true,
             }),
           ],
           alignment: AlignmentType.CENTER,
+          spacing: {
+            after: 300,
+          },
         }),
         
-        // Contact Information
+        // Contact Information Table - styled for better presentation
+        new Table({
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `📧 ${resumeData.email || ""}`,
+                          size: 18,
+                          color: colors.accent,
+                        }),
+                      ],
+                      alignment: AlignmentType.CENTER,
+                    }),
+                  ],
+                  width: {
+                    size: 33,
+                    type: WidthType.PERCENTAGE,
+                  },
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `📞 ${resumeData.phone || ""}`,
+                          size: 18,
+                          color: colors.accent,
+                        }),
+                      ],
+                      alignment: AlignmentType.CENTER,
+                    }),
+                  ],
+                  width: {
+                    size: 33,
+                    type: WidthType.PERCENTAGE,
+                  },
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `📍 ${resumeData.location || ""}`,
+                          size: 18,
+                          color: colors.accent,
+                        }),
+                      ],
+                      alignment: AlignmentType.CENTER,
+                    }),
+                  ],
+                  width: {
+                    size: 34,
+                    type: WidthType.PERCENTAGE,
+                  },
+                }),
+              ],
+            }),
+          ],
+          width: {
+            size: 100,
+            type: WidthType.PERCENTAGE,
+          },
+        }),
+        
+        // Separator line
         new Paragraph({
           children: [
             new TextRun({
-              text: cleanText(`Email: ${resumeData.email || ""} | Phone: ${resumeData.phone || ""} | Location: ${resumeData.location || ""}`),
-              size: 20,
-              color: colors.accent,
+              text: "─".repeat(60),
+              size: 16,
+              color: colors.primary,
             }),
           ],
           alignment: AlignmentType.CENTER,
+          spacing: {
+            before: 300,
+            after: 300,
+          },
         }),
         
-        // Empty line
-        new Paragraph({
-          children: [new TextRun({ text: "", size: 12 })],
-        }),
-        
-        // Professional Summary
+        // Professional Summary - enhanced with better formatting
         new Paragraph({
           children: [
             new TextRun({
-              text: "PROFESSIONAL SUMMARY",
+              text: "📝 PROFESSIONAL SUMMARY",
               bold: true,
               size: 24,
               color: colors.primary,
             }),
           ],
+          heading: HeadingLevel.HEADING_1,
+          spacing: {
+            after: 200,
+          },
         }),
         new Paragraph({
           children: [
@@ -108,46 +192,54 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
               size: 20,
             }),
           ],
+          spacing: {
+            after: 400,
+          },
         }),
         
-        // Empty line
-        new Paragraph({
-          children: [new TextRun({ text: "", size: 12 })],
-        }),
-        
-        // Professional Experience
+        // Professional Experience - enhanced with better hierarchy
         new Paragraph({
           children: [
             new TextRun({
-              text: "PROFESSIONAL EXPERIENCE",
+              text: "💼 PROFESSIONAL EXPERIENCE",
               bold: true,
               size: 24,
               color: colors.primary,
             }),
           ],
+          heading: HeadingLevel.HEADING_1,
+          spacing: {
+            after: 200,
+          },
         }),
         
-        // Experience entries
-        ...(resumeData.experience || []).flatMap((exp: any) => [
+        // Experience entries with improved formatting
+        ...(resumeData.experience || []).flatMap((exp: any, index: number) => [
           new Paragraph({
             children: [
               new TextRun({
-                text: cleanText(`${exp.title || "Position"} at ${exp.company || "Company"}`),
+                text: cleanText(exp.title || "Position"),
                 bold: true,
                 size: 22,
                 color: colors.secondary,
               }),
             ],
+            spacing: {
+              after: 100,
+            },
           }),
           new Paragraph({
             children: [
               new TextRun({
-                text: cleanText(exp.duration || "Duration"),
+                text: cleanText(`${exp.company || "Company"} | ${exp.duration || "Duration"}`),
                 size: 18,
                 italics: true,
                 color: colors.accent,
               }),
             ],
+            spacing: {
+              after: 150,
+            },
           }),
           ...(exp.achievements || []).map((achievement: string) => 
             new Paragraph({
@@ -157,53 +249,83 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
                   size: 18,
                 }),
               ],
+              spacing: {
+                after: 100,
+              },
             })
           ),
-          // Empty line after each experience
-          new Paragraph({
-            children: [new TextRun({ text: "", size: 12 })],
-          }),
+          // Separator between experiences
+          ...(index < (resumeData.experience || []).length - 1 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "─".repeat(40),
+                  size: 12,
+                  color: colors.accent,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: {
+                before: 200,
+                after: 200,
+              },
+            }),
+          ] : [
+            new Paragraph({
+              children: [new TextRun({ text: "", size: 12 })],
+              spacing: {
+                after: 300,
+              },
+            }),
+          ]),
         ]),
         
-        // Skills Section
+        // Skills Section - enhanced with better presentation
         ...(resumeData.skills && resumeData.skills.length > 0 ? [
           new Paragraph({
             children: [
               new TextRun({
-                text: "SKILLS",
+                text: "🛠️ SKILLS",
                 bold: true,
                 size: 24,
                 color: colors.primary,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
+            spacing: {
+              after: 200,
+            },
           }),
           new Paragraph({
             children: [
               new TextRun({
-                text: cleanText(resumeData.skills.join(", ")),
+                text: cleanText(resumeData.skills.join(" • ")),
                 size: 20,
               }),
             ],
-          }),
-          // Empty line
-          new Paragraph({
-            children: [new TextRun({ text: "", size: 12 })],
+            spacing: {
+              after: 400,
+            },
           }),
         ] : []),
         
-        // Education Section
+        // Education Section - enhanced with better structure
         ...(resumeData.education && resumeData.education.length > 0 ? [
           new Paragraph({
             children: [
               new TextRun({
-                text: "EDUCATION",
+                text: "🎓 EDUCATION",
                 bold: true,
                 size: 24,
                 color: colors.primary,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
+            spacing: {
+              after: 200,
+            },
           }),
-          ...resumeData.education.flatMap((edu: any) => [
+          ...resumeData.education.flatMap((edu: any, index: number) => [
             new Paragraph({
               children: [
                 new TextRun({
@@ -213,22 +335,51 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
                   color: colors.secondary,
                 }),
               ],
+              spacing: {
+                after: 100,
+              },
             }),
             new Paragraph({
               children: [
                 new TextRun({
-                  text: cleanText(`${edu.institution || "Institution"} - ${edu.year || "Year"}`),
+                  text: cleanText(`${edu.institution || "Institution"} | ${edu.year || "Year"}`),
                   size: 18,
                   color: colors.accent,
                 }),
               ],
-            }),
-            // Empty line
-            new Paragraph({
-              children: [new TextRun({ text: "", size: 12 })],
+              spacing: {
+                after: index < (resumeData.education || []).length - 1 ? 300 : 200,
+              },
             }),
           ]),
         ] : []),
+        
+        // Footer with theme indication
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "─".repeat(60),
+              size: 16,
+              color: colors.primary,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: {
+            before: 400,
+            after: 200,
+          },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Enhanced by AI • Professional Resume",
+              size: 14,
+              color: colors.accent,
+              italics: true,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+        }),
       ],
     }],
   });
