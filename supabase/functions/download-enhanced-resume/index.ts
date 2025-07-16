@@ -1,215 +1,179 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Document, Paragraph, TextRun, AlignmentType, Packer } from "https://esm.sh/docx@9.5.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// HTML template for the enhanced resume
-function generateResumeHTML(resumeData: any): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>${resumeData.name} - Resume</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Arial', sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 40px 20px;
-            background: #fff;
-        }
-        .header { 
-            text-align: center; 
-            border-bottom: 3px solid #2563eb; 
-            padding-bottom: 20px; 
-            margin-bottom: 30px; 
-        }
-        .name { 
-            font-size: 2.5em; 
-            font-weight: bold; 
-            color: #1f2937; 
-            margin-bottom: 10px; 
-        }
-        .title { 
-            font-size: 1.3em; 
-            color: #2563eb; 
-            margin-bottom: 15px; 
-        }
-        .contact { 
-            display: flex; 
-            justify-content: center; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-            font-size: 0.95em; 
-            color: #666; 
-        }
-        .section { 
-            margin-bottom: 25px; 
-        }
-        .section-title { 
-            font-size: 1.3em; 
-            font-weight: bold; 
-            color: #1f2937; 
-            border-bottom: 2px solid #e5e7eb; 
-            padding-bottom: 5px; 
-            margin-bottom: 15px; 
-        }
-        .summary { 
-            background: #f9fafb; 
-            padding: 20px; 
-            border-radius: 8px; 
-            border-left: 4px solid #2563eb; 
-            font-style: italic; 
-        }
-        .experience-item { 
-            margin-bottom: 20px; 
-            padding: 15px; 
-            border: 1px solid #e5e7eb; 
-            border-radius: 6px; 
-        }
-        .job-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 10px; 
-            flex-wrap: wrap; 
-        }
-        .job-title { 
-            font-weight: bold; 
-            color: #1f2937; 
-            font-size: 1.1em; 
-        }
-        .company { 
-            color: #2563eb; 
-            font-weight: 600; 
-        }
-        .duration { 
-            color: #666; 
-            font-size: 0.9em; 
-        }
-        .achievements { 
-            list-style-type: none; 
-            padding-left: 0; 
-        }
-        .achievements li { 
-            margin-bottom: 5px; 
-            padding-left: 20px; 
-            position: relative; 
-        }
-        .achievements li:before { 
-            content: "▸"; 
-            color: #2563eb; 
-            position: absolute; 
-            left: 0; 
-        }
-        .skills { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 10px; 
-        }
-        .skill-tag { 
-            background: #dbeafe; 
-            color: #1d4ed8; 
-            padding: 5px 12px; 
-            border-radius: 20px; 
-            font-size: 0.9em; 
-            font-weight: 500; 
-        }
-        .education-item { 
-            margin-bottom: 15px; 
-            padding: 12px; 
-            background: #f9fafb; 
-            border-radius: 6px; 
-        }
-        .degree { 
-            font-weight: bold; 
-            color: #1f2937; 
-        }
-        .institution { 
-            color: #2563eb; 
-            margin-top: 5px; 
-        }
-        .year { 
-            color: #666; 
-            font-size: 0.9em; 
-        }
-        
-        @media print {
-            body { padding: 20px; }
-            .header { page-break-inside: avoid; }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1 class="name">${resumeData.name || 'Professional Candidate'}</h1>
-        <div class="title">${resumeData.title || 'Professional'}</div>
-        <div class="contact">
-            ${resumeData.email ? `<span>📧 ${resumeData.email}</span>` : ''}
-            ${resumeData.phone ? `<span>📞 ${resumeData.phone}</span>` : ''}
-            ${resumeData.location ? `<span>📍 ${resumeData.location}</span>` : ''}
-        </div>
-    </div>
+// Generate DOCX resume from enhanced data
+async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
+  const doc = new Document({
+    sections: [{
+      children: [
+        // Header with name and title
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: resumeData.name || "Professional Resume",
+              bold: true,
+              size: 32,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: resumeData.title || "Professional",
+              size: 24,
+              color: "2563eb",
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+        }),
+        // Contact info
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: [
+                resumeData.email && `Email: ${resumeData.email}`,
+                resumeData.phone && `Phone: ${resumeData.phone}`,
+                resumeData.location && `Location: ${resumeData.location}`
+              ].filter(Boolean).join(" | "),
+              size: 20,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+        }),
+        new Paragraph({ text: "" }), // Empty line
 
-    ${resumeData.summary ? `
-    <div class="section">
-        <h2 class="section-title">Professional Summary</h2>
-        <div class="summary">${resumeData.summary}</div>
-    </div>
-    ` : ''}
+        // Professional Summary
+        ...(resumeData.summary ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "PROFESSIONAL SUMMARY",
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: resumeData.summary,
+                size: 22,
+              }),
+            ],
+          }),
+          new Paragraph({ text: "" }), // Empty line
+        ] : []),
 
-    ${resumeData.experience && resumeData.experience.length > 0 ? `
-    <div class="section">
-        <h2 class="section-title">Professional Experience</h2>
-        ${resumeData.experience.map((exp: any) => `
-        <div class="experience-item">
-            <div class="job-header">
-                <div>
-                    <div class="job-title">${exp.title || 'Position'}</div>
-                    <div class="company">${exp.company || 'Company'}</div>
-                </div>
-                <div class="duration">${exp.duration || 'Duration'}</div>
-            </div>
-            ${exp.achievements && exp.achievements.length > 0 ? `
-            <ul class="achievements">
-                ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
-            </ul>
-            ` : ''}
-        </div>
-        `).join('')}
-    </div>
-    ` : ''}
+        // Experience
+        ...(resumeData.experience && resumeData.experience.length > 0 ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "PROFESSIONAL EXPERIENCE",
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          ...resumeData.experience.flatMap((exp: any) => [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${exp.title || "Position"} at ${exp.company || "Company"}`,
+                  bold: true,
+                  size: 22,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: exp.duration || "Duration",
+                  size: 20,
+                  italics: true,
+                }),
+              ],
+            }),
+            ...(exp.achievements || []).map((achievement: string) => 
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${achievement}`,
+                    size: 20,
+                  }),
+                ],
+              })
+            ),
+            new Paragraph({ text: "" }), // Empty line
+          ]),
+        ] : []),
 
-    ${resumeData.skills && resumeData.skills.length > 0 ? `
-    <div class="section">
-        <h2 class="section-title">Skills</h2>
-        <div class="skills">
-            ${resumeData.skills.map((skill: string) => `<span class="skill-tag">${skill}</span>`).join('')}
-        </div>
-    </div>
-    ` : ''}
+        // Skills
+        ...(resumeData.skills && resumeData.skills.length > 0 ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "SKILLS",
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: resumeData.skills.join(", "),
+                size: 22,
+              }),
+            ],
+          }),
+          new Paragraph({ text: "" }), // Empty line
+        ] : []),
 
-    ${resumeData.education && resumeData.education.length > 0 ? `
-    <div class="section">
-        <h2 class="section-title">Education</h2>
-        ${resumeData.education.map((edu: any) => `
-        <div class="education-item">
-            <div class="degree">${edu.degree || 'Degree'}</div>
-            <div class="institution">${edu.institution || 'Institution'}</div>
-            <div class="year">${edu.year || 'Year'}</div>
-        </div>
-        `).join('')}
-    </div>
-    ` : ''}
-</body>
-</html>`;
+        // Education
+        ...(resumeData.education && resumeData.education.length > 0 ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "EDUCATION",
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          ...resumeData.education.flatMap((edu: any) => [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: edu.degree || "Degree",
+                  bold: true,
+                  size: 22,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${edu.institution || "Institution"} - ${edu.year || "Year"}`,
+                  size: 20,
+                }),
+              ],
+            }),
+            new Paragraph({ text: "" }), // Empty line
+          ]),
+        ] : []),
+      ],
+    }],
+  });
+
+  return await Packer.toBuffer(doc);
 }
 
 serve(async (req) => {
@@ -283,25 +247,32 @@ serve(async (req) => {
       }
     }
 
-    // Second priority: Check if enhanced content is saved in the database
+    // Second priority: Check if enhanced content is saved in the database and generate DOCX
     if (payment.enhanced_content) {
-      console.log("Using saved enhanced content from database");
+      console.log("Using saved enhanced content from database to generate DOCX");
       
       const enhancedResume = payment.enhanced_content;
       
-      // Generate HTML content using the saved enhanced resume data
-      const htmlContent = generateResumeHTML(enhancedResume);
-      
-      const fileName = `${enhancedResume.name ? enhancedResume.name.replace(/\s+/g, '_') : 'Enhanced_Resume'}_Enhanced_Resume.html`;
-      
-      return new Response(htmlContent, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/html',
-          'Content-Disposition': `attachment; filename="${fileName}"`,
-        },
-        status: 200,
-      });
+      try {
+        // Generate DOCX content using the saved enhanced resume data
+        const docxBuffer = await generateResumeDocx(enhancedResume);
+        const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
+        
+        console.log(`Generated DOCX from enhanced content, size: ${docxBuffer.byteLength} bytes`);
+        
+        return new Response(docxBuffer, {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition': `attachment; filename="${fileName}"`,
+            'Content-Length': docxBuffer.byteLength.toString(),
+          },
+          status: 200,
+        });
+      } catch (docxError) {
+        console.error("Error generating DOCX from enhanced content:", docxError);
+        throw new Error("Failed to generate DOCX from enhanced content");
+      }
     }
 
     // Fallback: Use the exact same data that was shown in preview by calling enhance-resume 
@@ -443,16 +414,18 @@ serve(async (req) => {
         throw new Error("No enhanced resume data received");
       }
 
-      // Generate HTML content using the enhanced resume data
-      const htmlContent = generateResumeHTML(enhancedResume);
+      // Generate DOCX content using the enhanced resume data
+      const docxBuffer = await generateResumeDocx(enhancedResume);
+      const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
       
-      const fileName = `${enhancedResume.name ? enhancedResume.name.replace(/\s+/g, '_') : 'Enhanced_Resume'}_Enhanced_Resume.html`;
+      console.log(`Generated DOCX from enhance-resume call, size: ${docxBuffer.byteLength} bytes`);
       
-      return new Response(htmlContent, {
+      return new Response(docxBuffer, {
         headers: {
           ...corsHeaders,
-          'Content-Type': 'text/html',
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'Content-Disposition': `attachment; filename="${fileName}"`,
+          'Content-Length': docxBuffer.byteLength.toString(),
         },
         status: 200,
       });
@@ -473,17 +446,25 @@ serve(async (req) => {
         education: []
       };
       
-      const htmlContent = generateResumeHTML(fallbackResume);
-      const fileName = `${fallbackResume.name.replace(/\s+/g, '_')}_Basic_Resume.html`;
-      
-      return new Response(htmlContent, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/html',
-          'Content-Disposition': `attachment; filename="${fileName}"`,
-        },
-        status: 200,
-      });
+      try {
+        const docxBuffer = await generateResumeDocx(fallbackResume);
+        const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
+        
+        console.log(`Generated fallback DOCX, size: ${docxBuffer.byteLength} bytes`);
+        
+        return new Response(docxBuffer, {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition': `attachment; filename="${fileName}"`,
+            'Content-Length': docxBuffer.byteLength.toString(),
+          },
+          status: 200,
+        });
+      } catch (fallbackDocxError) {
+        console.error("Error generating fallback DOCX:", fallbackDocxError);
+        throw new Error("Failed to generate fallback resume document");
+      }
     }
 
   } catch (error) {
