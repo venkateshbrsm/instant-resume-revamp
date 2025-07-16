@@ -22,11 +22,10 @@ const colorThemes = {
 async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
   
-  // Generate realistic skill proficiency percentages
+  // Generate realistic skill proficiency percentages matching the preview
   const generateSkillProficiency = (skill: string) => {
-    const basePercentages = [78, 81, 85, 90, 88, 92, 79, 83, 87, 91];
-    const index = skill.length % basePercentages.length;
-    return basePercentages[index];
+    const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
+    return Math.min(95, baseSkillLevel);
   };
 
   const htmlContent = `<!DOCTYPE html>
@@ -38,7 +37,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
   <style>
     @page {
       size: A4;
-      margin: 0.5in;
+      margin: 0.4in;
     }
     
     * {
@@ -52,27 +51,23 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       line-height: 1.5;
       color: #1a202c;
       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-      font-size: 10pt;
+      font-size: 9pt;
       width: 210mm;
       min-height: auto;
     }
     
     .container {
-      max-width: 100%;
-      margin: 0;
       background: white;
-      width: 210mm;
-      min-height: auto;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
       border-radius: 8pt;
       overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
     
+    /* Header matching the enhanced preview exactly */
     .header {
-      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 50%, ${theme.accent} 100%);
-      background-size: 300% 300%;
+      background: linear-gradient(to right, ${theme.primary}, ${theme.accent});
       color: white;
-      padding: 18pt;
+      padding: 16pt;
       position: relative;
       overflow: hidden;
     }
@@ -84,29 +79,27 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+      background: rgba(0,0,0,0.1);
       pointer-events: none;
     }
     
     .header-content {
       position: relative;
-      z-index: 1;
+      z-index: 10;
     }
     
     .header h1 {
-      font-size: 28pt;
+      font-size: 24pt;
       font-weight: 800;
-      margin-bottom: 6pt;
+      margin-bottom: 4pt;
       line-height: 1.1;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .header .title {
-      font-size: 16pt;
+      font-size: 14pt;
       margin-bottom: 16pt;
       opacity: 0.95;
       font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
     .contact-grid {
@@ -117,30 +110,36 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     }
     
     .contact-item {
-      font-size: 10pt;
-      opacity: 0.95;
+      font-size: 9pt;
+      opacity: 0.9;
       display: flex;
       align-items: center;
-      gap: 8pt;
+      gap: 6pt;
       font-weight: 500;
-      background: rgba(255,255,255,0.1);
-      padding: 6pt 10pt;
-      border-radius: 6pt;
-      backdrop-filter: blur(10px);
     }
     
     .icon {
-      width: 12pt;
-      height: 12pt;
+      width: 10pt;
+      height: 10pt;
       fill: currentColor;
       flex-shrink: 0;
     }
     
+    /* Main content grid matching the preview layout */
     .main-content {
       display: grid;
-      grid-template-columns: 1fr 300pt;
+      grid-template-columns: 2fr 1fr;
       gap: 16pt;
       padding: 16pt;
+      min-height: calc(297mm - 80pt);
+    }
+    
+    .left-column {
+      space-y: 16pt;
+    }
+    
+    .sidebar {
+      space-y: 16pt;
     }
     
     .section {
@@ -148,317 +147,258 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       break-inside: avoid;
     }
     
-    .section-title {
-      font-size: 16pt;
-      font-weight: 700;
-      color: ${theme.primary};
-      margin-bottom: 12pt;
-      padding: 12pt 16pt;
-      background: linear-gradient(135deg, ${theme.primary}15 0%, ${theme.accent}10 100%);
-      border-radius: 8pt;
-      border-left: 4pt solid ${theme.primary};
+    /* Section titles with gradient icons matching preview */
+    .section-header {
       display: flex;
       align-items: center;
-      gap: 10pt;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      gap: 8pt;
+      margin-bottom: 12pt;
     }
     
+    .section-icon {
+      width: 24pt;
+      height: 24pt;
+      border-radius: 6pt;
+      background: linear-gradient(to right, ${theme.primary}, ${theme.accent});
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .section-title {
+      font-size: 14pt;
+      font-weight: 700;
+      color: ${theme.primary};
+    }
+    
+    /* Professional Summary Card */
     .summary-card {
-      background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-      padding: 14pt;
+      background: white;
+      padding: 16pt;
       border-radius: 12pt;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      border: 1pt solid ${theme.primary}20;
+      border: 1pt solid rgba(0,0,0,0.05);
     }
     
     .summary-text {
-      font-size: 11pt;
+      font-size: 10pt;
       line-height: 1.6;
-      text-align: justify;
       color: #2d3748;
     }
     
-    .timeline {
+    /* Experience timeline matching preview */
+    .experience-timeline {
       position: relative;
-      padding-left: 12pt;
-    }
-    
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 8pt;
-      top: 20pt;
-      bottom: 0;
-      width: 2pt;
-      background: linear-gradient(to bottom, ${theme.primary}, ${theme.accent});
-      border-radius: 1pt;
+      padding-left: 16pt;
+      margin-bottom: 16pt;
     }
     
     .experience-item {
-      margin-bottom: 14pt;
-      break-inside: avoid;
       position: relative;
-      background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
+      margin-bottom: 16pt;
       padding: 12pt;
-      border-radius: 12pt;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 1pt solid ${theme.primary}15;
+      border-radius: 8pt;
+      background: linear-gradient(to right, ${theme.accent}08, ${theme.primary}08);
+      border-left: 2pt solid ${theme.accent}30;
     }
     
     .experience-item::before {
       content: '';
       position: absolute;
-      left: -16pt;
-      top: 20pt;
-      width: 8pt;
-      height: 8pt;
-      background: ${theme.primary};
+      left: -21pt;
+      top: 16pt;
+      width: 12pt;
+      height: 12pt;
+      background: ${theme.accent};
       border-radius: 50%;
       border: 2pt solid white;
-      box-shadow: 0 0 0 2pt ${theme.primary}30;
+      box-shadow: 0 0 0 2pt ${theme.accent}30;
     }
     
     .experience-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 12pt;
+      margin-bottom: 8pt;
     }
     
     .experience-title {
-      font-size: 14pt;
+      font-size: 12pt;
       font-weight: 700;
       color: #1a202c;
-      margin-bottom: 4pt;
+      margin-bottom: 2pt;
     }
     
     .experience-company {
-      font-size: 12pt;
+      font-size: 11pt;
       font-weight: 600;
-      color: ${theme.primary};
-      display: flex;
-      align-items: center;
-      gap: 6pt;
+      color: ${theme.accent};
     }
     
     .experience-duration {
-      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
-      color: white;
-      padding: 6pt 12pt;
-      border-radius: 20pt;
-      font-size: 9pt;
+      background: ${theme.accent}10;
+      color: ${theme.accent};
+      padding: 4pt 8pt;
+      border-radius: 12pt;
+      font-size: 8pt;
       font-weight: 600;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      gap: 4pt;
+      border: 1pt solid ${theme.accent}20;
     }
     
     .achievements {
       list-style: none;
-      margin-left: 0;
-      margin-top: 12pt;
+      margin-top: 8pt;
     }
     
     .achievement {
-      margin-bottom: 5pt;
-      font-size: 10pt;
+      margin-bottom: 6pt;
+      font-size: 9pt;
       line-height: 1.5;
       display: flex;
       align-items: flex-start;
-      gap: 10pt;
-      padding: 6pt 10pt;
-      background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
-      border-radius: 8pt;
-      border-left: 3pt solid ${theme.accent};
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      gap: 8pt;
+      padding: 6pt 8pt;
+      background: rgba(255,255,255,0.5);
+      border-radius: 6pt;
     }
     
     .achievement::before {
-      content: '↗';
-      width: 16pt;
-      height: 16pt;
+      content: '';
+      width: 12pt;
+      height: 12pt;
       background: linear-gradient(135deg, #22c55e, #16a34a);
       border-radius: 50%;
       flex-shrink: 0;
       margin-top: 2pt;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+    }
+    
+    .achievement::after {
+      content: '↗';
+      position: absolute;
+      left: 3pt;
+      top: 2pt;
       color: white;
-      font-size: 8pt;
+      font-size: 6pt;
       font-weight: bold;
     }
     
-    .sidebar {
-      font-size: 10pt;
-    }
-    
+    /* Skills section matching preview exactly */
     .skills-section {
-      background: linear-gradient(135deg, ${theme.primary}12 0%, ${theme.accent}08 100%);
-      padding: 14pt;
+      background: white;
+      padding: 16pt;
       border-radius: 12pt;
-      margin-bottom: 20pt;
-      break-inside: avoid;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 1pt solid ${theme.primary}20;
-    }
-    
-    .skills-header {
-      display: flex;
-      align-items: center;
-      gap: 8pt;
+      border: 1pt solid rgba(0,0,0,0.05);
       margin-bottom: 16pt;
     }
     
     .skill-item {
       margin-bottom: 12pt;
-      background: rgba(255,255,255,0.7);
-      padding: 10pt;
-      border-radius: 8pt;
-      backdrop-filter: blur(10px);
     }
     
     .skill-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6pt;
+      margin-bottom: 4pt;
     }
     
     .skill-name {
       font-weight: 600;
       color: #1a202c;
-      font-size: 10pt;
+      font-size: 9pt;
     }
     
     .skill-percentage {
-      font-weight: 700;
-      color: ${theme.primary};
-      font-size: 9pt;
-      background: ${theme.primary}15;
-      padding: 2pt 6pt;
-      border-radius: 10pt;
+      font-size: 8pt;
+      color: #6b7280;
     }
     
     .skill-bar {
-      height: 6pt;
-      background: ${theme.primary}20;
-      border-radius: 3pt;
+      height: 4pt;
+      background: #e5e7eb;
+      border-radius: 2pt;
       overflow: hidden;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
     }
     
     .skill-progress {
       height: 100%;
       background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
-      border-radius: 3pt;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      position: relative;
+      border-radius: 2pt;
     }
     
-    .skill-progress::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
-      border-radius: 3pt 3pt 0 0;
+    /* Skills overview stats matching preview */
+    .skills-overview {
+      margin-bottom: 16pt;
     }
     
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8pt;
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 12pt;
+      border-radius: 8pt;
+      background: ${theme.primary}08;
+    }
+    
+    .stat-number {
+      font-size: 18pt;
+      font-weight: 700;
+      color: ${theme.primary};
+    }
+    
+    .stat-label {
+      font-size: 8pt;
+      color: #6b7280;
+      margin-top: 2pt;
+    }
+    
+    /* Education section */
     .education-section {
-      background: linear-gradient(135deg, ${theme.accent}10 0%, ${theme.primary}08 100%);
-      padding: 14pt;
+      background: white;
+      padding: 16pt;
       border-radius: 12pt;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 1pt solid ${theme.accent}20;
+      border: 1pt solid rgba(0,0,0,0.05);
     }
     
     .education-item {
-      background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-      padding: 16pt;
-      border-radius: 10pt;
-      margin-bottom: 12pt;
-      break-inside: avoid;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-      border: 1pt solid ${theme.accent}15;
-      position: relative;
-    }
-    
-    .education-item::before {
-      content: '🎓';
-      position: absolute;
-      top: 12pt;
-      right: 12pt;
-      font-size: 16pt;
-      opacity: 0.3;
+      padding: 12pt;
+      border-radius: 8pt;
+      margin-bottom: 8pt;
+      background: linear-gradient(to right, ${theme.primary}08, ${theme.accent}08);
+      border: 1pt solid ${theme.primary}10;
     }
     
     .education-degree {
       font-weight: 700;
       color: #1a202c;
-      font-size: 12pt;
-      margin-bottom: 4pt;
+      font-size: 11pt;
+      margin-bottom: 2pt;
     }
     
     .education-institution {
       font-weight: 600;
-      color: ${theme.primary};
-      margin-bottom: 4pt;
+      color: ${theme.accent};
       font-size: 10pt;
+      margin-bottom: 2pt;
     }
     
     .education-year {
-      color: #718096;
-      font-size: 9pt;
-      background: ${theme.accent}15;
-      padding: 2pt 8pt;
-      border-radius: 10pt;
-      display: inline-block;
-    }
-    
-    .stats-overview {
-      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 100%);
-      color: white;
-      padding: 16pt;
-      border-radius: 12pt;
-      margin-bottom: 20pt;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8pt;
-      text-align: center;
-    }
-    
-    .stat-item {
-      background: rgba(255,255,255,0.15);
-      padding: 10pt;
-      border-radius: 8pt;
-      backdrop-filter: blur(10px);
-    }
-    
-    .stat-number {
-      font-size: 16pt;
-      font-weight: 700;
-      display: block;
-    }
-    
-    .stat-label {
       font-size: 8pt;
-      opacity: 0.9;
-      text-transform: uppercase;
-      letter-spacing: 0.5pt;
+      color: #6b7280;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
+    <!-- Header exactly matching enhanced preview -->
     <div class="header">
       <div class="header-content">
         <h1>${resumeData.name || 'Enhanced Resume'}</h1>
@@ -500,13 +440,15 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       <div class="left-column">
         <!-- Professional Summary -->
         <div class="section">
-          <h3 class="section-title">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Professional Summary
-          </h3>
+          <div class="section-header">
+            <div class="section-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h3 class="section-title">Professional Summary</h3>
+          </div>
           <div class="summary-card">
             <p class="summary-text">${resumeData.summary || 'Dynamic and results-driven professional with extensive experience in delivering innovative solutions and driving organizational success. Proven track record of leadership, strategic thinking, and exceptional problem-solving abilities.'}</p>
           </div>
@@ -515,41 +457,28 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
         <!-- Professional Experience -->
         ${resumeData.experience && resumeData.experience.length > 0 ? `
         <div class="section">
-          <h3 class="section-title">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M8 2v4l-3 2 3 2v4"/>
-              <path d="M16 6l3-2-3-2"/>
-              <path d="M8 10l3 2 3-2"/>
-              <path d="M8 14l3 2 3-2"/>
-              <path d="M8 18l3 2 3-2"/>
-            </svg>
-            Professional Experience
-          </h3>
+          <div class="section-header">
+            <div class="section-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 2v4l-3 2 3 2v4"/>
+                <path d="M16 6l3-2-3-2"/>
+                <path d="M8 10l3 2 3-2"/>
+                <path d="M8 14l3 2 3-2"/>
+                <path d="M8 18l3 2 3-2"/>
+              </svg>
+            </div>
+            <h3 class="section-title">Professional Experience</h3>
+          </div>
           
-          <div class="timeline">
+          <div class="experience-timeline">
             ${resumeData.experience.map((exp: any) => `
             <div class="experience-item">
               <div class="experience-header">
                 <div>
                   <div class="experience-title">${exp.title || 'Position Title'}</div>
-                  <div class="experience-company">
-                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                       <path d="M7 8V6a5 5 0 1 1 10 0v2"/>
-                       <rect width="16" height="13" x="4" y="8" rx="1"/>
-                       <path d="M8 12h.01"/>
-                       <path d="M12 12h.01"/>
-                       <path d="M16 12h.01"/>
-                     </svg>
-                    ${exp.company || 'Company Name'}
-                  </div>
+                  <div class="experience-company">${exp.company || 'Company Name'}</div>
                 </div>
-                <div class="experience-duration">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12,6 12,12 16,14"/>
-                  </svg>
-                  ${exp.duration || 'Date Range'}
-                </div>
+                <div class="experience-duration">${exp.duration || 'Date Range'}</div>
               </div>
               
               ${exp.achievements && exp.achievements.length > 0 ? `
@@ -574,37 +503,43 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
 
       <!-- Sidebar -->
       <div class="sidebar">
-        <!-- Stats Overview -->
-        <div class="stats-overview">
+        <!-- Skills Overview Stats -->
+        <div class="skills-overview">
           <div class="stats-grid">
             <div class="stat-item">
-              <span class="stat-number">${resumeData.experience ? resumeData.experience.length : '3'}+</span>
-              <span class="stat-label">Years Experience</span>
+              <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+              <div class="stat-label">Total Skills</div>
             </div>
-            <div class="stat-item">
-              <span class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}+</span>
-              <span class="stat-label">Core Skills</span>
+            <div class="stat-item" style="background: ${theme.accent}08;">
+              <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+              <div class="stat-label">Work Experiences</div>
+            </div>
+            <div class="stat-item" style="background: ${theme.secondary}08;">
+              <div class="stat-number" style="color: ${theme.secondary};">${resumeData.education ? resumeData.education.length : '1'}</div>
+              <div class="stat-label">Educational Qualifications</div>
             </div>
           </div>
         </div>
 
         <!-- Skills -->
         <div class="skills-section">
-          <h3 class="section-title">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
-            </svg>
-            Skills Proficiency
-          </h3>
+          <div class="section-header">
+            <div class="section-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+              </svg>
+            </div>
+            <h3 class="section-title">Skills Proficiency</h3>
+          </div>
           
           ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
-            resumeData.skills.map((skill: string) => {
+            resumeData.skills.slice(0, 6).map((skill: string) => {
               const proficiency = generateSkillProficiency(skill);
               return `
               <div class="skill-item">
                 <div class="skill-header">
                   <span class="skill-name">${skill}</span>
-                  <span class="skill-percentage">${proficiency}%</span>
+                  <span class="skill-percentage">${Math.round(proficiency)}%</span>
                 </div>
                 <div class="skill-bar">
                   <div class="skill-progress" style="width: ${proficiency}%"></div>
@@ -646,13 +581,15 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
 
         <!-- Education -->
         <div class="education-section">
-          <h3 class="section-title">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-            Education
-          </h3>
+          <div class="section-header">
+            <div class="section-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+            <h3 class="section-title">Education</h3>
+          </div>
           ${resumeData.education && resumeData.education.length > 0 ? 
             resumeData.education.map((edu: any) => `
             <div class="education-item">
