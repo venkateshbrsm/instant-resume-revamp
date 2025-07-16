@@ -103,13 +103,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Remove auto-enhancement - let user trigger it manually
-  // useEffect(() => {
-  //   // Only enhance after we have extracted text
-  //   if (extractedText && extractedText.length > 0) {
-  //     enhanceResume();
-  //   }
-  // }, [extractedText]);
+  // Auto-enhance after extracting text
+  useEffect(() => {
+    // Only enhance after we have extracted text
+    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
+      enhanceResume();
+    }
+  }, [extractedText]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -301,27 +301,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
         {/* Enhanced Resume Display */}
         <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
-          {/* Auto-trigger enhancement when page loads */}
-          {extractedText && !isLoading && !enhancedContent && !isEnhancing && (
-            <div className="mb-6">
-              <Card className="bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
-                <CardContent className="p-6 text-center space-y-4">
-                  <h4 className="font-semibold text-foreground">Ready for AI Enhancement!</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Transform your resume with our AI-powered enhancement that improves content, formatting, and ATS compatibility.
-                  </p>
-                  <Button 
-                    onClick={enhanceResume} 
-                    size="lg"
-                    className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium px-8 py-3"
-                  >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Enhance with AI
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          )}
 
           <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
             <CardHeader>
@@ -626,19 +605,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   <div className="text-center space-y-3 sm:space-y-4">
                     <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 text-accent mx-auto" />
                     <div>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for AI Enhancement</h3>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Processing Your Resume</h3>
                       <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base px-4">
-                        Click the button below to enhance your resume with AI-powered improvements.
+                        AI enhancement will begin automatically once your file is processed.
                       </p>
-                      <Button 
-                        onClick={enhanceResume} 
-                        variant="default"
-                        className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
-                        disabled={!extractedText}
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Enhance with AI
-                      </Button>
                     </div>
                   </div>
                 </div>
