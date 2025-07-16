@@ -3,7 +3,22 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "https://esm.sh/docx@8.5.0";
 
-async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
+// Theme color mapping
+const themeColors = {
+  navy: { primary: '1e3a8a', secondary: '1e40af', accent: '3b82f6' },
+  charcoal: { primary: '374151', secondary: '1f2937', accent: '6b7280' },
+  burgundy: { primary: '7c2d12', secondary: '991b1b', accent: 'dc2626' },
+  forest: { primary: '166534', secondary: '15803d', accent: '22c55e' },
+  bronze: { primary: 'a16207', secondary: 'ca8a04', accent: 'eab308' },
+  slate: { primary: '475569', secondary: '334155', accent: '64748b' }
+};
+
+function getThemeColors(themeId: string) {
+  return themeColors[themeId as keyof typeof themeColors] || themeColors.navy;
+}
+
+async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
+  const colors = getThemeColors(themeId);
   const children = [];
 
   // Header section
@@ -14,7 +29,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
       alignment: 'center',
     }),
     new Paragraph({
-      children: [new TextRun({ text: resumeData.title || 'Professional Title', size: 24 })],
+      children: [new TextRun({ text: resumeData.title || 'Professional Title', size: 24, color: colors.primary })],
       alignment: 'center',
     }),
     new Paragraph({
@@ -30,7 +45,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
   if (resumeData.summary) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "PROFESSIONAL SUMMARY", size: 24, bold: true })],
+        children: [new TextRun({ text: "PROFESSIONAL SUMMARY", size: 24, bold: true, color: colors.primary })],
         heading: HeadingLevel.HEADING_1,
       }),
       new Paragraph({
@@ -44,7 +59,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
   if (resumeData.experience && resumeData.experience.length > 0) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "PROFESSIONAL EXPERIENCE", size: 24, bold: true })],
+        children: [new TextRun({ text: "PROFESSIONAL EXPERIENCE", size: 24, bold: true, color: colors.primary })],
         heading: HeadingLevel.HEADING_1,
       })
     );
@@ -52,7 +67,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
     resumeData.experience.forEach((exp: any) => {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: exp.title || 'Position Title', size: 22, bold: true })],
+          children: [new TextRun({ text: exp.title || 'Position Title', size: 22, bold: true, color: colors.accent })],
         }),
         new Paragraph({
           children: [new TextRun({ text: `${exp.company || 'Company Name'} | ${exp.duration || 'Duration'}`, size: 20 })],
@@ -77,7 +92,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
   if (resumeData.skills && resumeData.skills.length > 0) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "SKILLS", size: 24, bold: true })],
+        children: [new TextRun({ text: "SKILLS", size: 24, bold: true, color: colors.primary })],
         heading: HeadingLevel.HEADING_1,
       }),
       new Paragraph({
@@ -91,7 +106,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
   if (resumeData.education && resumeData.education.length > 0) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "EDUCATION", size: 24, bold: true })],
+        children: [new TextRun({ text: "EDUCATION", size: 24, bold: true, color: colors.primary })],
         heading: HeadingLevel.HEADING_1,
       })
     );
@@ -99,7 +114,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
     resumeData.education.forEach((edu: any) => {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: edu.degree || 'Degree', size: 22, bold: true })],
+          children: [new TextRun({ text: edu.degree || 'Degree', size: 22, bold: true, color: colors.accent })],
         }),
         new Paragraph({
           children: [new TextRun({ text: `${edu.institution || 'Institution'} | ${edu.year || 'Year'}`, size: 20 })],
@@ -477,8 +492,8 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
 
     console.log('Enhanced resume created successfully');
 
-    // Generate DOCX for the enhanced resume
-    const docxBuffer = await generateResumeDocx(parsedContent);
+    // Generate DOCX for the enhanced resume with default theme (this function doesn't receive theme info yet)
+    const docxBuffer = await generateResumeDocx(parsedContent, 'navy');
 
     // Save enhanced content and DOCX file if filePath and userEmail are provided
     if (filePath && userEmail) {

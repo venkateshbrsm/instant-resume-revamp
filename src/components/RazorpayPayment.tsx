@@ -66,23 +66,32 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
         throw new Error('Failed to upload file');
       }
 
-      // Get enhanced content from session storage if available
+      // Get enhanced content and theme from session storage if available
       const enhancedContentString = sessionStorage.getItem('enhancedContentForPayment');
       const extractedTextString = sessionStorage.getItem('extractedTextForPayment');
+      const selectedThemeString = sessionStorage.getItem('selectedThemeForPayment');
       
       let enhancedContent = null;
       let extractedText = null;
+      let selectedTheme = null;
       
       if (enhancedContentString) {
         try {
           enhancedContent = JSON.parse(enhancedContentString);
           extractedText = extractedTextString;
           console.log('Found enhanced content for payment, including in request');
+          
+          if (selectedThemeString) {
+            selectedTheme = JSON.parse(selectedThemeString);
+            console.log('Found selected theme for payment:', selectedTheme.name);
+          }
+          
           // Clear from storage after using
           sessionStorage.removeItem('enhancedContentForPayment');
           sessionStorage.removeItem('extractedTextForPayment');
+          sessionStorage.removeItem('selectedThemeForPayment');
         } catch (error) {
-          console.warn('Failed to parse enhanced content from storage:', error);
+          console.warn('Failed to parse enhanced content or theme from storage:', error);
         }
       }
 
@@ -92,7 +101,8 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
           amount, 
           filePath,
           enhancedContent: enhancedContent,
-          extractedText: extractedText
+          extractedText: extractedText,
+          selectedTheme: selectedTheme
         }
       });
 

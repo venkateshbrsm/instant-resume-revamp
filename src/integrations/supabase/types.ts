@@ -30,6 +30,7 @@ export type Database = {
           razorpay_response: Json | null
           razorpay_signature: string | null
           status: string
+          theme_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -48,6 +49,7 @@ export type Database = {
           razorpay_response?: Json | null
           razorpay_signature?: string | null
           status?: string
+          theme_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -66,6 +68,7 @@ export type Database = {
           razorpay_response?: Json | null
           razorpay_signature?: string | null
           status?: string
+          theme_id?: string | null
           updated_at?: string
           user_id?: string | null
         }

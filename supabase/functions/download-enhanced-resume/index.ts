@@ -7,8 +7,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Theme color mapping
+const themeColors = {
+  navy: { primary: '1e3a8a', secondary: '1e40af', accent: '3b82f6' },
+  charcoal: { primary: '374151', secondary: '1f2937', accent: '6b7280' },
+  burgundy: { primary: '7c2d12', secondary: '991b1b', accent: 'dc2626' },
+  forest: { primary: '166534', secondary: '15803d', accent: '22c55e' },
+  bronze: { primary: 'a16207', secondary: 'ca8a04', accent: 'eab308' },
+  slate: { primary: '475569', secondary: '334155', accent: '64748b' }
+};
+
+function getThemeColors(themeId: string) {
+  return themeColors[themeId as keyof typeof themeColors] || themeColors.navy;
+}
+
 // Generate DOCX resume from enhanced data
-async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
+async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
+  const colors = getThemeColors(themeId);
   const doc = new Document({
     sections: [{
       children: [
@@ -28,7 +43,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
             new TextRun({
               text: resumeData.title || "Professional",
               size: 24,
-              color: "2563eb",
+              color: colors.primary,
             }),
           ],
           alignment: AlignmentType.CENTER,
@@ -57,6 +72,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
                 text: "PROFESSIONAL SUMMARY",
                 bold: true,
                 size: 24,
+                color: colors.primary,
               }),
             ],
           }),
@@ -79,6 +95,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
                 text: "PROFESSIONAL EXPERIENCE",
                 bold: true,
                 size: 24,
+                color: colors.primary,
               }),
             ],
           }),
@@ -89,6 +106,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
                   text: `${exp.title || "Position"} at ${exp.company || "Company"}`,
                   bold: true,
                   size: 22,
+                  color: colors.accent,
                 }),
               ],
             }),
@@ -123,6 +141,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
                 text: "SKILLS",
                 bold: true,
                 size: 24,
+                color: colors.primary,
               }),
             ],
           }),
@@ -145,6 +164,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
                 text: "EDUCATION",
                 bold: true,
                 size: 24,
+                color: colors.primary,
               }),
             ],
           }),
@@ -155,6 +175,7 @@ async function generateResumeDocx(resumeData: any): Promise<Uint8Array> {
                   text: edu.degree || "Degree",
                   bold: true,
                   size: 22,
+                  color: colors.accent,
                 }),
               ],
             }),
@@ -255,8 +276,10 @@ serve(async (req) => {
       const enhancedResume = payment.enhanced_content;
       
       try {
-        // Generate DOCX content using the saved enhanced resume data
-        const docxBuffer = await generateResumeDocx(enhancedResume);
+        // Generate DOCX content using the saved enhanced resume data with theme
+        const themeId = payment.theme_id || 'navy';
+        console.log("Using theme for DOCX generation:", themeId);
+        const docxBuffer = await generateResumeDocx(enhancedResume, themeId);
         const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
         
         console.log(`Generated DOCX from enhanced content, size: ${docxBuffer.byteLength} bytes`);
@@ -415,8 +438,10 @@ serve(async (req) => {
         throw new Error("No enhanced resume data received");
       }
 
-      // Generate DOCX content using the enhanced resume data
-      const docxBuffer = await generateResumeDocx(enhancedResume);
+      // Generate DOCX content using the enhanced resume data with theme
+      const themeId = payment.theme_id || 'navy';
+      console.log("Using theme for DOCX generation:", themeId);
+      const docxBuffer = await generateResumeDocx(enhancedResume, themeId);
       const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
       
       console.log(`Generated DOCX from enhance-resume call, size: ${docxBuffer.byteLength} bytes`);
@@ -448,7 +473,8 @@ serve(async (req) => {
       };
       
       try {
-        const docxBuffer = await generateResumeDocx(fallbackResume);
+        const themeId = payment.theme_id || 'navy';
+        const docxBuffer = await generateResumeDocx(fallbackResume, themeId);
         const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
         
         console.log(`Generated fallback DOCX, size: ${docxBuffer.byteLength} bytes`);

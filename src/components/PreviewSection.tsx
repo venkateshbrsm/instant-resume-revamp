@@ -179,10 +179,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        // User is authenticated, save enhanced content before proceeding with purchase
+        // User is authenticated, save enhanced content and theme before proceeding with purchase
         if (enhancedContent) {
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
+          sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
         }
         onPurchase();
       } else {
@@ -202,6 +203,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
+          sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
         }
         if (originalContent) {
           const contentToStore = typeof originalContent === 'string' ? originalContent : JSON.stringify(originalContent);
