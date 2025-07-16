@@ -169,7 +169,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             <CardContent className="space-y-6">
               <RazorpayPayment
                 fileName={file.name}
-                amount={299}
+                amount={1}
                 file={file}
               />
               <Button variant="outline" onClick={handlePaymentCancel} className="w-full">
@@ -259,7 +259,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
                 <h4 className="font-semibold mb-2 text-sm sm:text-base">Order Summary</h4>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs sm:text-sm">AI Resume Enhancement</span>
-                  <span className="font-semibold text-sm sm:text-base">₹299</span>
+                  <span className="font-semibold text-sm sm:text-base">₹1</span>
                 </div>
                 <div className="flex justify-between items-center text-xs sm:text-sm text-muted-foreground">
                   <span className="break-all">Original file: {file.name}</span>
@@ -269,7 +269,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               <div className="border-t pt-3 sm:pt-4">
                 <div className="flex justify-between items-center text-base sm:text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">₹299</span>
+                  <span className="text-primary">₹1</span>
                 </div>
               </div>
             </div>
@@ -293,8 +293,8 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               className="w-full text-sm sm:text-base"
             >
               <CreditCard className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-              {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
-               user ? "Pay ₹299 with Razorpay" : "Sign In & Pay ₹299"}
+               {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
+                user ? "Pay ₹1 with Razorpay" : "Sign In & Pay ₹1"}
             </Button>
 
             {/* Security Note */}

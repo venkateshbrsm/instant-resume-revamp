@@ -65,7 +65,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           </Button>
           
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Upload • Preview • Pay Only ₹299 if Satisfied
+            Upload • Preview • Pay Only ₹1 if Satisfied
           </p>
         </div>
 
