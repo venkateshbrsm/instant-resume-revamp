@@ -60,7 +60,13 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
       console.log('User authenticated:', user.email);
 
       // Upload file to storage with better error handling
-      const filePath = `${user.id}/${Date.now()}_${file.name}`;
+      // Sanitize filename to remove invalid characters
+      const sanitizedFileName = file.name
+        .replace(/[^a-zA-Z0-9._-]/g, '_') // Replace invalid chars with underscore
+        .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+        .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+      
+      const filePath = `${user.id}/${Date.now()}_${sanitizedFileName}`;
       console.log('Uploading file to path:', filePath);
       
       const { error: uploadError } = await supabase.storage
@@ -74,7 +80,7 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
         console.error('File upload error:', uploadError);
         if (uploadError.message.includes('already exists')) {
           // Try with a different filename
-          const newFilePath = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2)}_${file.name}`;
+          const newFilePath = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2)}_${sanitizedFileName}`;
           const { error: retryUploadError } = await supabase.storage
             .from('resumes')
             .upload(newFilePath, file);
