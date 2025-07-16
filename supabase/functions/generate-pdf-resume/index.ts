@@ -911,76 +911,10 @@ serve(async (req) => {
     
     console.log("Generated HTML content for PDF printing");
     
-    // Use a PDF service API instead of Puppeteer (which doesn't work in edge functions)
-    console.log("Converting HTML to PDF using external service...");
+    // Generate optimized HTML for browser PDF generation
+    console.log("Generating browser-optimized HTML for PDF printing");
     
-    try {
-      const pdfResponse = await fetch('https://api.htmlcsstoimage.com/v1/image', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + btoa('demo-user:demo-password'),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          html: htmlContent,
-          css: '',
-          format: 'pdf',
-          width: 794,  // A4 width in pixels at 96 DPI
-          height: 1123, // A4 height in pixels at 96 DPI
-          device_scale: 2,
-          viewport_width: 794,
-          viewport_height: 1123
-        })
-      });
-
-      if (!pdfResponse.ok) {
-        console.log("PDF service failed, returning HTML instead");
-        // Fallback to HTML with auto-print functionality
-        const printableHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Enhanced Resume - ${payment.enhanced_content?.name || 'Resume'}</title>
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 500);
-    };
-  </script>
-</head>
-<body>
-${htmlContent.replace('<!DOCTYPE html>', '').replace(/<html[^>]*>/, '').replace('</html>', '').replace(/<head>[\s\S]*?<\/head>/, '').replace('<body>', '').replace('</body>', '')}
-</body>
-</html>`;
-        
-        return new Response(printableHTML, {
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'text/html',
-            'Content-Disposition': `inline; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html"`,
-          },
-        });
-      }
-
-      const pdfBuffer = await pdfResponse.arrayBuffer();
-      console.log("PDF generated successfully, size:", pdfBuffer.byteLength, "bytes");
-      
-      return new Response(pdfBuffer, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.pdf"`,
-        },
-      });
-      
-    } catch (pdfError) {
-      console.error("PDF conversion failed:", pdfError);
-      console.log("Falling back to HTML with auto-print");
-      
-      // Enhanced HTML with better print functionality
-      const printableHTML = `
+    const printableHTML = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -988,67 +922,114 @@ ${htmlContent.replace('<!DOCTYPE html>', '').replace(/<html[^>]*>/, '').replace(
   <title>Enhanced Resume - ${payment.enhanced_content?.name || 'Resume'}</title>
   <style>
     @media screen {
-      .print-instructions {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #3b82f6;
-        color: white;
-        padding: 15px;
-        border-radius: 8px;
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
         font-family: Arial, sans-serif;
-        font-size: 14px;
-        z-index: 1000;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
-      .print-instructions button {
-        background: white;
-        color: #3b82f6;
+      .screen-header {
+        background: linear-gradient(135deg, #3b82f6, #93c5fd);
+        color: white;
+        padding: 20px;
+        margin: -20px -20px 20px;
+        border-radius: 0 0 8px 8px;
+        text-align: center;
+      }
+      .download-instructions {
+        background: #e0f2fe;
+        border: 1px solid #0288d1;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .download-btn {
+        background: #1976d2;
+        color: white;
         border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
         font-weight: bold;
         cursor: pointer;
-        margin-left: 10px;
+        margin: 0 10px;
+      }
+      .download-btn:hover {
+        background: #1565c0;
+      }
+      .resume-container {
+        background: white;
+        max-width: 8.5in;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
       }
     }
     @media print {
-      .print-instructions {
+      .screen-header,
+      .download-instructions {
         display: none !important;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: white;
+      }
+      .resume-container {
+        box-shadow: none;
+        margin: 0;
+        max-width: none;
+        border-radius: 0;
       }
     }
   </style>
   <script>
-    function printDocument() {
+    function savePDF() {
       window.print();
     }
-    window.onload = function() {
-      // Auto-print after a short delay
-      setTimeout(function() {
-        if (confirm('Would you like to print or save this resume as PDF?')) {
-          window.print();
-        }
-      }, 1000);
-    };
+    
+    function downloadHTML() {
+      const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
 </head>
 <body>
-  <div class="print-instructions">
-    📄 Ready to save as PDF!
-    <button onclick="printDocument()">Print/Save PDF</button>
+  <div class="screen-header">
+    <h1>📄 Your Enhanced Resume is Ready!</h1>
+    <p>Use the options below to save your professional resume as PDF</p>
   </div>
+  
+  <div class="download-instructions">
+    <h3>💡 How to Save as PDF:</h3>
+    <p><strong>Option 1:</strong> Click "Save as PDF" below, then choose "Save as PDF" in the print dialog</p>
+    <p><strong>Option 2:</strong> Press <kbd>Ctrl+P</kbd> (or <kbd>Cmd+P</kbd> on Mac) and select "Save as PDF"</p>
+    <div style="margin-top: 15px;">
+      <button class="download-btn" onclick="savePDF()">📥 Save as PDF</button>
+      <button class="download-btn" onclick="downloadHTML()">💾 Download HTML</button>
+    </div>
+  </div>
+  
+  <div class="resume-container">
 ${htmlContent.replace('<!DOCTYPE html>', '').replace(/<html[^>]*>/, '').replace('</html>', '').replace(/<head>[\s\S]*?<\/head>/, '').replace('<body>', '').replace('</body>', '')}
+  </div>
 </body>
 </html>`;
-      
-      return new Response(printableHTML, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/html',
-          'Content-Disposition': `inline; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html"`,
-        },
-      });
-    }
+    
+    return new Response(printableHTML, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/html',
+        'Content-Disposition': `inline; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html"`,
+      },
+    });
 
   } catch (error) {
     console.error("Error in PDF generation function:", error);

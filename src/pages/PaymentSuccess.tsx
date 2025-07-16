@@ -208,8 +208,8 @@ export default function PaymentSuccess() {
         }
         
         toast({
-          title: "Resume Opened",
-          description: "Your enhanced resume is now open in a new tab. Use Ctrl+P (or Cmd+P) if you want to save it as PDF.",
+          title: "Resume Ready",
+          description: "Your enhanced resume is open in a new tab. Follow the instructions to save as PDF.",
         });
         return;
       }
@@ -335,7 +335,7 @@ export default function PaymentSuccess() {
               size="lg"
             >
               <Download className="mr-2 h-4 w-4" />
-              View Enhanced Resume (PDF Format)
+              Download Enhanced Resume as PDF
             </Button>
 
             <Button 
