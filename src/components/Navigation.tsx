@@ -43,12 +43,15 @@ export function Navigation({ currentStep, onNavigate, showSteps = true, user, on
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <button 
+            onClick={() => onNavigate?.("hero")} 
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-primary">Revivify</span>
-          </Link>
+          </button>
 
           {/* Desktop Navigation */}
           {showSteps && (
