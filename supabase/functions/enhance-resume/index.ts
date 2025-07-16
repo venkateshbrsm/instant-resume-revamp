@@ -2,6 +2,185 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+function generateResumeHTML(resumeData: any): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${resumeData.name} - Resume</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .resume-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+            color: #1e40af;
+        }
+        .title {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin: 5px 0;
+        }
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .contact-item {
+            color: #4b5563;
+            font-size: 0.9rem;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #1e40af;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .summary {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #374151;
+        }
+        .experience-item, .education-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            border-radius: 5px;
+        }
+        .job-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #1f2937;
+        }
+        .company {
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .duration {
+            color: #6b7280;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .achievements {
+            list-style: none;
+            padding: 0;
+        }
+        .achievements li {
+            padding: 3px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+        .achievements li:before {
+            content: "▸";
+            color: #2563eb;
+            position: absolute;
+            left: 0;
+        }
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .skill-tag {
+            background: #2563eb;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        @media print {
+            body { background: white; }
+            .resume-container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .contact-info { flex-direction: column; gap: 5px; }
+            .skills-container { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <header class="header">
+            <h1 class="name">${resumeData.name}</h1>
+            <p class="title">${resumeData.title}</p>
+            <div class="contact-info">
+                <span class="contact-item">📧 ${resumeData.email}</span>
+                <span class="contact-item">📱 ${resumeData.phone}</span>
+                <span class="contact-item">📍 ${resumeData.location}</span>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2 class="section-title">Professional Summary</h2>
+            <p class="summary">${resumeData.summary}</p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Professional Experience</h2>
+            ${resumeData.experience.map((exp: any) => `
+                <div class="experience-item">
+                    <div class="job-title">${exp.title}</div>
+                    <div class="company">${exp.company}</div>
+                    <div class="duration">${exp.duration}</div>
+                    <ul class="achievements">
+                        ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('')}
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-container">
+                ${resumeData.skills.map((skill: string) => `<span class="skill-tag">${skill}</span>`).join('')}
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Education</h2>
+            ${resumeData.education.map((edu: any) => `
+                <div class="education-item">
+                    <div class="job-title">${edu.degree}</div>
+                    <div class="company">${edu.institution}</div>
+                    <div class="duration">${edu.year}</div>
+                </div>
+            `).join('')}
+        </section>
+    </div>
+</body>
+</html>`;
+}
+
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -35,11 +214,16 @@ serve(async (req) => {
       console.log('Extracted text is insufficient, attempting DOCX re-extraction...');
       try {
         // Convert base64 file data back to ArrayBuffer
-        const fileData = Uint8Array.from(atob(file), c => c.charCodeAt(0));
-        const arrayBuffer = fileData.buffer;
+        const binaryString = atob(file);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const arrayBuffer = bytes.buffer;
         
-        // Import mammoth for DOCX text extraction
-        const mammoth = await import('https://cdn.skypack.dev/mammoth@1.4.21');
+        // Use different mammoth import approach
+        const mammothModule = await import('https://esm.sh/mammoth@1.4.21');
+        const mammoth = mammothModule.default || mammothModule;
         
         // Try extractRawText first
         const result = await mammoth.extractRawText({ arrayBuffer });
@@ -189,15 +373,37 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
 
     console.log('Enhanced resume created successfully');
 
-    // Save enhanced content to database if filePath and userEmail are provided
+    // Generate HTML for the enhanced resume
+    const htmlContent = generateResumeHTML(parsedContent);
+
+    // Save enhanced content and HTML file if filePath and userEmail are provided
     if (filePath && userEmail) {
       try {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         
-        // Find the payment record for this file and update it with enhanced content
+        // Save the enhanced HTML file to storage
+        const enhancedFileName = `enhanced_${fileName.replace(/\.[^/.]+$/, '.html')}`;
+        const enhancedFilePath = `${filePath.split('/')[0]}/${enhancedFileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('resumes')
+          .upload(enhancedFilePath, new Blob([htmlContent], { type: 'text/html' }), {
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.error('Error uploading enhanced file:', uploadError);
+        } else {
+          console.log('Enhanced file uploaded successfully:', enhancedFilePath);
+        }
+        
+        // Update payment record with enhanced content and file path
         const { error: updateError } = await supabase
           .from('payments')
-          .update({ enhanced_content: parsedContent })
+          .update({ 
+            enhanced_content: parsedContent,
+            enhanced_file_path: enhancedFilePath
+          })
           .eq('file_path', filePath)
           .eq('email', userEmail);
 
