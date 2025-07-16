@@ -896,8 +896,7 @@ function validateEnhancedContent(parsedContent: any, originalContent: string): b
     parsedContent.name !== 'Professional Resume' && 
     parsedContent.name !== 'Professional Candidate' &&
     parsedContent.name !== 'Experienced Professional' &&
-    !parsedContent.name.includes('professional.email@example.com') &&
-    parsedContent.name.length > 3; // Must be more than just initials
+    !parsedContent.name.includes('professional.email@example.com');
   
   const hasRealExperience = parsedContent.experience && 
     parsedContent.experience.length > 0 &&
@@ -905,12 +904,8 @@ function validateEnhancedContent(parsedContent: any, originalContent: string): b
       exp.company && 
       exp.company !== 'Relevant Field' &&
       exp.company !== 'Company' &&
-      exp.company !== 'Company Name' &&
       exp.title !== 'Professional Experience' &&
-      exp.title !== 'Position' &&
-      exp.title !== 'Position Title' &&
-      // Check for actual company names or job titles
-      (exp.company.length > 5 || exp.title.length > 10)
+      exp.title !== 'Position'
     );
   
   const hasRealSkills = parsedContent.skills && 
@@ -919,14 +914,7 @@ function validateEnhancedContent(parsedContent: any, originalContent: string): b
       skill !== 'Communication' && 
       skill !== 'Problem-solving' && 
       skill !== 'Team collaboration' &&
-      skill !== 'Leadership' &&
-      skill !== 'Teamwork' &&
-      skill !== 'Management' &&
-      // Accept technical skills or specific skill names
-      (skill.includes('Excel') || skill.includes('Office') || 
-       skill.includes('Tally') || skill.includes('Data') ||
-       skill.includes('Analysis') || skill.includes('Software') ||
-       skill.length > 8) // Longer skill names are likely real
+      skill !== 'Leadership'
     );
   
   const hasRealEducation = parsedContent.education && 
@@ -935,12 +923,7 @@ function validateEnhancedContent(parsedContent: any, originalContent: string): b
       edu.institution && 
       edu.institution !== 'Education Background' &&
       edu.institution !== 'Institution' &&
-      edu.institution !== 'University Name' &&
-      edu.degree !== 'Professional Qualifications' &&
-      edu.degree !== 'Bachelor\'s Degree' &&
-      // Look for actual institution names
-      (edu.institution.includes('College') || edu.institution.includes('University') ||
-       edu.institution.includes('School') || edu.institution.length > 10)
+      edu.degree !== 'Professional Qualifications'
     );
   
   // Check if original content had substantial information
@@ -959,8 +942,8 @@ function validateEnhancedContent(parsedContent: any, originalContent: string): b
     console.log('Has real skills:', hasRealSkills);
     console.log('Has real education:', hasRealEducation);
     
-    // Reduced threshold - need at least 2 points if original had substance
-    return realDataScore >= 2;
+    // Need at least 3 points if original had substance
+    return realDataScore >= 3;
   }
   
   // For shorter original content, be more lenient but still require some real data
