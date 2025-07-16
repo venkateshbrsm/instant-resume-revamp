@@ -13,14 +13,19 @@ const colorThemes = {
   forest: { primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
   bronze: { primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
   slate: { primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' },
-  // Legacy themes for backward compatibility
   emerald: { primary: '#10b981', secondary: '#34d399', accent: '#6ee7b7' },
   purple: { primary: '#8b5cf6', secondary: '#a78bfa', accent: '#c4b5fd' },
   rose: { primary: '#f43f5e', secondary: '#fb7185', accent: '#fda4af' },
   orange: { primary: '#f97316', secondary: '#fb923c', accent: '#fdba74' }
 };
 
-function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): string {
+async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
+  const pdfshiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
+  
+  if (!pdfshiftApiKey) {
+    throw new Error('PDFShift API key not found');
+  }
+
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
   
   // Generate realistic skill proficiency percentages
@@ -29,9 +34,8 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     const index = skill.length % basePercentages.length;
     return basePercentages[index];
   };
-  
-  return `
-<!DOCTYPE html>
+
+  const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -41,294 +45,12 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     @page {
       size: A4;
       margin: 0.75in 0.5in;
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    
-    @media print {
-      * {
-        -webkit-print-color-adjust: exact !important;
-        color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      
-      html, body {
-        width: 210mm;
-        height: 297mm;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: white !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .container {
-        width: 100%;
-        max-width: none;
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        border-radius: 0;
-        page-break-inside: avoid;
-      }
-      
-      .main-content {
-        grid-template-columns: 60% 40%;
-        gap: 15pt;
-        page-break-inside: avoid;
-      }
-      
-      .header {
-        margin-bottom: 15pt;
-        padding: 18pt;
-        page-break-after: avoid;
-        background: linear-gradient(135deg, #3b82f6, #93c5fd) !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .section {
-        margin-bottom: 15pt;
-        page-break-inside: avoid;
-        orphans: 2;
-        widows: 2;
-      }
-      
-      .experience-item {
-        margin-bottom: 12pt;
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      
-      .skills-section {
-        margin-bottom: 12pt;
-        page-break-inside: avoid;
-        background: rgba(59, 130, 246, 0.08) !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .stats-grid {
-        margin-bottom: 12pt;
-        page-break-inside: avoid;
-      }
-      
-      .education-item {
-        margin-bottom: 8pt;
-        page-break-inside: avoid;
-        background: rgba(147, 197, 253, 0.08) !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .skill-bar {
-        background: rgba(59, 130, 246, 0.2) !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .skill-progress {
-        background: linear-gradient(90deg, #3b82f6, #93c5fd) !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .achievement {
-        background: rgba(255, 255, 255, 0.8) !important;
-        border: 1pt solid rgba(59, 130, 246, 0.1) !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .achievement-icon {
-        background: linear-gradient(135deg, #4ade80, #16a34a) !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      /* Page numbering */
-      @page {
-        @bottom-right {
-          content: "Page " counter(page) " of " counter(pages);
-          font-size: 8pt;
-          color: #666;
-        }
-      }
-      
-      /* Improved spacing for print */
-      .section-title {
-        font-size: 13pt !important;
-        margin-bottom: 10pt !important;
-        color: #3b82f6 !important;
-        border-bottom: 1.5pt solid #3b82f6 !important;
-        -webkit-print-color-adjust: exact !important;
-      }
-      
-      .header h1 {
-        font-size: 20pt !important;
-        line-height: 1.1 !important;
-      }
-      
-      .header .title {
-        font-size: 13pt !important;
-      }
-      
-      .contact-item {
-        font-size: 9pt !important;
-      }
-      
-      .summary-text {
-        font-size: 10pt !important;
-        line-height: 1.4 !important;
-      }
-      
-      .experience-title {
-        font-size: 12pt !important;
-      }
-      
-      .experience-company {
-        font-size: 11pt !important;
-      }
-      
-      .achievement {
-        font-size: 9pt !important;
-        margin-bottom: 3pt !important;
-        padding: 4pt 6pt !important;
-      }
-      
-      .skill-name {
-        font-size: 9pt !important;
-      }
-      
-      .skill-percentage {
-        font-size: 8pt !important;
-      }
-      
-      .education-degree {
-        font-size: 10pt !important;
-      }
-      
-      .education-institution {
-        font-size: 9pt !important;
-      }
-      
-      .education-year {
-        font-size: 8pt !important;
-      }
     }
     
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-    }
-    
-    /* Screen styles for responsive viewing */
-    @media screen {
-      html {
-        width: 100%;
-        height: auto;
-        background: #f5f5f5;
-      }
-      
-      body {
-        font-family: 'Arial', 'Helvetica', sans-serif;
-        line-height: 1.4;
-        color: #2d3748;
-        background: #f5f5f5;
-        font-size: 12pt;
-        width: 100%;
-        min-height: 100vh;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-      }
-      
-      .container {
-        max-width: min(95vw, 1200px);
-        margin: 0 auto;
-        background: white;
-        width: 100%;
-        min-height: auto;
-        padding: 40px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-      }
-      
-      .main-content {
-        grid-template-columns: 1fr 380px;
-        gap: 30px;
-      }
-      
-      .header {
-        margin: -40px -40px 20px -40px;
-        padding: 30px 40px;
-      }
-      
-      .header h1 {
-        font-size: 28pt;
-      }
-      
-      .header .title {
-        font-size: 16pt;
-      }
-      
-      .section-title {
-        font-size: 16pt;
-      }
-      
-      .experience-title {
-        font-size: 14pt;
-      }
-      
-      .experience-company {
-        font-size: 13pt;
-      }
-      
-      .achievement {
-        font-size: 11pt;
-      }
-      
-      .skill-name {
-        font-size: 10pt;
-      }
-      
-      .summary-text {
-        font-size: 11pt;
-      }
-      
-      /* Responsive breakpoints */
-      @media screen and (max-width: 768px) {
-        body {
-          padding: 10px;
-        }
-        
-        .container {
-          padding: 20px;
-          max-width: 100%;
-        }
-        
-        .main-content {
-          grid-template-columns: 1fr;
-          gap: 20px;
-        }
-        
-        .header {
-          margin: -20px -20px 15px -20px;
-          padding: 20px;
-        }
-        
-        .header h1 {
-          font-size: 24pt;
-        }
-        
-        .contact-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    }
-    
-    /* Print styles - preserve A4 layout */
-    html {
-      width: 210mm;
-      height: 297mm;
     }
     
     body {
@@ -339,8 +61,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       font-size: 11pt;
       width: 210mm;
       min-height: 297mm;
-      margin: 0;
-      padding: 0;
     }
     
     .container {
@@ -388,15 +108,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       gap: 4pt;
     }
     
-    .contact-item.with-bullet::before {
-      content: "";
-      width: 6pt;
-      height: 6pt;
-      background: #3b82f6;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    
     .main-content {
       display: grid;
       grid-template-columns: 65% 35%;
@@ -416,26 +127,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       margin-bottom: 8pt;
       padding-bottom: 4pt;
       border-bottom: 1.5pt solid ${theme.primary};
-      display: flex;
-      align-items: center;
-      gap: 6pt;
-    }
-    
-    .section-title::before {
-      content: "🎓";
-      font-size: 12pt;
-    }
-    
-    .section-title.summary-title::before {
-      content: "📝";
-    }
-    
-    .section-title.skills-title::before {
-      content: "⚡";
-    }
-    
-    .section-title.experience-title::before {
-      content: "💼";
     }
     
     .summary-text {
@@ -493,33 +184,13 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       padding: 6pt 8pt;
       background: rgba(255, 255, 255, 0.5);
       border-radius: 6pt;
-      margin-bottom: 4pt;
     }
     
-    .achievement-icon {
-      flex-shrink: 0;
-      width: 16pt;
-      height: 16pt;
-      background: linear-gradient(135deg, #4ade80, #16a34a);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1pt;
-    }
-    
-    .achievement-icon::after {
-      content: "↗";
-      color: white;
-      font-size: 10pt;
+    .achievement::before {
+      content: "→";
+      color: ${theme.primary};
       font-weight: bold;
-      line-height: 1;
-    }
-    
-    .achievement-text {
-      flex: 1;
-      color: #374151;
-      line-height: 1.5;
+      flex-shrink: 0;
     }
     
     .sidebar {
@@ -536,10 +207,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     
     .skill-item {
       margin-bottom: 8pt;
-    }
-    
-    .skill-item:last-child {
-      margin-bottom: 0;
     }
     
     .skill-header {
@@ -572,7 +239,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       height: 100%;
       background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
       border-radius: 2pt;
-      transition: width 0.3s ease;
     }
     
     .education-item {
@@ -600,96 +266,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       color: #666;
       font-size: 9pt;
     }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8pt;
-      margin-bottom: 15pt;
-    }
-    
-    .stat-card {
-      text-align: center;
-      padding: 10pt;
-      border-radius: 5pt;
-      border: 1pt solid ${theme.primary}20;
-      position: relative;
-    }
-    
-    .stat-circle {
-      width: 40pt;
-      height: 40pt;
-      border-radius: 50%;
-      background: conic-gradient(${theme.primary} 0deg, ${theme.primary} calc(var(--percentage) * 3.6deg), ${theme.primary}20 calc(var(--percentage) * 3.6deg));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 5pt;
-      position: relative;
-    }
-    
-    .stat-circle::before {
-      content: '';
-      width: 30pt;
-      height: 30pt;
-      border-radius: 50%;
-      background: white;
-      position: absolute;
-    }
-    
-    .stat-number {
-      font-size: 12pt;
-      font-weight: bold;
-      color: ${theme.primary};
-      position: relative;
-      z-index: 1;
-    }
-    
-    .stat-label {
-      color: #666;
-      font-size: 8pt;
-      margin-top: 2pt;
-    }
-    
-    @media print {
-      body {
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      
-      .container {
-        width: 210mm !important;
-        min-height: 297mm !important;
-        margin: 0 !important;
-        padding: 0.75in 0.5in !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-      }
-      
-      .main-content {
-        grid-template-columns: 65% 35% !important;
-        gap: 15pt !important;
-      }
-      
-      .header {
-        margin: -0.75in -0.5in 12pt -0.5in !important;
-        padding: 15pt !important;
-      }
-      
-      .sidebar {
-        font-size: 9pt !important;
-      }
-      
-      .left-column {
-        grid-column: 1 !important;
-      }
-      
-      .sidebar {
-        grid-column: 2 !important;
-      }
-    }
   </style>
 </head>
 <body>
@@ -700,7 +276,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <div class="title">${resumeData.title || ''}</div>
       
       <div class="contact-grid">
-        <div class="contact-item with-bullet">Email: ${resumeData.email || ''}</div>
+        <div class="contact-item">Email: ${resumeData.email || ''}</div>
         <div class="contact-item">Phone: ${resumeData.phone || ''}</div>
         <div class="contact-item">Location: ${resumeData.location || ''}</div>
         <div class="contact-item">Professional Resume</div>
@@ -712,14 +288,14 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <div class="left-column">
         <!-- Professional Summary -->
         <div class="section">
-          <h3 class="section-title summary-title">Professional Summary</h3>
+          <h3 class="section-title">Professional Summary</h3>
           <p class="summary-text">${resumeData.summary || 'Professional summary not available.'}</p>
         </div>
 
         <!-- Professional Experience -->
         ${resumeData.experience && resumeData.experience.length > 0 ? `
         <div class="section">
-          <h3 class="section-title experience-title">Professional Experience</h3>
+          <h3 class="section-title">Professional Experience</h3>
           
           ${resumeData.experience.map((exp: any) => `
           <div class="experience-item">
@@ -734,10 +310,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
             ${exp.achievements && exp.achievements.length > 0 ? `
             <ul class="achievements">
               ${exp.achievements.map((achievement: string) => `
-              <li class="achievement">
-                <div class="achievement-icon"></div>
-                <div class="achievement-text">${achievement}</div>
-              </li>
+              <li class="achievement">${achievement}</li>
               `).join('')}
             </ul>
             ` : ''}
@@ -751,7 +324,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <div class="sidebar">
         <!-- Skills -->
         <div class="skills-section">
-          <h3 class="section-title skills-title">Skills</h3>
+          <h3 class="section-title">Skills</h3>
           
           ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
             resumeData.skills.map((skill: string) => {
@@ -768,7 +341,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
               </div>
               `;
             }).join('') :
-            // Fallback skills if none found
             `
             <div class="skill-item">
               <div class="skill-header">
@@ -779,57 +351,8 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
                 <div class="skill-progress" style="width: 85%"></div>
               </div>
             </div>
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">Problem Solving</span>
-                <span class="skill-percentage">88%</span>
-              </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: 88%"></div>
-              </div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">Adaptability</span>
-                <span class="skill-percentage">90%</span>
-              </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: 90%"></div>
-              </div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">Team Work</span>
-                <span class="skill-percentage">87%</span>
-              </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: 87%"></div>
-              </div>
-            </div>
             `
           }
-        </div>
-
-        <!-- Stats Overview -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-circle" style="--percentage: ${Math.min(90, ((resumeData.skills?.length || 4) * 15))}">
-              <div class="stat-number">${resumeData.skills?.length || 4}</div>
-            </div>
-            <div class="stat-label">Skills</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-circle" style="--percentage: ${Math.min(85, ((resumeData.experience?.length || 1) * 30))}">
-              <div class="stat-number">${resumeData.experience?.length || 1}</div>
-            </div>
-            <div class="stat-label">Experience</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-circle" style="--percentage: ${Math.min(75, ((resumeData.education?.length || 3) * 25))}">
-              <div class="stat-number">${resumeData.education?.length || 3}</div>
-            </div>
-            <div class="stat-label">Education</div>
-          </div>
         </div>
 
         <!-- Education -->
@@ -849,8 +372,37 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     </div>
   </div>
 </body>
-</html>
-  `;
+</html>`;
+
+  // Call PDFShift API
+  console.log("Calling PDFShift API to generate PDF...");
+  
+  const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${btoa(`api:${pdfshiftApiKey}`)}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      source: htmlContent,
+      format: 'A4',
+      margin: '0.75in 0.5in',
+      landscape: false,
+      use_print: true,
+      wait_for: '1s'
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("PDFShift API error:", response.status, errorText);
+    throw new Error(`PDFShift API error: ${response.status} ${errorText}`);
+  }
+
+  console.log("PDF generated successfully via PDFShift");
+  
+  const pdfArrayBuffer = await response.arrayBuffer();
+  return new Uint8Array(pdfArrayBuffer);
 }
 
 serve(async (req) => {
@@ -900,134 +452,20 @@ serve(async (req) => {
       throw new Error("Enhanced content not found for this payment");
     }
 
-    console.log("Generating printable HTML...");
+    console.log("Generating PDF with PDFShift...");
     const themeId = payment.theme_id || 'navy';
     
-    // Debug: Log the enhanced content structure
-    console.log("Enhanced content structure:", JSON.stringify(payment.enhanced_content, null, 2));
-    console.log("Skills data:", payment.enhanced_content?.skills || 'No skills found');
+    // Generate PDF using PDFShift
+    const pdfBytes = await generatePDFWithPDFShift(payment.enhanced_content, themeId);
     
-    const htmlContent = generatePrintableHTML(payment.enhanced_content, themeId);
+    console.log("PDF generated successfully, size:", pdfBytes.length, "bytes");
     
-    console.log("Generated HTML content for PDF printing");
-    
-    // Generate optimized HTML for browser PDF generation
-    console.log("Generating browser-optimized HTML for PDF printing");
-    
-    const printableHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Enhanced Resume - ${payment.enhanced_content?.name || 'Resume'}</title>
-  <style>
-    @media screen {
-      body {
-        margin: 0;
-        padding: 20px;
-        background: #f5f5f5;
-        font-family: Arial, sans-serif;
-      }
-      .screen-header {
-        background: linear-gradient(135deg, #3b82f6, #93c5fd);
-        color: white;
-        padding: 20px;
-        margin: -20px -20px 20px;
-        border-radius: 0 0 8px 8px;
-        text-align: center;
-      }
-      .download-instructions {
-        background: #e0f2fe;
-        border: 1px solid #0288d1;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      .download-btn {
-        background: #1976d2;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        margin: 0 10px;
-      }
-      .download-btn:hover {
-        background: #1565c0;
-      }
-      .resume-container {
-        background: white;
-        max-width: 8.5in;
-        margin: 0 auto;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        overflow: hidden;
-      }
-    }
-    @media print {
-      .screen-header,
-      .download-instructions {
-        display: none !important;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        background: white;
-      }
-      .resume-container {
-        box-shadow: none;
-        margin: 0;
-        max-width: none;
-        border-radius: 0;
-      }
-    }
-  </style>
-  <script>
-    function savePDF() {
-      window.print();
-    }
-    
-    function downloadHTML() {
-      const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  </script>
-</head>
-<body>
-  <div class="screen-header">
-    <h1>📄 Your Enhanced Resume is Ready!</h1>
-    <p>Use the options below to save your professional resume as PDF</p>
-  </div>
-  
-  <div class="download-instructions">
-    <h3>💡 How to Save as PDF:</h3>
-    <p><strong>Option 1:</strong> Click "Save as PDF" below, then choose "Save as PDF" in the print dialog</p>
-    <p><strong>Option 2:</strong> Press <kbd>Ctrl+P</kbd> (or <kbd>Cmd+P</kbd> on Mac) and select "Save as PDF"</p>
-    <div style="margin-top: 15px;">
-      <button class="download-btn" onclick="savePDF()">📥 Save as PDF</button>
-      <button class="download-btn" onclick="downloadHTML()">💾 Download HTML</button>
-    </div>
-  </div>
-  
-  <div class="resume-container">
-${htmlContent.replace('<!DOCTYPE html>', '').replace(/<html[^>]*>/, '').replace('</html>', '').replace(/<head>[\s\S]*?<\/head>/, '').replace('<body>', '').replace('</body>', '')}
-  </div>
-</body>
-</html>`;
-    
-    return new Response(printableHTML, {
+    return new Response(pdfBytes, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'text/html',
-        'Content-Disposition': `inline; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html"`,
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.pdf"`,
+        'Content-Length': pdfBytes.length.toString(),
       },
     });
 
