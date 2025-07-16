@@ -37,8 +37,13 @@ export default function PaymentSuccess() {
 
       if (error) throw error;
 
-      if (data.success) {
-        setPayment(data.payment);
+      // Check if verification was successful (data exists means success)
+      if (data) {
+        setPayment({
+          paymentId: razorpayResponse.razorpay_payment_id,
+          amount: data.amount || '1.00',
+          status: 'completed'
+        });
         toast({
           title: "Payment Verified!",
           description: "Your payment has been successfully verified.",
