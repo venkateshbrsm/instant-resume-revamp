@@ -95,6 +95,8 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
         }
       }
 
+      console.log('Payment data being sent:', { fileName, amount, filePath, hasEnhanced: !!enhancedContent, themeData: selectedTheme });
+
       const { data, error } = await supabase.functions.invoke('razorpay-initiate', {
         body: { 
           fileName, 

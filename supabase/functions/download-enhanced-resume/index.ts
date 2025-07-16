@@ -31,9 +31,10 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
         new Paragraph({
           children: [
             new TextRun({
-              text: resumeData.name || "Professional Resume",
+              text: (resumeData.name || "Professional Resume").normalize(),
               bold: true,
               size: 32,
+              color: colors.primary,
             }),
           ],
           alignment: AlignmentType.CENTER,

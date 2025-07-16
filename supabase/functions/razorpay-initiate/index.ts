@@ -40,7 +40,7 @@ serve(async (req) => {
 
     // Get request body
     const { fileName, amount, filePath, enhancedContent, extractedText, selectedTheme } = await req.json();
-    console.log("Payment details:", { fileName, amount, filePath, hasEnhancedContent: !!enhancedContent, hasTheme: !!selectedTheme });
+    console.log("Payment details:", { fileName, amount, filePath, hasEnhancedContent: !!enhancedContent, themeData: selectedTheme });
 
     if (!fileName || !amount) {
       throw new Error("Missing fileName or amount");
