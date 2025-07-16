@@ -378,15 +378,6 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       </div>
     </div>
   </div>
-  
-  <script>
-    // Auto-print when opened
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 500);
-    }
-  </script>
 </body>
 </html>
   `;
