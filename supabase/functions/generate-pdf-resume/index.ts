@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -912,45 +911,62 @@ serve(async (req) => {
     
     console.log("Generated HTML content for PDF printing");
     
-    // Launch Puppeteer browser
-    console.log("Launching Puppeteer browser...");
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--remote-debugging-port=9222'
-      ]
-    });
-
+    // Use a PDF service API instead of Puppeteer (which doesn't work in edge functions)
+    console.log("Converting HTML to PDF using external service...");
+    
     try {
-      const page = await browser.newPage();
-      
-      // Set the HTML content
-      await page.setContent(htmlContent, { 
-        waitUntil: 'networkidle0' 
+      const pdfResponse = await fetch('https://api.htmlcsstoimage.com/v1/image', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa('demo-user:demo-password'),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          html: htmlContent,
+          css: '',
+          format: 'pdf',
+          width: 794,  // A4 width in pixels at 96 DPI
+          height: 1123, // A4 height in pixels at 96 DPI
+          device_scale: 2,
+          viewport_width: 794,
+          viewport_height: 1123
+        })
       });
+
+      if (!pdfResponse.ok) {
+        console.log("PDF service failed, returning HTML instead");
+        // Fallback to HTML with auto-print functionality
+        const printableHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Enhanced Resume - ${payment.enhanced_content?.name || 'Resume'}</title>
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    };
+  </script>
+</head>
+<body>
+${htmlContent.replace('<!DOCTYPE html>', '').replace(/<html[^>]*>/, '').replace('</html>', '').replace(/<head>[\s\S]*?<\/head>/, '').replace('<body>', '').replace('</body>', '')}
+</body>
+</html>`;
+        
+        return new Response(printableHTML, {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'text/html',
+            'Content-Disposition': `inline; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html"`,
+          },
+        });
+      }
+
+      const pdfBuffer = await pdfResponse.arrayBuffer();
+      console.log("PDF generated successfully, size:", pdfBuffer.byteLength, "bytes");
       
-      console.log("Converting HTML to PDF...");
-      
-      // Generate PDF with high quality settings
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        preferCSSPageSize: true,
-        margin: {
-          top: '0.75in',
-          right: '0.5in',
-          bottom: '0.75in',
-          left: '0.5in'
-        }
-      });
-      
-      console.log("PDF generated successfully, size:", pdfBuffer.length, "bytes");
-      
-      // Return the PDF as a downloadable file
       return new Response(pdfBuffer, {
         headers: {
           ...corsHeaders,
@@ -959,9 +975,79 @@ serve(async (req) => {
         },
       });
       
-    } finally {
-      await browser.close();
-      console.log("Browser closed");
+    } catch (pdfError) {
+      console.error("PDF conversion failed:", pdfError);
+      console.log("Falling back to HTML with auto-print");
+      
+      // Enhanced HTML with better print functionality
+      const printableHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Enhanced Resume - ${payment.enhanced_content?.name || 'Resume'}</title>
+  <style>
+    @media screen {
+      .print-instructions {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #3b82f6;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .print-instructions button {
+        background: white;
+        color: #3b82f6;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+    }
+    @media print {
+      .print-instructions {
+        display: none !important;
+      }
+    }
+  </style>
+  <script>
+    function printDocument() {
+      window.print();
+    }
+    window.onload = function() {
+      // Auto-print after a short delay
+      setTimeout(function() {
+        if (confirm('Would you like to print or save this resume as PDF?')) {
+          window.print();
+        }
+      }, 1000);
+    };
+  </script>
+</head>
+<body>
+  <div class="print-instructions">
+    📄 Ready to save as PDF!
+    <button onclick="printDocument()">Print/Save PDF</button>
+  </div>
+${htmlContent.replace('<!DOCTYPE html>', '').replace(/<html[^>]*>/, '').replace('</html>', '').replace(/<head>[\s\S]*?<\/head>/, '').replace('<body>', '').replace('</body>', '')}
+</body>
+</html>`;
+      
+      return new Response(printableHTML, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/html',
+          'Content-Disposition': `inline; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.html"`,
+        },
+      });
     }
 
   } catch (error) {
