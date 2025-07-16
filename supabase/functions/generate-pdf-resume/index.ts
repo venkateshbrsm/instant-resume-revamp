@@ -291,6 +291,26 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       margin-bottom: 8pt;
       padding-bottom: 4pt;
       border-bottom: 1.5pt solid ${theme.primary};
+      display: flex;
+      align-items: center;
+      gap: 6pt;
+    }
+    
+    .section-title::before {
+      content: "🎓";
+      font-size: 12pt;
+    }
+    
+    .section-title.summary-title::before {
+      content: "📝";
+    }
+    
+    .section-title.skills-title::before {
+      content: "⚡";
+    }
+    
+    .section-title.experience-title::before {
+      content: "💼";
     }
     
     .summary-text {
@@ -567,14 +587,14 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <div class="left-column">
         <!-- Professional Summary -->
         <div class="section">
-          <h3 class="section-title">Professional Summary</h3>
+          <h3 class="section-title summary-title">Professional Summary</h3>
           <p class="summary-text">${resumeData.summary || 'Professional summary not available.'}</p>
         </div>
 
         <!-- Professional Experience -->
         ${resumeData.experience && resumeData.experience.length > 0 ? `
         <div class="section">
-          <h3 class="section-title">Professional Experience</h3>
+          <h3 class="section-title experience-title">Professional Experience</h3>
           
           ${resumeData.experience.map((exp: any) => `
           <div class="experience-item">
@@ -606,7 +626,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <div class="sidebar">
         <!-- Skills -->
         <div class="skills-section">
-          <h3 class="section-title">Skills</h3>
+          <h3 class="section-title skills-title">Skills</h3>
           
           ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
             resumeData.skills.map((skill: string) => {
