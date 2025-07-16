@@ -60,7 +60,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
       font-size: 10pt;
       width: 210mm;
-      min-height: 297mm;
+      min-height: auto;
     }
     
     .container {
@@ -68,7 +68,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       margin: 0;
       background: white;
       width: 210mm;
-      min-height: 297mm;
+      min-height: auto;
       box-shadow: 0 20px 40px rgba(0,0,0,0.1);
       border-radius: 8pt;
       overflow: hidden;
