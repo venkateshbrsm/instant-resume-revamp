@@ -110,6 +110,93 @@ serve(async (req) => {
 
     console.log("Payment verification completed successfully");
 
+    // Generate and store enhanced content for download
+    try {
+      console.log("Generating enhanced content for storage...");
+      
+      // Get the file from storage and extract its content
+      let fileContent = '';
+      if (paymentRecord.file_path) {
+        try {
+          const { data: fileData, error: fileError } = await supabaseClient.storage
+            .from('resumes')
+            .download(paymentRecord.file_path);
+
+          if (!fileError && fileData) {
+            // Extract text content based on file type
+            if (paymentRecord.file_name.toLowerCase().endsWith('.pdf')) {
+              // For PDF files, try text extraction
+              try {
+                const formData = new FormData();
+                formData.append('file', fileData, paymentRecord.file_name);
+                
+                const extractResponse = await supabaseClient.functions.invoke('extract-pdf-text', {
+                  body: formData,
+                });
+                
+                if (extractResponse.data?.extracted_text) {
+                  fileContent = extractResponse.data.extracted_text;
+                  console.log("PDF text extracted, length:", fileContent.length);
+                } else {
+                  fileContent = `PDF file: ${paymentRecord.file_name}`;
+                }
+              } catch (pdfError) {
+                console.error("PDF extraction error:", pdfError);
+                fileContent = `PDF file: ${paymentRecord.file_name}`;
+              }
+            } else if (paymentRecord.file_name.toLowerCase().endsWith('.docx')) {
+              // For DOCX files, use mammoth for text extraction
+              try {
+                const arrayBuffer = await fileData.arrayBuffer();
+                
+                // Import mammoth for DOCX text extraction
+                const mammoth = await import('https://cdn.skypack.dev/mammoth@1.4.21');
+                
+                // Extract text from DOCX
+                const result = await mammoth.extractRawText({ arrayBuffer });
+                fileContent = result.value;
+                
+                console.log("DOCX text extracted, length:", fileContent.length);
+                
+                if (fileContent.length < 50) {
+                  fileContent = `DOCX file: ${paymentRecord.file_name}`;
+                }
+              } catch (docxError) {
+                console.error("DOCX extraction error:", docxError);
+                fileContent = `DOCX file: ${paymentRecord.file_name}`;
+              }
+            } else {
+              // For TXT files or others
+              fileContent = await fileData.text();
+            }
+          }
+        } catch (err) {
+          console.log("Could not extract file content:", err);
+          fileContent = `Resume file: ${paymentRecord.file_name}`;
+        }
+      }
+
+      // Call enhance-resume function to generate enhanced content
+      const enhanceResponse = await supabaseClient.functions.invoke('enhance-resume', {
+        body: {
+          fileName: paymentRecord.file_name,
+          originalText: fileContent,
+          extractedText: fileContent,
+          filePath: paymentRecord.file_path,
+          userEmail: paymentRecord.email
+        }
+      });
+
+      if (enhanceResponse.data?.enhancedResume) {
+        console.log("Enhanced content generated and stored successfully");
+      } else {
+        console.warn("Failed to generate enhanced content, but payment is still valid");
+      }
+    } catch (enhanceError) {
+      console.error("Error generating enhanced content:", enhanceError);
+      // Don't fail the payment verification if enhancement fails
+    }
+
     // Return success response
     return new Response(JSON.stringify({
       success: true,

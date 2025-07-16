@@ -2,6 +2,9 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -18,7 +21,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, originalText, extractedText } = await req.json();
+    const { fileName, originalText, extractedText, filePath, userEmail } = await req.json();
 
     console.log('Enhancing resume for:', fileName);
     console.log('Original text length:', originalText?.length || 0);
@@ -146,6 +149,28 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
     }
 
     console.log('Enhanced resume created successfully');
+
+    // Save enhanced content to database if filePath and userEmail are provided
+    if (filePath && userEmail) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        // Find the payment record for this file and update it with enhanced content
+        const { error: updateError } = await supabase
+          .from('payments')
+          .update({ enhanced_content: parsedContent })
+          .eq('file_path', filePath)
+          .eq('email', userEmail);
+
+        if (updateError) {
+          console.error('Error saving enhanced content:', updateError);
+        } else {
+          console.log('Enhanced content saved to database successfully');
+        }
+      } catch (saveError) {
+        console.error('Failed to save enhanced content:', saveError);
+      }
+    }
 
     return new Response(
       JSON.stringify({ 

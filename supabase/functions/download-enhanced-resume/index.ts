@@ -249,10 +249,31 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // Use the exact same data that was shown in preview by calling enhance-resume 
-    // with stored file content from the payment process
+    // Check if enhanced content is already saved in the database
+    if (payment.enhanced_content) {
+      console.log("Using saved enhanced content from database");
+      
+      const enhancedResume = payment.enhanced_content;
+      
+      // Generate HTML content using the saved enhanced resume data
+      const htmlContent = generateResumeHTML(enhancedResume);
+      
+      const fileName = `${enhancedResume.name ? enhancedResume.name.replace(/\s+/g, '_') : 'Enhanced_Resume'}_Enhanced_Resume.html`;
+      
+      return new Response(htmlContent, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/html',
+          'Content-Disposition': `attachment; filename="${fileName}"`,
+        },
+        status: 200,
+      });
+    }
+
+    // Fallback: Use the exact same data that was shown in preview by calling enhance-resume 
+    // with stored file content from the payment process (for legacy payments without saved content)
     try {
-      console.log("Calling enhance-resume function to get the same data shown in preview...");
+      console.log("No saved enhanced content found. Calling enhance-resume function to get the same data shown in preview...");
       
       // Get the stored file from storage and extract its content
       let fileContent = '';

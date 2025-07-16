@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           currency: string
           email: string
+          enhanced_content: Json | null
           file_name: string
           file_path: string | null
           id: string
@@ -36,6 +37,7 @@ export type Database = {
           created_at?: string
           currency?: string
           email: string
+          enhanced_content?: Json | null
           file_name: string
           file_path?: string | null
           id?: string
@@ -52,6 +54,7 @@ export type Database = {
           created_at?: string
           currency?: string
           email?: string
+          enhanced_content?: Json | null
           file_name?: string
           file_path?: string | null
           id?: string
