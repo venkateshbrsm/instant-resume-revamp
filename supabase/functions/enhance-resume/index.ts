@@ -485,10 +485,14 @@ function validateAndPrepareContent(content: string, fileName: string) {
   const words = content.toLowerCase().split(/\s+/);
   const meaningfulWords = words.filter(word => word.length > 2);
   
-  if (meaningfulWords.length < 10) {
+  // More relaxed validation for PDFs which might have extraction issues
+  const isPDF = fileName.toLowerCase().endsWith('.pdf');
+  const minWords = isPDF ? 5 : 10; // Reduce requirement for PDFs
+  
+  if (meaningfulWords.length < minWords) {
     return {
       isValid: false,
-      reason: 'Too few meaningful words detected',
+      reason: `Too few meaningful words detected (found ${meaningfulWords.length}, minimum ${minWords})`,
       content: content
     };
   }
@@ -498,14 +502,18 @@ function validateAndPrepareContent(content: string, fileName: string) {
     'experience', 'education', 'skills', 'work', 'job', 'company', 
     'university', 'college', 'degree', 'project', 'achievement',
     'responsibility', 'manage', 'develop', 'design', 'implement',
-    'email', 'phone', 'address', 'linkedin'
+    'email', 'phone', 'address', 'linkedin', 'name', 'professional',
+    'summary', 'objective', 'contact', 'profile', 'qualification'
   ];
   
   const hasResumeContent = resumeIndicators.some(indicator => 
     content.toLowerCase().includes(indicator)
   );
   
-  if (!hasResumeContent && content.length < 200) {
+  // More relaxed content check for PDFs
+  const minLength = isPDF ? 50 : 200; // Lower minimum for PDFs
+  
+  if (!hasResumeContent && content.length < minLength) {
     return {
       isValid: false,
       reason: 'Content does not appear to contain resume information',
@@ -558,49 +566,99 @@ serve(async (req) => {
     });
     
     // Enhanced re-extraction logic for insufficient content
-    if ((!resumeContent || resumeContent.length < 100) && file && fileName.toLowerCase().endsWith('.docx')) {
-      console.log('Content is insufficient, attempting advanced DOCX re-extraction...');
-      
-      try {
-        // Convert base64 file data back to ArrayBuffer with validation
-        const binaryString = atob(file);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+    if ((!resumeContent || resumeContent.length < 100)) {
+      if (file && fileName.toLowerCase().endsWith('.docx')) {
+        console.log('Content is insufficient, attempting advanced DOCX re-extraction...');
+        
+        try {
+          // Convert base64 file data back to ArrayBuffer with validation
+          const binaryString = atob(file);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const arrayBuffer = bytes.buffer;
+          
+          console.log('ArrayBuffer created for re-extraction, size:', arrayBuffer.byteLength);
+          
+          if (arrayBuffer.byteLength === 0) {
+            throw new Error('ArrayBuffer is empty');
+          }
+          
+          // Import mammoth with better error handling
+          const mammothModule = await import('https://esm.sh/mammoth@1.4.21');
+          const mammoth = mammothModule.default || mammothModule;
+          
+          // Try multiple extraction methods similar to frontend
+          const extractionResults = await tryBackendExtractionMethods(mammoth, arrayBuffer);
+          
+          // Validate and select best result
+          const bestContent = selectBestBackendContent(extractionResults, fileName);
+          
+          if (bestContent && bestContent.length > resumeContent.length) {
+            resumeContent = bestContent;
+            console.log('Successfully re-extracted content, length:', resumeContent.length);
+            console.log('Re-extracted content preview (first 300 chars):', resumeContent.substring(0, 300));
+          } else {
+            console.warn('Re-extraction did not improve content quality');
+          }
+          
+        } catch (extractError) {
+          console.error('Backend DOCX re-extraction failed:', extractError);
+          console.error('Error details:', {
+            name: extractError.name,
+            message: extractError.message,
+            stack: extractError.stack
+          });
         }
-        const arrayBuffer = bytes.buffer;
+      } else if (file && fileName.toLowerCase().endsWith('.pdf')) {
+        console.log('PDF content is insufficient, attempting re-extraction...');
         
-        console.log('ArrayBuffer created for re-extraction, size:', arrayBuffer.byteLength);
-        
-        if (arrayBuffer.byteLength === 0) {
-          throw new Error('ArrayBuffer is empty');
+        try {
+          // Convert base64 file data back to ArrayBuffer
+          const binaryString = atob(file);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          console.log('Attempting PDF re-extraction with Adobe services...');
+          
+          // Create FormData for PDF re-extraction
+          const formData = new FormData();
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          formData.append('file', blob, fileName);
+          
+          // Call the PDF extraction function again
+          const extractResponse = await fetch(`${supabaseUrl}/functions/v1/extract-pdf-ilovepdf`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: formData
+          });
+          
+          if (extractResponse.ok) {
+            const extractData = await extractResponse.json();
+            if (extractData.success && extractData.extractedText && extractData.extractedText.length > resumeContent.length) {
+              resumeContent = extractData.extractedText;
+              console.log('Successfully re-extracted PDF content, length:', resumeContent.length);
+              console.log('Re-extracted PDF content preview (first 300 chars):', resumeContent.substring(0, 300));
+            } else {
+              console.warn('PDF re-extraction did not improve content quality');
+            }
+          } else {
+            console.error('PDF re-extraction failed:', await extractResponse.text());
+          }
+          
+        } catch (extractError) {
+          console.error('Backend PDF re-extraction failed:', extractError);
+          console.error('Error details:', {
+            name: extractError.name,
+            message: extractError.message,
+            stack: extractError.stack
+          });
         }
-        
-        // Import mammoth with better error handling
-        const mammothModule = await import('https://esm.sh/mammoth@1.4.21');
-        const mammoth = mammothModule.default || mammothModule;
-        
-        // Try multiple extraction methods similar to frontend
-        const extractionResults = await tryBackendExtractionMethods(mammoth, arrayBuffer);
-        
-        // Validate and select best result
-        const bestContent = selectBestBackendContent(extractionResults, fileName);
-        
-        if (bestContent && bestContent.length > resumeContent.length) {
-          resumeContent = bestContent;
-          console.log('Successfully re-extracted content, length:', resumeContent.length);
-          console.log('Re-extracted content preview (first 300 chars):', resumeContent.substring(0, 300));
-        } else {
-          console.warn('Re-extraction did not improve content quality');
-        }
-        
-      } catch (extractError) {
-        console.error('Backend DOCX re-extraction failed:', extractError);
-        console.error('Error details:', {
-          name: extractError.name,
-          message: extractError.message,
-          stack: extractError.stack
-        });
       }
     }
     
