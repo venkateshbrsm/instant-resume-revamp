@@ -378,7 +378,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
   return await Packer.toBuffer(doc);
 }
 
-// Backend extraction methods helper function
+// Enhanced backend extraction methods with multiple approaches
 async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffer) {
   const results = [];
   
@@ -398,15 +398,19 @@ async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffe
     console.warn('Backend Method 1 failed:', error.message);
   }
   
-  // Method 2: convertToHtml then strip tags
+  // Method 2: convertToHtml then strip tags with enhanced cleaning
   try {
     console.log('Backend Method 2: HTML conversion...');
     const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
     if (htmlResult.value) {
       const plainText = htmlResult.value
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/&[^;]+;/g, ' ')
-        .replace(/\s+/g, ' ')
+        .replace(/<style[^>]*>.*?<\/style>/gi, '') // Remove style blocks
+        .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script blocks
+        .replace(/<[^>]*>/g, ' ') // Remove HTML tags
+        .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+        .replace(/&[a-zA-Z][a-zA-Z0-9]*;/g, ' ') // Replace HTML entities
+        .replace(/&#[0-9]+;/g, ' ') // Replace numeric entities
+        .replace(/\s+/g, ' ') // Normalize whitespace
         .trim();
       
       if (plainText.length > 0) {
@@ -420,6 +424,82 @@ async function tryBackendExtractionMethods(mammoth: any, arrayBuffer: ArrayBuffe
     }
   } catch (error) {
     console.warn('Backend Method 2 failed:', error.message);
+  }
+
+  // Method 3: convertToHtml with style mapping for better formatting
+  try {
+    console.log('Backend Method 3: HTML conversion with style mapping...');
+    const htmlResult = await mammoth.convertToHtml({ 
+      arrayBuffer,
+      styleMap: [
+        "p[style-name='Heading 1'] => h1:fresh",
+        "p[style-name='Heading 2'] => h2:fresh",
+        "p[style-name='Normal'] => p:fresh"
+      ]
+    });
+    
+    if (htmlResult.value) {
+      const plainText = htmlResult.value
+        .replace(/<h[1-6][^>]*>/gi, '\n\n') // Add line breaks before headings
+        .replace(/<\/h[1-6]>/gi, '\n') // Add line breaks after headings
+        .replace(/<p[^>]*>/gi, '\n') // Add line breaks for paragraphs
+        .replace(/<li[^>]*>/gi, '\n• ') // Convert list items to bullet points
+        .replace(/<[^>]*>/g, ' ') // Remove remaining HTML tags
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&[a-zA-Z][a-zA-Z0-9]*;/g, ' ')
+        .replace(/&#[0-9]+;/g, ' ')
+        .replace(/\n\s*\n\s*\n/g, '\n\n') // Normalize multiple line breaks
+        .replace(/\s+/g, ' ') // Normalize spaces but preserve line breaks
+        .trim();
+      
+      if (plainText.length > 0) {
+        console.log('Backend Method 3 success, length:', plainText.length);
+        results.push({
+          method: 'htmlStyleMapping',
+          content: plainText,
+          score: 0
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Backend Method 3 failed:', error.message);
+  }
+
+  // Method 4: Direct buffer extraction with different encoding
+  try {
+    console.log('Backend Method 4: Direct buffer text extraction...');
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Try to find readable text patterns in the buffer
+    let extractedText = '';
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    
+    // Extract text in chunks to handle large files
+    const chunkSize = 1024;
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      const text = decoder.decode(chunk);
+      
+      // Filter for readable ASCII characters and common resume terms
+      const readableText = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (readableText.length > 10) {
+        extractedText += readableText + ' ';
+      }
+    }
+    
+    if (extractedText.trim().length > 50) {
+      console.log('Backend Method 4 success, length:', extractedText.trim().length);
+      results.push({
+        method: 'directBuffer',
+        content: extractedText.trim(),
+        score: 0
+      });
+    }
+  } catch (error) {
+    console.warn('Backend Method 4 failed:', error.message);
   }
   
   return results;
@@ -672,6 +752,72 @@ Experience: Professional experience in relevant industry`;
     reason: '',
     content: content.trim()
   };
+}
+
+// Validate that enhanced content contains real data, not just placeholders
+function validateEnhancedContent(parsedContent: any, originalContent: string): boolean {
+  console.log('Validating enhanced content for real data...');
+  
+  // Check if it's just basic placeholder content
+  const hasRealName = parsedContent.name && 
+    parsedContent.name !== 'Professional Resume' && 
+    parsedContent.name !== 'Professional Candidate' &&
+    parsedContent.name !== 'Experienced Professional' &&
+    !parsedContent.name.includes('professional.email@example.com');
+  
+  const hasRealExperience = parsedContent.experience && 
+    parsedContent.experience.length > 0 &&
+    parsedContent.experience.some((exp: any) => 
+      exp.company && 
+      exp.company !== 'Relevant Field' &&
+      exp.company !== 'Company' &&
+      exp.title !== 'Professional Experience' &&
+      exp.title !== 'Position'
+    );
+  
+  const hasRealSkills = parsedContent.skills && 
+    parsedContent.skills.length > 0 &&
+    parsedContent.skills.some((skill: string) => 
+      skill !== 'Communication' && 
+      skill !== 'Problem-solving' && 
+      skill !== 'Team collaboration' &&
+      skill !== 'Leadership'
+    );
+  
+  const hasRealEducation = parsedContent.education && 
+    parsedContent.education.length > 0 &&
+    parsedContent.education.some((edu: any) => 
+      edu.institution && 
+      edu.institution !== 'Education Background' &&
+      edu.institution !== 'Institution' &&
+      edu.degree !== 'Professional Qualifications'
+    );
+  
+  // Check if original content had substantial information
+  const originalHasSubstance = originalContent && originalContent.length > 200;
+  
+  // If original content was substantial, we expect real data in enhanced version
+  if (originalHasSubstance) {
+    const realDataScore = (hasRealName ? 1 : 0) + 
+                         (hasRealExperience ? 2 : 0) + 
+                         (hasRealSkills ? 1 : 0) + 
+                         (hasRealEducation ? 1 : 0);
+    
+    console.log('Enhanced content validation score:', realDataScore, '/5');
+    console.log('Has real name:', hasRealName);
+    console.log('Has real experience:', hasRealExperience);
+    console.log('Has real skills:', hasRealSkills);
+    console.log('Has real education:', hasRealEducation);
+    
+    // Need at least 3 points if original had substance
+    return realDataScore >= 3;
+  }
+  
+  // For shorter original content, be more lenient but still require some real data
+  const hasAnyRealData = hasRealName || hasRealExperience || hasRealSkills || hasRealEducation;
+  console.log('Short content validation - has any real data:', hasAnyRealData);
+  
+  return hasAnyRealData;
 }
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -967,6 +1113,26 @@ REMEMBER: Use ONLY information from the actual resume provided. Do not invent da
     }
 
     console.log('Enhanced resume created successfully');
+
+    // Validate that we have real content, not just placeholder data
+    const isRealContent = validateEnhancedContent(parsedContent, resumeContent);
+    
+    if (!isRealContent) {
+      console.error('Enhanced content contains only placeholder data - not saving to database');
+      console.error('Enhanced content preview:', JSON.stringify(parsedContent, null, 2));
+      return new Response(
+        JSON.stringify({ 
+          error: 'Content extraction was successful, but the resulting enhanced resume contains only generic placeholder data. This usually indicates that the original document had very limited extractable content. Please try uploading a different format of your resume or ensure the document contains clear, readable text.',
+          success: false,
+          reason: 'placeholder_content_detected',
+          details: 'The system detected that the enhanced resume would only contain generic information rather than your actual professional details.'
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     // Generate DOCX for the enhanced resume with selected theme
     const selectedTheme = themeId || 'navy';
