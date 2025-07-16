@@ -261,11 +261,18 @@ serve(async (req) => {
         if (!downloadError && fileData) {
           const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
           
-          return new Response(fileData, {
+          // Convert blob to array buffer to ensure proper binary handling
+          const arrayBuffer = await fileData.arrayBuffer();
+          const fileSize = arrayBuffer.byteLength;
+          
+          console.log(`Downloaded DOCX file size: ${fileSize} bytes`);
+          
+          return new Response(arrayBuffer, {
             headers: {
               ...corsHeaders,
               'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
               'Content-Disposition': `attachment; filename="${fileName}"`,
+              'Content-Length': fileSize.toString(),
             },
           });
         } else {
