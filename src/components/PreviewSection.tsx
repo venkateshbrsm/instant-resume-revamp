@@ -179,7 +179,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        // User is authenticated, proceed with purchase
+        // User is authenticated, save enhanced content before proceeding with purchase
+        if (enhancedContent) {
+          sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+          sessionStorage.setItem('extractedTextForPayment', extractedText);
+        }
         onPurchase();
       } else {
         // User is not authenticated, redirect to login
@@ -195,7 +199,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           sessionStorage.setItem('extractedText', extractedText);
         }
         if (enhancedContent) {
-          sessionStorage.setItem('enhancedContent', enhancedContent);
+          sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
+          sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+          sessionStorage.setItem('extractedTextForPayment', extractedText);
         }
         if (originalContent) {
           const contentToStore = typeof originalContent === 'string' ? originalContent : JSON.stringify(originalContent);

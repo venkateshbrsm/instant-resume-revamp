@@ -66,8 +66,34 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
         throw new Error('Failed to upload file');
       }
 
+      // Get enhanced content from session storage if available
+      const enhancedContentString = sessionStorage.getItem('enhancedContentForPayment');
+      const extractedTextString = sessionStorage.getItem('extractedTextForPayment');
+      
+      let enhancedContent = null;
+      let extractedText = null;
+      
+      if (enhancedContentString) {
+        try {
+          enhancedContent = JSON.parse(enhancedContentString);
+          extractedText = extractedTextString;
+          console.log('Found enhanced content for payment, including in request');
+          // Clear from storage after using
+          sessionStorage.removeItem('enhancedContentForPayment');
+          sessionStorage.removeItem('extractedTextForPayment');
+        } catch (error) {
+          console.warn('Failed to parse enhanced content from storage:', error);
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('razorpay-initiate', {
-        body: { fileName, amount, filePath }
+        body: { 
+          fileName, 
+          amount, 
+          filePath,
+          enhancedContent: enhancedContent,
+          extractedText: extractedText
+        }
       });
 
       if (error) {

@@ -39,8 +39,8 @@ serve(async (req) => {
     console.log("User authenticated:", user.email);
 
     // Get request body
-    const { fileName, amount, filePath } = await req.json();
-    console.log("Payment details:", { fileName, amount, filePath });
+    const { fileName, amount, filePath, enhancedContent, extractedText } = await req.json();
+    console.log("Payment details:", { fileName, amount, filePath, hasEnhancedContent: !!enhancedContent });
 
     if (!fileName || !amount) {
       throw new Error("Missing fileName or amount");
@@ -99,7 +99,7 @@ serve(async (req) => {
     const razorpayOrder = await orderResponse.json();
     console.log("Razorpay order created:", razorpayOrder.id);
 
-    // Insert payment record in database
+    // Insert payment record in database with enhanced content
     const { data: payment, error: paymentError } = await supabaseClient
       .from("payments")
       .insert({
@@ -110,7 +110,8 @@ serve(async (req) => {
         amount: amount,
         currency: "INR",
         razorpay_order_id: razorpayOrder.id,
-        status: "pending"
+        status: "pending",
+        enhanced_content: enhancedContent || null
       })
       .select()
       .single();
@@ -121,6 +122,11 @@ serve(async (req) => {
     }
 
     console.log("Payment record created successfully");
+    if (enhancedContent) {
+      console.log("Enhanced content saved with payment record:", JSON.stringify(enhancedContent).substring(0, 200) + "...");
+    } else {
+      console.log("No enhanced content provided in payment request");
+    }
 
     // Return payment details for frontend
     return new Response(JSON.stringify({

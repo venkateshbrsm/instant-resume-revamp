@@ -249,7 +249,8 @@ serve(async (req) => {
 
     // Second priority: Check if enhanced content is saved in the database and generate DOCX
     if (payment.enhanced_content) {
-      console.log("Using saved enhanced content from database to generate DOCX");
+      console.log("Found saved enhanced content from database, generating DOCX...");
+      console.log("Enhanced content preview:", JSON.stringify(payment.enhanced_content).substring(0, 200) + "...");
       
       const enhancedResume = payment.enhanced_content;
       
