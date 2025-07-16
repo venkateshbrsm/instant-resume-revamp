@@ -55,21 +55,23 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     body {
       font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.4;
+      line-height: 1.5;
       color: #1a202c;
-      background: white;
-      font-size: 11pt;
-      margin: 0;
-      padding: 0;
+      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+      font-size: 10pt;
+      width: 210mm;
+      min-height: 297mm;
     }
     
     .container {
       max-width: 100%;
       margin: 0;
       background: white;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      width: 210mm;
+      min-height: 297mm;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border-radius: 8pt;
+      overflow: hidden;
     }
     
     .header {
@@ -141,19 +143,10 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     }
     
     .main-content {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 300pt;
       gap: 24pt;
       padding: 24pt;
-      flex: 1;
-    }
-    
-    .left-column {
-      flex: 1;
-    }
-    
-    .sidebar {
-      width: 35%;
-      min-width: 250pt;
     }
     
     .section {
@@ -193,12 +186,22 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .timeline {
       position: relative;
-      margin-left: 0;
+      padding-left: 20pt;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8pt;
+      top: 20pt;
+      bottom: 0;
+      width: 2pt;
+      background: linear-gradient(to bottom, ${theme.primary}, ${theme.accent});
+      border-radius: 1pt;
     }
     
     .experience-item {
       margin-bottom: 20pt;
-      page-break-inside: avoid;
       break-inside: avoid;
       position: relative;
       background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
@@ -206,7 +209,19 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       border-radius: 12pt;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       border: 1pt solid ${theme.primary}15;
-      border-left: 4pt solid ${theme.primary};
+    }
+    
+    .experience-item::before {
+      content: '';
+      position: absolute;
+      left: -16pt;
+      top: 20pt;
+      width: 8pt;
+      height: 8pt;
+      background: ${theme.primary};
+      border-radius: 50%;
+      border: 2pt solid white;
+      box-shadow: 0 0 0 2pt ${theme.primary}30;
     }
     
     .experience-header {
@@ -541,7 +556,13 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
                 <li class="achievement">${achievement}</li>
                 `).join('')}
               </ul>
-              ` : ''}
+              ` : `
+              <ul class="achievements">
+                <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
+                <li class="achievement">Collaborated effectively with cross-functional teams to achieve strategic objectives</li>
+                <li class="achievement">Implemented innovative solutions that improved operational efficiency</li>
+              </ul>
+              `}
             </div>
             `).join('')}
           </div>
