@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { extractTextFromFile, formatResumeText, getFileType } from "@/lib/fileExtractor";
+import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -30,7 +30,7 @@ const colorThemes = [
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
-  const [originalContent, setOriginalContent] = useState<string>("");
+  const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
   const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,16 +132,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('Extracting content from file:', file.name);
       
       setLoadingProgress(60);
-      setLoadingStage("Extracting text content...");
-      const text = await extractTextFromFile(file);
+      setLoadingStage("Extracting text and preparing visual preview...");
+      
+      // Use the new enhanced extraction function
+      const extractedContent = await extractContentFromFile(file);
       
       setLoadingProgress(85);
       setLoadingStage("Processing content...");
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      setExtractedText(text);
-      // Store original text without any formatting changes
-      setOriginalContent(text);
+      setExtractedText(extractedContent.text);
+      // Store the complete extracted content for visual preview
+      setOriginalContent(extractedContent);
       
       setLoadingProgress(100);
       setLoadingStage("Complete!");
@@ -196,7 +198,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           sessionStorage.setItem('enhancedContent', enhancedContent);
         }
         if (originalContent) {
-          sessionStorage.setItem('originalContent', originalContent);
+          const contentToStore = typeof originalContent === 'string' ? originalContent : JSON.stringify(originalContent);
+          sessionStorage.setItem('originalContent', contentToStore);
         }
         toast({
           title: "Authentication Required",

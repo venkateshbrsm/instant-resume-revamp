@@ -1,17 +1,30 @@
 import DOMPurify from 'dompurify';
+import { PDFViewer } from './PDFViewer';
+import { ExtractedContent } from '@/lib/fileExtractor';
 
 interface RichDocumentPreviewProps {
-  content: string;
-  fileType: 'docx' | 'pdf' | 'txt';
+  content: string | ExtractedContent;
+  fileType?: 'docx' | 'pdf' | 'txt';
   fileName: string;
 }
 
 export const RichDocumentPreview = ({ content, fileType, fileName }: RichDocumentPreviewProps) => {
+  // Handle both legacy string content and new ExtractedContent
+  const extractedContent = typeof content === 'string' ? null : content;
+  const textContent = typeof content === 'string' ? content : content.text;
+  const actualFileType = fileType || extractedContent?.fileType || 'txt';
+
   const renderContent = () => {
-    switch (fileType) {
+    // If we have a PDF URL and it's a PDF or converted DOCX, show PDF viewer
+    if (extractedContent?.pdfUrl) {
+      return <PDFViewer file={extractedContent.pdfUrl} className="w-full" />;
+    }
+
+    // Otherwise, render based on file type
+    switch (actualFileType) {
       case 'docx':
         // Sanitize and render HTML content for DOCX files
-        const sanitizedHTML = DOMPurify.sanitize(content, {
+        const sanitizedHTML = DOMPurify.sanitize(textContent, {
           ALLOWED_TAGS: ['p', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'div', 'span'],
           ALLOWED_ATTR: ['class', 'style'],
           ALLOW_DATA_ATTR: false
@@ -25,10 +38,10 @@ export const RichDocumentPreview = ({ content, fileType, fileName }: RichDocumen
         );
         
       case 'pdf':
-        // For PDFs, display as structured text with preserved formatting
+        // For PDFs without PDF URL, display as structured text
         return (
           <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-            {content}
+            {textContent}
           </div>
         );
         
@@ -36,14 +49,14 @@ export const RichDocumentPreview = ({ content, fileType, fileName }: RichDocumen
         // For text files, preserve exact formatting
         return (
           <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground font-mono">
-            {content}
+            {textContent}
           </div>
         );
         
       default:
         return (
           <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-            {content}
+            {textContent}
           </div>
         );
     }
@@ -54,7 +67,7 @@ export const RichDocumentPreview = ({ content, fileType, fileName }: RichDocumen
       <div className="flex items-center gap-3 mb-4 pb-3 border-b">
         <div className="w-8 h-10 bg-primary/10 rounded-sm flex items-center justify-center">
           <span className="text-xs font-medium text-primary">
-            {fileType.toUpperCase()}
+            {actualFileType.toUpperCase()}
           </span>
         </div>
         <div>

@@ -5,6 +5,98 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
+export interface ExtractedContent {
+  text: string;
+  pdfUrl?: string; // For visual preview
+  originalFile: File;
+  fileType: 'docx' | 'pdf' | 'txt';
+}
+
+// Enhanced function that returns both text and PDF URL for visual preview
+export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
+  const fileType = getFileType(file);
+  
+  console.log('Starting enhanced file extraction:', {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    detectedType: fileType
+  });
+
+  try {
+    let text: string;
+    let pdfUrl: string | undefined;
+
+    if (fileType === 'pdf') {
+      // For PDFs, extract text and keep original file for visual preview
+      text = await extractTextFromPDF(file);
+      pdfUrl = URL.createObjectURL(file);
+    } else if (fileType === 'docx') {
+      // For DOCX, extract text and convert to PDF for visual preview
+      text = await extractTextFromWord(file);
+      pdfUrl = await convertDocxToPdf(file);
+    } else {
+      // For text files, just extract text
+      text = await file.text();
+    }
+
+    return {
+      text,
+      pdfUrl,
+      originalFile: file,
+      fileType
+    };
+  } catch (error) {
+    console.error('Error extracting content from file:', error);
+    throw error;
+  }
+};
+
+// Convert DOCX to PDF using the new edge function
+const convertDocxToPdf = async (file: File): Promise<string | undefined> => {
+  try {
+    console.log('Converting DOCX to PDF for visual preview...');
+    
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('https://goorszhscvxywfigydfp.supabase.co/functions/v1/convert-docx-to-pdf', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      console.warn('DOCX to PDF conversion failed, using text preview fallback');
+      return undefined;
+    }
+
+    const result = await response.json();
+    
+    if (!result.success) {
+      console.warn('DOCX to PDF conversion failed:', result.error);
+      return undefined;
+    }
+
+    // Convert base64 to blob URL
+    const pdfData = atob(result.pdfData);
+    const pdfArray = new Uint8Array(pdfData.length);
+    for (let i = 0; i < pdfData.length; i++) {
+      pdfArray[i] = pdfData.charCodeAt(i);
+    }
+    
+    const pdfBlob = new Blob([pdfArray], { type: 'application/pdf' });
+    return URL.createObjectURL(pdfBlob);
+    
+  } catch (error) {
+    console.warn('DOCX to PDF conversion failed:', error);
+    return undefined;
+  }
+};
+
+// Keep the original function for backward compatibility
 export const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type.toLowerCase();
   const fileName = file.name.toLowerCase();

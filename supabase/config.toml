@@ -1,5 +1,8 @@
 project_id = "goorszhscvxywfigydfp"
 
+[functions.convert-docx-to-pdf]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
