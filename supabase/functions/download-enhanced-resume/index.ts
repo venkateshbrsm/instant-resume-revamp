@@ -263,12 +263,47 @@ serve(async (req) => {
             .download(payment.file_path);
 
           if (!fileError && fileData) {
-            // Convert blob to text for DOCX files or use extraction service for PDF
-            if (payment.file_name.toLowerCase().endsWith('.docx')) {
-              // For DOCX, we'll send the file to extract text
-              fileContent = `DOCX file content for: ${payment.file_name}`;
-            } else if (payment.file_name.toLowerCase().endsWith('.pdf')) {
-              fileContent = `PDF file content for: ${payment.file_name}`;
+            // Extract actual text content from the file
+            if (payment.file_name.toLowerCase().endsWith('.pdf')) {
+              // Extract text from PDF using the extract-pdf-text function
+              const formData = new FormData();
+              formData.append('file', fileData, payment.file_name);
+              
+              try {
+                const extractResponse = await supabaseClient.functions.invoke('extract-pdf-text', {
+                  body: formData,
+                });
+                
+                if (extractResponse.data && extractResponse.data.extracted_text) {
+                  fileContent = extractResponse.data.extracted_text;
+                  console.log("PDF text extracted successfully, length:", fileContent.length);
+                } else {
+                  console.log("PDF extraction failed, using filename");
+                  fileContent = `PDF file: ${payment.file_name}`;
+                }
+              } catch (pdfError) {
+                console.error("PDF extraction error:", pdfError);
+                fileContent = `PDF file: ${payment.file_name}`;
+              }
+            } else if (payment.file_name.toLowerCase().endsWith('.docx')) {
+              // For DOCX files, we'll read the binary content and convert to text
+              // This is a simplified approach - in production, you'd use a proper DOCX parser
+              try {
+                const arrayBuffer = await fileData.arrayBuffer();
+                const text = new TextDecoder('utf-8').decode(arrayBuffer);
+                // Extract readable text (this is basic - DOCX files are complex XML)
+                fileContent = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                if (fileContent.length < 50) {
+                  fileContent = `DOCX file: ${payment.file_name} (content extraction limited)`;
+                }
+                console.log("DOCX text extracted, length:", fileContent.length);
+              } catch (docxError) {
+                console.error("DOCX extraction error:", docxError);
+                fileContent = `DOCX file: ${payment.file_name}`;
+              }
+            } else {
+              // For TXT files or others
+              fileContent = await fileData.text();
             }
           }
         } catch (err) {
