@@ -44,7 +44,7 @@ export default function PaymentSuccess() {
           description: "Your payment has been successfully verified.",
         });
       } else {
-        throw new Error(data.error || 'Payment verification failed');
+        throw new Error('Payment verification failed');
       }
     } catch (error) {
       console.error('Payment verification error:', error);
