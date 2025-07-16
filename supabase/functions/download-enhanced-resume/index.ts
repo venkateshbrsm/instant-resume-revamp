@@ -273,38 +273,8 @@ serve(async (req) => {
 
     console.log("Found payment:", payment.id, "for file:", payment.file_name);
 
-    // Priority 1: Download enhanced DOCX blob directly from storage (simplified approach)
-    if (payment.enhanced_file_path) {
-      console.log('Downloading enhanced DOCX blob from storage:', payment.enhanced_file_path);
-      
-      try {
-        const { data: fileData, error: downloadError } = await supabaseClient.storage
-          .from('resumes')
-          .download(payment.enhanced_file_path);
-
-        if (!downloadError && fileData) {
-          const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.docx')}`;
-          const arrayBuffer = await fileData.arrayBuffer();
-          
-          console.log(`Enhanced DOCX blob downloaded successfully, size: ${arrayBuffer.byteLength} bytes`);
-          
-          return new Response(arrayBuffer, {
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              'Content-Disposition': `attachment; filename="${fileName}"`,
-              'Content-Length': arrayBuffer.byteLength.toString(),
-            },
-          });
-        } else {
-          console.log('Enhanced blob not found in storage, falling back to generation:', downloadError);
-        }
-      } catch (storageError) {
-        console.error('Enhanced blob download error, falling back to generation:', storageError);
-      }
-    }
-
-    // Second priority: Check if enhanced content is saved in the database and generate DOCX
+    // Always generate DOCX from saved JSON data for consistency and theme accuracy
+    // Check if enhanced content is saved in the database and generate DOCX
     if (payment.enhanced_content) {
       console.log("Found saved enhanced content from database, generating DOCX...");
       console.log("Enhanced content preview:", JSON.stringify(payment.enhanced_content).substring(0, 200) + "...");
