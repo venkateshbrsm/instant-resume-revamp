@@ -15,140 +15,381 @@ const colorThemes = {
   slate: { primary: '#334155', secondary: '#475569', accent: '#64748b' }
 };
 
-function createSimplePDF(resumeData: any, themeId: string = 'navy'): Uint8Array {
+function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): string {
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
   
-  // Create a simple PDF-like structure using plain text
-  const content = `
-%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Resume - ${resumeData.name}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0.5in;
+      @top-center {
+        content: "${resumeData.name} - Enhanced Resume";
+      }
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      line-height: 1.4;
+      color: #2d3748;
+      background: white;
+      font-size: 11pt;
+    }
+    
+    .container {
+      max-width: 100%;
+      margin: 0;
+      background: white;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
+      color: white;
+      padding: 20pt;
+      margin-bottom: 15pt;
+      border-radius: 5pt;
+    }
+    
+    .header h1 {
+      font-size: 24pt;
+      font-weight: bold;
+      margin-bottom: 5pt;
+      line-height: 1.2;
+    }
+    
+    .header .title {
+      font-size: 16pt;
+      margin-bottom: 15pt;
+      opacity: 0.9;
+    }
+    
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10pt;
+    }
+    
+    .contact-item {
+      font-size: 10pt;
+      opacity: 0.9;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20pt;
+    }
+    
+    .section {
+      margin-bottom: 20pt;
+      break-inside: avoid;
+    }
+    
+    .section-title {
+      font-size: 16pt;
+      font-weight: bold;
+      color: ${theme.primary};
+      margin-bottom: 10pt;
+      padding-bottom: 5pt;
+      border-bottom: 2pt solid ${theme.primary};
+    }
+    
+    .summary-text {
+      font-size: 11pt;
+      line-height: 1.5;
+      text-align: justify;
+    }
+    
+    .experience-item {
+      margin-bottom: 15pt;
+      break-inside: avoid;
+    }
+    
+    .experience-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8pt;
+    }
+    
+    .experience-title {
+      font-size: 13pt;
+      font-weight: bold;
+      color: #2d3748;
+    }
+    
+    .experience-company {
+      font-size: 12pt;
+      font-weight: 600;
+      color: ${theme.accent};
+      margin-top: 2pt;
+    }
+    
+    .experience-duration {
+      background: ${theme.accent}20;
+      color: ${theme.accent};
+      padding: 3pt 8pt;
+      border-radius: 3pt;
+      font-size: 9pt;
+      font-weight: 600;
+    }
+    
+    .achievements {
+      list-style: none;
+      margin-left: 0;
+    }
+    
+    .achievement {
+      margin-bottom: 6pt;
+      font-size: 10pt;
+      line-height: 1.4;
+      position: relative;
+      padding-left: 12pt;
+    }
+    
+    .achievement:before {
+      content: "▶";
+      position: absolute;
+      left: 0;
+      color: ${theme.accent};
+      font-size: 8pt;
+      top: 1pt;
+    }
+    
+    .sidebar {
+      font-size: 10pt;
+    }
+    
+    .skills-section {
+      background: ${theme.primary}08;
+      padding: 15pt;
+      border-radius: 5pt;
+      margin-bottom: 15pt;
+      break-inside: avoid;
+    }
+    
+    .skill-category {
+      margin-bottom: 10pt;
+    }
+    
+    .skill-category:last-child {
+      margin-bottom: 0;
+    }
+    
+    .skill-category-title {
+      font-weight: bold;
+      color: ${theme.primary};
+      margin-bottom: 5pt;
+      font-size: 11pt;
+    }
+    
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4pt;
+    }
+    
+    .skill-tag {
+      background: ${theme.primary}15;
+      color: ${theme.primary};
+      padding: 2pt 6pt;
+      border-radius: 3pt;
+      font-size: 9pt;
+      border: 1pt solid ${theme.primary}30;
+    }
+    
+    .education-item {
+      background: ${theme.accent}08;
+      padding: 12pt;
+      border-radius: 5pt;
+      margin-bottom: 10pt;
+      break-inside: avoid;
+    }
+    
+    .education-degree {
+      font-weight: bold;
+      color: #2d3748;
+      font-size: 11pt;
+      margin-bottom: 3pt;
+    }
+    
+    .education-institution {
+      font-weight: 600;
+      color: ${theme.accent};
+      margin-bottom: 2pt;
+    }
+    
+    .education-year {
+      color: #666;
+      font-size: 9pt;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8pt;
+      margin-bottom: 15pt;
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 10pt;
+      border-radius: 5pt;
+      border: 1pt solid ${theme.primary}20;
+    }
+    
+    .stat-number {
+      font-size: 18pt;
+      font-weight: bold;
+      color: ${theme.primary};
+      margin-bottom: 2pt;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 8pt;
+    }
+    
+    @media print {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        grid-column: 1;
+      }
+      
+      .left-column {
+        grid-column: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>${resumeData.name || 'Enhanced Resume'}</h1>
+      <div class="title">${resumeData.title || ''}</div>
+      
+      <div class="contact-grid">
+        <div class="contact-item">Email: ${resumeData.email || ''}</div>
+        <div class="contact-item">Phone: ${resumeData.phone || ''}</div>
+        <div class="contact-item">Location: ${resumeData.location || ''}</div>
+        <div class="contact-item">Professional Resume</div>
+      </div>
+    </div>
 
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
+    <div class="main-content">
+      <!-- Main Content -->
+      <div class="left-column">
+        <!-- Professional Summary -->
+        <div class="section">
+          <h3 class="section-title">Professional Summary</h3>
+          <p class="summary-text">${resumeData.summary || 'Professional summary not available.'}</p>
+        </div>
 
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/MediaBox [0 0 612 792]
-/Resources <<
-/Font <<
-/F1 4 0 R
-/F2 5 0 R
->>
->>
-/Contents 6 0 R
->>
-endobj
+        <!-- Professional Experience -->
+        ${resumeData.experience && resumeData.experience.length > 0 ? `
+        <div class="section">
+          <h3 class="section-title">Professional Experience</h3>
+          
+          ${resumeData.experience.map((exp: any) => `
+          <div class="experience-item">
+            <div class="experience-header">
+              <div>
+                <div class="experience-title">${exp.title || ''}</div>
+                <div class="experience-company">${exp.company || ''}</div>
+              </div>
+              <div class="experience-duration">${exp.duration || ''}</div>
+            </div>
+            
+            ${exp.achievements && exp.achievements.length > 0 ? `
+            <ul class="achievements">
+              ${exp.achievements.map((achievement: string) => `
+              <li class="achievement">${achievement}</li>
+              `).join('')}
+            </ul>
+            ` : ''}
+          </div>
+          `).join('')}
+        </div>
+        ` : ''}
+      </div>
 
-4 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica-Bold
->>
-endobj
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Skills -->
+        ${resumeData.skills && resumeData.skills.length > 0 ? `
+        <div class="skills-section">
+          <h3 class="section-title">Skills</h3>
+          
+          <div class="skill-category">
+            <div class="skills-list">
+              ${resumeData.skills.map((skill: string) => `
+                <span class="skill-tag">${skill}</span>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ` : ''}
 
-5 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica
->>
-endobj
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">${resumeData.skills?.length || 0}</div>
+            <div class="stat-label">Skills</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${resumeData.experience?.length || 0}</div>
+            <div class="stat-label">Experience</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${resumeData.education?.length || 0}</div>
+            <div class="stat-label">Education</div>
+          </div>
+        </div>
 
-6 0 obj
-<<
-/Length 2000
->>
-stream
-BT
-/F1 24 Tf
-50 750 Td
-(${(resumeData.name || 'Enhanced Resume').replace(/[()\\]/g, '')}) Tj
-0 -30 Td
-/F1 16 Tf
-(${(resumeData.title || '').replace(/[()\\]/g, '')}) Tj
-0 -40 Td
-/F2 12 Tf
-(Email: ${(resumeData.email || '').replace(/[()\\]/g, '')}) Tj
-0 -20 Td
-(Phone: ${(resumeData.phone || '').replace(/[()\\]/g, '')}) Tj
-0 -20 Td
-(Location: ${(resumeData.location || '').replace(/[()\\]/g, '')}) Tj
-0 -40 Td
-/F1 14 Tf
-(Professional Summary) Tj
-0 -25 Td
-/F2 10 Tf
-${resumeData.summary ? resumeData.summary.replace(/[()\\]/g, '').substring(0, 500).split(' ').map((word: string, index: number) => {
-    if (index > 0 && index % 10 === 0) return `0 -12 Td\n(${word}`;
-    return word;
-  }).join(' ') + ')' : '(No summary available)'}
-0 -40 Td
-/F1 14 Tf
-(Professional Experience) Tj
-${resumeData.experience ? resumeData.experience.slice(0, 3).map((exp: any, index: number) => `
-0 -25 Td
-/F1 12 Tf
-(${(exp.title || '').replace(/[()\\]/g, '')}) Tj
-0 -15 Td
-/F2 10 Tf
-(${(exp.company || '').replace(/[()\\]/g, '')} - ${(exp.duration || '').replace(/[()\\]/g, '')}) Tj
-${exp.achievements ? exp.achievements.slice(0, 2).map((achievement: string) => `
-0 -12 Td
-(• ${achievement.replace(/[()\\]/g, '').substring(0, 60)}...) Tj`).join('') : ''}
-`).join('') : ''}
-0 -40 Td
-/F1 14 Tf
-(Skills) Tj
-0 -20 Td
-/F2 10 Tf
-(${resumeData.skills ? resumeData.skills.slice(0, 15).join(', ').replace(/[()\\]/g, '') : 'No skills listed'}) Tj
-${resumeData.education ? `
-0 -40 Td
-/F1 14 Tf
-(Education) Tj
-${resumeData.education.slice(0, 3).map((edu: any) => `
-0 -20 Td
-/F1 11 Tf
-(${(edu.degree || '').replace(/[()\\]/g, '')}) Tj
-0 -12 Td
-/F2 10 Tf
-(${(edu.institution || '').replace(/[()\\]/g, '')} - ${(edu.year || '').replace(/[()\\]/g, '')}) Tj`).join('')}` : ''}
-ET
-endstream
-endobj
-
-xref
-0 7
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000268 00000 n 
-0000000343 00000 n 
-0000000413 00000 n 
-trailer
-<<
-/Size 7
-/Root 1 0 R
->>
-startxref
-2500
-%%EOF`;
-
-  return new TextEncoder().encode(content);
+        <!-- Education -->
+        ${resumeData.education && resumeData.education.length > 0 ? `
+        <div class="section">
+          <h3 class="section-title">Education</h3>
+          ${resumeData.education.map((edu: any) => `
+          <div class="education-item">
+            <div class="education-degree">${edu.degree || ''}</div>
+            <div class="education-institution">${edu.institution || ''}</div>
+            <div class="education-year">${edu.year || ''}</div>
+          </div>
+          `).join('')}
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Auto-print when opened
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    }
+  </script>
+</body>
+</html>
+  `;
 }
 
 serve(async (req) => {
@@ -198,22 +439,18 @@ serve(async (req) => {
       throw new Error("Enhanced content not found for this payment");
     }
 
-    console.log("Generating simple PDF from resume data...");
+    console.log("Generating printable HTML...");
     const themeId = payment.theme_id || 'navy';
     
-    console.log("Creating PDF document...");
-    const pdfBuffer = createSimplePDF(payment.enhanced_content, themeId);
+    const htmlContent = generatePrintableHTML(payment.enhanced_content, themeId);
     
-    console.log(`Generated PDF, size: ${pdfBuffer.byteLength} bytes`);
+    console.log("Generated HTML content for PDF printing");
     
-    const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.pdf')}`;
-    
-    return new Response(pdfBuffer, {
+    // Return HTML that will auto-print as PDF
+    return new Response(htmlContent, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Content-Length': pdfBuffer.byteLength.toString(),
+        'Content-Type': 'text/html',
       },
     });
 
