@@ -161,9 +161,15 @@ export default function PaymentSuccess() {
 
       if (format === 'pdf') {
         // Try to get enhanced content from session storage first
-        const enhancedContentStr = sessionStorage.getItem('enhancedContent');
-        const selectedTheme = sessionStorage.getItem('selectedTheme') || 'navy';
-        const originalFileName = sessionStorage.getItem('originalFileName') || 'resume';
+        const enhancedContentStr = sessionStorage.getItem('enhancedContentForPayment');
+        const selectedThemeStr = sessionStorage.getItem('selectedThemeForPayment');
+        const pendingFileStr = sessionStorage.getItem('pendingFile');
+        
+        console.log('Session storage contents:', {
+          hasEnhancedContent: !!enhancedContentStr,
+          hasTheme: !!selectedThemeStr,
+          hasPendingFile: !!pendingFileStr
+        });
         
         let requestBody: any = { paymentId };
 
@@ -171,13 +177,41 @@ export default function PaymentSuccess() {
         if (enhancedContentStr) {
           try {
             const enhancedContent = JSON.parse(enhancedContentStr);
+            
+            // Parse theme data
+            let themeId = 'navy';
+            if (selectedThemeStr) {
+              try {
+                const themeData = JSON.parse(selectedThemeStr);
+                themeId = themeData.id || 'navy';
+              } catch (e) {
+                console.warn('Failed to parse theme data, using default');
+              }
+            }
+            
+            // Parse file name
+            let fileName = 'resume';
+            if (pendingFileStr) {
+              try {
+                const pendingFile = JSON.parse(pendingFileStr);
+                fileName = pendingFile.name || 'resume';
+              } catch (e) {
+                console.warn('Failed to parse pending file data, using default');
+              }
+            }
+            
             requestBody = {
               paymentId, // Still include for logging
               enhancedContent,
-              themeId: selectedTheme,
-              fileName: originalFileName
+              themeId,
+              fileName
             };
-            console.log('Using session storage data for PDF generation');
+            
+            console.log('Using session storage data for PDF generation:', {
+              hasContent: true,
+              themeId,
+              fileName
+            });
           } catch (e) {
             console.warn('Failed to parse session storage content, falling back to payment ID');
           }
