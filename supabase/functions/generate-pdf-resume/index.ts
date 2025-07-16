@@ -38,18 +38,31 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
+    /* Print-specific styles */
     @page {
       size: A4;
-      margin: 0.75in 0.5in;
+      margin: 0.5in;
+      @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #666;
+      }
     }
     
     @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
       html, body {
         width: 210mm;
         height: 297mm;
         margin: 0;
         padding: 0;
-        overflow: hidden;
+        font-size: 11pt;
+        line-height: 1.3;
       }
       
       .container {
@@ -59,39 +72,68 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         padding: 0;
         box-shadow: none;
         border-radius: 0;
-      }
-      
-      .main-content {
-        grid-template-columns: 65% 35%;
-        gap: 15pt;
+        page-break-inside: avoid;
       }
       
       .header {
-        margin-bottom: 12pt;
-        padding: 15pt;
+        margin-bottom: 15pt;
+        padding: 20pt 0;
+        page-break-after: avoid;
+      }
+      
+      .main-content {
+        display: grid;
+        grid-template-columns: 65% 35%;
+        gap: 15pt;
+        page-break-inside: avoid;
       }
       
       .section {
-        margin-bottom: 15pt;
+        margin-bottom: 12pt;
+        page-break-inside: avoid;
+      }
+      
+      .section-title {
+        page-break-after: avoid;
+        margin-bottom: 8pt;
       }
       
       .experience-item {
-        margin-bottom: 12pt;
+        margin-bottom: 10pt;
+        page-break-inside: avoid;
       }
       
-      .skills-section {
-        margin-bottom: 12pt;
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8pt;
       }
       
-      .stats-grid {
-        margin-bottom: 12pt;
-      }
-      
-      .education-item {
+      .stat-card {
         margin-bottom: 8pt;
+      }
+      
+      /* Force colors in print */
+      .header {
+        background: ${theme.primary} !important;
+        color: white !important;
+      }
+      
+      .section-title {
+        color: ${theme.primary} !important;
+        border-bottom: 1pt solid ${theme.primary} !important;
+      }
+      
+      .skill-progress {
+        background: ${theme.primary} !important;
+      }
+      
+      .stat-circle {
+        border: 2pt solid ${theme.primary} !important;
       }
     }
     
+    /* Base styles */
     * {
       margin: 0;
       padding: 0;
@@ -103,15 +145,16 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       html {
         width: 100%;
         height: auto;
-        background: #f5f5f5;
+        background: #f8fafc;
+        scroll-behavior: smooth;
       }
       
       body {
-        font-family: 'Arial', 'Helvetica', sans-serif;
-        line-height: 1.4;
-        color: #2d3748;
-        background: #f5f5f5;
-        font-size: 12pt;
+        font-family: 'Segoe UI', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+        line-height: 1.5;
+        color: #1a202c;
+        background: #f8fafc;
+        font-size: 14px;
         width: 100%;
         min-height: 100vh;
         margin: 0;
@@ -128,53 +171,144 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         width: 100%;
         min-height: auto;
         padding: 40px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        animation: fade-in 0.6s ease-out;
       }
       
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Responsive grid layout */
       .main-content {
+        display: grid;
         grid-template-columns: 1fr 380px;
-        gap: 30px;
+        gap: 40px;
+        margin-top: 30px;
       }
       
+      /* Header styling */
       .header {
-        margin: -40px -40px 20px -40px;
-        padding: 30px 40px;
+        background: linear-gradient(135deg, ${theme.primary}, ${theme.secondary});
+        margin: -40px -40px 0 -40px;
+        padding: 40px;
+        color: white;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.1;
       }
       
       .header h1 {
-        font-size: 28pt;
+        font-size: clamp(24px, 4vw, 36px);
+        font-weight: 700;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
       }
       
       .header .title {
-        font-size: 16pt;
+        font-size: clamp(16px, 2.5vw, 20px);
+        font-weight: 400;
+        margin-bottom: 20px;
+        opacity: 0.95;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .contact-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      
+      /* Section styling */
+      .section {
+        margin-bottom: 30px;
       }
       
       .section-title {
-        font-size: 16pt;
+        font-size: clamp(18px, 3vw, 22px);
+        font-weight: 600;
+        color: ${theme.primary};
+        margin-bottom: 20px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid ${theme.accent};
+        position: relative;
+      }
+      
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background: ${theme.primary};
+      }
+      
+      /* Typography responsive sizing */
+      .summary-text {
+        font-size: clamp(14px, 2vw, 16px);
+        line-height: 1.6;
+        color: #4a5568;
       }
       
       .experience-title {
-        font-size: 14pt;
+        font-size: clamp(16px, 2.5vw, 18px);
+        font-weight: 600;
+        color: ${theme.primary};
       }
       
       .experience-company {
-        font-size: 13pt;
+        font-size: clamp(14px, 2vw, 16px);
+        color: #718096;
+        margin: 4px 0;
+      }
+      
+      .experience-duration {
+        font-size: clamp(12px, 1.8vw, 14px);
+        color: #a0aec0;
       }
       
       .achievement {
-        font-size: 11pt;
+        font-size: clamp(13px, 1.9vw, 15px);
+        line-height: 1.5;
+        margin: 8px 0;
+        color: #4a5568;
       }
       
-      .skill-name {
-        font-size: 10pt;
+      /* Mobile-first responsive breakpoints */
+      @media screen and (max-width: 1024px) {
+        .main-content {
+          grid-template-columns: 1fr 300px;
+          gap: 30px;
+        }
       }
       
-      .summary-text {
-        font-size: 11pt;
-      }
-      
-      /* Responsive breakpoints */
       @media screen and (max-width: 768px) {
         body {
           padding: 10px;
@@ -183,21 +317,56 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
         .container {
           padding: 20px;
           max-width: 100%;
+          border-radius: 8px;
         }
         
         .main-content {
           grid-template-columns: 1fr;
-          gap: 20px;
+          gap: 25px;
         }
         
         .header {
-          margin: -20px -20px 15px -20px;
-          padding: 20px;
+          margin: -20px -20px 0 -20px;
+          padding: 25px 20px;
+          border-radius: 8px 8px 0 0;
         }
         
-        .header h1 {
-          font-size: 24pt;
+        .contact-info {
+          gap: 15px;
         }
+        
+        .contact-item {
+          font-size: 12px;
+        }
+        
+        .section {
+          margin-bottom: 25px;
+        }
+      }
+      
+      @media screen and (max-width: 480px) {
+        body {
+          padding: 8px;
+        }
+        
+        .container {
+          padding: 16px;
+        }
+        
+        .header {
+          margin: -16px -16px 0 -16px;
+          padding: 20px 16px;
+        }
+        
+        .contact-info {
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .section {
+          margin-bottom: 20px;
+        }
+      }
         
         .contact-grid {
           grid-template-columns: 1fr;
