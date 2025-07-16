@@ -93,6 +93,114 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       box-sizing: border-box;
     }
     
+    /* Screen styles for responsive viewing */
+    @media screen {
+      html {
+        width: 100%;
+        height: auto;
+        background: #f5f5f5;
+      }
+      
+      body {
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        line-height: 1.4;
+        color: #2d3748;
+        background: #f5f5f5;
+        font-size: 12pt;
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      
+      .container {
+        max-width: min(95vw, 1200px);
+        margin: 0 auto;
+        background: white;
+        width: 100%;
+        min-height: auto;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      
+      .main-content {
+        grid-template-columns: 1fr 380px;
+        gap: 30px;
+      }
+      
+      .header {
+        margin: -40px -40px 20px -40px;
+        padding: 30px 40px;
+      }
+      
+      .header h1 {
+        font-size: 28pt;
+      }
+      
+      .header .title {
+        font-size: 16pt;
+      }
+      
+      .section-title {
+        font-size: 16pt;
+      }
+      
+      .experience-title {
+        font-size: 14pt;
+      }
+      
+      .experience-company {
+        font-size: 13pt;
+      }
+      
+      .achievement {
+        font-size: 11pt;
+      }
+      
+      .skill-name {
+        font-size: 10pt;
+      }
+      
+      .summary-text {
+        font-size: 11pt;
+      }
+      
+      /* Responsive breakpoints */
+      @media screen and (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+        
+        .container {
+          padding: 20px;
+          max-width: 100%;
+        }
+        
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        
+        .header {
+          margin: -20px -20px 15px -20px;
+          padding: 20px;
+        }
+        
+        .header h1 {
+          font-size: 24pt;
+        }
+        
+        .contact-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+    
+    /* Print styles - preserve A4 layout */
     html {
       width: 210mm;
       height: 297mm;
