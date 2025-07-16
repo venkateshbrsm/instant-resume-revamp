@@ -768,7 +768,10 @@ async function generatePDFFromResumeData(resumeData: any, themeId: string = 'nav
 }
 
 serve(async (req) => {
+  console.log("PDF Generation function started");
+  
   if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS request");
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -781,7 +784,10 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { paymentId } = await req.json();
+    console.log("Supabase client initialized");
+
+    const requestBody = await req.json();
+    const { paymentId } = requestBody;
     console.log("Payment ID:", paymentId);
 
     if (!paymentId) {
@@ -789,6 +795,7 @@ serve(async (req) => {
     }
 
     // Get payment details
+    console.log("Fetching payment details...");
     const { data: payment, error: paymentError } = await supabaseClient
       .from("payments")
       .select("*")
@@ -810,27 +817,68 @@ serve(async (req) => {
     console.log("Generating PDF from resume data...");
     const themeId = payment.theme_id || 'navy';
     
-    console.log("Creating structured PDF...");
-    const pdfBuffer = await generatePDFFromResumeData(payment.enhanced_content, themeId);
-    
-    const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.pdf')}`;
-    
-    console.log(`Generated PDF, size: ${pdfBuffer.byteLength} bytes`);
-    
-    return new Response(pdfBuffer, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Content-Length': pdfBuffer.byteLength.toString(),
-      },
-    });
+    // For now, let's create a simple text-based PDF to avoid dependency issues
+    try {
+      const jsPDFModule = await import("https://esm.sh/jspdf@2.5.1");
+      console.log("jsPDF module loaded successfully");
+      
+      const { jsPDF } = jsPDFModule.default || jsPDFModule;
+      
+      // Create simple PDF with basic content
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      console.log("Creating PDF document...");
+      
+      // Add basic content
+      doc.setFontSize(20);
+      doc.text(payment.enhanced_content.name || 'Enhanced Resume', 20, 30);
+      
+      doc.setFontSize(16);
+      doc.text(payment.enhanced_content.title || '', 20, 45);
+      
+      doc.setFontSize(12);
+      doc.text(`Email: ${payment.enhanced_content.email || ''}`, 20, 60);
+      doc.text(`Phone: ${payment.enhanced_content.phone || ''}`, 20, 70);
+      
+      if (payment.enhanced_content.summary) {
+        doc.setFontSize(14);
+        doc.text('Professional Summary', 20, 90);
+        doc.setFontSize(10);
+        const summaryLines = doc.splitTextToSize(payment.enhanced_content.summary, 170);
+        doc.text(summaryLines, 20, 100);
+      }
+      
+      console.log("PDF content added successfully");
+      
+      const pdfBuffer = new Uint8Array(doc.output('arraybuffer'));
+      console.log(`Generated PDF, size: ${pdfBuffer.byteLength} bytes`);
+      
+      const fileName = `enhanced_${payment.file_name.replace(/\.[^/.]+$/, '.pdf')}`;
+      
+      return new Response(pdfBuffer, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${fileName}"`,
+          'Content-Length': pdfBuffer.byteLength.toString(),
+        },
+      });
+
+    } catch (pdfError) {
+      console.error("PDF generation error:", pdfError);
+      throw new Error(`PDF generation failed: ${pdfError.message}`);
+    }
 
   } catch (error) {
-    console.error("Error in PDF generation:", error);
+    console.error("Error in PDF generation function:", error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Failed to generate PDF" 
+        error: error instanceof Error ? error.message : "Failed to generate PDF",
+        details: error instanceof Error ? error.stack : "Unknown error"
       }),
       {
         status: 500,
