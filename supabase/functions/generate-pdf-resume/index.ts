@@ -8,11 +8,16 @@ const corsHeaders = {
 
 const colorThemes = {
   navy: { primary: '#1e3a8a', secondary: '#1e40af', accent: '#3b82f6' },
+  charcoal: { primary: '#374151', secondary: '#1f2937', accent: '#6b7280' },
+  burgundy: { primary: '#7c2d12', secondary: '#991b1b', accent: '#dc2626' },
+  forest: { primary: '#166534', secondary: '#15803d', accent: '#22c55e' },
+  bronze: { primary: '#a16207', secondary: '#ca8a04', accent: '#eab308' },
+  slate: { primary: '#475569', secondary: '#334155', accent: '#64748b' },
+  // Legacy themes for backward compatibility
   emerald: { primary: '#065f46', secondary: '#047857', accent: '#10b981' },
   purple: { primary: '#6b21a8', secondary: '#7c3aed', accent: '#8b5cf6' },
   rose: { primary: '#be185d', secondary: '#e11d48', accent: '#f43f5e' },
-  orange: { primary: '#c2410c', secondary: '#ea580c', accent: '#f97316' },
-  slate: { primary: '#334155', secondary: '#475569', accent: '#64748b' }
+  orange: { primary: '#c2410c', secondary: '#ea580c', accent: '#f97316' }
 };
 
 function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): string {
