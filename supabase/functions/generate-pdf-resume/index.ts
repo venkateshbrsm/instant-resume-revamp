@@ -49,14 +49,12 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     body {
       font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.4;
+      line-height: 1.5;
       color: #1a202c;
       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-      font-size: 9pt;
+      font-size: 10pt;
       width: 210mm;
-      min-height: 297mm;
-      margin: 0;
-      padding: 0;
+      min-height: auto;
     }
     
     .container {
@@ -64,22 +62,19 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       margin: 0;
       background: white;
       width: 210mm;
-      min-height: 297mm;
+      min-height: auto;
       box-shadow: 0 20px 40px rgba(0,0,0,0.1);
       border-radius: 8pt;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
     }
     
     .header {
       background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 50%, ${theme.accent} 100%);
       background-size: 300% 300%;
       color: white;
-      padding: 14pt 18pt;
+      padding: 18pt;
       position: relative;
       overflow: hidden;
-      flex-shrink: 0;
     }
     
     .header::before {
@@ -143,15 +138,13 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .main-content {
       display: grid;
-      grid-template-columns: 1fr 280pt;
-      gap: 12pt;
-      padding: 12pt 18pt;
-      flex: 1;
-      min-height: 0;
+      grid-template-columns: 1fr 300pt;
+      gap: 16pt;
+      padding: 16pt;
     }
     
     .section {
-      margin-bottom: 12pt;
+      margin-bottom: 16pt;
       break-inside: avoid;
     }
     
