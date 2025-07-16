@@ -78,7 +78,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 50%, ${theme.accent} 100%);
       background-size: 300% 300%;
       color: white;
-      padding: 24pt;
+      padding: 18pt;
       position: relative;
       overflow: hidden;
     }
@@ -118,8 +118,8 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     .contact-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12pt;
-      margin-top: 16pt;
+      gap: 8pt;
+      margin-top: 12pt;
     }
     
     .contact-item {
@@ -130,7 +130,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       gap: 8pt;
       font-weight: 500;
       background: rgba(255,255,255,0.1);
-      padding: 8pt 12pt;
+      padding: 6pt 10pt;
       border-radius: 6pt;
       backdrop-filter: blur(10px);
     }
@@ -145,12 +145,12 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     .main-content {
       display: grid;
       grid-template-columns: 1fr 300pt;
-      gap: 24pt;
-      padding: 24pt;
+      gap: 16pt;
+      padding: 16pt;
     }
     
     .section {
-      margin-bottom: 24pt;
+      margin-bottom: 16pt;
       break-inside: avoid;
     }
     
@@ -171,7 +171,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .summary-card {
       background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-      padding: 20pt;
+      padding: 14pt;
       border-radius: 12pt;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       border: 1pt solid ${theme.primary}20;
@@ -186,7 +186,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .timeline {
       position: relative;
-      padding-left: 20pt;
+      padding-left: 12pt;
     }
     
     .timeline::before {
@@ -201,11 +201,11 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     }
     
     .experience-item {
-      margin-bottom: 20pt;
+      margin-bottom: 14pt;
       break-inside: avoid;
       position: relative;
       background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
-      padding: 16pt;
+      padding: 12pt;
       border-radius: 12pt;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       border: 1pt solid ${theme.primary}15;
@@ -267,13 +267,13 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     }
     
     .achievement {
-      margin-bottom: 8pt;
+      margin-bottom: 5pt;
       font-size: 10pt;
       line-height: 1.5;
       display: flex;
       align-items: flex-start;
       gap: 10pt;
-      padding: 10pt 14pt;
+      padding: 6pt 10pt;
       background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
       border-radius: 8pt;
       border-left: 3pt solid ${theme.accent};
@@ -302,7 +302,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .skills-section {
       background: linear-gradient(135deg, ${theme.primary}12 0%, ${theme.accent}08 100%);
-      padding: 20pt;
+      padding: 14pt;
       border-radius: 12pt;
       margin-bottom: 20pt;
       break-inside: avoid;
@@ -376,7 +376,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .education-section {
       background: linear-gradient(135deg, ${theme.accent}10 0%, ${theme.primary}08 100%);
-      padding: 20pt;
+      padding: 14pt;
       border-radius: 12pt;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       border: 1pt solid ${theme.accent}20;
@@ -437,7 +437,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12pt;
+      gap: 8pt;
       text-align: center;
     }
     
