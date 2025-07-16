@@ -23,9 +23,13 @@ export default function PaymentSuccess() {
     try {
       console.log('Starting payment verification...');
       
-      // Set a timeout to prevent infinite loading
+      // Set a timeout to prevent infinite loading - extend for PDF processing
+      const fileName = searchParams.get('fileName') || '';
+      const isPDF = fileName.toLowerCase().endsWith('.pdf');
+      const timeoutDuration = isPDF ? 60000 : 30000; // 60 seconds for PDFs, 30 for others
+      
       timeoutId = setTimeout(() => {
-        console.warn('Payment verification timeout after 30 seconds');
+        console.warn(`Payment verification timeout after ${timeoutDuration/1000} seconds`);
         setIsVerifying(false);
         setPayment({
           paymentId: searchParams.get('razorpay_payment_id') || 'unknown',
@@ -34,9 +38,11 @@ export default function PaymentSuccess() {
         });
         toast({
           title: "Payment Verified!",
-          description: "Your payment has been verified. Your resume is being processed.",
+          description: isPDF 
+            ? "Your payment has been verified. PDF processing may take a moment longer."
+            : "Your payment has been verified. Your resume is being processed.",
         });
-      }, 30000); // 30 second timeout
+      }, timeoutDuration);
       
       // Get Razorpay response parameters
       const razorpayResponse = {
@@ -255,15 +261,28 @@ export default function PaymentSuccess() {
   };
 
   if (isVerifying) {
+    const fileName = searchParams.get('fileName') || '';
+    const isPDF = fileName.toLowerCase().endsWith('.pdf');
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin mb-4" />
-            <h3 className="text-lg font-semibold">Verifying Payment...</h3>
+            <h3 className="text-lg font-semibold">
+              {isPDF ? 'Processing PDF Resume' : 'Verifying Payment...'}
+            </h3>
             <p className="text-muted-foreground text-center mt-2">
-              Please wait while we verify your payment with Razorpay
+              {isPDF 
+                ? 'PDF files require additional processing time. Please wait while we extract and enhance your resume...'
+                : 'Please wait while we verify your payment with Razorpay'
+              }
             </p>
+            {isPDF && (
+              <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3 mt-4 text-sm text-blue-700 dark:text-blue-300">
+                <p>⏱️ PDF processing may take up to 60 seconds</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
