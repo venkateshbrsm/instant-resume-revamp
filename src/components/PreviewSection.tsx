@@ -41,7 +41,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
-  const [isPdfPreviewMode, setIsPdfPreviewMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -361,85 +360,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
   return (
     <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-x-hidden">
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          body {
-            background: white !important;
-            font-size: 12pt !important;
-            color: #1a202c !important;
-          }
-          
-          .min-h-screen {
-            min-height: auto !important;
-          }
-          
-          .bg-gradient-hero {
-            background: white !important;
-          }
-          
-          .mobile-only {
-            display: none !important;
-          }
-          
-          .pdf-only {
-            display: block !important;
-          }
-          
-          .card {
-            background: white !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-          
-          .no-print {
-            display: none !important;
-          }
-        }
-        
-        .pdf-preview-mode {
-          width: 794px !important;
-          max-width: 794px !important;
-          margin: 0 auto !important;
-          font-size: 12pt !important;
-          line-height: 1.4 !important;
-          transform: scale(0.85);
-          transform-origin: top center;
-        }
-        
-        .pdf-preview-mode .enhanced-resume {
-          padding: 16pt !important;
-          margin: 0 !important;
-        }
-        
-        .pdf-preview-mode .section {
-          margin-bottom: 16pt !important;
-        }
-        
-        .pdf-preview-mode .header {
-          padding: 18pt !important;
-        }
-        
-        .pdf-preview-mode .experience-item {
-          padding: 12pt !important;
-          margin-bottom: 14pt !important;
-        }
-        
-        .pdf-preview-mode .achievement {
-          padding: 6pt 10pt !important;
-          margin-bottom: 5pt !important;
-        }
-        
-        .pdf-preview-mode .contact-item {
-          padding: 6pt 10pt !important;
-        }
-        
-        .pdf-preview-mode .skills-section,
-        .pdf-preview-mode .education-section {
-          padding: 14pt !important;
-        }
-      `}</style>
-      
       <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
@@ -484,37 +404,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 </div>
               ) : enhancedContent ? (
                  <div className="w-full border border-border/20 rounded-lg">
-                   {/* PDF Preview Mode Toggle */}
-                   <div className="flex justify-between items-center mb-4 p-3 bg-muted/50 rounded-t-lg border-b">
-                     <div className="flex items-center gap-2">
-                       <Eye className="w-4 h-4" />
-                       <span className="text-sm font-medium">Preview Mode</span>
-                     </div>
-                     <div className="flex items-center gap-4">
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         onClick={() => window.print()}
-                         className="text-xs"
-                       >
-                         <FileText className="w-3 h-3 mr-1" />
-                         Test Print Preview
-                       </Button>
-                       <div className="flex items-center gap-2">
-                         <span className="text-xs text-muted-foreground">PDF Mode</span>
-                         <Button
-                           variant={isPdfPreviewMode ? "default" : "outline"}
-                           size="sm"
-                           onClick={() => setIsPdfPreviewMode(!isPdfPreviewMode)}
-                           className="text-xs"
-                         >
-                           {isPdfPreviewMode ? "ON" : "OFF"}
-                         </Button>
-                       </div>
-                     </div>
-                   </div>
-                   
-                   <div className={`bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20 ${isPdfPreviewMode ? 'pdf-preview-mode' : ''}`}>
+                   <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20">
                   
                     {/* Color Theme Selector */}
                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
