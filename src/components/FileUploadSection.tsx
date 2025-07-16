@@ -105,13 +105,13 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-8">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full max-w-2xl">
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2 sm:px-4">
             Upload Your Current Resume
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 sm:px-6">
             Supported formats: PDF, DOCX, TXT (Max 10MB)
           </p>
         </div>
@@ -193,8 +193,8 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
           </CardContent>
         </Card>
 
-        <div className="flex justify-center mt-6">
-          <Button variant="ghost" onClick={onBack}>
+        <div className="flex justify-center mt-6 px-4">
+          <Button variant="ghost" onClick={onBack} className="w-full sm:w-auto">
             Back to Home
           </Button>
         </div>

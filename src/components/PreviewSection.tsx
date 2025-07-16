@@ -359,24 +359,24 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero px-4 py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
           <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
             <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
             AI Enhancement Complete
           </Badge>
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2 sm:px-4">
             Your Enhanced Resume Preview
           </h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-6">
             Compare your original resume with our AI-enhanced version. Pay only if you're satisfied with the results.
           </p>
         </div>
 
         {/* Enhanced Resume Display */}
-        <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+        <div className="w-full max-w-4xl mx-auto mb-6 sm:mb-8">
 
           <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
             <CardHeader>

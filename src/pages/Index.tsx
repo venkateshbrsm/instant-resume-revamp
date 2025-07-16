@@ -194,7 +194,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
       <Navigation 
         currentStep={currentStep} 
         onNavigate={handleNavigate}
@@ -202,9 +202,9 @@ const Index = () => {
         user={user}
         onAuthAction={() => navigate('/auth')}
       />
-      <div className="flex-1">
+      <main className="flex-1 w-full">
         {renderCurrentStep()}
-      </div>
+      </main>
       <Footer />
     </div>
   );
