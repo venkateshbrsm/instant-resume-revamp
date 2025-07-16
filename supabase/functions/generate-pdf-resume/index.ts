@@ -37,7 +37,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
   <style>
     @page {
       size: A4;
-      margin: 0.4in;
+      margin: 0.25in;
     }
     
     * {
@@ -52,22 +52,24 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       color: #1a202c;
       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
       font-size: 9pt;
-      width: 210mm;
+      width: 100%;
       min-height: auto;
     }
     
     .container {
       background: white;
-      border-radius: 8pt;
+      border-radius: 6pt;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: none;
     }
     
     /* Header matching the enhanced preview exactly */
     .header {
       background: linear-gradient(to right, ${theme.primary}, ${theme.accent});
       color: white;
-      padding: 16pt;
+      padding: 12pt;
       position: relative;
       overflow: hidden;
     }
@@ -128,22 +130,23 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     /* Main content grid matching the preview layout */
     .main-content {
       display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 16pt;
-      padding: 16pt;
-      min-height: calc(297mm - 80pt);
+      grid-template-columns: 1.4fr 0.6fr;
+      gap: 12pt;
+      padding: 12pt;
+      min-height: calc(297mm - 60pt);
+      width: 100%;
     }
     
     .left-column {
-      space-y: 16pt;
+      space-y: 12pt;
     }
     
     .sidebar {
-      space-y: 16pt;
+      space-y: 12pt;
     }
     
     .section {
-      margin-bottom: 16pt;
+      margin-bottom: 12pt;
       break-inside: avoid;
     }
     
@@ -151,8 +154,8 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     .section-header {
       display: flex;
       align-items: center;
-      gap: 8pt;
-      margin-bottom: 12pt;
+      gap: 6pt;
+      margin-bottom: 8pt;
     }
     
     .section-icon {
@@ -175,9 +178,9 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     /* Professional Summary Card */
     .summary-card {
       background: white;
-      padding: 16pt;
-      border-radius: 12pt;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       border: 1pt solid rgba(0,0,0,0.05);
     }
     
@@ -190,15 +193,15 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     /* Experience timeline matching preview */
     .experience-timeline {
       position: relative;
-      padding-left: 16pt;
-      margin-bottom: 16pt;
+      padding-left: 12pt;
+      margin-bottom: 12pt;
     }
     
     .experience-item {
       position: relative;
-      margin-bottom: 16pt;
-      padding: 12pt;
-      border-radius: 8pt;
+      margin-bottom: 12pt;
+      padding: 10pt;
+      border-radius: 6pt;
       background: linear-gradient(to right, ${theme.accent}08, ${theme.primary}08);
       border-left: 2pt solid ${theme.accent}30;
     }
@@ -287,11 +290,11 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     /* Skills section matching preview exactly */
     .skills-section {
       background: white;
-      padding: 16pt;
-      border-radius: 12pt;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border: 1pt solid rgba(0,0,0,0.05);
-      margin-bottom: 16pt;
+      margin-bottom: 12pt;
     }
     
     .skill-item {
@@ -331,7 +334,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     /* Skills overview stats matching preview */
     .skills-overview {
-      margin-bottom: 16pt;
+      margin-bottom: 12pt;
     }
     
     .stats-grid {
@@ -342,8 +345,8 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .stat-item {
       text-align: center;
-      padding: 12pt;
-      border-radius: 8pt;
+      padding: 8pt;
+      border-radius: 6pt;
       background: ${theme.primary}08;
     }
     
@@ -362,16 +365,16 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     /* Education section */
     .education-section {
       background: white;
-      padding: 16pt;
-      border-radius: 12pt;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border: 1pt solid rgba(0,0,0,0.05);
     }
     
     .education-item {
-      padding: 12pt;
-      border-radius: 8pt;
-      margin-bottom: 8pt;
+      padding: 10pt;
+      border-radius: 6pt;
+      margin-bottom: 6pt;
       background: linear-gradient(to right, ${theme.primary}08, ${theme.accent}08);
       border: 1pt solid ${theme.primary}10;
     }
