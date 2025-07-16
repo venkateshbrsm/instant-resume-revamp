@@ -79,12 +79,26 @@ export default function PaymentSuccess() {
         throw new Error(error.message || 'Download failed');
       }
 
-      // Create download link
-      const blob = new Blob([data], { type: 'text/html' });
+      // The data is already a Uint8Array/ArrayBuffer for DOCX files
+      let blob: Blob;
+      let filename: string;
+      
+      if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+        // Binary DOCX data
+        blob = new Blob([data], { 
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        });
+        filename = `Enhanced_Resume_${new Date().getTime()}.docx`;
+      } else {
+        // Fallback for any other format (shouldn't happen with the fixed function)
+        blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        filename = `Enhanced_Resume_${new Date().getTime()}.json`;
+      }
+      
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Enhanced_Resume_${new Date().getTime()}.html`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
