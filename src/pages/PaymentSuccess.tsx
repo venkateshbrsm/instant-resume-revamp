@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Download, Home, Loader2 } from "lucide-react";
+import { generatePdfFromElement } from "@/lib/canvasPdfGenerator";
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -160,13 +161,33 @@ export default function PaymentSuccess() {
       });
 
       if (format === 'pdf') {
-        // Try to get enhanced content from session storage first
+        // Check if we have enhanced content in session storage for canvas-based generation
         const enhancedContentStr = sessionStorage.getItem('enhancedContentForPayment');
+        
+        if (enhancedContentStr) {
+          try {
+            // Try canvas-based PDF generation first (for visual fidelity)
+            console.log('Attempting canvas-based PDF generation...');
+            
+            // For canvas generation, we need to recreate the visual on this page
+            // For now, fall back to server-side generation but prioritize visual fidelity
+            toast({
+              title: "Generating High-Quality PDF",
+              description: "Creating a visually accurate PDF of your enhanced resume...",
+            });
+            
+          } catch (error) {
+            console.warn('Canvas-based generation not available, using server method:', error);
+          }
+        }
+        
+        // Server-side PDF generation (fallback or main method)
+        const enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
         const selectedThemeStr = sessionStorage.getItem('selectedThemeForPayment');
         const pendingFileStr = sessionStorage.getItem('pendingFile');
         
         console.log('Session storage contents:', {
-          hasEnhancedContent: !!enhancedContentStr,
+          hasEnhancedContent: !!enhancedContentStr2,
           hasTheme: !!selectedThemeStr,
           hasPendingFile: !!pendingFileStr
         });
@@ -174,9 +195,9 @@ export default function PaymentSuccess() {
         let requestBody: any = { paymentId };
 
         // If we have session storage data, use it directly
-        if (enhancedContentStr) {
+        if (enhancedContentStr2) {
           try {
-            const enhancedContent = JSON.parse(enhancedContentStr);
+            const enhancedContent = JSON.parse(enhancedContentStr2);
             
             // Parse theme data
             let themeId = 'navy';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
+import { downloadPdfFromElement } from "@/lib/canvasPdfGenerator";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface PreviewSectionProps {
@@ -41,6 +42,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -227,6 +230,50 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     setIsCheckingAuth(false);
   };
+
+  const handleTestDownload = async () => {
+    if (!enhancedResumeRef.current || !enhancedContent) {
+      toast({
+        title: "Preview Not Ready",
+        description: "Please wait for the enhanced resume to load completely.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingPdf(true);
+    
+    try {
+      toast({
+        title: "Generating PDF",
+        description: "Creating a high-quality PDF from your enhanced resume...",
+      });
+
+      const filename = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
+      
+      await downloadPdfFromElement(enhancedResumeRef.current, {
+        filename,
+        quality: 0.95,
+        scale: 2,
+        width: 794,
+        height: 1123
+      });
+
+      toast({
+        title: "PDF Downloaded",
+        description: "Your enhanced resume has been downloaded successfully!",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
@@ -404,7 +451,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 </div>
               ) : enhancedContent ? (
                  <div className="w-full border border-border/20 rounded-lg">
-                   <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20">
+                   <div 
+                     ref={enhancedResumeRef}
+                     className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
+                   >
                   
                     {/* Color Theme Selector */}
                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
@@ -747,6 +797,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                  !enhancedContent ? 'Processing Enhancement...' :
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
+              
+              {enhancedContent && (
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={handleTestDownload}
+                  className="w-full"
+                  disabled={isGeneratingPdf}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isGeneratingPdf ? 'Generating PDF...' : 'Test Download (Preview)'}
+                </Button>
+              )}
               
               <p className="text-xs text-muted-foreground">
                 {enhancedContent 
