@@ -258,6 +258,18 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
     .contact-item {
       font-size: 9pt;
       opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 4pt;
+    }
+    
+    .contact-item.with-bullet::before {
+      content: "";
+      width: 6pt;
+      height: 6pt;
+      background: #3b82f6;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
     
     .main-content {
@@ -330,31 +342,39 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       margin-bottom: 6pt;
       font-size: 10pt;
       line-height: 1.4;
-      position: relative;
-      padding-left: 0;
       display: flex;
       align-items: flex-start;
       gap: 6pt;
+      padding: 6pt 8pt;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 6pt;
+      margin-bottom: 4pt;
     }
     
     .achievement-icon {
       flex-shrink: 0;
-      width: 12pt;
-      height: 12pt;
-      background: #10b981;
+      width: 16pt;
+      height: 16pt;
+      background: linear-gradient(135deg, #4ade80, #16a34a);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 2pt;
+      margin-top: 1pt;
     }
     
     .achievement-icon::after {
-      content: "✓";
+      content: "↗";
       color: white;
-      font-size: 8pt;
+      font-size: 10pt;
       font-weight: bold;
       line-height: 1;
+    }
+    
+    .achievement-text {
+      flex: 1;
+      color: #374151;
+      line-height: 1.5;
     }
     
     .sidebar {
@@ -535,7 +555,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
       <div class="title">${resumeData.title || ''}</div>
       
       <div class="contact-grid">
-        <div class="contact-item">Email: ${resumeData.email || ''}</div>
+        <div class="contact-item with-bullet">Email: ${resumeData.email || ''}</div>
         <div class="contact-item">Phone: ${resumeData.phone || ''}</div>
         <div class="contact-item">Location: ${resumeData.location || ''}</div>
         <div class="contact-item">Professional Resume</div>
@@ -571,7 +591,7 @@ function generatePrintableHTML(resumeData: any, themeId: string = 'navy'): strin
               ${exp.achievements.map((achievement: string) => `
               <li class="achievement">
                 <div class="achievement-icon"></div>
-                <div>${achievement}</div>
+                <div class="achievement-text">${achievement}</div>
               </li>
               `).join('')}
             </ul>
