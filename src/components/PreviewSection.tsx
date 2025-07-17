@@ -522,21 +522,21 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                     <div ref={resumeContentRef}>
                     {/* Modern Header with Visual Elements */}
                     <div 
-                      className="relative rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 lg:p-5 text-white overflow-hidden"
+                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3.5 lg:p-6 text-white overflow-hidden"
                        style={{
                          background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                        }}
                      >
                        <div className="absolute inset-0 bg-black/10 z-0"></div>
                         <div className="relative z-20">
-                          <div className="flex items-center justify-between gap-1 sm:gap-1.5 md:gap-2">
+                          <div className="flex items-center justify-between gap-1.5 sm:gap-2 md:gap-2.5">
                             <div className="min-w-0 flex-1">
-                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0 sm:mb-0.5 break-words leading-tight">{enhancedContent.name}</h1>
+                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
                               <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
                             </div>
                           </div>
                          
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 md:gap-3.5 mt-2.5 sm:mt-3.5 md:mt-4.5">
                             <div className="flex items-center gap-2 text-white/90 min-w-0 pb-2 sm:pb-3">
                               <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                               <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.email}</span>
