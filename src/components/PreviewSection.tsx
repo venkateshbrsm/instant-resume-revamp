@@ -569,12 +569,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                     {/* Resume Content - This is what gets captured for PDF */}
                     <div ref={resumeContentRef}>
                      {/* Modern Header with Visual Elements */}
-                     <div 
-                       className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden border-4 border-red-500"
-                       style={{
-                         background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                       }}
-                     >
+                      <div 
+                        className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                        style={{
+                          background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                        }}
+                      >
                        <div className="absolute inset-0 bg-black/10"></div>
                          <div className="relative z-10 text-center">
                            <div className="flex items-start justify-center gap-1 sm:gap-2 md:gap-3 p-1">
