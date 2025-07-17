@@ -126,20 +126,22 @@ export async function generatePdfFromElement(
           pdf.addPage();
         }
         
-        // Calculate section height with intelligent text-aware buffering
+        // Calculate remaining content height
         const remainingHeight = canvas.height - currentY;
+        
+        // Skip if remaining content is too small to be meaningful
+        if (remainingHeight < textBuffer) {
+          break;
+        }
+        
+        // Calculate section height with intelligent text-aware buffering
         let sectionHeight = Math.min(pixelsPerPage, remainingHeight);
         
         // For pages that aren't the last, apply smart buffering to avoid text cutting
-        if (currentY + pixelsPerPage < canvas.height) {
-          // Use larger buffer and ensure minimum section height
+        if (remainingHeight > pixelsPerPage) {
+          // Use buffer and ensure minimum section height
           const bufferedHeight = sectionHeight - textBuffer;
           sectionHeight = Math.max(bufferedHeight, minSectionHeight);
-          
-          // Additional safety: if the section would be too small, extend it slightly
-          if (sectionHeight < minSectionHeight && remainingHeight > minSectionHeight) {
-            sectionHeight = minSectionHeight;
-          }
         }
         
         // Create canvas for this page section
@@ -174,11 +176,15 @@ export async function generatePdfFromElement(
           pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
         }
         
-        // Move to next section with smart overlap to prevent text cutting
-        // Use smaller steps for better text flow
-        const stepSize = Math.min(sectionHeight * 0.95, pixelsPerPage * 0.9);
-        currentY += stepSize;
+        // Move to next section - use the actual section height to avoid gaps
+        currentY += sectionHeight;
         pageIndex++;
+        
+        // Safety check: prevent infinite loop
+        if (pageIndex > 20) {
+          console.warn('PDF generation stopped: too many pages generated');
+          break;
+        }
       }
     }
     
