@@ -14,10 +14,12 @@ interface PDFViewerProps {
 
 export const PDFViewer = ({ file, className }: PDFViewerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [pdf, setPdf] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [scale, setScale] = useState(1.0);
+  const [optimalScale, setOptimalScale] = useState(1.0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +32,23 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
       renderPage();
     }
   }, [pdf, currentPage, scale]);
+
+  useEffect(() => {
+    if (pdf) {
+      calculateOptimalScale();
+    }
+  }, [pdf]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (pdf) {
+        calculateOptimalScale();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [pdf]);
 
   const loadPDF = async () => {
     try {
@@ -51,11 +70,40 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
       setPdf(loadedPdf);
       setTotalPages(loadedPdf.numPages);
       setCurrentPage(1);
+      
+      // Calculate optimal scale after PDF loads
+      setTimeout(() => calculateOptimalScale(), 100);
     } catch (err) {
       console.error('Error loading PDF:', err);
       setError('Failed to load PDF document');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateOptimalScale = async () => {
+    if (!pdf || !containerRef.current) return;
+
+    try {
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1.0 });
+      
+      const container = containerRef.current;
+      const containerWidth = container.clientWidth - 32; // Account for padding
+      const containerHeight = container.clientHeight - 32;
+      
+      // Calculate scale to fit width with some margin
+      const scaleToFitWidth = (containerWidth * 0.95) / viewport.width;
+      const scaleToFitHeight = (containerHeight * 0.9) / viewport.height;
+      
+      // Use the smaller scale to ensure it fits in both dimensions
+      const calculatedScale = Math.min(scaleToFitWidth, scaleToFitHeight, 2.0);
+      const finalScale = Math.max(calculatedScale, 0.5); // Minimum scale
+      
+      setOptimalScale(finalScale);
+      setScale(finalScale);
+    } catch (err) {
+      console.error('Error calculating optimal scale:', err);
     }
   };
 
@@ -71,8 +119,12 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
       
       if (!context) return;
 
+      // Set canvas dimensions
       canvas.height = viewport.height;
       canvas.width = viewport.width;
+
+      // Clear canvas before rendering
+      context.clearRect(0, 0, canvas.width, canvas.height);
 
       const renderContext = {
         canvasContext: context,
@@ -104,6 +156,10 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
 
   const zoomOut = () => {
     setScale(prev => Math.max(prev - 0.25, 0.5));
+  };
+
+  const resetZoom = () => {
+    setScale(optimalScale);
   };
 
   if (loading) {
@@ -160,6 +216,14 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
           <Button onClick={zoomOut} variant="outline" size="sm">
             <ZoomOut className="h-4 w-4" />
           </Button>
+          <Button 
+            onClick={resetZoom} 
+            variant="outline" 
+            size="sm"
+            className="px-2"
+          >
+            Reset
+          </Button>
           <span className="text-sm text-muted-foreground min-w-12 text-center">
             {Math.round(scale * 100)}%
           </span>
@@ -170,16 +234,27 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
       </div>
 
       {/* PDF Canvas */}
-      <div className="border rounded-lg overflow-auto max-h-[600px] bg-background">
-        <div className="flex justify-center items-start p-4 min-h-full">
-          <canvas
-            ref={canvasRef}
-            className="max-w-full h-auto shadow-sm border rounded"
-            style={{ 
-              display: 'block',
-              margin: '0 auto'
-            }}
-          />
+      <div 
+        ref={containerRef}
+        className="border rounded-lg bg-background relative"
+        style={{ 
+          height: '70vh',
+          minHeight: '500px',
+          maxHeight: '800px'
+        }}
+      >
+        <div className="absolute inset-0 overflow-auto">
+          <div className="flex justify-center items-center min-h-full p-4">
+            <canvas
+              ref={canvasRef}
+              className="shadow-lg rounded border border-border/50"
+              style={{ 
+                display: 'block',
+                maxWidth: '100%',
+                height: 'auto'
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
