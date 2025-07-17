@@ -6,6 +6,7 @@ import { FileUploadSection } from "@/components/FileUploadSection";
 import { PreviewSection } from "@/components/PreviewSection";
 import { PaymentSection } from "@/components/PaymentSection";
 import Footer from "@/components/Footer";
+import { colorThemes } from "@/components/ThemeSelector";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -16,6 +17,7 @@ const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -174,6 +176,8 @@ const Index = () => {
             file={uploadedFile}
             onPurchase={handlePurchase}
             onBack={handleBackToUpload}
+            selectedTheme={selectedTheme}
+            onThemeChange={setSelectedTheme}
           />
         ) : (
           <HeroSection onGetStarted={handleGetStarted} />
@@ -201,6 +205,9 @@ const Index = () => {
         showSteps={true}
         user={user}
         onAuthAction={() => navigate('/auth')}
+        selectedTheme={selectedTheme}
+        onThemeChange={setSelectedTheme}
+        showThemeSelector={currentStep === "preview" || currentStep === "payment"}
       />
       <main className="flex-1 w-full">
         {renderCurrentStep()}

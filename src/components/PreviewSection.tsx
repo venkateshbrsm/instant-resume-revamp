@@ -14,22 +14,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieCha
 import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
+import { colorThemes } from "@/components/ThemeSelector";
+
 interface PreviewSectionProps {
   file: File;
   onPurchase: () => void;
   onBack: () => void;
+  selectedTheme: typeof colorThemes[0];
+  onThemeChange: (theme: typeof colorThemes[0]) => void;
 }
 
-const colorThemes = [
-  { id: 'navy', name: 'Navy Professional', primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
-  { id: 'charcoal', name: 'Charcoal Gray', primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
-  { id: 'burgundy', name: 'Burgundy Wine', primary: '#dc2626', secondary: '#ef4444', accent: '#f87171' },
-  { id: 'forest', name: 'Forest Green', primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
-  { id: 'bronze', name: 'Bronze Gold', primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
-  { id: 'slate', name: 'Slate Blue', primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' }
-];
-
-export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
+export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThemeChange }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
   const [extractedText, setExtractedText] = useState<string>("");
@@ -41,7 +36,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [enhancementProgress, setEnhancementProgress] = useState(0);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
@@ -523,48 +517,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                      ref={enhancedResumeRef}
                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
                    >
-                  
-                     {/* Color Theme Selector */}
-                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
-                       <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-                         <Sparkles className="w-3 h-3" />
-                         Themes
-                       </h4>
-                       <div className="flex flex-wrap gap-1">
-                        {colorThemes.map((theme) => (
-                          <button
-                            key={theme.id}
-                             onClick={() => {
-                               console.log('Theme selected:', theme);
-                               setSelectedTheme(theme);
-                             }}
-                            className={`flex items-center gap-1 p-1 rounded border transition-all duration-200 ${
-                              selectedTheme.id === theme.id 
-                                ? 'border-primary bg-primary/5' 
-                                : 'border-border hover:border-primary/50 bg-background'
-                            }`}
-                          >
-                            <div className="flex gap-0.5">
-                              <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ backgroundColor: theme.primary }}
-                              />
-                              <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ backgroundColor: theme.secondary }}
-                              />
-                              <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ backgroundColor: theme.accent }}
-                              />
-                            </div>
-                            {selectedTheme.id === theme.id && (
-                              <Sparkles className="w-2 h-2 text-primary" />
-                            )}
-                          </button>
-                        ))}
-                     </div>
-                  </div>
 
                     {/* Resume Content - This is what gets captured for PDF */}
                     <div ref={resumeContentRef}>
