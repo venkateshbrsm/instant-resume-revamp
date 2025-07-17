@@ -155,21 +155,6 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           },
         }),
         
-        // Separator line
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "─".repeat(60),
-              size: 16,
-              color: colors.primary,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            before: 500,
-            after: 500,
-          },
-        }),
         
         // Professional Summary - enhanced with better formatting
         new Paragraph({
