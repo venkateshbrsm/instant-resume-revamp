@@ -576,28 +576,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        }}
                      >
                        <div className="absolute inset-0 bg-black/10"></div>
-                        <div className="relative z-10 border-2 border-yellow-400 bg-yellow-100/20">
-                          <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3 border border-green-500 bg-green-100/20 p-1">
-                            <div className="min-w-0 flex-1 border border-blue-500 bg-blue-100/20 p-1">
-                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight border border-purple-500 bg-purple-100/20 p-1">{enhancedContent.name}</h1>
-                              <p className="text-white/90 break-words leading-tight border border-orange-500 bg-orange-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
+                        <div className="relative z-10 border-2 border-yellow-400 bg-yellow-100/20 text-center">
+                          <div className="flex items-center justify-center gap-1 sm:gap-2 md:gap-3 border border-green-500 bg-green-100/20 p-1">
+                            <div className="min-w-0 flex-1 border border-blue-500 bg-blue-100/20 p-1 text-center">
+                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight border border-purple-500 bg-purple-100/20 p-1 text-center">{enhancedContent.name}</h1>
+                              <p className="text-white/90 break-words leading-tight border border-orange-500 bg-orange-100/20 p-1 text-center" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
                             </div>
                           </div>
                          
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-5 border-2 border-teal-500 bg-teal-100/20 p-2">
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 border border-indigo-500 bg-indigo-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-center justify-center gap-2 text-white/90 min-w-0 border border-indigo-500 bg-indigo-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                <span className="truncate min-w-0">{enhancedContent.email}</span>
                              </div>
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 border border-rose-500 bg-rose-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-center justify-center gap-2 text-white/90 min-w-0 border border-rose-500 bg-rose-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                <span className="truncate min-w-0">{enhancedContent.phone}</span>
                              </div>
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 border border-amber-500 bg-amber-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-center justify-center gap-2 text-white/90 min-w-0 border border-amber-500 bg-amber-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                <span className="truncate min-w-0">{enhancedContent.location}</span>
                              </div>
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 border border-violet-500 bg-violet-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-center justify-center gap-2 text-white/90 min-w-0 border border-violet-500 bg-violet-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                <span className="truncate min-w-0">Professional</span>
                              </div>
