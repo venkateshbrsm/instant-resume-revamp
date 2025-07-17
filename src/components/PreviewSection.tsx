@@ -524,49 +524,46 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
                    >
                   
-                    {/* Color Theme Selector */}
-                    <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
-                      <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 flex items-center gap-1 sm:gap-2">
-                        <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
-                        Choose Your Color Theme
-                      </h4>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2">
-                       {colorThemes.map((theme) => (
-                         <button
-                           key={theme.id}
-                            onClick={() => {
-                              console.log('Theme selected:', theme);
-                              setSelectedTheme(theme);
-                            }}
-                           className={`p-1 sm:p-2 rounded border-2 transition-all duration-200 text-left ${
-                             selectedTheme.id === theme.id 
-                               ? 'border-primary bg-primary/5 shadow-sm' 
-                               : 'border-border hover:border-primary/50 bg-background'
-                           }`}
-                         >
-                           <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                             <div className="flex gap-0.5 sm:gap-1">
-                               <div 
-                                 className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                 style={{ backgroundColor: theme.primary }}
-                               />
-                               <div 
-                                 className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                 style={{ backgroundColor: theme.secondary }}
-                               />
-                               <div 
-                                 className="w-2 sm:w-3 h-2 sm:h-3 rounded-full" 
-                                 style={{ backgroundColor: theme.accent }}
-                               />
-                             </div>
-                             {selectedTheme.id === theme.id && (
-                               <Sparkles className="w-2 sm:w-3 h-2 sm:h-3 text-primary" />
-                             )}
-                           </div>
-                           <p className="text-xs font-medium text-foreground leading-tight break-words">{theme.name}</p>
-                         </button>
-                       ))}
-                    </div>
+                     {/* Color Theme Selector */}
+                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
+                       <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                         <Sparkles className="w-3 h-3" />
+                         Themes
+                       </h4>
+                       <div className="flex flex-wrap gap-1">
+                        {colorThemes.map((theme) => (
+                          <button
+                            key={theme.id}
+                             onClick={() => {
+                               console.log('Theme selected:', theme);
+                               setSelectedTheme(theme);
+                             }}
+                            className={`flex items-center gap-1 p-1 rounded border transition-all duration-200 ${
+                              selectedTheme.id === theme.id 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50 bg-background'
+                            }`}
+                          >
+                            <div className="flex gap-0.5">
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: theme.primary }}
+                              />
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: theme.accent }}
+                              />
+                            </div>
+                            {selectedTheme.id === theme.id && (
+                              <Sparkles className="w-2 h-2 text-primary" />
+                            )}
+                          </button>
+                        ))}
+                     </div>
                   </div>
 
                     {/* Resume Content - This is what gets captured for PDF */}
