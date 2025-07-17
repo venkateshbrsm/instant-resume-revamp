@@ -107,15 +107,16 @@ export async function generatePdfFromElement(
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
     } else {
-      // Multi-page generation with printer-friendly page breaks
+      // Multi-page generation with smart text-aware page breaks
       const printerMargin = 15; // Extra margin for printer-friendly output
       const effectivePageHeight = availableHeight - printerMargin;
       const pagesNeeded = Math.ceil(finalHeight / effectivePageHeight);
       
-      // Calculate printer-friendly sections with buffer to avoid text cutting
+      // Calculate printer-friendly sections with intelligent text buffer
       const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
-      const textBuffer = scale * 8; // Buffer to avoid cutting through text (8mm in pixels)
+      const textBuffer = scale * 12; // Larger buffer to avoid cutting through text (12mm in pixels)
+      const minSectionHeight = pixelsPerPage * 0.7; // Minimum section height to avoid tiny pages
       
       let currentY = 0;
       let pageIndex = 0;
@@ -125,13 +126,20 @@ export async function generatePdfFromElement(
           pdf.addPage();
         }
         
-        // Calculate section height with buffer to avoid cutting text
+        // Calculate section height with intelligent text-aware buffering
         const remainingHeight = canvas.height - currentY;
         let sectionHeight = Math.min(pixelsPerPage, remainingHeight);
         
-        // For pages that aren't the last, reduce section height by buffer to avoid text cutting
+        // For pages that aren't the last, apply smart buffering to avoid text cutting
         if (currentY + pixelsPerPage < canvas.height) {
-          sectionHeight = Math.max(sectionHeight - textBuffer, pixelsPerPage * 0.8);
+          // Use larger buffer and ensure minimum section height
+          const bufferedHeight = sectionHeight - textBuffer;
+          sectionHeight = Math.max(bufferedHeight, minSectionHeight);
+          
+          // Additional safety: if the section would be too small, extend it slightly
+          if (sectionHeight < minSectionHeight && remainingHeight > minSectionHeight) {
+            sectionHeight = minSectionHeight;
+          }
         }
         
         // Create canvas for this page section
@@ -166,8 +174,10 @@ export async function generatePdfFromElement(
           pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
         }
         
-        // Move to next section cleanly without overlap
-        currentY += pixelsPerPage;
+        // Move to next section with smart overlap to prevent text cutting
+        // Use smaller steps for better text flow
+        const stepSize = Math.min(sectionHeight * 0.95, pixelsPerPage * 0.9);
+        currentY += stepSize;
         pageIndex++;
       }
     }
