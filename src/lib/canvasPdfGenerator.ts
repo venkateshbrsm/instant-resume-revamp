@@ -112,10 +112,10 @@ export async function generatePdfFromElement(
       const effectivePageHeight = availableHeight - printerMargin;
       const pagesNeeded = Math.ceil(finalHeight / effectivePageHeight);
       
-      // Calculate printer-friendly sections without overlap to prevent text repetition
+      // Calculate printer-friendly sections with buffer to avoid text cutting
       const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
-      const overlap = 0; // Remove overlap to prevent text repetition
+      const textBuffer = scale * 8; // Buffer to avoid cutting through text (8mm in pixels)
       
       let currentY = 0;
       let pageIndex = 0;
@@ -125,9 +125,14 @@ export async function generatePdfFromElement(
           pdf.addPage();
         }
         
-        // Calculate section height without overlap to prevent repetition
+        // Calculate section height with buffer to avoid cutting text
         const remainingHeight = canvas.height - currentY;
-        const sectionHeight = Math.min(pixelsPerPage, remainingHeight);
+        let sectionHeight = Math.min(pixelsPerPage, remainingHeight);
+        
+        // For pages that aren't the last, reduce section height by buffer to avoid text cutting
+        if (currentY + pixelsPerPage < canvas.height) {
+          sectionHeight = Math.max(sectionHeight - textBuffer, pixelsPerPage * 0.8);
+        }
         
         // Create canvas for this page section
         const pageCanvas = document.createElement('canvas');
