@@ -6,64 +6,65 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
-    padding: 30,
+    padding: 20,
     fontFamily: 'Helvetica',
+    fontSize: 11,
   },
   section: {
-    margin: 10,
-    padding: 10,
+    marginBottom: 8,
+    break: false,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 10,
+    fontSize: 20,
+    marginBottom: 8,
     fontWeight: 'bold',
     color: '#2563eb',
   },
   subtitle: {
-    fontSize: 18,
-    marginBottom: 8,
+    fontSize: 14,
+    marginBottom: 6,
     fontWeight: 'bold',
     color: '#1f2937',
   },
   text: {
-    fontSize: 12,
-    marginBottom: 5,
-    lineHeight: 1.5,
+    fontSize: 10,
+    marginBottom: 4,
+    lineHeight: 1.4,
     color: '#374151',
   },
   contactInfo: {
-    fontSize: 11,
-    marginBottom: 3,
+    fontSize: 9,
+    marginBottom: 2,
     color: '#6b7280',
   },
   sectionHeader: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 15,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 6,
     color: '#1f2937',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-    paddingBottom: 3,
+    paddingBottom: 2,
   },
   bulletPoint: {
-    fontSize: 11,
-    marginLeft: 15,
-    marginBottom: 3,
+    fontSize: 9,
+    marginLeft: 12,
+    marginBottom: 2,
     color: '#374151',
   },
   skillsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 5,
+    marginTop: 3,
   },
   skill: {
-    fontSize: 10,
+    fontSize: 8,
     backgroundColor: '#f3f4f6',
     color: '#374151',
-    padding: 3,
-    margin: 2,
-    borderRadius: 3,
+    padding: 2,
+    margin: 1,
+    borderRadius: 2,
   },
 });
 
@@ -114,10 +115,10 @@ interface ResumePDFProps {
   fileName?: string;
 }
 
-// Resume PDF Component
+// Resume PDF Component with automatic page breaks
 const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={true}>
       {/* Header with personal info */}
       {content.personal_info && (
         <View style={styles.section}>
@@ -153,7 +154,7 @@ const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Work Experience</Text>
           {content.work_experience.map((job, index) => (
-            <View key={index} style={{ marginBottom: 12 }}>
+            <View key={index} style={{ marginBottom: 10 }}>
               <Text style={styles.subtitle}>{job.position || 'Position'}</Text>
               <Text style={styles.text}>
                 {job.company || 'Company'} | {job.duration || 'Duration'}
@@ -174,7 +175,7 @@ const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Education</Text>
           {content.education.map((edu, index) => (
-            <View key={index} style={{ marginBottom: 8 }}>
+            <View key={index} style={{ marginBottom: 6 }}>
               <Text style={styles.subtitle}>{edu.degree || 'Degree'}</Text>
               <Text style={styles.text}>
                 {edu.institution || 'Institution'} | {edu.duration || 'Duration'}
@@ -202,7 +203,7 @@ const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
             </View>
           )}
           {content.skills.soft && content.skills.soft.length > 0 && (
-            <View style={{ marginTop: 8 }}>
+            <View style={{ marginTop: 6 }}>
               <Text style={styles.text}>Soft Skills:</Text>
               <View style={styles.skillsContainer}>
                 {content.skills.soft.map((skill, index) => (
@@ -212,7 +213,7 @@ const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
             </View>
           )}
           {content.skills.tools && content.skills.tools.length > 0 && (
-            <View style={{ marginTop: 8 }}>
+            <View style={{ marginTop: 6 }}>
               <Text style={styles.text}>Tools & Technologies:</Text>
               <View style={styles.skillsContainer}>
                 {content.skills.tools.map((skill, index) => (
@@ -229,7 +230,7 @@ const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Projects</Text>
           {content.projects.map((project, index) => (
-            <View key={index} style={{ marginBottom: 10 }}>
+            <View key={index} style={{ marginBottom: 8 }}>
               <Text style={styles.subtitle}>{project.name || 'Project Name'}</Text>
               {project.duration && (
                 <Text style={styles.contactInfo}>{project.duration}</Text>
@@ -254,7 +255,7 @@ const ResumePDF: React.FC<{ content: EnhancedContent }> = ({ content }) => (
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Certifications</Text>
           {content.certifications.map((cert, index) => (
-            <View key={index} style={{ marginBottom: 8 }}>
+            <View key={index} style={{ marginBottom: 6 }}>
               <Text style={styles.subtitle}>{cert.name || 'Certification Name'}</Text>
               <Text style={styles.text}>
                 {cert.issuer || 'Issuer'} | {cert.date || 'Date'}
