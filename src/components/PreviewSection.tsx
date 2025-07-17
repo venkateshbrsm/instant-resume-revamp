@@ -468,7 +468,7 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-2 sm:py-4 overflow-x-hidden">
       <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
