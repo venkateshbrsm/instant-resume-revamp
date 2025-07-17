@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
-import { downloadPdfFromElement } from "@/lib/canvasPdfGenerator";
+import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface PreviewSectionProps {
@@ -182,7 +182,49 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        // User is authenticated, save enhanced content and theme before proceeding with purchase
+        // User is authenticated, generate canvas PDF and save for payment
+        if (enhancedContent && enhancedResumeRef.current) {
+          try {
+            // Generate the canvas PDF blob for exact visual fidelity
+            toast({
+              title: "Preparing Payment",
+              description: "Generating high-quality PDF preview...",
+            });
+            
+            const pdfBlob = await generatePdfFromElement(enhancedResumeRef.current, {
+              quality: 0.95,
+              scale: 2,
+              width: 794,
+              height: 1123
+            });
+            
+            // Convert blob to base64 for session storage
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result as string;
+              sessionStorage.setItem('canvasPdfBlob', base64data);
+              
+              // Also save other data
+              sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+              sessionStorage.setItem('extractedTextForPayment', extractedText);
+              console.log('Saving theme to sessionStorage for payment:', selectedTheme);
+              sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
+              
+              onPurchase();
+            };
+            reader.readAsDataURL(pdfBlob);
+            return; // Exit early to wait for blob processing
+          } catch (error) {
+            console.error('Error generating canvas PDF for purchase:', error);
+            // Continue with normal flow as fallback
+            toast({
+              title: "Proceeding with Purchase",
+              description: "Will use server-side PDF generation as fallback.",
+            });
+          }
+        }
+        
+        // Fallback: save enhanced content and theme before proceeding with purchase
         if (enhancedContent) {
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
@@ -202,6 +244,37 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }));
         if (extractedText) {
           sessionStorage.setItem('extractedText', extractedText);
+        }
+        if (enhancedContent && enhancedResumeRef.current) {
+          try {
+            // Generate canvas PDF for login flow too
+            const pdfBlob = await generatePdfFromElement(enhancedResumeRef.current, {
+              quality: 0.95,
+              scale: 2,
+              width: 794,
+              height: 1123
+            });
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result as string;
+              sessionStorage.setItem('canvasPdfBlob', base64data);
+              
+              sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
+              sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+              sessionStorage.setItem('extractedTextForPayment', extractedText);
+              console.log('Saving theme to sessionStorage for login flow:', selectedTheme);
+              sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
+              
+              // Navigate after saving
+              navigate('/auth');
+            };
+            reader.readAsDataURL(pdfBlob);
+            return; // Exit early to wait for blob processing
+          } catch (error) {
+            console.error('Error generating canvas PDF for login flow:', error);
+            // Continue with normal flow as fallback
+          }
         }
         if (enhancedContent) {
           sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
