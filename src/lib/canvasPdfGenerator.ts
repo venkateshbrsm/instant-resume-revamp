@@ -20,7 +20,7 @@ export async function generatePdfFromElement(
   const {
     filename = 'document.pdf',
     quality = 0.95,
-    scale = 2.5 // Higher scale for better text quality
+    scale = window.innerWidth < 768 ? 3.0 : 2.5 // Higher scale for mobile devices
   } = options;
 
   try {
@@ -37,7 +37,7 @@ export async function generatePdfFromElement(
     
     console.log('Element dimensions:', { width: elementWidth, height: elementHeight });
     
-    // Configure html2canvas to capture at high resolution
+    // Configure html2canvas to capture at high resolution with mobile optimizations
     const canvas = await html2canvas(element, {
       scale: scale,
       useCORS: true,
@@ -49,7 +49,12 @@ export async function generatePdfFromElement(
       scrollX: 0,
       scrollY: 0,
       width: elementWidth,
-      height: elementHeight
+      height: elementHeight,
+      foreignObjectRendering: false, // Better for mobile text rendering
+      ignoreElements: (element) => {
+        // Skip elements that might cause alignment issues
+        return element.classList?.contains('ignore-pdf') || false;
+      }
     });
 
     // Clean up element styles
@@ -191,12 +196,28 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     minHeight: element.style.minHeight
   };
 
-  // Apply styles for better capture quality
+  // Apply styles for better capture quality, especially on mobile
   element.style.transform = 'scale(1)';
   element.style.overflow = 'visible';
   element.style.position = 'relative';
   element.style.maxWidth = 'none';
   element.style.minHeight = 'auto';
+  
+  // Add mobile-specific optimizations
+  if (window.innerWidth < 768) {
+    element.style.fontSize = 'inherit';
+    element.style.lineHeight = 'inherit';
+    
+    // Fix text wrapping and alignment for mobile PDF
+    const textElements = element.querySelectorAll('[class*="truncate"], [class*="break-words"]');
+    textElements.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.wordBreak = 'break-word';
+      htmlEl.style.overflowWrap = 'break-word';
+      htmlEl.style.textOverflow = 'clip';
+      htmlEl.style.whiteSpace = 'normal';
+    });
+  }
   
   // Ensure the element has explicit dimensions based on its content
   const rect = element.getBoundingClientRect();
