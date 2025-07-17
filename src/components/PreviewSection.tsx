@@ -521,8 +521,8 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                     {/* Resume Content - This is what gets captured for PDF */}
                     <div ref={resumeContentRef}>
                     {/* Modern Header with Visual Elements */}
-                    <div 
-                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3.5 lg:p-6 text-white overflow-hidden"
+                     <div 
+                       className="relative rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3.5 lg:p-6 text-white overflow-hidden min-h-[180px] sm:min-h-[200px] md:min-h-[220px] lg:min-h-[240px] flex flex-col justify-center"
                        style={{
                          background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                        }}
