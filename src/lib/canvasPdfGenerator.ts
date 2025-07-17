@@ -238,6 +238,21 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.textOverflow = 'clip';
       htmlEl.style.whiteSpace = 'normal';
     });
+    
+    // Fix text-decoration issues for PDF rendering
+    const decoratedElements = element.querySelectorAll('*');
+    decoratedElements.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      const computedStyle = window.getComputedStyle(htmlEl);
+      
+      // Reset problematic text-decoration properties
+      if (computedStyle.textDecoration !== 'none') {
+        htmlEl.style.textDecoration = 'none';
+      }
+      
+      // Prevent text duplication by ensuring no pseudo-elements are duplicated
+      htmlEl.style.setProperty('content', 'none', 'important');
+    });
   }
   
   // Ensure the element has explicit dimensions based on its content
