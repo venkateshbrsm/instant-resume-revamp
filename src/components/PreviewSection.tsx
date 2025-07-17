@@ -585,19 +585,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           </div>
                          
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 border-2 border-teal-500 bg-teal-100/20 p-2">
-                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-indigo-500 bg-indigo-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-indigo-500 bg-indigo-100/20 p-3" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                 <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="truncate min-w-0">{enhancedContent.email}</span>
                               </div>
-                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-rose-500 bg-rose-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-rose-500 bg-rose-100/20 p-3" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                 <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="truncate min-w-0">{enhancedContent.phone}</span>
                               </div>
-                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-amber-500 bg-amber-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-amber-500 bg-amber-100/20 p-3" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                 <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="truncate min-w-0">{enhancedContent.location}</span>
                               </div>
-                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-violet-500 bg-violet-100/20 p-1" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
+                             <div className="flex items-start justify-center gap-2 text-white/90 min-w-0 min-h-16 border border-violet-500 bg-violet-100/20 p-3" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                 <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="truncate min-w-0">Professional</span>
                               </div>
