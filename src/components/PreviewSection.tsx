@@ -588,13 +588,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          </div>
                         
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 md:gap-3 mt-2 sm:mt-3 md:mt-4">
-                           <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                           <div className="flex items-center gap-1 sm:gap-2 text-white/90 min-w-0">
                              <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                             <span className="text-xs sm:text-sm truncate">{enhancedContent.email}</span>
+                             <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.email}</span>
                            </div>
-                           <div className="flex items-center gap-1 sm:gap-2 text-white/90">
+                           <div className="flex items-center gap-1 sm:gap-2 text-white/90 min-w-0">
                              <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                             <span className="text-xs sm:text-sm truncate">{enhancedContent.phone}</span>
+                             <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.phone}</span>
                            </div>
                           <div className="flex items-center gap-1 sm:gap-2 text-white/90">
                             <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
