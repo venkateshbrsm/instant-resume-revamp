@@ -32,7 +32,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
 
         {/* Subheadline */}
         <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-muted-foreground mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-4 sm:px-6">
-          Upload your current resume and get a professionally redesigned version in minutes. 
+          Upload your current resume and get a <span className="font-semibold text-accent">free preview</span> of your professionally redesigned version in minutes. 
           No sign-up required. Pay only if you love the result.
         </p>
 
@@ -66,9 +66,9 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             </Button>
           </div>
           
-            <p className="text-xs sm:text-sm text-muted-foreground text-center">
-              Upload • Preview • Pay Only ₹299 if Satisfied
-            </p>
+          <p className="text-xs sm:text-sm text-center">
+            <span className="text-muted-foreground">Upload</span> • <span className="font-bold text-accent">Free Preview</span> • <span className="text-muted-foreground">Pay Only ₹299 if Satisfied</span>
+          </p>
         </div>
 
         {/* Social proof */}
