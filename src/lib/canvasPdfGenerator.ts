@@ -102,28 +102,38 @@ export async function generatePdfFromElement(
 
     // Check if content fits on one page
     if (finalHeight <= availableHeight) {
-      // Single page - center vertically
+      // Single page - center vertically with printer-friendly margins
       const imgData = canvas.toDataURL('image/jpeg', quality);
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
     } else {
-      // Multi-page generation for long content
-      const pagesNeeded = Math.ceil(finalHeight / availableHeight);
-      const pixelsPerPage = canvas.height / pagesNeeded;
+      // Multi-page generation with printer-friendly page breaks
+      const printerMargin = 15; // Extra margin for printer-friendly output
+      const effectivePageHeight = availableHeight - printerMargin;
+      const pagesNeeded = Math.ceil(finalHeight / effectivePageHeight);
       
-      for (let pageIndex = 0; pageIndex < pagesNeeded; pageIndex++) {
+      // Calculate printer-friendly sections with proper overlap to prevent text cutoff
+      const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
+      const pixelsPerPage = pixelsPerPageMm * scale;
+      const overlap = scale * 20; // 20px overlap to prevent text cutoff
+      
+      let currentY = 0;
+      let pageIndex = 0;
+      
+      while (currentY < canvas.height) {
         if (pageIndex > 0) {
           pdf.addPage();
         }
+        
+        // Calculate section height with overlap
+        const remainingHeight = canvas.height - currentY;
+        const sectionHeight = Math.min(pixelsPerPage + overlap, remainingHeight);
         
         // Create canvas for this page section
         const pageCanvas = document.createElement('canvas');
         const pageCtx = pageCanvas.getContext('2d');
         
         if (pageCtx) {
-          const startY = pageIndex * pixelsPerPage;
-          const sectionHeight = Math.min(pixelsPerPage, canvas.height - startY);
-          
           pageCanvas.width = canvas.width;
           pageCanvas.height = sectionHeight;
           
@@ -131,10 +141,10 @@ export async function generatePdfFromElement(
           pageCtx.fillStyle = '#ffffff';
           pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
           
-          // Draw the section of original canvas
+          // Draw the section
           pageCtx.drawImage(
             canvas,
-            0, startY, // source position
+            0, currentY, // source position
             canvas.width, sectionHeight, // source size
             0, 0, // destination position
             canvas.width, sectionHeight // destination size
@@ -143,8 +153,17 @@ export async function generatePdfFromElement(
           const pageImgData = pageCanvas.toDataURL('image/jpeg', quality);
           const sectionHeightMm = (sectionHeight / scale) * pixelsToMm * finalScale;
           
-          pdf.addImage(pageImgData, 'JPEG', margin, margin, finalWidth, sectionHeightMm);
+          // Ensure we don't exceed page boundaries
+          const maxAllowedHeight = Math.min(sectionHeightMm, effectivePageHeight);
+          
+          // Add extra margin for first page only
+          const pageTopMargin = pageIndex === 0 ? margin : margin + 2;
+          pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
         }
+        
+        // Move to next section with proper spacing to avoid cutoff
+        currentY += pixelsPerPage - (overlap / 2);
+        pageIndex++;
       }
     }
     
