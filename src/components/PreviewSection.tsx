@@ -523,6 +523,9 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                     {/* Modern Header with Visual Elements */}
                      <div 
                        className="relative rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3.5 lg:p-6 text-white overflow-hidden min-h-[180px] sm:min-h-[200px] md:min-h-[220px] lg:min-h-[240px] flex flex-col justify-center"
+                       style={{
+                         background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                       }}
                      >
                        <div className="absolute inset-0 bg-black/10 z-0"></div>
                         <div className="relative z-20">
