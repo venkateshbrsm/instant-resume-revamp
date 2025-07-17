@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ThemeSelector, colorThemes } from "@/components/ThemeSelector";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface NavigationProps {
@@ -13,21 +12,9 @@ interface NavigationProps {
   showSteps?: boolean;
   user?: SupabaseUser | null;
   onAuthAction?: () => void;
-  selectedTheme?: typeof colorThemes[0];
-  onThemeChange?: (theme: typeof colorThemes[0]) => void;
-  showThemeSelector?: boolean;
 }
 
-export function Navigation({ 
-  currentStep, 
-  onNavigate, 
-  showSteps = true, 
-  user, 
-  onAuthAction,
-  selectedTheme = colorThemes[0],
-  onThemeChange,
-  showThemeSelector = false
-}: NavigationProps) {
+export function Navigation({ currentStep, onNavigate, showSteps = true, user, onAuthAction }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
 
@@ -103,14 +90,8 @@ export function Navigation({
             </Button>
           </div>
 
-          {/* Theme Selector & Authentication */}
+          {/* Authentication */}
           <div className="hidden md:flex items-center gap-2">
-            {showThemeSelector && onThemeChange && (
-              <ThemeSelector 
-                selectedTheme={selectedTheme} 
-                onThemeChange={onThemeChange} 
-              />
-            )}
             {user ? (
               <>
                 <span className="text-sm text-muted-foreground flex items-center gap-2">
@@ -153,20 +134,9 @@ export function Navigation({
                       : "text-muted-foreground/50 cursor-not-allowed"
                   }`}
                 >
-               {step.label}
+                  {step.label}
                 </button>
               ))}
-              
-              {/* Mobile Theme Selector */}
-              {showThemeSelector && onThemeChange && (
-                <div className="px-3 py-2">
-                  <ThemeSelector 
-                    selectedTheme={selectedTheme} 
-                    onThemeChange={onThemeChange} 
-                  />
-                </div>
-              )}
-              
                {user ? (
                 <>
                   <div className="px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">

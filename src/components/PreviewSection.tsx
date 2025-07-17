@@ -14,17 +14,22 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieCha
 import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-import { colorThemes } from "@/components/ThemeSelector";
-
 interface PreviewSectionProps {
   file: File;
   onPurchase: () => void;
   onBack: () => void;
-  selectedTheme: typeof colorThemes[0];
-  onThemeChange: (theme: typeof colorThemes[0]) => void;
 }
 
-export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThemeChange }: PreviewSectionProps) {
+const colorThemes = [
+  { id: 'navy', name: 'Navy Professional', primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
+  { id: 'charcoal', name: 'Charcoal Gray', primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
+  { id: 'burgundy', name: 'Burgundy Wine', primary: '#dc2626', secondary: '#ef4444', accent: '#f87171' },
+  { id: 'forest', name: 'Forest Green', primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
+  { id: 'bronze', name: 'Bronze Gold', primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
+  { id: 'slate', name: 'Slate Blue', primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' }
+];
+
+export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
   const [extractedText, setExtractedText] = useState<string>("");
@@ -36,6 +41,7 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
   const [enhancementProgress, setEnhancementProgress] = useState(0);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
@@ -468,10 +474,10 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-2 sm:py-4 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-x-hidden">
       <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-4 sm:mb-6 md:mb-8 mt-6 sm:mt-8 md:mt-10">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
           <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
             <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
             AI Enhancement Complete
@@ -517,42 +523,84 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                      ref={enhancedResumeRef}
                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
                    >
+                  
+                     {/* Color Theme Selector */}
+                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
+                       <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                         <Sparkles className="w-3 h-3" />
+                         Themes
+                       </h4>
+                       <div className="flex flex-wrap gap-1">
+                        {colorThemes.map((theme) => (
+                          <button
+                            key={theme.id}
+                             onClick={() => {
+                               console.log('Theme selected:', theme);
+                               setSelectedTheme(theme);
+                             }}
+                            className={`flex items-center gap-1 p-1 rounded border transition-all duration-200 ${
+                              selectedTheme.id === theme.id 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50 bg-background'
+                            }`}
+                          >
+                            <div className="flex gap-0.5">
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: theme.primary }}
+                              />
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: theme.accent }}
+                              />
+                            </div>
+                            {selectedTheme.id === theme.id && (
+                              <Sparkles className="w-2 h-2 text-primary" />
+                            )}
+                          </button>
+                        ))}
+                     </div>
+                  </div>
 
                     {/* Resume Content - This is what gets captured for PDF */}
                     <div ref={resumeContentRef}>
                     {/* Modern Header with Visual Elements */}
-                     <div 
-                       className="relative rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3.5 lg:p-6 text-white overflow-hidden min-h-[180px] sm:min-h-[200px] md:min-h-[220px] lg:min-h-[240px] flex flex-col justify-center"
-                       style={{
-                         background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                       }}
-                     >
-                       <div className="absolute inset-0 bg-black/10 z-0"></div>
-                        <div className="relative z-20">
-                          <div className="flex items-center justify-between gap-1.5 sm:gap-2 md:gap-2.5">
-                            <div className="min-w-0 flex-1">
-                               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
-                               <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight text-white/90">{enhancedContent.title}</p>
+                    <div 
+                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                      style={{
+                        background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-black/10"></div>
+                       <div className="relative z-10">
+                         <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
+                           <div className="min-w-0 flex-1">
+                             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
+                             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
+                           </div>
+                         </div>
+                        
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-5">
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.email}</span>
                             </div>
-                          </div>
-                         
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 md:gap-3.5 mt-2.5 sm:mt-3.5 md:mt-4.5">
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 mb-1">
-                               <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                               <p className="text-[15px] mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.email}</p>
-                             </div>
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 mb-1">
-                               <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                               <p className="text-[15px] mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.phone}</p>
-                             </div>
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 mb-1">
-                               <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                               <span className="text-[15px] mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0">{enhancedContent.location}</span>
-                             </div>
-                             <div className="flex items-center gap-2 text-white/90 min-w-0 mb-1">
-                               <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                               <span className="text-[15px] mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0">Professional</span>
-                             </div>
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.location}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-white/90 min-w-0">
+                              <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm truncate min-w-0">Professional</span>
+                            </div>
                           </div>
                       </div>
                    </div>
