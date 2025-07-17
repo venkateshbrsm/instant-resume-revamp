@@ -68,7 +68,8 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           ],
           alignment: AlignmentType.CENTER,
           spacing: {
-            after: 200,
+            before: 200,
+            after: 400,
           },
         }),
         new Paragraph({
@@ -82,7 +83,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           ],
           alignment: AlignmentType.CENTER,
           spacing: {
-            after: 300,
+            after: 500,
           },
         }),
         
@@ -165,8 +166,8 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           ],
           alignment: AlignmentType.CENTER,
           spacing: {
-            before: 300,
-            after: 300,
+            before: 500,
+            after: 500,
           },
         }),
         
