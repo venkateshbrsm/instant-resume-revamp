@@ -576,15 +576,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        }}
                      >
                        <div className="absolute inset-0 bg-black/10"></div>
-                        <div className="relative z-10 border-2 border-yellow-400 bg-yellow-100/20 text-center">
-                          <div className="flex items-start justify-center gap-1 sm:gap-2 md:gap-3 border border-green-500 bg-green-100/20 p-1">
-                            <div className="min-w-0 flex-1 border border-blue-500 bg-blue-100/20 p-1 text-center">
-                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight border border-purple-500 bg-purple-100/20 p-1 text-center">{enhancedContent.name}</h1>
-                              <p className="text-white/90 break-words leading-tight border border-orange-500 bg-orange-100/20 p-1 text-center" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
-                            </div>
-                          </div>
-                         
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 border-2 border-teal-500 bg-teal-100/20 p-2">
+                         <div className="relative z-10 text-center">
+                           <div className="flex items-start justify-center gap-1 sm:gap-2 md:gap-3 p-1">
+                             <div className="min-w-0 flex-1 p-1 text-center">
+                               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight p-1 text-center">{enhancedContent.name}</h1>
+                               <p className="text-white/90 break-words leading-tight p-1 text-center" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
+                             </div>
+                           </div>
+                          
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 p-2">
                              <div className="flex items-start justify-start gap-2 text-white/90 min-w-0 min-h-16 p-3 overflow-auto" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
                                 <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                                 <span className="break-words min-w-0">{enhancedContent.email}</span>
