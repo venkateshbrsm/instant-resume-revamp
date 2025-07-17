@@ -60,29 +60,27 @@ export async function generatePdfFromElement(
     // Clean up element styles
     cleanup();
 
-    // Standard A4 dimensions in mm (210 x 297)
+    // PDF dimensions (A4 size in mm)
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 8; // Optimized margins for maximum content utilization
+    const margin = 12; // Professional margins
     const availableWidth = pdfWidth - (margin * 2);
     const availableHeight = pdfHeight - (margin * 2);
     
     console.log('Canvas dimensions:', { width: canvas.width, height: canvas.height });
     
-    // Convert pixels to mm using standard 96 DPI
+    // Convert pixels to mm (96 DPI standard)
     const pixelsToMm = 25.4 / 96;
     const contentWidthMm = (canvas.width / scale) * pixelsToMm;
     const contentHeightMm = (canvas.height / scale) * pixelsToMm;
     
-    // Prioritize width-first scaling for maximum page utilization
+    // Calculate scale to fit width, ensuring readability (minimum 60% scale)
     const widthScale = availableWidth / contentWidthMm;
-    const heightScale = availableHeight / contentHeightMm;
+    const minReadableScale = 0.6;
+    const finalScale = Math.max(widthScale, minReadableScale);
     
-    // Use width-first approach: prefer fitting full width, allow multiple pages if needed
-    const finalScale = widthScale;
-    
-    // Calculate final A4-optimized dimensions using full width
-    const finalWidth = availableWidth; // Use full available width
+    // Calculate final dimensions
+    const finalWidth = Math.min(contentWidthMm * finalScale, availableWidth);
     const finalHeight = contentHeightMm * finalScale;
     
     console.log('PDF calculations:', { 
@@ -237,21 +235,6 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.overflowWrap = 'break-word';
       htmlEl.style.textOverflow = 'clip';
       htmlEl.style.whiteSpace = 'normal';
-    });
-    
-    // Fix text-decoration issues for PDF rendering
-    const decoratedElements = element.querySelectorAll('*');
-    decoratedElements.forEach((el) => {
-      const htmlEl = el as HTMLElement;
-      const computedStyle = window.getComputedStyle(htmlEl);
-      
-      // Reset problematic text-decoration properties
-      if (computedStyle.textDecoration !== 'none') {
-        htmlEl.style.textDecoration = 'none';
-      }
-      
-      // Prevent text duplication by ensuring no pseudo-elements are duplicated
-      htmlEl.style.setProperty('content', 'none', 'important');
     });
   }
   
