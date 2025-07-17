@@ -522,40 +522,40 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                     <div ref={resumeContentRef}>
                     {/* Modern Header with Visual Elements */}
                     <div 
-                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
-                      style={{
-                        background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-black/10"></div>
-                       <div className="relative z-10">
-                         <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
-                           <div className="min-w-0 flex-1">
-                             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
-                             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
-                           </div>
-                         </div>
-                        
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-5">
-                            <div className="flex items-center gap-2 text-white/90 min-w-0">
-                              <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.email}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0">
-                              <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.phone}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0">
-                              <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.location}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0">
-                              <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">Professional</span>
+                       className="relative rounded-lg sm:rounded-xl p-4 sm:p-6 md:p-8 lg:p-10 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                       style={{
+                         background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
+                       }}
+                     >
+                       <div className="absolute inset-0 bg-black/10"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 break-words leading-tight">{enhancedContent.name}</h1>
+                              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
                             </div>
                           </div>
-                      </div>
-                   </div>
+                         
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 mt-5 sm:mt-6 md:mt-8">
+                             <div className="flex items-center gap-2 text-white/90 min-w-0">
+                               <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                               <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.email}</span>
+                             </div>
+                             <div className="flex items-center gap-2 text-white/90 min-w-0">
+                               <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                               <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.phone}</span>
+                             </div>
+                             <div className="flex items-center gap-2 text-white/90 min-w-0">
+                               <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                               <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.location}</span>
+                             </div>
+                             <div className="flex items-center gap-2 text-white/90 min-w-0">
+                               <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                               <span className="text-xs sm:text-sm truncate min-w-0">Professional</span>
+                             </div>
+                           </div>
+                       </div>
+                    </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                       {/* Main Content */}
