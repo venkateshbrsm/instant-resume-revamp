@@ -543,15 +543,7 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.phone}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0">
-                              <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.location}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-white/90 min-w-0">
-                              <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">Professional</span>
+                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.phone} • {enhancedContent.location}</span>
                             </div>
                           </div>
                       </div>
