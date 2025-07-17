@@ -578,9 +578,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        <div className="absolute inset-0 bg-black/10"></div>
                          <div className="relative z-10 text-left">
                            <div className="flex items-start justify-start gap-1 sm:gap-2 md:gap-3 p-1">
-                             <div className="min-w-0 flex-1 p-1 text-center">
-                               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight p-1 text-center">{enhancedContent.name}</h1>
-                               <p className="text-white/90 break-words leading-tight p-1 text-center" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
+                             <div className="min-w-0 flex-1 p-1 text-left">
+                               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight p-1 text-left">{enhancedContent.name}</h1>
+                               <p className="text-white/90 break-words leading-tight p-1 text-left" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
                              </div>
                            </div>
                           
