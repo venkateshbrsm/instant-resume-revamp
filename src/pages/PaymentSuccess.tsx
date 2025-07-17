@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Download, Home, Loader2 } from "lucide-react";
-// Canvas PDF generator import removed - using stored blob instead
+import { generateResumePDF } from "@/lib/reactPdfGenerator";
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -161,44 +161,33 @@ export default function PaymentSuccess() {
       });
 
       if (format === 'pdf') {
-        // Check if we have a pre-generated canvas PDF blob with perfect visual fidelity
-        const canvasPdfBlob = sessionStorage.getItem('canvasPdfBlob');
+        // Try to use React-PDF with stored enhanced content first
+        const enhancedContentStr = sessionStorage.getItem('enhancedContentForPayment');
         
-        if (canvasPdfBlob) {
+        if (enhancedContentStr) {
           try {
-            console.log('Using pre-generated canvas PDF for perfect visual fidelity...');
+            console.log('Using React-PDF with stored enhanced content...');
             
             toast({
-              title: "Downloading High-Quality PDF",
-              description: "Using pre-generated PDF with exact visual fidelity...",
+              title: "Generating High-Quality PDF",
+              description: "Creating PDF with React-PDF for perfect text rendering...",
             });
             
-            // Convert base64 back to blob
-            const response = await fetch(canvasPdfBlob);
-            const blob = await response.blob();
+            const enhancedContent = JSON.parse(enhancedContentStr);
+            const filename = `Enhanced_Resume_${enhancedContent.personal_info?.name?.replace(/[^a-zA-Z0-9]/g, '_') || new Date().getTime()}.pdf`;
             
-            const filename = `Enhanced_Resume_${new Date().getTime()}.pdf`;
-            
-            // Create download link
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            await generateResumePDF(enhancedContent, filename);
             
             toast({
               title: "Download Complete",
-              description: "Your enhanced resume PDF with perfect visual fidelity has been downloaded!",
+              description: "Your enhanced resume PDF has been downloaded!",
             });
             
             // Clean up session storage
-            sessionStorage.removeItem('canvasPdfBlob');
+            sessionStorage.removeItem('enhancedContentForPayment');
             return;
           } catch (error) {
-            console.warn('Canvas-based PDF download failed, falling back to server generation:', error);
+            console.warn('React-PDF generation failed, falling back to server generation:', error);
             toast({
               title: "Falling back to server generation",
               description: "Using server-side PDF generation as backup...",
