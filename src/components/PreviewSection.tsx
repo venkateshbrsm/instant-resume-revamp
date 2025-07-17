@@ -527,8 +527,8 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                         background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                       }}
                     >
-                      <div className="absolute inset-0 bg-black/10"></div>
-                       <div className="relative z-10">
+                      <div className="absolute inset-0 bg-black/10 z-0"></div>
+                       <div className="relative z-20">
                          <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
                            <div className="min-w-0 flex-1">
                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
