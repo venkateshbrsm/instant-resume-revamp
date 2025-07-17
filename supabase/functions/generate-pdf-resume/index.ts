@@ -69,7 +69,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     .header {
       background: linear-gradient(to right, ${theme.primary}, ${theme.accent});
       color: white;
-      padding: 12pt;
+      padding: 18pt;
       position: relative;
       overflow: hidden;
     }
@@ -106,18 +106,21 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     
     .contact-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8pt;
+      grid-template-columns: 1fr;
+      gap: 12pt;
       margin-top: 12pt;
     }
     
     .contact-item {
-      font-size: 9pt;
+      font-size: 10pt;
       opacity: 0.9;
       display: flex;
       align-items: center;
-      gap: 6pt;
+      gap: 8pt;
       font-weight: 500;
+      padding: 2pt 0;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     
     .icon {
