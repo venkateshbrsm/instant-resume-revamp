@@ -194,9 +194,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             
             const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
               quality: 0.95,
-              scale: 2,
-              width: 794,
-              height: 1123
+              scale: 2
             });
             
             // Convert blob to base64 for session storage
@@ -251,9 +249,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             // Generate canvas PDF for login flow too
             const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
               quality: 0.95,
-              scale: 2,
-              width: 794,
-              height: 1123
+              scale: 2
             });
             
             const reader = new FileReader();
@@ -328,9 +324,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await downloadPdfFromElement(resumeContentRef.current, {
         filename,
         quality: 0.95,
-        scale: 2,
-        width: 794,
-        height: 1123
+        scale: 2
       });
 
       toast({

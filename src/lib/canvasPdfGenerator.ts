@@ -19,42 +19,89 @@ export async function generatePdfFromElement(
 ): Promise<Blob> {
   const {
     filename = 'document.pdf',
-    quality = 2,
-    scale = 2,
-    width = 794, // A4 width in pixels at 96 DPI
-    height = 1123 // A4 height in pixels at 96 DPI
+    quality = 0.95,
+    scale = 2
   } = options;
 
   try {
-    // Configure html2canvas for high quality output
+    // Prepare element for capture - get natural dimensions
+    const cleanup = prepareElementForCapture(element);
+    
+    // Wait for any layout changes to settle
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Get the element's actual rendered dimensions
+    const rect = element.getBoundingClientRect();
+    const elementWidth = Math.max(rect.width, element.scrollWidth);
+    const elementHeight = Math.max(rect.height, element.scrollHeight);
+    
+    console.log('Element dimensions:', { width: elementWidth, height: elementHeight });
+    
+    // Configure html2canvas to capture the element's natural size
     const canvas = await html2canvas(element, {
       scale: scale,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: width,
-      height: height,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: width,
-      windowHeight: height,
       logging: false,
       imageTimeout: 15000,
-      removeContainer: true
+      removeContainer: true,
+      scrollX: 0,
+      scrollY: 0,
+      // Let html2canvas auto-detect dimensions instead of forcing them
+      width: elementWidth,
+      height: elementHeight
     });
 
+    // Clean up element styles
+    cleanup();
+
     // Calculate PDF dimensions (A4 size in mm)
-    const pdfWidth = 210;
-    const pdfHeight = 297;
+    const pdfWidth = 210; // A4 width in mm
+    const pdfHeight = 297; // A4 height in mm
     
-    // Calculate scaling to fit content properly
+    // Get canvas dimensions
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    const ratio = Math.min(pdfWidth / (canvasWidth * 0.264583), pdfHeight / (canvasHeight * 0.264583));
+    
+    console.log('Canvas dimensions:', { width: canvasWidth, height: canvasHeight });
+    
+    // Calculate scale to fit content on A4 page with some padding
+    const padding = 10; // 10mm padding on all sides
+    const availableWidth = pdfWidth - (padding * 2);
+    const availableHeight = pdfHeight - (padding * 2);
+    
+    // Convert canvas pixels to mm (assuming 96 DPI: 1 inch = 25.4mm, 96px = 25.4mm)
+    const pixelsToMm = 25.4 / 96;
+    const contentWidthMm = (canvasWidth / scale) * pixelsToMm;
+    const contentHeightMm = (canvasHeight / scale) * pixelsToMm;
+    
+    // Calculate scale to fit within available area
+    const scaleX = availableWidth / contentWidthMm;
+    const scaleY = availableHeight / contentHeightMm;
+    const finalScale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down if needed
+    
+    // Calculate final dimensions
+    const finalWidth = contentWidthMm * finalScale;
+    const finalHeight = contentHeightMm * finalScale;
+    
+    // Center the content on the page
+    const x = (pdfWidth - finalWidth) / 2;
+    const y = padding; // Start from top padding
+    
+    console.log('PDF layout:', { 
+      finalScale, 
+      finalWidth, 
+      finalHeight, 
+      x, 
+      y,
+      contentWidthMm,
+      contentHeightMm 
+    });
     
     // Create PDF
     const pdf = new jsPDF({
-      orientation: 'portrait',
+      orientation: finalHeight > finalWidth ? 'portrait' : 'landscape',
       unit: 'mm',
       format: 'a4',
       compress: true
@@ -63,13 +110,8 @@ export async function generatePdfFromElement(
     // Convert canvas to image data
     const imgData = canvas.toDataURL('image/jpeg', quality);
     
-    // Add image to PDF with proper scaling
-    const imgWidth = canvasWidth * 0.264583 * ratio;
-    const imgHeight = canvasHeight * 0.264583 * ratio;
-    const x = (pdfWidth - imgWidth) / 2;
-    const y = (pdfHeight - imgHeight) / 2;
-    
-    pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+    // Add image to PDF with calculated dimensions
+    pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
     
     // Return as blob
     return pdf.output('blob');
@@ -115,14 +157,23 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     width: element.style.width,
     height: element.style.height,
     overflow: element.style.overflow,
-    position: element.style.position
+    position: element.style.position,
+    maxWidth: element.style.maxWidth,
+    minHeight: element.style.minHeight
   };
 
   // Apply styles for better capture quality
   element.style.transform = 'scale(1)';
-  element.style.width = '794px'; // A4 width
   element.style.overflow = 'visible';
   element.style.position = 'relative';
+  element.style.maxWidth = 'none';
+  element.style.minHeight = 'auto';
+  
+  // Ensure the element has explicit dimensions based on its content
+  const rect = element.getBoundingClientRect();
+  if (rect.width > 0) {
+    element.style.width = rect.width + 'px';
+  }
 
   // Return cleanup function
   return () => {
