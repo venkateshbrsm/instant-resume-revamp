@@ -222,10 +222,18 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
   element.style.maxWidth = 'none';
   element.style.minHeight = 'auto';
   
-  // Add mobile-specific optimizations
+  // Add mobile-specific optimizations with print layout
   if (window.innerWidth < 768) {
+    // Apply print layout styles for mobile
     element.style.fontSize = 'inherit';
     element.style.lineHeight = 'inherit';
+    element.style.width = '210mm'; // A4 width
+    element.style.maxWidth = '210mm';
+    element.style.margin = '0';
+    element.style.padding = '0';
+    element.style.boxSizing = 'border-box';
+    element.style.printColorAdjust = 'exact';
+    (element.style as any).colorAdjust = 'exact';
     
     // Fix text wrapping and alignment for mobile PDF
     const textElements = element.querySelectorAll('[class*="truncate"], [class*="break-words"]');
@@ -235,6 +243,14 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.overflowWrap = 'break-word';
       htmlEl.style.textOverflow = 'clip';
       htmlEl.style.whiteSpace = 'normal';
+    });
+
+    // Apply print-specific styles to all child elements
+    const allElements = element.querySelectorAll('*');
+    allElements.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.printColorAdjust = 'exact';
+      (htmlEl.style as any).colorAdjust = 'exact';
     });
   }
   
