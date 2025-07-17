@@ -44,6 +44,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
+  const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -183,7 +184,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       if (session?.user) {
         // User is authenticated, generate canvas PDF and save for payment
-        if (enhancedContent && enhancedResumeRef.current) {
+        if (enhancedContent && resumeContentRef.current) {
           try {
             // Generate the canvas PDF blob for exact visual fidelity
             toast({
@@ -191,7 +192,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               description: "Generating high-quality PDF preview...",
             });
             
-            const pdfBlob = await generatePdfFromElement(enhancedResumeRef.current, {
+            const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
               quality: 0.95,
               scale: 2,
               width: 794,
@@ -245,10 +246,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         if (extractedText) {
           sessionStorage.setItem('extractedText', extractedText);
         }
-        if (enhancedContent && enhancedResumeRef.current) {
+        if (enhancedContent && resumeContentRef.current) {
           try {
             // Generate canvas PDF for login flow too
-            const pdfBlob = await generatePdfFromElement(enhancedResumeRef.current, {
+            const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
               quality: 0.95,
               scale: 2,
               width: 794,
@@ -305,7 +306,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleTestDownload = async () => {
-    if (!enhancedResumeRef.current || !enhancedContent) {
+    if (!resumeContentRef.current || !enhancedContent) {
       toast({
         title: "Preview Not Ready",
         description: "Please wait for the enhanced resume to load completely.",
@@ -324,7 +325,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
       const filename = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
       
-      await downloadPdfFromElement(enhancedResumeRef.current, {
+      await downloadPdfFromElement(resumeContentRef.current, {
         filename,
         quality: 0.95,
         scale: 2,
@@ -574,6 +575,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                     </div>
                   </div>
 
+                    {/* Resume Content - This is what gets captured for PDF */}
+                    <div ref={resumeContentRef}>
                     {/* Modern Header with Visual Elements */}
                     <div 
                       className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
@@ -798,10 +801,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         </div>
                       )}
 
-                    </div>
-                  </div>
-                </div>
-              </div>
+                     </div>
+                   </div>
+                 </div>
+                 </div> {/* End of resumeContentRef */}
+               </div>
               ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
