@@ -539,11 +539,11 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-5">
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.email}</span>
+                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.email}</span>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.phone}</span>
+                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.phone}</span>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
