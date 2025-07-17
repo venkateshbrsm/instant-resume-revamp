@@ -20,15 +20,15 @@ export async function generatePdfFromElement(
   const {
     filename = 'document.pdf',
     quality = 0.95,
-    scale = 2
+    scale = 2.5 // Higher scale for better text quality
   } = options;
 
   try {
-    // Prepare element for capture - get natural dimensions
+    // Prepare element for capture
     const cleanup = prepareElementForCapture(element);
     
     // Wait for any layout changes to settle
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 150));
     
     // Get the element's actual rendered dimensions
     const rect = element.getBoundingClientRect();
@@ -37,7 +37,7 @@ export async function generatePdfFromElement(
     
     console.log('Element dimensions:', { width: elementWidth, height: elementHeight });
     
-    // Configure html2canvas to capture the element's natural size
+    // Configure html2canvas to capture at high resolution
     const canvas = await html2canvas(element, {
       scale: scale,
       useCORS: true,
@@ -48,7 +48,6 @@ export async function generatePdfFromElement(
       removeContainer: true,
       scrollX: 0,
       scrollY: 0,
-      // Let html2canvas auto-detect dimensions instead of forcing them
       width: elementWidth,
       height: elementHeight
     });
@@ -56,64 +55,94 @@ export async function generatePdfFromElement(
     // Clean up element styles
     cleanup();
 
-    // Calculate PDF dimensions (A4 size in mm)
-    const pdfWidth = 210; // A4 width in mm
-    const pdfHeight = 297; // A4 height in mm
+    // PDF dimensions (A4 size in mm)
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const margin = 12; // Professional margins
+    const availableWidth = pdfWidth - (margin * 2);
+    const availableHeight = pdfHeight - (margin * 2);
     
-    // Get canvas dimensions
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
+    console.log('Canvas dimensions:', { width: canvas.width, height: canvas.height });
     
-    console.log('Canvas dimensions:', { width: canvasWidth, height: canvasHeight });
-    
-    // Calculate scale to fit content on A4 page with some padding
-    const padding = 10; // 10mm padding on all sides
-    const availableWidth = pdfWidth - (padding * 2);
-    const availableHeight = pdfHeight - (padding * 2);
-    
-    // Convert canvas pixels to mm (assuming 96 DPI: 1 inch = 25.4mm, 96px = 25.4mm)
+    // Convert pixels to mm (96 DPI standard)
     const pixelsToMm = 25.4 / 96;
-    const contentWidthMm = (canvasWidth / scale) * pixelsToMm;
-    const contentHeightMm = (canvasHeight / scale) * pixelsToMm;
+    const contentWidthMm = (canvas.width / scale) * pixelsToMm;
+    const contentHeightMm = (canvas.height / scale) * pixelsToMm;
     
-    // Calculate scale to fit within available area
-    const scaleX = availableWidth / contentWidthMm;
-    const scaleY = availableHeight / contentHeightMm;
-    const finalScale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down if needed
+    // Calculate scale to fit width, ensuring readability (minimum 60% scale)
+    const widthScale = availableWidth / contentWidthMm;
+    const minReadableScale = 0.6;
+    const finalScale = Math.max(widthScale, minReadableScale);
     
     // Calculate final dimensions
-    const finalWidth = contentWidthMm * finalScale;
+    const finalWidth = Math.min(contentWidthMm * finalScale, availableWidth);
     const finalHeight = contentHeightMm * finalScale;
     
-    // Center the content on the page
-    const x = (pdfWidth - finalWidth) / 2;
-    const y = padding; // Start from top padding
-    
-    console.log('PDF layout:', { 
+    console.log('PDF calculations:', { 
+      contentWidthMm, 
+      contentHeightMm, 
       finalScale, 
       finalWidth, 
-      finalHeight, 
-      x, 
-      y,
-      contentWidthMm,
-      contentHeightMm 
+      finalHeight,
+      availableHeight 
     });
     
     // Create PDF
     const pdf = new jsPDF({
-      orientation: finalHeight > finalWidth ? 'portrait' : 'landscape',
+      orientation: 'portrait',
       unit: 'mm',
       format: 'a4',
       compress: true
     });
 
-    // Convert canvas to image data
-    const imgData = canvas.toDataURL('image/jpeg', quality);
+    // Check if content fits on one page
+    if (finalHeight <= availableHeight) {
+      // Single page - center vertically
+      const imgData = canvas.toDataURL('image/jpeg', quality);
+      const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
+      pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
+    } else {
+      // Multi-page generation for long content
+      const pagesNeeded = Math.ceil(finalHeight / availableHeight);
+      const pixelsPerPage = canvas.height / pagesNeeded;
+      
+      for (let pageIndex = 0; pageIndex < pagesNeeded; pageIndex++) {
+        if (pageIndex > 0) {
+          pdf.addPage();
+        }
+        
+        // Create canvas for this page section
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+        
+        if (pageCtx) {
+          const startY = pageIndex * pixelsPerPage;
+          const sectionHeight = Math.min(pixelsPerPage, canvas.height - startY);
+          
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sectionHeight;
+          
+          // Fill with white background
+          pageCtx.fillStyle = '#ffffff';
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          
+          // Draw the section of original canvas
+          pageCtx.drawImage(
+            canvas,
+            0, startY, // source position
+            canvas.width, sectionHeight, // source size
+            0, 0, // destination position
+            canvas.width, sectionHeight // destination size
+          );
+          
+          const pageImgData = pageCanvas.toDataURL('image/jpeg', quality);
+          const sectionHeightMm = (sectionHeight / scale) * pixelsToMm * finalScale;
+          
+          pdf.addImage(pageImgData, 'JPEG', margin, margin, finalWidth, sectionHeightMm);
+        }
+      }
+    }
     
-    // Add image to PDF with calculated dimensions
-    pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
-    
-    // Return as blob
     return pdf.output('blob');
   } catch (error) {
     console.error('Error generating PDF from canvas:', error);
