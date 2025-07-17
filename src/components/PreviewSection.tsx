@@ -531,27 +531,27 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                         <div className="relative z-20">
                           <div className="flex items-center justify-between gap-1.5 sm:gap-2 md:gap-2.5">
                             <div className="min-w-0 flex-1">
-                              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
-                              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium break-words leading-tight">{enhancedContent.title}</p>
+                               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight">{enhancedContent.name}</h1>
+                               <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight text-white/90">{enhancedContent.title}</p>
                             </div>
                           </div>
                          
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 md:gap-3.5 mt-2.5 sm:mt-3.5 md:mt-4.5">
                             <div className="flex items-center gap-2 text-white/90 min-w-0 pb-2 sm:pb-3">
                               <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.email}</span>
+                              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.email}</span>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0 pb-2 sm:pb-3">
                               <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0 no-underline">{enhancedContent.phone}</span>
+                              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.phone}</span>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">{enhancedContent.location}</span>
+                              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0">{enhancedContent.location}</span>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm truncate min-w-0">Professional</span>
+                              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0">Professional</span>
                             </div>
                           </div>
                       </div>
