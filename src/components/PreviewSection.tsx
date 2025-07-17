@@ -471,7 +471,7 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
     <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-2 sm:py-4 overflow-x-hidden">
       <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8 mt-6 sm:mt-8 md:mt-10">
           <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
             <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
             AI Enhancement Complete
