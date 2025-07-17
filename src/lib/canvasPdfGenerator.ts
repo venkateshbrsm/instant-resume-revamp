@@ -60,10 +60,10 @@ export async function generatePdfFromElement(
     // Clean up element styles
     cleanup();
 
-    // Standard A4 dimensions in mm (210 x 297)
-    const pdfWidth = 210;
-    const pdfHeight = 297;
-    const margin = 10; // Reduced margins for better A4 utilization
+    // Standard A3 dimensions in mm (297 x 420)
+    const pdfWidth = 297;
+    const pdfHeight = 420;
+    const margin = 10; // Reduced margins for better A3 utilization
     const availableWidth = pdfWidth - (margin * 2);
     const availableHeight = pdfHeight - (margin * 2);
     
@@ -74,16 +74,16 @@ export async function generatePdfFromElement(
     const contentWidthMm = (canvas.width / scale) * pixelsToMm;
     const contentHeightMm = (canvas.height / scale) * pixelsToMm;
     
-    // Calculate scale to fit A4 width perfectly, ensuring minimum readability
+    // Calculate scale to fit A3 width perfectly, ensuring minimum readability
     const widthScale = availableWidth / contentWidthMm;
     const heightScale = availableHeight / contentHeightMm;
     
-    // Use the smaller scale to ensure content fits within A4 boundaries
+    // Use the smaller scale to ensure content fits within A3 boundaries
     const autoScale = Math.min(widthScale, heightScale);
     const minReadableScale = 0.7; // Increased minimum scale for better readability
     const finalScale = Math.max(autoScale, minReadableScale);
     
-    // Calculate final A4-optimized dimensions
+    // Calculate final A3-optimized dimensions
     const finalWidth = Math.min(contentWidthMm * finalScale, availableWidth);
     const finalHeight = contentHeightMm * finalScale;
     
@@ -100,7 +100,7 @@ export async function generatePdfFromElement(
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4',
+      format: 'a3',
       compress: true
     });
 
