@@ -171,11 +171,14 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
 
       {/* PDF Canvas */}
       <div className="border rounded-lg overflow-auto max-h-[600px] bg-background">
-        <div className="flex justify-center p-4">
+        <div className="flex justify-center items-start p-4 min-h-full">
           <canvas
             ref={canvasRef}
-            className="max-w-full shadow-sm"
-            style={{ display: 'block' }}
+            className="max-w-full h-auto shadow-sm border rounded"
+            style={{ 
+              display: 'block',
+              margin: '0 auto'
+            }}
           />
         </div>
       </div>
