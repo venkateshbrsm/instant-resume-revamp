@@ -522,7 +522,7 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                     <div ref={resumeContentRef}>
                     {/* Modern Header with Visual Elements */}
                     <div 
-                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                      className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 text-white overflow-hidden"
                       style={{
                         background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                       }}
