@@ -539,11 +539,11 @@ export function PreviewSection({ file, onPurchase, onBack, selectedTheme, onThem
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 md:gap-3.5 mt-2.5 sm:mt-3.5 md:mt-4.5">
                             <div className="flex items-center gap-2 text-white/90 min-w-0 pb-2 sm:pb-3">
                               <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.email}</span>
+                              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.email}</p>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0 pb-2 sm:pb-3">
                               <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.phone}</span>
+                              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight truncate min-w-0 no-underline">{enhancedContent.phone}</p>
                             </div>
                             <div className="flex items-center gap-2 text-white/90 min-w-0">
                               <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
