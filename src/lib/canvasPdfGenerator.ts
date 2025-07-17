@@ -60,26 +60,30 @@ export async function generatePdfFromElement(
     // Clean up element styles
     cleanup();
 
-    // PDF dimensions (A4 size in mm)
+    // Standard A4 dimensions in mm (210 x 297)
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 12; // Professional margins
+    const margin = 10; // Reduced margins for better A4 utilization
     const availableWidth = pdfWidth - (margin * 2);
     const availableHeight = pdfHeight - (margin * 2);
     
     console.log('Canvas dimensions:', { width: canvas.width, height: canvas.height });
     
-    // Convert pixels to mm (96 DPI standard)
+    // Convert pixels to mm using standard 96 DPI
     const pixelsToMm = 25.4 / 96;
     const contentWidthMm = (canvas.width / scale) * pixelsToMm;
     const contentHeightMm = (canvas.height / scale) * pixelsToMm;
     
-    // Calculate scale to fit width, ensuring readability (minimum 60% scale)
+    // Calculate scale to fit A4 width perfectly, ensuring minimum readability
     const widthScale = availableWidth / contentWidthMm;
-    const minReadableScale = 0.6;
-    const finalScale = Math.max(widthScale, minReadableScale);
+    const heightScale = availableHeight / contentHeightMm;
     
-    // Calculate final dimensions
+    // Use the smaller scale to ensure content fits within A4 boundaries
+    const autoScale = Math.min(widthScale, heightScale);
+    const minReadableScale = 0.7; // Increased minimum scale for better readability
+    const finalScale = Math.max(autoScale, minReadableScale);
+    
+    // Calculate final A4-optimized dimensions
     const finalWidth = Math.min(contentWidthMm * finalScale, availableWidth);
     const finalHeight = contentHeightMm * finalScale;
     
