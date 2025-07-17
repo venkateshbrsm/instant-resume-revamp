@@ -68,8 +68,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           ],
           alignment: AlignmentType.CENTER,
           spacing: {
-            before: 400,
-            after: 600,
+            after: 200,
           },
         }),
         new Paragraph({
@@ -83,7 +82,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           ],
           alignment: AlignmentType.CENTER,
           spacing: {
-            after: 800,
+            after: 300,
           },
         }),
         
@@ -155,6 +154,21 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           },
         }),
         
+        // Separator line
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "─".repeat(60),
+              size: 16,
+              color: colors.primary,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: {
+            before: 300,
+            after: 300,
+          },
+        }),
         
         // Professional Summary - enhanced with better formatting
         new Paragraph({
