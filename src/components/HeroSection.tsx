@@ -61,7 +61,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               className="shadow-glow animate-pulse-gentle w-full sm:w-auto max-w-xs sm:max-w-none"
             >
               <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Start Your Makeover</span>
+              <span className="text-sm sm:text-base">Upload Your Resume</span>
               <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2" />
             </Button>
           </div>
