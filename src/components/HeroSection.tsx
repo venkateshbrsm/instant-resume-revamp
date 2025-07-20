@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, ArrowRight, CheckCircle, Star } from "lucide-react";
+import { BeforeAfterShowcase } from "@/components/BeforeAfterShowcase";
 
 interface HeroSectionProps {
   onGetStarted: () => void;
@@ -95,6 +96,9 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Before/After showcase section */}
+      <BeforeAfterShowcase onGetStarted={onGetStarted} />
     </div>
   );
 }
