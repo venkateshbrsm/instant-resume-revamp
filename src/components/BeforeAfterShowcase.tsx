@@ -36,47 +36,34 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
             </div>
             
             <Card className="bg-card/50 border-2 border-dashed border-muted">
-              <CardContent className="p-3 sm:p-4">
-                <div className="space-y-2 text-xs sm:text-sm">
-                  <div className="border-b pb-2">
-                    <h4 className="font-medium text-sm sm:text-base">John Smith</h4>
-                    <p className="text-muted-foreground text-xs">john.smith@email.com | (555) 123-4567</p>
+              <CardContent className="p-2 sm:p-3">
+                <div className="space-y-1 text-xs">
+                  <div className="border-b pb-1">
+                    <h4 className="font-medium text-xs">John Smith</h4>
+                    <p className="text-muted-foreground text-xs">john.smith@email.com</p>
                   </div>
                   
                   <div>
-                    <h5 className="font-medium mb-1 text-xs">EXPERIENCE</h5>
-                    <div className="text-muted-foreground space-y-1 text-xs">
-                      <p>Software Engineer at Tech Corp (2020-2023)</p>
-                      <p>- Worked on web applications</p>
-                      <p>- Used React and Node.js</p>
-                      <p>- Fixed bugs and added features</p>
-                    </div>
+                    <h5 className="font-medium mb-0.5 text-xs">EXPERIENCE</h5>
+                    <p className="text-muted-foreground text-xs">Software Engineer at Tech Corp</p>
+                    <p className="text-muted-foreground text-xs">- Worked on web applications</p>
                   </div>
                   
                   <div>
-                    <h5 className="font-medium mb-1 text-xs">EDUCATION</h5>
-                    <p className="text-muted-foreground text-xs">Computer Science Degree, State University</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium mb-1 text-xs">SKILLS</h5>
-                    <p className="text-muted-foreground text-xs">JavaScript, React, Node.js, HTML, CSS</p>
+                    <h5 className="font-medium mb-0.5 text-xs">SKILLS</h5>
+                    <p className="text-muted-foreground text-xs">JavaScript, React, Node.js</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <X className="w-4 h-4 text-destructive" />
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <X className="w-3 h-3 text-destructive" />
                 <span>Generic formatting</span>
               </div>
-              <div className="flex items-center gap-2">
-                <X className="w-4 h-4 text-destructive" />
-                <span>Weak action words</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <X className="w-4 h-4 text-destructive" />
+              <div className="flex items-center gap-1">
+                <X className="w-3 h-3 text-destructive" />
                 <span>No metrics or impact</span>
               </div>
             </div>
@@ -93,64 +80,43 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
             </div>
             
             <Card className="bg-gradient-subtle border border-primary/20 shadow-lg">
-              <CardContent className="p-3 sm:p-4">
-                <div className="space-y-3 text-xs sm:text-sm">
-                  <div className="border-b border-primary/10 pb-2">
-                    <h4 className="font-bold text-sm sm:text-base text-primary">John Smith</h4>
-                    <p className="text-accent font-medium text-xs sm:text-sm">Senior Software Engineer</p>
-                    <p className="text-muted-foreground text-xs">john.smith@email.com | (555) 123-4567</p>
+              <CardContent className="p-2 sm:p-3">
+                <div className="space-y-1 text-xs">
+                  <div className="border-b border-primary/10 pb-1">
+                    <h4 className="font-bold text-xs text-primary">John Smith</h4>
+                    <p className="text-accent font-medium text-xs">Senior Software Engineer</p>
                   </div>
                   
                   <div>
-                    <h5 className="font-bold text-primary mb-1 flex items-center gap-1 text-xs">
-                      <div className="w-1 h-3 bg-primary rounded"></div>
-                      EXPERIENCE
-                    </h5>
-                    <div className="space-y-1">
-                      <div className="bg-primary/5 p-2 rounded">
-                        <h6 className="font-semibold text-primary text-xs">Senior Software Engineer | Tech Corp</h6>
-                        <p className="text-xs text-accent font-medium mb-1">2020 - 2023</p>
-                        <ul className="text-xs space-y-1 text-foreground">
-                          <li>• Delivered 15+ React apps, +40% engagement</li>
-                          <li>• Led 5-engineer team, -60% deployment time</li>
-                          <li>• Optimized Node.js, +25% faster response</li>
-                        </ul>
-                      </div>
+                    <h5 className="font-bold text-primary mb-0.5 text-xs">EXPERIENCE</h5>
+                    <div className="bg-primary/5 p-1 rounded">
+                      <h6 className="font-semibold text-primary text-xs">Senior Software Engineer | Tech Corp</h6>
+                      <p className="text-xs text-foreground">• Delivered 15+ React apps, +40% engagement</p>
+                      <p className="text-xs text-foreground">• Led team of 5, -60% deployment time</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <h5 className="font-bold text-primary mb-1 text-xs">EDUCATION</h5>
-                      <p className="text-xs"><strong>B.S. Computer Science</strong></p>
-                      <p className="text-xs text-muted-foreground">State University</p>
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-primary mb-1 text-xs">SKILLS</h5>
-                      <div className="flex flex-wrap gap-1">
-                        {['React', 'Node.js', 'TypeScript'].map((skill) => (
-                          <Badge key={skill} variant="secondary" className="text-xs px-1 py-0">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
+                  <div>
+                    <h5 className="font-bold text-primary mb-0.5 text-xs">SKILLS</h5>
+                    <div className="flex flex-wrap gap-1">
+                      {['React', 'Node.js', 'TypeScript'].map((skill) => (
+                        <Badge key={skill} variant="secondary" className="text-xs px-1 py-0">
+                          {skill}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-primary" />
                 <span>Professional design</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
-                <span>Powerful action verbs</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-primary" />
                 <span>Quantified achievements</span>
               </div>
             </div>
