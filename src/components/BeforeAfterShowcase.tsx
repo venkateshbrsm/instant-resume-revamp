@@ -160,7 +160,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               <h3 className="text-base sm:text-lg font-semibold text-primary">After</h3>
             </div>
             
-            <Card className="bg-white border border-primary/30 shadow-lg relative overflow-hidden h-44">
+            <Card className="bg-white border border-primary/30 shadow-lg relative overflow-hidden h-52">
               {/* Clean header bar */}
               <div className="h-1 bg-gradient-primary"></div>
               
