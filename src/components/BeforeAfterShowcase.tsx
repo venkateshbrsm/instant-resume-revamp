@@ -159,54 +159,59 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               <h3 className="text-base sm:text-lg font-semibold text-primary">After</h3>
             </div>
             
-            <Card className="bg-gradient-subtle border border-primary/20 shadow-glow relative overflow-hidden">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-primary opacity-10 rounded-bl-full"></div>
-              <div className="absolute bottom-0 left-0 w-12 h-12 bg-accent/10 rounded-tr-full"></div>
+            <Card className="bg-white border border-primary/30 shadow-lg relative overflow-hidden">
+              {/* Clean header bar */}
+              <div className="h-1 bg-gradient-primary"></div>
               
-              <CardContent className="p-2 sm:p-3 relative z-10">
-                <div className="space-y-1 text-xs">
-                  <div className="border-b border-primary/20 pb-1 bg-primary/5 rounded-t px-2 py-1 -mx-2 -mt-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">JS</span>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs text-primary">John Smith</h4>
-                        <p className="text-accent font-semibold text-xs">Senior Software Engineer</p>
-                      </div>
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-3 text-xs sm:text-sm">
+                  {/* Professional header */}
+                  <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      JS
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-sm">John Smith</h4>
+                      <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
+                      <p className="text-gray-600 text-xs">john.smith@email.com | (555) 123-4567</p>
                     </div>
                   </div>
                   
-                  <div className="bg-white/50 rounded p-1.5 border-l-2 border-primary">
-                    <h5 className="font-bold text-primary mb-0.5 text-xs flex items-center gap-1">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      EXPERIENCE
+                  {/* Experience section */}
+                  <div>
+                    <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">
+                      Professional Experience
                     </h5>
-                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-1 rounded border border-primary/20">
-                      <h6 className="font-semibold text-primary text-xs">Senior Software Engineer | Tech Corp</h6>
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        <span className="bg-primary text-white text-xs px-1 py-0 rounded text-xs font-medium">+40% engagement</span>
-                        <span className="bg-accent text-white text-xs px-1 py-0 rounded text-xs font-medium">-60% deploy time</span>
+                    <div className="bg-gray-50 p-3 rounded-lg border-l-3 border-primary">
+                      <div className="flex justify-between items-start mb-1">
+                        <h6 className="font-semibold text-gray-900 text-xs">Senior Software Engineer</h6>
+                        <span className="text-gray-500 text-xs">2020 - 2023</span>
                       </div>
+                      <p className="text-primary text-xs font-medium mb-2">Tech Corp</p>
+                      <ul className="text-gray-700 space-y-1 text-xs">
+                        <li>• Delivered 15+ React applications, improving user engagement by 40%</li>
+                        <li>• Led cross-functional team of 5 engineers, reducing deployment time by 60%</li>
+                        <li>• Optimized Node.js backend services, achieving 25% faster response times</li>
+                      </ul>
                     </div>
                   </div>
                   
-                  <div className="bg-white/30 rounded p-1">
-                    <h5 className="font-bold text-primary mb-0.5 text-xs flex items-center gap-1">
-                      <div className="w-2 h-2 bg-accent rounded-full"></div>
-                      SKILLS
-                    </h5>
-                    <div className="flex flex-wrap gap-1">
-                      {['React', 'Node.js', 'TypeScript'].map((skill, index) => (
-                        <Badge key={skill} variant="secondary" className={`text-xs px-1 py-0 ${
-                          index === 0 ? 'bg-primary/20 text-primary' : 
-                          index === 1 ? 'bg-accent/20 text-accent' : 
-                          'bg-secondary'
-                        }`}>
-                          {skill}
-                        </Badge>
-                      ))}
+                  {/* Skills & Education */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Education</h5>
+                      <p className="text-xs font-medium text-gray-900">B.S. Computer Science</p>
+                      <p className="text-xs text-gray-600">State University, 2020</p>
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Skills</h5>
+                      <div className="flex flex-wrap gap-1">
+                        {['React', 'Node.js', 'TypeScript', 'AWS'].map((skill) => (
+                          <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
