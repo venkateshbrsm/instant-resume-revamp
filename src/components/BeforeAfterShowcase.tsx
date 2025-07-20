@@ -25,7 +25,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
         </div>
 
         {/* Before/After comparison */}
-        <div className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-8 lg:space-y-0 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
           {/* Before */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 mb-3 px-1">
