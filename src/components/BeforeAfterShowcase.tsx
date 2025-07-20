@@ -164,54 +164,41 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               <div className="h-1 bg-gradient-primary"></div>
               
               <CardContent className="p-3 sm:p-4">
-                <div className="space-y-3 text-xs sm:text-sm">
+                <div className="space-y-2 text-xs sm:text-sm">
                   {/* Professional header */}
                   <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
                       JS
                     </div>
                     <div>
                       <h4 className="font-bold text-gray-900 text-sm">John Smith</h4>
                       <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
-                      <p className="text-gray-600 text-xs">john.smith@email.com | (555) 123-4567</p>
                     </div>
                   </div>
                   
                   {/* Experience section */}
                   <div>
-                    <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">
-                      Professional Experience
-                    </h5>
-                    <div className="bg-gray-50 p-3 rounded-lg border-l-3 border-primary">
-                      <div className="flex justify-between items-start mb-1">
-                        <h6 className="font-semibold text-gray-900 text-xs">Senior Software Engineer</h6>
-                        <span className="text-gray-500 text-xs">2020 - 2023</span>
-                      </div>
-                      <p className="text-primary text-xs font-medium mb-2">Tech Corp</p>
-                      <ul className="text-gray-700 space-y-1 text-xs">
-                        <li>• Delivered 15+ React applications, improving user engagement by 40%</li>
-                        <li>• Led cross-functional team of 5 engineers, reducing deployment time by 60%</li>
-                        <li>• Optimized Node.js backend services, achieving 25% faster response times</li>
-                      </ul>
-                    </div>
+                    <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Experience</h5>
+                    <p className="text-gray-700 text-xs">Senior Software Engineer at Tech Corp (2020-2023)</p>
+                    <p className="text-gray-700 text-xs">• Delivered 15+ React apps, +40% engagement</p>
+                    <p className="text-gray-700 text-xs">• Led team of 5, -60% deployment time</p>
                   </div>
                   
-                  {/* Skills & Education */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Education</h5>
-                      <p className="text-xs font-medium text-gray-900">B.S. Computer Science</p>
-                      <p className="text-xs text-gray-600">State University, 2020</p>
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Skills</h5>
-                      <div className="flex flex-wrap gap-1">
-                        {['React', 'Node.js', 'TypeScript', 'AWS'].map((skill) => (
-                          <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
+                  {/* Education */}
+                  <div>
+                    <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Education</h5>
+                    <p className="text-gray-700 text-xs">B.S. Computer Science, State University</p>
+                  </div>
+                  
+                  {/* Skills */}
+                  <div>
+                    <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Skills</h5>
+                    <div className="flex flex-wrap gap-1">
+                      {['React', 'Node.js', 'TypeScript'].map((skill) => (
+                        <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
+                          {skill}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
