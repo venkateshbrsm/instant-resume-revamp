@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowRight, CheckCircle, X, Sparkles, Star } from "lucide-react";
 
 interface BeforeAfterShowcaseProps {
@@ -159,50 +160,52 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               <h3 className="text-base sm:text-lg font-semibold text-primary">After</h3>
             </div>
             
-            <Card className="bg-white border border-primary/30 shadow-lg relative overflow-hidden">
+            <Card className="bg-white border border-primary/30 shadow-lg relative overflow-hidden h-32">
               {/* Clean header bar */}
               <div className="h-1 bg-gradient-primary"></div>
               
-              <CardContent className="p-3 sm:p-4">
-                <div className="space-y-2 text-xs sm:text-sm">
-                  {/* Professional header */}
-                  <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
-                      JS
+              <ScrollArea className="h-full">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="space-y-2 text-xs sm:text-sm">
+                    {/* Professional header */}
+                    <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        JS
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm">John Smith</h4>
+                        <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
+                      </div>
                     </div>
+                    
+                    {/* Experience section */}
                     <div>
-                      <h4 className="font-bold text-gray-900 text-sm">John Smith</h4>
-                      <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
+                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Experience</h5>
+                      <p className="text-gray-700 text-xs">Senior Software Engineer at Tech Corp (2020-2023)</p>
+                      <p className="text-gray-700 text-xs">• Delivered 15+ React apps, +40% engagement</p>
+                      <p className="text-gray-700 text-xs">• Led team of 5, -60% deployment time</p>
+                    </div>
+                    
+                    {/* Education */}
+                    <div>
+                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Education</h5>
+                      <p className="text-gray-700 text-xs">B.S. Computer Science, State University</p>
+                    </div>
+                    
+                    {/* Skills */}
+                    <div>
+                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Skills</h5>
+                      <div className="flex flex-wrap gap-1">
+                        {['React', 'Node.js', 'TypeScript'].map((skill) => (
+                          <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Experience section */}
-                  <div>
-                    <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Experience</h5>
-                    <p className="text-gray-700 text-xs">Senior Software Engineer at Tech Corp (2020-2023)</p>
-                    <p className="text-gray-700 text-xs">• Delivered 15+ React apps, +40% engagement</p>
-                    <p className="text-gray-700 text-xs">• Led team of 5, -60% deployment time</p>
-                  </div>
-                  
-                  {/* Education */}
-                  <div>
-                    <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Education</h5>
-                    <p className="text-gray-700 text-xs">B.S. Computer Science, State University</p>
-                  </div>
-                  
-                  {/* Skills */}
-                  <div>
-                    <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Skills</h5>
-                    <div className="flex flex-wrap gap-1">
-                      {['React', 'Node.js', 'TypeScript'].map((skill) => (
-                        <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              </ScrollArea>
             </Card>
             
             <div className="space-y-1 text-xs text-muted-foreground">
