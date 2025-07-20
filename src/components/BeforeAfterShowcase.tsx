@@ -3,12 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowRight, CheckCircle, X, Sparkles, Star } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 interface BeforeAfterShowcaseProps {
   onGetStarted: () => void;
 }
 
 export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) {
+  const performanceData = [
+    { name: 'Engagement', value: 40 },
+    { name: 'Response Rate', value: 75 },
+    { name: 'Interview Calls', value: 60 },
+  ];
   return (
     <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-6xl mx-auto">
@@ -201,6 +207,30 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                             {skill}
                           </span>
                         ))}
+                      </div>
+                    </div>
+                    
+                    {/* Performance Chart */}
+                    <div>
+                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Performance Impact</h5>
+                      <div className="h-20 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={performanceData}>
+                            <XAxis 
+                              dataKey="name" 
+                              tick={{ fontSize: 8, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis hide />
+                            <Bar 
+                              dataKey="value" 
+                              fill="hsl(var(--primary))" 
+                              radius={[2, 2, 0, 0]}
+                              opacity={0.8}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
                     </div>
                   </div>
