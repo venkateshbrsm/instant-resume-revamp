@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, X } from "lucide-react";
+import { ArrowRight, CheckCircle, X, Sparkles, Star } from "lucide-react";
 
 interface BeforeAfterShowcaseProps {
   onGetStarted: () => void;
@@ -11,19 +11,84 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
   return (
     <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-6xl mx-auto">
-        {/* Value propositions */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-4 max-w-2xl mx-auto">
-          {[
-            "AI-Powered Enhancement",
-            "Professional Templates",
-            "ATS-Friendly Format",
-            "Instant Preview"
-          ].map((feature) => (
-            <div key={feature} className="flex items-center justify-center gap-1 sm:gap-2 text-foreground text-xs sm:text-sm">
-              <CheckCircle className="w-3 sm:w-4 h-3 sm:h-4 text-accent flex-shrink-0" />
-              <span className="font-medium text-center">{feature}</span>
-            </div>
-          ))}
+        {/* Value propositions - Stunning highlight card */}
+        <div className="relative mb-8 sm:mb-12">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 bg-gradient-primary opacity-5 rounded-2xl blur-xl"></div>
+          <div className="absolute -top-2 -left-2 w-20 h-20 bg-accent/10 rounded-full blur-lg"></div>
+          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-primary/10 rounded-full blur-lg"></div>
+          
+          <Card className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-sm border-2 border-primary/20 shadow-glow overflow-hidden max-w-3xl mx-auto">
+            {/* Top gradient bar */}
+            <div className="h-1 bg-gradient-primary"></div>
+            
+            {/* Decorative corner elements */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-primary opacity-10 rounded-bl-full"></div>
+            <div className="absolute bottom-0 left-0 w-20 h-20 bg-accent/10 rounded-tr-full"></div>
+            
+            <CardContent className="p-4 sm:p-6 md:p-8 relative z-10">
+              <div className="text-center mb-4 sm:mb-6">
+                <div className="inline-flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Why Choose Our AI?
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Powered by advanced technology for professional results
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                {[
+                  { text: "AI-Powered Enhancement", icon: "🤖" },
+                  { text: "Professional Templates", icon: "📄" },
+                  { text: "ATS-Friendly Format", icon: "✅" },
+                  { text: "Instant Preview", icon: "⚡" }
+                ].map((feature, index) => (
+                  <div key={feature.text} className={`group relative p-3 sm:p-4 rounded-xl transition-all duration-300 hover:scale-105 ${
+                    index === 0 ? 'bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/30' :
+                    index === 1 ? 'bg-gradient-to-br from-accent/15 to-accent/5 border border-accent/30' :
+                    index === 2 ? 'bg-gradient-to-br from-green-100 to-green-50 border border-green-200' :
+                    'bg-gradient-to-br from-purple-100 to-purple-50 border border-purple-200'
+                  }`}>
+                    <div className="text-center">
+                      <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-200">
+                        {feature.icon}
+                      </div>
+                      <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center ${
+                        index === 0 ? 'bg-primary/20' :
+                        index === 1 ? 'bg-accent/20' :
+                        index === 2 ? 'bg-green-200' :
+                        'bg-purple-200'
+                      }`}>
+                        <CheckCircle className={`w-4 h-4 ${
+                          index === 0 ? 'text-primary' :
+                          index === 1 ? 'text-accent' :
+                          index === 2 ? 'text-green-600' :
+                          'text-purple-600'
+                        }`} />
+                      </div>
+                      <span className="font-semibold text-xs sm:text-sm text-center block leading-tight">
+                        {feature.text}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Bottom highlight */}
+              <div className="mt-4 sm:mt-6 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-primary rounded-full text-white text-xs sm:text-sm font-medium">
+                  <Star className="w-3 h-3" fill="currentColor" />
+                  <span>Rated #1 AI Resume Tool</span>
+                  <Star className="w-3 h-3" fill="currentColor" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Section header */}
