@@ -170,7 +170,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               {/* Clean header bar */}
               <div className="h-1 bg-gradient-primary"></div>
               
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-full [&>[data-radix-scroll-area-scrollbar]]:opacity-100 [&>[data-radix-scroll-area-scrollbar]]:bg-primary/10 [&>[data-radix-scroll-area-thumb]]:bg-primary/60">
                 <CardContent className="p-3 sm:p-4">
                   <div className="space-y-2 text-xs sm:text-sm">
                     {/* Professional header */}
