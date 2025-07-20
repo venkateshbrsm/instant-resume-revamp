@@ -27,9 +27,9 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
         {/* Before/After comparison */}
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 mb-8 sm:mb-12">
           {/* Before */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
+          <div className="space-y-4 order-1">
+            <div className="flex items-center gap-3 mb-4 px-2">
+              <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
                 <X className="w-4 h-4 text-destructive" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-muted-foreground">Before</h3>
@@ -90,9 +90,9 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
           </div>
 
           {/* After */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="space-y-4 order-2 lg:order-3">
+            <div className="flex items-center gap-3 mb-4 px-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <CheckCircle className="w-4 h-4 text-primary" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-primary">After</h3>
@@ -164,17 +164,17 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
         </div>
 
         {/* CTA */}
-        <div className="text-center">
+        <div className="text-center px-4">
           <Button 
             variant="hero" 
             size="xl" 
             onClick={onGetStarted}
-            className="shadow-glow hover:scale-105 transition-transform duration-200"
+            className="shadow-glow hover:scale-105 active:scale-95 transition-transform duration-200 w-full sm:w-auto max-w-sm sm:max-w-none min-h-[56px] text-base sm:text-lg font-semibold"
           >
-            Transform Your Resume Now
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <span>Transform Your Resume Now</span>
+            <ArrowRight className="w-5 h-5 ml-2 flex-shrink-0" />
           </Button>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-4 text-sm sm:text-base text-muted-foreground">
             See your transformation in <strong className="text-accent">under 5 minutes</strong>
           </p>
         </div>

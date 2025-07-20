@@ -194,7 +194,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col w-full overflow-x-hidden touch-scroll">
       <Navigation 
         currentStep={currentStep} 
         onNavigate={handleNavigate}

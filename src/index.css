@@ -115,3 +115,52 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Interactive Elements */
+  .story-link {
+    @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  /* Grid Pattern */
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  /* Mobile-optimized touch targets */
+  @media (max-width: 768px) {
+    button, .clickable {
+      min-height: 44px; /* iOS minimum touch target */
+      min-width: 44px;
+    }
+    
+    /* Reduce motion for mobile users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      .hover-scale, .shadow-glow {
+        transition: none;
+      }
+    }
+    
+    /* Improve tap highlight */
+    * {
+      -webkit-tap-highlight-color: hsl(var(--primary) / 0.1);
+    }
+    
+    /* Mobile-specific grid pattern */
+    .bg-grid-pattern {
+      background-size: 15px 15px;
+      opacity: 0.5;
+    }
+  }
+  
+  /* Ensure proper touch scroll behavior */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}

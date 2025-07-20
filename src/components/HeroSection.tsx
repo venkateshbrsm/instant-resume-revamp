@@ -24,7 +24,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         </Badge>
 
         {/* Main headline */}
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-[1.1] px-4 sm:px-6">
           Transform Your Resume with{" "}
           <span className="bg-gradient-primary bg-clip-text text-transparent">
             AI Power
@@ -59,11 +59,11 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               variant="hero" 
               size="xl" 
               onClick={onGetStarted}
-              className="shadow-glow hover:scale-105 transition-transform duration-200 w-full sm:w-auto max-w-xs sm:max-w-none"
+              className="shadow-glow hover:scale-105 active:scale-95 transition-transform duration-200 w-full sm:w-auto max-w-sm sm:max-w-none min-h-[56px] text-base sm:text-lg font-semibold"
             >
-              <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Upload Your Resume</span>
-              <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2" />
+              <Sparkles className="w-5 h-5 mr-2 flex-shrink-0" />
+              <span>Upload Your Resume</span>
+              <ArrowRight className="w-5 h-5 ml-2 flex-shrink-0" />
             </Button>
           </div>
           
