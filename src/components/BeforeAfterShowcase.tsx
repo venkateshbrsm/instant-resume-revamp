@@ -11,6 +11,21 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
   return (
     <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-6xl mx-auto">
+        {/* Value propositions */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-4 max-w-2xl mx-auto">
+          {[
+            "AI-Powered Enhancement",
+            "Professional Templates",
+            "ATS-Friendly Format",
+            "Instant Preview"
+          ].map((feature) => (
+            <div key={feature} className="flex items-center justify-center gap-1 sm:gap-2 text-foreground text-xs sm:text-sm">
+              <CheckCircle className="w-3 sm:w-4 h-3 sm:h-4 text-accent flex-shrink-0" />
+              <span className="font-medium text-center">{feature}</span>
+            </div>
+          ))}
+        </div>
+
         {/* Section header */}
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
           <Badge variant="secondary" className="mb-3 px-3 py-1 text-xs sm:text-sm font-medium">

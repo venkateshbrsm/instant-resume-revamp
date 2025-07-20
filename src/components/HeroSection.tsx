@@ -40,21 +40,6 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           No sign-up required. Pay only if you love the result.
         </p>
 
-        {/* Value propositions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-6 sm:mb-8 md:mb-10 px-4 sm:px-6 max-w-2xl mx-auto">
-          {[
-            "AI-Powered Enhancement",
-            "Professional Templates",
-            "ATS-Friendly Format",
-            "Instant Preview"
-          ].map((feature) => (
-            <div key={feature} className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 text-foreground text-xs sm:text-sm md:text-base">
-              <CheckCircle className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5 text-accent flex-shrink-0" />
-              <span className="font-medium text-center sm:text-left">{feature}</span>
-            </div>
-          ))}
-        </div>
-
         {/* CTA section */}
         <div className="space-y-4 sm:space-y-6 px-4 sm:px-6">
           <div className="flex justify-center">
