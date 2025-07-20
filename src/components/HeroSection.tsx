@@ -23,6 +23,9 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           Trusted by 10,000+ professionals
         </Badge>
 
+        {/* Before/After showcase section */}
+        <BeforeAfterShowcase onGetStarted={onGetStarted} />
+
         {/* Main headline */}
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 leading-[1.1] px-2 sm:px-4">
           Transform Your Resume with{" "}
@@ -96,9 +99,6 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           </CardContent>
         </Card>
       </div>
-      
-      {/* Before/After showcase section */}
-      <BeforeAfterShowcase onGetStarted={onGetStarted} />
     </div>
   );
 }
