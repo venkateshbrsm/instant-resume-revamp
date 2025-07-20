@@ -82,12 +82,6 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
             </div>
           </div>
 
-          {/* Arrow */}
-          <div className="hidden lg:flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <ArrowRight className="w-6 h-6 text-primary" />
-            </div>
-          </div>
 
           {/* After */}
           <div className="space-y-3">
