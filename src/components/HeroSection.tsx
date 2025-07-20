@@ -10,11 +10,11 @@ interface HeroSectionProps {
 
 export function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
-    <div className="relative min-h-screen bg-gradient-hero flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-hero flex items-center justify-center px-3 sm:px-6 lg:px-8 overflow-hidden">
       {/* Optimized background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-3" />
-      <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-32 sm:w-48 h-32 sm:h-48 bg-primary/3 rounded-full" style={{ filter: 'blur(40px)' }} />
-      <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-40 sm:w-64 h-40 sm:h-64 bg-accent/3 rounded-full" style={{ filter: 'blur(50px)' }} />
+      <div className="absolute top-10 left-3 w-24 h-24 sm:w-48 sm:h-48 bg-primary/3 rounded-full" style={{ filter: 'blur(40px)' }} />
+      <div className="absolute bottom-10 right-3 w-32 h-32 sm:w-64 sm:h-64 bg-accent/3 rounded-full" style={{ filter: 'blur(50px)' }} />
       
       <div className="relative w-full max-w-6xl mx-auto text-center">
         {/* Trust badge */}
@@ -24,7 +24,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         </Badge>
 
         {/* Main headline */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-[1.1] px-4 sm:px-6">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 leading-[1.1] px-2 sm:px-4">
           Transform Your Resume with{" "}
           <span className="bg-gradient-primary bg-clip-text text-transparent">
             AI Power
