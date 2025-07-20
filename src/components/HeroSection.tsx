@@ -10,10 +10,10 @@ interface HeroSectionProps {
 export function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
     <div className="relative min-h-screen bg-gradient-hero flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-48 sm:w-72 h-48 sm:h-72 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-64 sm:w-96 h-64 sm:h-96 bg-accent/5 rounded-full blur-3xl" />
+      {/* Optimized background decoration */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-3" />
+      <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-32 sm:w-48 h-32 sm:h-48 bg-primary/3 rounded-full" style={{ filter: 'blur(40px)' }} />
+      <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-40 sm:w-64 h-40 sm:h-64 bg-accent/3 rounded-full" style={{ filter: 'blur(50px)' }} />
       
       <div className="relative w-full max-w-6xl mx-auto text-center">
         {/* Trust badge */}
@@ -58,7 +58,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               variant="hero" 
               size="xl" 
               onClick={onGetStarted}
-              className="shadow-glow animate-pulse-gentle w-full sm:w-auto max-w-xs sm:max-w-none"
+              className="shadow-glow hover:scale-105 transition-transform duration-200 w-full sm:w-auto max-w-xs sm:max-w-none"
             >
               <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
               <span className="text-sm sm:text-base">Upload Your Resume</span>
