@@ -597,11 +597,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 <MapPin className="w-4 h-4 flex-shrink-0" />
                                 <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.location}</span>
                               </div>
-                             <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                <Award className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-sm sm:text-base break-words min-w-0">Professional</span>
-                              </div>
-                            </div>
+                              <div style={{ height: '36px' }}></div> {/* Spacer to maintain header height */}
+                             </div>
                        </div>
                     </div>
 
