@@ -17,11 +17,25 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       <div className="absolute bottom-10 right-3 w-32 h-32 sm:w-64 sm:h-64 bg-accent/3 rounded-full" style={{ filter: 'blur(50px)' }} />
       
       <div className="relative w-full max-w-6xl mx-auto text-center">
-        {/* Trust badge */}
-        <Badge variant="secondary" className="mb-4 sm:mb-6 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
-          <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 text-yellow-500" fill="currentColor" />
-          Trusted by 10,000+ professionals
-        </Badge>
+        <div className="flex justify-between items-start mb-4 sm:mb-6">
+          {/* Trust badge */}
+          <Badge variant="secondary" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+            <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 text-yellow-500" fill="currentColor" />
+            Trusted by 10,000+ professionals
+          </Badge>
+          
+          {/* Transform button in top right */}
+          <Button 
+            variant="hero" 
+            size="sm" 
+            onClick={onGetStarted}
+            className="shadow-glow hover:scale-105 active:scale-95 transition-transform duration-200"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Transform Your Resume Now
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
 
         {/* Before/After showcase section */}
         <BeforeAfterShowcase onGetStarted={onGetStarted} />
@@ -50,7 +64,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               className="shadow-glow hover:scale-105 active:scale-95 transition-transform duration-200 w-full sm:w-auto max-w-sm sm:max-w-none min-h-[56px] text-base sm:text-lg font-semibold"
             >
               <Sparkles className="w-5 h-5 mr-2 flex-shrink-0" />
-              <span>Upload Your Resume</span>
+              <span>Get Started</span>
               <ArrowRight className="w-5 h-5 ml-2 flex-shrink-0" />
             </Button>
           </div>
