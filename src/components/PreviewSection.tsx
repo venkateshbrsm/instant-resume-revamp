@@ -585,14 +585,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           
                            {/* Contact Information Grid */}
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                             <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                <Mail className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-sm sm:text-base break-all min-w-0">{enhancedContent.email}</span>
-                              </div>
-                             <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                <Phone className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.phone}</span>
-                              </div>
+                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
+                                 <Mail className="w-4 h-4 flex-shrink-0" />
+                                 <span className="text-sm sm:text-base break-all min-w-0 no-underline">{enhancedContent.email}</span>
+                               </div>
+                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
+                                 <Phone className="w-4 h-4 flex-shrink-0" />
+                                 <span className="text-sm sm:text-base break-words min-w-0 no-underline">{enhancedContent.phone}</span>
+                               </div>
                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
                                 <MapPin className="w-4 h-4 flex-shrink-0" />
                                 <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.location}</span>
