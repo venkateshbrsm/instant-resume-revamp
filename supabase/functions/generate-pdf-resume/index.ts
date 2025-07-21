@@ -118,6 +118,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       align-items: center;
       gap: 6pt;
       font-weight: 500;
+      text-decoration: none;
     }
     
     .icon {
