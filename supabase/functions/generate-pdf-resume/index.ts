@@ -122,7 +122,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       font-size: 9pt;
       opacity: 0.9;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 6pt;
       font-weight: 500;
       text-decoration: none;
