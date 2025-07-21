@@ -124,6 +124,11 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
+
   const handleGetStarted = () => {
     setCurrentStep("upload");
     window.scrollTo({ top: 0, behavior: 'smooth' });
