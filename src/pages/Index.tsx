@@ -126,6 +126,7 @@ const Index = () => {
 
   const handleGetStarted = () => {
     setCurrentStep("upload");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleFileProcessed = (file: File) => {
