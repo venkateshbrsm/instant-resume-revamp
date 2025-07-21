@@ -126,6 +126,8 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
       gap: 6pt;
       font-weight: 500;
       text-decoration: none;
+      line-height: 1.15;
+      padding: 2.3pt 0;
     }
     
     .icon {
