@@ -438,12 +438,7 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
             </svg>
             ${resumeData.location || 'City, Country'}
           </div>
-          <div class="contact-item">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m8 3 4 8 5-5v11H5V6l3-3z"/>
-            </svg>
-            Professional
-          </div>
+          <div style="height: 36px;"></div> <!-- Spacer to maintain header height -->
         </div>
       </div>
     </div>
