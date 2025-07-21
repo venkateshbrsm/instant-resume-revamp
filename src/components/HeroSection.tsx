@@ -17,14 +17,14 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       <div className="absolute bottom-10 right-3 w-32 h-32 sm:w-64 sm:h-64 bg-accent/3 rounded-full" style={{ filter: 'blur(50px)' }} />
       
       <div className="relative w-full max-w-6xl mx-auto text-center">
-        <div className="flex justify-between items-start mb-4 sm:mb-6">
-          {/* Trust badge */}
-          <Badge variant="secondary" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
-            <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 text-yellow-500" fill="currentColor" />
-            Trusted by 10,000+ professionals
-          </Badge>
-          
-          {/* Transform button in top right */}
+        {/* Trust badge */}
+        <Badge variant="secondary" className="mb-4 sm:mb-6 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+          <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 text-yellow-500" fill="currentColor" />
+          Trusted by 10,000+ professionals
+        </Badge>
+        
+        {/* Transform button below trust badge */}
+        <div className="mb-6 sm:mb-8">
           <Button 
             variant="hero" 
             size="sm" 
