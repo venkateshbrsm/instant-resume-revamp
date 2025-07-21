@@ -583,21 +583,26 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                              <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.title}</p>
                            </div>
                           
-                           {/* Contact Information Grid */}
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                 <Mail className="w-4 h-4 flex-shrink-0" />
-                                 <span className="text-sm sm:text-base break-all min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.email}</span>
-                               </div>
-                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                 <Phone className="w-4 h-4 flex-shrink-0" />
-                                 <span className="text-sm sm:text-base break-words min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.phone}</span>
-                               </div>
-                             <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                <MapPin className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.location}</span>
+                            {/* Contact Information Grid */}
+                            <div className="space-y-3 sm:space-y-4">
+                              {/* Email and Phone on same line */}
+                              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10 flex-1">
+                                   <Mail className="w-4 h-4 flex-shrink-0" />
+                                   <span className="text-sm sm:text-base break-all min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.email}</span>
+                                 </div>
+                                <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10 flex-1">
+                                   <Phone className="w-4 h-4 flex-shrink-0" />
+                                   <span className="text-sm sm:text-base break-words min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.phone}</span>
+                                 </div>
                               </div>
+                              {/* Location on separate line */}
+                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
+                                 <MapPin className="w-4 h-4 flex-shrink-0" />
+                                 <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.location}</span>
+                               </div>
                               <div style={{ height: '36px' }}></div> {/* Spacer to maintain header height */}
+                             </div>
                              </div>
                        </div>
                     </div>
@@ -787,15 +792,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             ))}
                           </div>
                         </div>
-                      )}
+                       )}
 
                      </div>
                    </div>
-                 </div>
                  </div> {/* End of resumeContentRef */}
                </div>
-              ) : (
-                <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
+             ) : (
+               <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
                     <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
                     <div>
