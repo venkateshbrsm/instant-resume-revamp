@@ -163,4 +163,9 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
+
+  /* Remove underlines from email and phone */
+  .no-underline {
+    text-decoration: none !important;
+  }
 }

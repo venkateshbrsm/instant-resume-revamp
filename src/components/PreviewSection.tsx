@@ -570,38 +570,40 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                     <div ref={resumeContentRef}>
                      {/* Modern Header with Visual Elements */}
                       <div 
-                        className="relative rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 mb-3 sm:mb-4 md:mb-6 text-white overflow-hidden"
+                        className="relative rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 text-white overflow-hidden"
                         style={{
                           background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
                         }}
                       >
                        <div className="absolute inset-0 bg-black/10"></div>
                          <div className="relative z-10 text-left">
-                           <div className="flex items-start justify-start gap-1 sm:gap-2 md:gap-3 p-1">
-                             <div className="min-w-0 flex-1 p-1 text-left">
-                               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 break-words leading-tight p-1 text-left">{enhancedContent.name}</h1>
-                               <p className="text-white/90 break-words leading-tight p-1 text-left" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>{enhancedContent.title}</p>
-                             </div>
+                           {/* Name and Title Section */}
+                           <div className="mb-4 sm:mb-6 text-center sm:text-left">
+                             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 break-words leading-tight">{enhancedContent.name}</h1>
+                             <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.title}</p>
                            </div>
                           
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 p-2">
-                             <div className="flex items-start justify-start gap-2 text-white/90 min-w-0 min-h-16 p-3 overflow-auto" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
-                                <Mail className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="break-words min-w-0">{enhancedContent.email}</span>
+                            {/* Contact Information Grid */}
+                            <div className="space-y-3 sm:space-y-4">
+                              {/* Email and Phone on same line */}
+                              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10 flex-1">
+                                   <Mail className="w-4 h-4 flex-shrink-0" />
+                                   <span className="text-sm sm:text-base break-all min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.email}</span>
+                                 </div>
+                                <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10 flex-1">
+                                   <Phone className="w-4 h-4 flex-shrink-0" />
+                                   <span className="text-sm sm:text-base break-words min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.phone}</span>
+                                 </div>
                               </div>
-                             <div className="flex items-start justify-start gap-2 text-white/90 min-w-0 min-h-16 p-3 overflow-auto" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
-                                <Phone className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="break-words min-w-0">{enhancedContent.phone}</span>
-                              </div>
-                             <div className="flex items-start justify-start gap-2 text-white/90 min-w-0 min-h-16 p-3 overflow-auto" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
-                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="break-words min-w-0">{enhancedContent.location}</span>
-                              </div>
-                             <div className="flex items-start justify-start gap-2 text-white/90 min-w-0 min-h-16 p-3 overflow-auto" style={{ fontSize: '15px', fontWeight: 'normal', margin: '0 0 4px 0' }}>
-                                <Award className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
-                                <span className="break-words min-w-0">Professional</span>
-                              </div>
-                            </div>
+                              {/* Location on separate line */}
+                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
+                                 <MapPin className="w-4 h-4 flex-shrink-0" />
+                                 <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.location}</span>
+                               </div>
+                              <div style={{ height: '36px' }}></div> {/* Spacer to maintain header height */}
+                             </div>
+                             </div>
                        </div>
                     </div>
 
@@ -790,15 +792,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             ))}
                           </div>
                         </div>
-                      )}
+                       )}
 
                      </div>
                    </div>
-                 </div>
                  </div> {/* End of resumeContentRef */}
                </div>
-              ) : (
-                <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
+             ) : (
+               <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
                     <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
                     <div>
