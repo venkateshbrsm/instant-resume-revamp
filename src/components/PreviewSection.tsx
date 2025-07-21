@@ -583,22 +583,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                              <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.title}</p>
                            </div>
                           
-                           {/* Contact Information Grid */}
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                 <Mail className="w-4 h-4 flex-shrink-0" />
-                                 <span className="text-sm sm:text-base break-all min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.email}</span>
-                               </div>
-                              <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                 <Phone className="w-4 h-4 flex-shrink-0" />
-                                 <span className="text-sm sm:text-base break-words min-w-0" style={{ textDecoration: 'none' }}>{enhancedContent.phone}</span>
-                               </div>
-                             <div className="flex items-center gap-2 sm:gap-3 text-white/90 p-2 rounded-lg bg-white/10">
-                                <MapPin className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-sm sm:text-base break-words min-w-0">{enhancedContent.location}</span>
+                           {/* Contact Information */}
+                            <div className="space-y-2">
+                               <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.email} • {enhancedContent.phone}</p>
+                               <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.location}</p>
+                               <div style={{ height: '12px' }}></div> {/* Spacer to maintain header height */}
                               </div>
-                              <div style={{ height: '36px' }}></div> {/* Spacer to maintain header height */}
-                             </div>
                        </div>
                     </div>
 
