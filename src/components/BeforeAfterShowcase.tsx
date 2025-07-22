@@ -34,135 +34,151 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
           </p>
         </div>
 
-        {/* Streamlined Before/After comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-10">
-          {/* Before */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
-                <X className="w-4 h-4 text-destructive" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-muted-foreground">Before AI Enhancement</h3>
-            </div>
-            
-            <Card className="bg-card/50 border-2 border-dashed border-muted h-64">
-              <CardContent className="p-4">
-                <div className="space-y-3 text-sm">
-                  <div className="border-b pb-2">
-                    <h4 className="font-medium">John Smith</h4>
-                    <p className="text-muted-foreground text-xs">john.smith@email.com | 555-0123</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium mb-1 text-xs">EXPERIENCE</h5>
-                    <p className="text-muted-foreground text-xs">Software Engineer at Tech Corp (2020-2023)</p>
-                    <p className="text-muted-foreground text-xs">- Worked on web applications</p>
-                    <p className="text-muted-foreground text-xs">- Used JavaScript and React</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium mb-1 text-xs">SKILLS</h5>
-                    <p className="text-muted-foreground text-xs">JavaScript, React, Node.js, HTML, CSS</p>
-                  </div>
+        {/* Side-by-Side Before/After comparison */}
+        <div className="relative mb-8 sm:mb-10">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 relative">
+            {/* Before Section */}
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
+                <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <X className="w-4 h-4 text-destructive" />
                 </div>
-              </CardContent>
-            </Card>
-            
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <X className="w-4 h-4 text-destructive" />
-                <span>Basic formatting, no visual hierarchy</span>
+                <h3 className="text-lg sm:text-xl font-semibold text-muted-foreground">Before AI Enhancement</h3>
               </div>
-              <div className="flex items-center gap-2">
-                <X className="w-4 h-4 text-destructive" />
-                <span>Vague descriptions, no quantified results</span>
-              </div>
-            </div>
-          </div>
-
-          {/* After */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-primary" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-primary">After AI Enhancement</h3>
-            </div>
-            
-            <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-64">
-              <div className="h-1 bg-gradient-primary"></div>
               
-              <ScrollArea className="h-full">
+              <Card className="bg-card/50 border-2 border-dashed border-muted h-80 lg:h-96">
                 <CardContent className="p-4">
                   <div className="space-y-3 text-sm">
-                    {/* Professional header */}
-                    <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        JS
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900">John Smith</h4>
-                        <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
-                        <p className="text-gray-600 text-xs">john.smith@email.com | 555-0123</p>
-                      </div>
+                    <div className="border-b pb-2">
+                      <h4 className="font-medium">John Smith</h4>
+                      <p className="text-muted-foreground text-xs">john.smith@email.com | 555-0123</p>
                     </div>
                     
-                    {/* Enhanced experience */}
                     <div>
-                      <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">Experience</h5>
-                      <p className="text-gray-700 text-xs font-medium">Senior Software Engineer • Tech Corp (2020-2023)</p>
-                      <p className="text-gray-700 text-xs">• Delivered 15+ React applications, increasing user engagement by 40%</p>
-                      <p className="text-gray-700 text-xs">• Led cross-functional team of 5, reducing deployment time by 60%</p>
+                      <h5 className="font-medium mb-1 text-xs">EXPERIENCE</h5>
+                      <p className="text-muted-foreground text-xs">Software Engineer at Tech Corp (2020-2023)</p>
+                      <p className="text-muted-foreground text-xs">- Worked on web applications</p>
+                      <p className="text-muted-foreground text-xs">- Used JavaScript and React</p>
                     </div>
                     
-                    {/* Skills with visual enhancement */}
                     <div>
-                      <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">Core Skills</h5>
-                      <div className="flex flex-wrap gap-1">
-                        {['React', 'Node.js', 'TypeScript'].map((skill) => (
-                          <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Performance metrics */}
-                    <div>
-                      <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Impact</h5>
-                      <div className="h-16 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={performanceData}>
-                            <XAxis 
-                              dataKey="name" 
-                              tick={{ fontSize: 8, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <YAxis hide />
-                            <Bar 
-                              dataKey="value" 
-                              fill="hsl(var(--primary))" 
-                              radius={[2, 2, 0, 0]}
-                              opacity={0.9}
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
+                      <h5 className="font-medium mb-1 text-xs">SKILLS</h5>
+                      <p className="text-muted-foreground text-xs">JavaScript, React, Node.js, HTML, CSS</p>
                     </div>
                   </div>
                 </CardContent>
-              </ScrollArea>
-            </Card>
-            
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
-                <span>Professional design with clear hierarchy</span>
+              </Card>
+              
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <X className="w-4 h-4 text-destructive" />
+                  <span>Basic formatting, no visual hierarchy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <X className="w-4 h-4 text-destructive" />
+                  <span>Vague descriptions, no quantified results</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-primary" />
-                <span>Quantified achievements and impact metrics</span>
+            </div>
+
+            {/* Arrow separator for desktop */}
+            <div className="hidden lg:flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                <ArrowRight className="w-6 h-6 text-white" />
+              </div>
+            </div>
+
+            {/* Arrow separator for mobile */}
+            <div className="lg:hidden flex justify-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg rotate-90">
+                <ArrowRight className="w-6 h-6 text-white" />
+              </div>
+            </div>
+
+            {/* After Section */}
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-primary">After AI Enhancement</h3>
+              </div>
+              
+              <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-80 lg:h-96">
+                <div className="h-1 bg-gradient-primary"></div>
+                
+                <ScrollArea className="h-full">
+                  <CardContent className="p-4">
+                    <div className="space-y-3 text-sm">
+                      {/* Professional header */}
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          JS
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900">John Smith</h4>
+                          <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
+                          <p className="text-gray-600 text-xs">john.smith@email.com | 555-0123</p>
+                        </div>
+                      </div>
+                      
+                      {/* Enhanced experience */}
+                      <div>
+                        <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">Experience</h5>
+                        <p className="text-gray-700 text-xs font-medium">Senior Software Engineer • Tech Corp (2020-2023)</p>
+                        <p className="text-gray-700 text-xs">• Delivered 15+ React applications, increasing user engagement by 40%</p>
+                        <p className="text-gray-700 text-xs">• Led cross-functional team of 5, reducing deployment time by 60%</p>
+                      </div>
+                      
+                      {/* Skills with visual enhancement */}
+                      <div>
+                        <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">Core Skills</h5>
+                        <div className="flex flex-wrap gap-1">
+                          {['React', 'Node.js', 'TypeScript'].map((skill) => (
+                            <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Performance metrics */}
+                      <div>
+                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Impact</h5>
+                        <div className="h-16 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={performanceData}>
+                              <XAxis 
+                                dataKey="name" 
+                                tick={{ fontSize: 8, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis hide />
+                              <Bar 
+                                dataKey="value" 
+                                fill="hsl(var(--primary))" 
+                                radius={[2, 2, 0, 0]}
+                                opacity={0.9}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </ScrollArea>
+              </Card>
+              
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Professional design with clear hierarchy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span>Quantified achievements and impact metrics</span>
+                </div>
               </div>
             </div>
           </div>
