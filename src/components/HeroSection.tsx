@@ -66,6 +66,45 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           </div>
         </div>
 
+        {/* How it Works Section */}
+        <div className="mb-8 sm:mb-12 max-w-4xl mx-auto">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8 text-center">
+            How It Works - <span className="text-accent">Simple as 1, 2, 3</span>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 px-4">
+            <div className="text-center group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl sm:text-3xl font-bold text-white">1</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">Upload Your Resume</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Drop your existing resume (PDF/DOCX). No email or signup required.
+              </p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl sm:text-3xl font-bold text-white">2</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">Get Instant Preview</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                See your professionally enhanced resume in under 2 minutes - completely free.
+              </p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl sm:text-3xl font-bold text-white">3</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">Download & Use</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Love it? Pay just ₹299 and download your enhanced resume instantly.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Social proof - moved higher for trust building */}
         <div className="mb-8 sm:mb-12">
           <Badge variant="secondary" className="mb-4 px-4 py-2 text-sm font-medium">
