@@ -276,6 +276,20 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
             <p className="text-muted-foreground mb-6">
               Upload your resume now and see your transformation in under 2 minutes
             </p>
+            <Button 
+              variant="hero" 
+              size="xl" 
+              onClick={onGetStarted}
+              className="shadow-glow hover:scale-105 active:scale-95 transition-all duration-300 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none lg:w-auto min-h-[56px] sm:min-h-[64px] text-base sm:text-lg font-bold relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0 animate-pulse" />
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-0">
+                <span>Get My Free Preview</span>
+                <span className="text-xs sm:text-sm font-normal opacity-90 sm:ml-2">2 min upload</span>
+              </div>
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-3 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+            </Button>
           </div>
         </div>
       </div>
