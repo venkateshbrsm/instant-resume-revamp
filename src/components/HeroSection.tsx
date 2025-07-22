@@ -74,7 +74,10 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 md:gap-8 px-2">
             <div className="text-center group">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div 
+                className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 cursor-pointer hover:shadow-glow"
+                onClick={onGetStarted}
+              >
                 <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">1</span>
               </div>
               <h3 
@@ -89,7 +92,10 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             </div>
             
             <div className="text-center group">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div 
+                className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 cursor-pointer hover:shadow-glow"
+                onClick={onGetStarted}
+              >
                 <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">2</span>
               </div>
               <h3 
@@ -104,7 +110,10 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             </div>
             
             <div className="text-center group">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div 
+                className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 cursor-pointer hover:shadow-glow"
+                onClick={onGetStarted}
+              >
                 <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">3</span>
               </div>
               <h3 
