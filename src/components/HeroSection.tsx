@@ -1,7 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, ArrowRight, CheckCircle, Star } from "lucide-react";
+import { Sparkles, ArrowRight, CheckCircle, Star, Clock, Shield } from "lucide-react";
 import { BeforeAfterShowcase } from "@/components/BeforeAfterShowcase";
 
 interface HeroSectionProps {
@@ -17,86 +18,87 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       <div className="absolute bottom-10 right-3 w-32 h-32 sm:w-64 sm:h-64 bg-accent/3 rounded-full" style={{ filter: 'blur(50px)' }} />
       
       <div className="relative w-full max-w-6xl mx-auto text-center">
-        {/* Trust badge */}
-        <Badge variant="secondary" className="mb-4 sm:mb-6 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
-          <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 text-yellow-500" fill="currentColor" />
-          Trusted by 10,000+ professionals
-        </Badge>
-        
-        {/* Transform button below trust badge */}
-        <div className="mb-6 sm:mb-8">
-          <Button 
-            variant="hero" 
-            size="sm" 
-            onClick={onGetStarted}
-            className="shadow-glow hover:scale-105 active:scale-95 transition-transform duration-200"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Transform Your Resume Now
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-
-        {/* Before/After showcase section */}
-        <BeforeAfterShowcase onGetStarted={onGetStarted} />
-
-        {/* Main headline */}
+        {/* Main headline - moved to top for immediate impact */}
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 leading-[1.1] px-2 sm:px-4">
-          Transform Your Resume with{" "}
+          Get Your Professional Resume Makeover in{" "}
           <span className="bg-gradient-primary bg-clip-text text-transparent">
-            AI Power
+            Under 5 Minutes
           </span>
         </h1>
 
-        {/* Subheadline */}
-        <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-muted-foreground mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-4 sm:px-6">
-          Upload your current resume and get a <span className="font-semibold text-accent">free preview</span> of your professionally redesigned version in minutes. 
-          No sign-up required. Pay only if you love the result.
+        {/* Enhanced subheadline with clearer value prop */}
+        <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-4xl mx-auto leading-relaxed px-4 sm:px-6">
+          Upload your resume and get a <span className="font-semibold text-accent">free professional preview</span> instantly. 
+          <span className="block mt-2 text-base sm:text-lg font-medium text-primary">No email • No signup • Pay only ₹299 if you love it</span>
         </p>
 
-        {/* CTA section */}
-        <div className="space-y-4 sm:space-y-6 px-4 sm:px-6">
-          <div className="flex justify-center">
-            <Button 
-              variant="hero" 
-              size="xl" 
-              onClick={onGetStarted}
-              className="shadow-glow hover:scale-105 active:scale-95 transition-transform duration-200 w-full sm:w-auto max-w-sm sm:max-w-none min-h-[56px] text-base sm:text-lg font-semibold"
-            >
-              <Sparkles className="w-5 h-5 mr-2 flex-shrink-0" />
-              <span>Get Started</span>
-              <ArrowRight className="w-5 h-5 ml-2 flex-shrink-0" />
-            </Button>
-          </div>
+        {/* Single, focused CTA with conversion triggers */}
+        <div className="mb-8 sm:mb-12 px-4 sm:px-6">
+          <Button 
+            variant="hero" 
+            size="xl" 
+            onClick={onGetStarted}
+            className="shadow-glow hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:w-auto max-w-md sm:max-w-none min-h-[64px] text-lg sm:text-xl font-bold relative overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            <Sparkles className="w-6 h-6 mr-3 flex-shrink-0 animate-pulse" />
+            <div className="flex flex-col items-center sm:flex-row sm:items-center">
+              <span>Get My Free Preview</span>
+              <span className="text-sm font-normal opacity-90 sm:ml-2">2 min upload</span>
+            </div>
+            <ArrowRight className="w-6 h-6 ml-3 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+          </Button>
           
-          <p className="text-xs sm:text-sm text-center">
-            <span className="text-muted-foreground">Upload</span> • <span className="font-bold text-accent">Free Preview</span> • <span className="text-muted-foreground">Pay Only ₹299 if Satisfied</span>
-          </p>
+          {/* Trust indicators right below CTA */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6 mt-4 text-xs sm:text-sm">
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Shield className="w-4 h-4 text-green-500" />
+              <span>100% Secure</span>
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="w-4 h-4 text-blue-500" />
+              <span>Instant Preview</span>
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <CheckCircle className="w-4 h-4 text-accent" />
+              <span>No Signup Required</span>
+            </div>
+          </div>
         </div>
 
-        {/* Social proof */}
-        <Card className="mt-12 sm:mt-16 max-w-2xl w-full mx-auto bg-card/80 backdrop-blur-sm border-border/50">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-center">
-              <div className="flex-1">
-                <div className="text-lg sm:text-2xl font-bold text-primary">10,000+</div>
-                <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Resumes Enhanced</div>
+        {/* Social proof - moved higher for trust building */}
+        <div className="mb-8 sm:mb-12">
+          <Badge variant="secondary" className="mb-4 px-4 py-2 text-sm font-medium">
+            <Star className="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" />
+            Join 10,000+ professionals who upgraded their resumes
+          </Badge>
+          
+          <Card className="max-w-2xl w-full mx-auto bg-card/80 backdrop-blur-sm border-border/50">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-center">
+                <div className="flex-1">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">10,000+</div>
+                  <div className="text-sm text-muted-foreground">Resumes Enhanced</div>
+                </div>
+                <div className="hidden sm:block w-px h-12 bg-border" />
+                <div className="w-full sm:hidden h-px bg-border" />
+                <div className="flex-1">
+                  <div className="text-2xl sm:text-3xl font-bold text-accent">95%</div>
+                  <div className="text-sm text-muted-foreground">Love Their Results</div>
+                </div>
+                <div className="hidden sm:block w-px h-12 bg-border" />
+                <div className="w-full sm:hidden h-px bg-border" />
+                <div className="flex-1">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">2 Min</div>
+                  <div className="text-sm text-muted-foreground">Average Upload</div>
+                </div>
               </div>
-              <div className="hidden sm:block w-px h-12 bg-border" />
-              <div className="w-full sm:hidden h-px bg-border" />
-              <div className="flex-1">
-                <div className="text-lg sm:text-2xl font-bold text-accent">95%</div>
-                <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Satisfaction Rate</div>
-              </div>
-              <div className="hidden sm:block w-px h-12 bg-border" />
-              <div className="w-full sm:hidden h-px bg-border" />
-              <div className="flex-1">
-                <div className="text-lg sm:text-2xl font-bold text-primary">5 Min</div>
-                <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Average Time</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Simplified Before/After showcase */}
+        <BeforeAfterShowcase onGetStarted={onGetStarted} />
       </div>
     </div>
   );
