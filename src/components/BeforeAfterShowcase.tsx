@@ -34,19 +34,109 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
           </p>
         </div>
 
-        {/* Side-by-Side Before/After comparison */}
-        <div className="relative mb-8 sm:mb-10">
-          <div className="flex flex-row gap-3 sm:gap-6 lg:gap-8 relative">
-            {/* Before Section */}
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-1 sm:gap-3 mb-2 sm:mb-4 justify-center lg:justify-start">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-destructive/10 flex items-center justify-center">
-                  <X className="w-3 h-3 sm:w-4 sm:h-4 text-destructive" />
+        {/* Mobile-first Before/After comparison */}
+        <div className="relative mb-8 sm:mb-10 px-2">
+          {/* Mobile stacked layout */}
+          <div className="flex flex-col sm:hidden gap-4">
+            {/* Before Section - Mobile */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-3 justify-center">
+                <div className="w-6 h-6 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <X className="w-3 h-3 text-destructive" />
                 </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-muted-foreground">Before</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground">Before</h3>
               </div>
               
-              <Card className="bg-card/50 border-2 border-dashed border-muted h-64 sm:h-80 lg:h-96">
+              <Card className="bg-card/50 border-2 border-dashed border-muted h-48">
+                <CardContent className="p-3">
+                  <div className="space-y-2 text-xs">
+                    <div className="border-b pb-1">
+                      <h4 className="font-medium text-xs">John Smith</h4>
+                      <p className="text-muted-foreground text-xs">john.smith@email.com</p>
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-1 text-xs">EXPERIENCE</h5>
+                      <p className="text-muted-foreground text-xs">Software Engineer at Tech Corp</p>
+                      <p className="text-muted-foreground text-xs">- Worked on web applications</p>
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-1 text-xs">SKILLS</h5>
+                      <p className="text-muted-foreground text-xs">JavaScript, React, Node.js</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Arrow separator for mobile */}
+            <div className="flex justify-center py-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                <ArrowRight className="w-4 h-4 text-white rotate-90" />
+              </div>
+            </div>
+
+            {/* After Section - Mobile */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-3 justify-center">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 text-primary" />
+                </div>
+                <h3 className="text-sm font-semibold text-primary">After</h3>
+              </div>
+              
+              <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-48">
+                <div className="h-1 bg-gradient-primary"></div>
+                <ScrollArea className="h-full">
+                  <CardContent className="p-3">
+                    <div className="space-y-2 text-xs">
+                      {/* Professional header */}
+                      <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
+                          JS
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-xs">John Smith</h4>
+                          <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
+                        </div>
+                      </div>
+                      
+                      {/* Enhanced experience */}
+                      <div>
+                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase">Experience</h5>
+                        <p className="text-gray-700 text-xs">• Delivered 15+ React apps, +40% engagement</p>
+                        <p className="text-gray-700 text-xs">• Led team of 5, -60% deployment time</p>
+                      </div>
+                      
+                      {/* Skills */}
+                      <div>
+                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase">Skills</h5>
+                        <div className="flex flex-wrap gap-1">
+                          {['React', 'Node.js', 'TypeScript'].map((skill) => (
+                            <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </ScrollArea>
+              </Card>
+            </div>
+          </div>
+
+          {/* Desktop side-by-side layout */}
+          <div className="hidden sm:flex gap-6 lg:gap-8 relative">
+            {/* Before Section - Desktop */}
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
+                <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <X className="w-4 h-4 text-destructive" />
+                </div>
+                <h3 className="text-lg lg:text-xl font-semibold text-muted-foreground">Before AI Enhancement</h3>
+              </div>
+              
+              <Card className="bg-card/50 border-2 border-dashed border-muted h-80 lg:h-96">
                 <CardContent className="p-4">
                   <div className="space-y-3 text-sm">
                     <div className="border-b pb-2">
@@ -81,23 +171,23 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               </div>
             </div>
 
-            {/* Arrow separator */}
-            <div className="flex items-center justify-center self-start mt-8 sm:mt-12">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
-                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            {/* Arrow separator - Desktop */}
+            <div className="flex items-center justify-center self-start mt-16">
+              <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                <ArrowRight className="w-6 h-6 text-white" />
               </div>
             </div>
 
-            {/* After Section */}
+            {/* After Section - Desktop */}
             <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-1 sm:gap-3 mb-2 sm:mb-4 justify-center lg:justify-start">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-primary">After</h3>
+                <h3 className="text-lg lg:text-xl font-semibold text-primary">After AI Enhancement</h3>
               </div>
               
-              <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-64 sm:h-80 lg:h-96">
+              <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-80 lg:h-96">
                 <div className="h-1 bg-gradient-primary"></div>
                 
                 <ScrollArea className="h-full">
