@@ -36,14 +36,14 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
 
         {/* Side-by-Side Before/After comparison */}
         <div className="relative mb-8 sm:mb-10">
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 relative">
+          <div className="flex flex-row gap-3 sm:gap-6 lg:gap-8 relative">
             {/* Before Section */}
             <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
-                  <X className="w-4 h-4 text-destructive" />
+              <div className="flex items-center gap-1 sm:gap-3 mb-2 sm:mb-4 justify-center lg:justify-start">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <X className="w-3 h-3 sm:w-4 sm:h-4 text-destructive" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-muted-foreground">Before AI Enhancement</h3>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-muted-foreground">Before</h3>
               </div>
               
               <Card className="bg-card/50 border-2 border-dashed border-muted h-80 lg:h-96">
@@ -81,27 +81,20 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
               </div>
             </div>
 
-            {/* Arrow separator for desktop */}
-            <div className="hidden lg:flex items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
-                <ArrowRight className="w-6 h-6 text-white" />
-              </div>
-            </div>
-
-            {/* Arrow separator for mobile */}
-            <div className="lg:hidden flex justify-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg rotate-90">
-                <ArrowRight className="w-6 h-6 text-white" />
+            {/* Arrow separator */}
+            <div className="flex items-center justify-center self-start mt-8 sm:mt-12">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
 
             {/* After Section */}
             <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CheckCircle className="w-4 h-4 text-primary" />
+              <div className="flex items-center gap-1 sm:gap-3 mb-2 sm:mb-4 justify-center lg:justify-start">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-primary">After AI Enhancement</h3>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-primary">After</h3>
               </div>
               
               <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-80 lg:h-96">
