@@ -33,7 +33,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         </p>
 
         {/* Single, focused CTA with conversion triggers */}
-        <div className="mb-6 sm:mb-8 md:mb-12 px-2 sm:px-4">
+        <div className="mb-6 sm:mb-8 md:mb-12 px-4 sm:px-4">
           <Button 
             variant="hero" 
             size="xl" 
