@@ -225,11 +225,11 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                         </div>
                       </div>
                       
-                      {/* Performance metrics */}
-                      <div>
+                      {/* Performance metrics - Hidden on mobile for better performance */}
+                      <div className="hidden sm:block">
                         <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Impact</h5>
-                        <div className="h-16 w-full">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-16 w-full min-w-[200px]">
+                          <ResponsiveContainer width="100%" height="100%" minHeight={64}>
                             <BarChart data={performanceData}>
                               <XAxis 
                                 dataKey="name" 
@@ -246,6 +246,15 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                               />
                             </BarChart>
                           </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* Simple metrics for mobile */}
+                      <div className="sm:hidden">
+                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase">Impact</h5>
+                        <div className="flex gap-2 text-xs">
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded">75% Response</span>
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded">85% Engagement</span>
                         </div>
                       </div>
                     </div>
