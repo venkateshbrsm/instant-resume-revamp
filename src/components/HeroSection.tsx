@@ -77,7 +77,12 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                 <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white">1</span>
               </div>
-              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground">Upload Resume</h3>
+              <h3 
+                className="text-base sm:text-lg md:text-xl font-semibold mb-2 text-foreground cursor-pointer hover:text-primary transition-colors duration-200 underline-offset-4 hover:underline"
+                onClick={onGetStarted}
+              >
+                Upload Resume
+              </h3>
               <p className="text-xs sm:text-sm md:text-base text-muted-foreground px-2">
                 Drop your resume (PDF/DOCX). No signup needed.
               </p>
