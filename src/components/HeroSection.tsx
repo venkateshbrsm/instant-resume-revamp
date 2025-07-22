@@ -38,7 +38,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             variant="hero" 
             size="xl" 
             onClick={onGetStarted}
-            className="shadow-glow hover:scale-105 active:scale-95 transition-all duration-300 w-full max-w-sm sm:max-w-md lg:max-w-none lg:w-auto min-h-[56px] sm:min-h-[64px] text-base sm:text-lg font-bold relative overflow-hidden group"
+            className="shadow-glow hover:scale-105 active:scale-95 transition-all duration-300 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none lg:w-auto min-h-[56px] sm:min-h-[64px] text-base sm:text-lg font-bold relative overflow-hidden group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0 animate-pulse" />
