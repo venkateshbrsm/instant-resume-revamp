@@ -46,7 +46,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                 <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-muted-foreground">Before</h3>
               </div>
               
-              <Card className="bg-card/50 border-2 border-dashed border-muted h-80 lg:h-96">
+              <Card className="bg-card/50 border-2 border-dashed border-muted h-64 sm:h-80 lg:h-96">
                 <CardContent className="p-4">
                   <div className="space-y-3 text-sm">
                     <div className="border-b pb-2">
@@ -97,7 +97,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                 <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-primary">After</h3>
               </div>
               
-              <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-80 lg:h-96">
+              <Card className="bg-white border border-primary/30 shadow-xl relative overflow-hidden h-64 sm:h-80 lg:h-96">
                 <div className="h-1 bg-gradient-primary"></div>
                 
                 <ScrollArea className="h-full">
