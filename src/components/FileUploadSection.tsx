@@ -26,11 +26,36 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     ];
     const allowedExtensions = ['.pdf', '.txt', '.docx'];
     
+    // Enhanced security checks
+    if (file.size === 0) {
+      toast({
+        title: "Invalid file",
+        description: "File appears to be empty. Please select a valid file.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     // Check for .doc files specifically to show helpful error
     if (file.name.toLowerCase().endsWith('.doc')) {
       toast({
         title: "File not supported",
         description: "Legacy .doc files are not supported. Please save your document as .docx, PDF, or text format and try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Check for suspicious file extensions (double extensions, executable files)
+    const suspiciousPatterns = [
+      /\.(exe|bat|cmd|com|pif|scr|vbs|js|jar|zip|rar)$/i,
+      /\.\w+\.\w+$/,  // Double extensions like .pdf.exe
+    ];
+    
+    if (suspiciousPatterns.some(pattern => pattern.test(file.name))) {
+      toast({
+        title: "Suspicious file detected",
+        description: "File type not allowed for security reasons.",
         variant: "destructive"
       });
       return false;
@@ -45,10 +70,11 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
       return false;
     }
 
-    const isValidType = allowedTypes.includes(file.type) || 
-                       allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    // Validate both MIME type and file extension
+    const isValidType = allowedTypes.includes(file.type);
+    const isValidExtension = allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
     
-    if (!isValidType) {
+    if (!isValidType || !isValidExtension) {
       toast({
         title: "Invalid file type",
         description: "Please select a PDF, DOCX, or TXT file.",
