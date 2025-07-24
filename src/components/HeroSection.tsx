@@ -43,7 +43,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0 animate-pulse" />
             <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-0">
-              <span>Get My Free Preview</span>
+              <span>Upload Resume</span>
               <span className="text-xs sm:text-sm font-normal opacity-90 sm:ml-2">2 min upload</span>
             </div>
             <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-3 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
