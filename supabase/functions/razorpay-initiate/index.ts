@@ -22,20 +22,28 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Authenticate user
+    // Enhanced authentication validation
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.error("Missing or invalid authorization header");
+      throw new Error("Missing authentication token");
     }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     
     if (userError || !userData.user) {
+      console.error("Authentication error:", userError);
       throw new Error("Invalid authentication");
     }
 
     const user = userData.user;
+    
+    // Additional security check - ensure user ID is valid UUID
+    if (!user.id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)) {
+      console.error("Invalid user ID format");
+      throw new Error("Invalid user session");
+    }
     console.log("User authenticated:", user.email);
 
     // Get request body
