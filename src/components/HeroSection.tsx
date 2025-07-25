@@ -164,26 +164,6 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         {/* Simplified Before/After showcase */}
         <BeforeAfterShowcase onGetStarted={onGetStarted} />
       </div>
-
-      {/* WhatsApp Floating Action Button */}
-      <a
-        href="https://wa.me/919945514909?text=Hi!%20I'm%20interested%20in%20your%20resume%20makeover%20service."
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 group"
-        aria-label="Contact us on WhatsApp"
-      >
-        <Button
-          variant="success"
-          size="icon"
-          className="w-16 h-16 rounded-full shadow-glow hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white"
-        >
-          <MessageCircle className="w-8 h-8" />
-        </Button>
-        <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-          Chat with us on WhatsApp
-        </div>
-      </a>
     </div>
   );
 }
