@@ -57,10 +57,10 @@ const App = () => (
         >
           <Button
             variant="success"
-            size="icon"
-            className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white border-2 border-green-400"
+            className="px-4 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white border-2 border-green-400 flex items-center gap-2"
           >
-            <MessageCircle className="w-8 h-8" />
+            <MessageCircle className="w-6 h-6" />
+            <span className="font-semibold">WhatsApp Now</span>
           </Button>
           <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
             Chat with us on WhatsApp
