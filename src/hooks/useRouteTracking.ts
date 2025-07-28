@@ -5,7 +5,6 @@ declare global {
   interface Window {
     clarity: (action: string, ...args: any[]) => void;
     lintrk: (action: string, data?: any) => void;
-    fbq: (action: string, ...args: any[]) => void;
   }
 }
 
@@ -22,11 +21,6 @@ export const useRouteTracking = () => {
     // Track page view in LinkedIn Analytics
     if (typeof window.lintrk === 'function') {
       window.lintrk('track', { conversion_id: 'pageview' });
-    }
-
-    // Track page view in Facebook Pixel
-    if (typeof window.fbq === 'function') {
-      window.fbq('track', 'PageView');
     }
 
     // Update document title based on route for better tracking
@@ -54,8 +48,7 @@ export const useRouteTracking = () => {
         search: location.search,
         title: document.title,
         clarityAvailable: typeof window.clarity === 'function',
-        linkedinAvailable: typeof window.lintrk === 'function',
-        facebookPixelAvailable: typeof window.fbq === 'function'
+        linkedinAvailable: typeof window.lintrk === 'function'
       });
     }
   }, [location]);
