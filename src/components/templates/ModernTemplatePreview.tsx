@@ -30,10 +30,10 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
           <p className="text-sm sm:text-base md:text-lg mb-2 sm:mb-4 opacity-90">
             {enhancedContent.title}
           </p>
-          <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm opacity-80">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm opacity-80">
             <div className="flex items-center gap-1">
               <Mail className="w-3 h-3" />
-              <span className="truncate">{enhancedContent.email}</span>
+              <span className="break-all">{enhancedContent.email}</span>
             </div>
             <div className="flex items-center gap-1">
               <Phone className="w-3 h-3" />

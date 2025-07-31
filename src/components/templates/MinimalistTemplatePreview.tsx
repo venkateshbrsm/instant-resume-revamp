@@ -24,8 +24,8 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           {enhancedContent.title}
         </p>
         
-        <div className="flex flex-wrap gap-8 text-sm text-muted-foreground font-light pt-2">
-          <span>{enhancedContent.email}</span>
+        <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
+          <span className="break-all">{enhancedContent.email}</span>
           <span>{enhancedContent.phone}</span>
           <span>{enhancedContent.location}</span>
         </div>
