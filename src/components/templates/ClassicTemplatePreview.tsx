@@ -62,7 +62,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             >
               PROFESSIONAL EXPERIENCE
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-8 print:space-y-12">{/* Much larger spacing for print */}
               {enhancedContent.experience.map((exp: any, index: number) => (
                 <div key={index} className="border-l-4 pl-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-2">

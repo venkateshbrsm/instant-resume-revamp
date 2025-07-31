@@ -107,27 +107,29 @@ export async function generatePdfFromElement(
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
     } else {
-      // Enhanced multi-page generation with intelligent content-aware page breaks
-      const printerMargin = 8; // Reduced margin for more content space
+      // Ultra-conservative multi-page generation - prioritize content preservation over page efficiency
+      const printerMargin = 5; // Minimal margin for maximum content space
       const effectivePageHeight = availableHeight - printerMargin;
       
-      // Calculate optimal page sections with content-aware splitting
-      const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
+      // Much more conservative approach: use only 60% of page height
+      const conservativePageHeight = effectivePageHeight * 0.6;
+      const pixelsPerPageMm = conservativePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
       
-      // Enhanced text buffer - much larger buffer to prevent any content cutting
-      const textBuffer = scale * 30; // Increased to 30mm for maximum content preservation
-      const minSectionHeight = pixelsPerPage * 0.85; // Much larger minimum section
-      const maxSectionHeight = pixelsPerPage - (scale * 8); // More conservative page size
-      
-      // More conservative approach: prefer shorter pages over cut content
-      const conservativePageHeight = pixelsPerPage * 0.75; // Use only 75% of page height
-      
-      // Try to detect content boundaries for smarter page breaks
-      const contentSections = detectContentSections(canvas, scale);
+      // Massive buffer zone - 40mm to ensure no content cutting
+      const safetyBuffer = scale * 40;
+      const absoluteMinSection = pixelsPerPage * 0.3; // Very small minimum to avoid infinite pages
       
       let currentY = 0;
       let pageIndex = 0;
+      
+      console.log('PDF Debug:', {
+        canvasHeight: canvas.height,
+        pixelsPerPage,
+        safetyBuffer,
+        conservativePageHeight,
+        effectivePageHeight
+      });
       
       while (currentY < canvas.height) {
         if (pageIndex > 0) {
@@ -135,26 +137,31 @@ export async function generatePdfFromElement(
         }
         
         const remainingHeight = canvas.height - currentY;
+        console.log(`Page ${pageIndex + 1}: currentY=${currentY}, remaining=${remainingHeight}`);
         
-        // Skip tiny remaining content
-        if (remainingHeight < (scale * 20)) { // 20mm minimum content
+        // Stop if very little content remains
+        if (remainingHeight < (scale * 25)) { // 25mm minimum
+          console.log('Stopping: remaining content too small');
           break;
         }
         
-        // Much more conservative section height calculation
-        let sectionHeight = Math.min(conservativePageHeight, remainingHeight);
+        // Ultra-conservative section calculation
+        let sectionHeight = Math.min(pixelsPerPage - safetyBuffer, remainingHeight);
         
-        // For multi-page content, be extremely conservative with breaks
-        if (remainingHeight > conservativePageHeight && contentSections.length > 0) {
-          const idealBreakPoint = currentY + sectionHeight;
-          const bestBreakPoint = findBestBreakPoint(contentSections, currentY, idealBreakPoint, textBuffer);
-          
-          if (bestBreakPoint > currentY + (minSectionHeight * 0.7)) {
-            sectionHeight = bestBreakPoint - currentY;
-          } else {
-            // Much more aggressive fallback: use large buffer
-            sectionHeight = Math.max(sectionHeight - textBuffer, minSectionHeight * 0.6);
-          }
+        // Ensure we don't create tiny sections
+        if (sectionHeight < absoluteMinSection && remainingHeight > absoluteMinSection) {
+          sectionHeight = absoluteMinSection;
+        }
+        
+        // Safety check: never exceed remaining content
+        sectionHeight = Math.min(sectionHeight, remainingHeight);
+        
+        console.log(`Page ${pageIndex + 1}: using sectionHeight=${sectionHeight}`);
+        
+        // Ensure we have a valid section height
+        if (sectionHeight <= 0) {
+          console.warn('Invalid section height, breaking');
+          break;
         }
         
         // Create canvas for this page section
@@ -163,7 +170,7 @@ export async function generatePdfFromElement(
         
         if (pageCtx) {
           pageCanvas.width = canvas.width;
-          pageCanvas.height = sectionHeight;
+          pageCanvas.height = Math.ceil(sectionHeight);
           
           // Fill with white background
           pageCtx.fillStyle = '#ffffff';
@@ -181,20 +188,22 @@ export async function generatePdfFromElement(
           const pageImgData = pageCanvas.toDataURL('image/jpeg', quality);
           const sectionHeightMm = (sectionHeight / scale) * pixelsToMm * finalScale;
           
-          // Ensure we don't exceed page boundaries
-          const maxAllowedHeight = Math.min(sectionHeightMm, effectivePageHeight);
+          // Be very conservative with page boundaries
+          const maxAllowedHeight = Math.min(sectionHeightMm, conservativePageHeight / scale * pixelsToMm * finalScale);
           
-          // Add extra margin for first page only
-          const pageTopMargin = pageIndex === 0 ? margin : margin + 2;
+          // Add to PDF with conservative margins
+          const pageTopMargin = margin + (pageIndex === 0 ? 0 : 5);
           pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
+          
+          console.log(`Page ${pageIndex + 1}: added section ${sectionHeight}px (${sectionHeightMm}mm)`);
         }
         
-        // Move to next section - use the actual section height to avoid gaps
+        // Move to next section
         currentY += sectionHeight;
         pageIndex++;
         
         // Safety check: prevent infinite loop
-        if (pageIndex > 20) {
+        if (pageIndex > 25) {
           console.warn('PDF generation stopped: too many pages generated');
           break;
         }

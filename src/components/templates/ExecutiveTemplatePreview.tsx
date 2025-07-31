@@ -107,7 +107,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                   </h2>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-8 print:space-y-12">{/* Much larger spacing for print */}
                   {enhancedContent.experience.map((exp: any, index: number) => (
                     <div 
                       key={index}

@@ -77,7 +77,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               </div>
               <div className="flex-1">
                 <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedColorTheme.primary }}>Professional Experience</h3>
-                <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
+                <div className="mt-3 sm:mt-4 space-y-6 print:space-y-10">{/* Larger spacing for print */}
                   {enhancedContent.experience.map((exp: any, index: number) => (
                     <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedColorTheme.accent}30` }}>
                       <div 
