@@ -35,7 +35,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
 
       <div className="p-6 space-y-6 print:p-4 print:space-y-4">
         {/* Professional Summary */}
-        <div>
+        <div className="print:avoid-break">
           <h2 
             className="text-xl font-bold mb-4 pb-2 border-b"
             style={{ 
@@ -52,7 +52,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
 
         {/* Professional Experience */}
         {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-          <div>
+          <div className="print:avoid-break">
             <h2 
               className="text-xl font-bold mb-6 pb-2 border-b"
               style={{ 
@@ -64,7 +64,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </h2>
             <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-4 pl-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-4 pl-6 print:avoid-break" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-2">
                     <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
@@ -92,7 +92,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
           {/* Core Competencies */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-            <div>
+            <div className="print:avoid-break">
               <h2 
                 className="text-xl font-bold mb-4 pb-2 border-b"
                 style={{ 
@@ -115,7 +115,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
 
           {/* Education */}
           {enhancedContent.education && enhancedContent.education.length > 0 && (
-            <div>
+            <div className="print:avoid-break">
               <h2 
                 className="text-xl font-bold mb-4 pb-2 border-b"
                 style={{ 
@@ -127,7 +127,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               </h2>
               <div className="space-y-4">
                 {enhancedContent.education.map((edu: any, index: number) => (
-                  <div key={index}>
+                  <div key={index} className="print:avoid-break">
                     <h3 className="font-bold text-foreground">{edu.degree}</h3>
                     <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
                       {edu.institution}
