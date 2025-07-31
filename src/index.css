@@ -169,3 +169,33 @@
     text-decoration: none !important;
   }
 }
+
+/* Print-specific styles for better page breaking */
+@media print {
+  .print\:break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .print\:break-before-auto {
+    break-before: auto;
+    page-break-before: auto;
+  }
+  
+  .print\:break-after-avoid {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  
+  /* Improve creative template printing */
+  .print\:overflow-visible {
+    overflow: visible !important;
+  }
+  
+  /* Ensure backgrounds print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

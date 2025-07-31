@@ -15,9 +15,9 @@ interface TemplatePreviewProps {
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-lg">
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-lg print:overflow-visible">
       {/* Creative Header with Diagonal Design */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden print:break-inside-avoid">
         <div 
           className="h-40 flex items-center justify-center text-white relative print:h-32"
           style={{
@@ -25,10 +25,10 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           }}
         >
           {/* Geometric Background Pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-4 left-4 w-16 h-16 border-2 border-white rounded-full"></div>
-            <div className="absolute top-8 right-8 w-12 h-12 border-2 border-white transform rotate-45"></div>
-            <div className="absolute bottom-4 left-1/4 w-8 h-8 bg-white opacity-30 rounded-full"></div>
+          <div className="absolute inset-0 opacity-20 print:opacity-10">
+            <div className="absolute top-4 left-4 w-16 h-16 border-2 border-white rounded-full print:hidden"></div>
+            <div className="absolute top-8 right-8 w-12 h-12 border-2 border-white transform rotate-45 print:hidden"></div>
+            <div className="absolute bottom-4 left-1/4 w-8 h-8 bg-white opacity-30 rounded-full print:hidden"></div>
           </div>
           
           <div className="relative z-10 text-center">
@@ -61,7 +61,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           {/* Main Content - Larger Column */}
           <div className="lg:col-span-2 space-y-6 print:space-y-4">
             {/* Creative Summary with Icon */}
-            <div className="relative">
+            <div className="relative print:break-inside-avoid">
               <div className="flex items-start gap-4">
                 <div 
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
@@ -82,7 +82,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
 
             {/* Experience with Creative Cards */}
             {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-              <div>
+              <div className="print:break-inside-avoid">
                 <div className="flex items-center gap-4 mb-6">
                   <div 
                     className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
@@ -99,7 +99,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   {enhancedContent.experience.map((exp: any, index: number) => (
                     <div 
                       key={index} 
-                      className="relative p-6 rounded-2xl border-l-4 shadow-md hover:shadow-lg transition-shadow"
+                      className="relative p-6 rounded-2xl border-l-4 shadow-md hover:shadow-lg transition-shadow print:break-inside-avoid print:shadow-none print:border-l-2"
                       style={{ 
                         background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
                         borderColor: selectedColorTheme.accent
@@ -143,11 +143,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           </div>
 
           {/* Creative Sidebar */}
-          <div className="space-y-5 print:space-y-3">
+          <div className="space-y-5 print:space-y-3 print:break-inside-avoid">
             {/* Skills as Creative Badges */}
             {enhancedContent.skills && enhancedContent.skills.length > 0 && (
               <div 
-                className="p-6 rounded-2xl shadow-lg"
+                className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid"
                 style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)` }}
               >
                 <div className="flex items-center gap-3 mb-4">
