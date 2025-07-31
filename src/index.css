@@ -206,21 +206,40 @@
     margin-top: 0.75rem !important;
   }
   
-  /* Enhanced content protection */
+  /* Enhanced content protection - maximum strength */
   .print\:keep-together {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     display: block !important;
+    overflow: visible !important;
   }
   
-  /* Prevent orphaned content */
+  /* Ultra-strong protection for lists and achievements */
+  .print\:keep-together ul,
+  .print\:keep-together ol,
+  .print\:keep-together div[class*="space-y"] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Prevent orphaned content with larger buffers */
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid !important;
     page-break-after: avoid !important;
+    orphans: 3 !important;
+    widows: 3 !important;
   }
   
-  /* Keep list items together */
+  /* Ultra-strong list protection */
   li {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    orphans: 2 !important;
+    widows: 2 !important;
+  }
+  
+  /* Special protection for experience sections */
+  [class*="experience"] {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }

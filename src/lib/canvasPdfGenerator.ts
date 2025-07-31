@@ -115,10 +115,13 @@ export async function generatePdfFromElement(
       const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
       
-      // Enhanced text buffer - larger buffer to prevent content cutting
-      const textBuffer = scale * 20; // Increased to 20mm in pixels for better content preservation
-      const minSectionHeight = pixelsPerPage * 0.8; // Increased minimum section height
-      const maxSectionHeight = pixelsPerPage - (scale * 5); // Leave 5mm at bottom for safety
+      // Enhanced text buffer - much larger buffer to prevent any content cutting
+      const textBuffer = scale * 30; // Increased to 30mm for maximum content preservation
+      const minSectionHeight = pixelsPerPage * 0.85; // Much larger minimum section
+      const maxSectionHeight = pixelsPerPage - (scale * 8); // More conservative page size
+      
+      // More conservative approach: prefer shorter pages over cut content
+      const conservativePageHeight = pixelsPerPage * 0.75; // Use only 75% of page height
       
       // Try to detect content boundaries for smarter page breaks
       const contentSections = detectContentSections(canvas, scale);
@@ -134,23 +137,23 @@ export async function generatePdfFromElement(
         const remainingHeight = canvas.height - currentY;
         
         // Skip tiny remaining content
-        if (remainingHeight < (scale * 15)) { // 15mm minimum content
+        if (remainingHeight < (scale * 20)) { // 20mm minimum content
           break;
         }
         
-        // Calculate optimal section height with content-aware breaks
-        let sectionHeight = Math.min(maxSectionHeight, remainingHeight);
+        // Much more conservative section height calculation
+        let sectionHeight = Math.min(conservativePageHeight, remainingHeight);
         
-        // For multi-page content, find the best break point
-        if (remainingHeight > pixelsPerPage && contentSections.length > 0) {
+        // For multi-page content, be extremely conservative with breaks
+        if (remainingHeight > conservativePageHeight && contentSections.length > 0) {
           const idealBreakPoint = currentY + sectionHeight;
           const bestBreakPoint = findBestBreakPoint(contentSections, currentY, idealBreakPoint, textBuffer);
           
-          if (bestBreakPoint > currentY + minSectionHeight) {
+          if (bestBreakPoint > currentY + (minSectionHeight * 0.7)) {
             sectionHeight = bestBreakPoint - currentY;
           } else {
-            // Fallback: use buffer to avoid cutting content
-            sectionHeight = Math.max(sectionHeight - textBuffer, minSectionHeight);
+            // Much more aggressive fallback: use large buffer
+            sectionHeight = Math.max(sectionHeight - textBuffer, minSectionHeight * 0.6);
           }
         }
         
@@ -216,16 +219,16 @@ function detectContentSections(canvas: HTMLCanvasElement, scale: number): number
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
   
-  // Look for horizontal white space (potential break points)
-  const lineHeight = scale * 5; // 5mm line height
-  const whiteThreshold = 240; // RGB threshold for "white" space
+  // Look for horizontal white space (potential break points) - more aggressive detection
+  const lineHeight = scale * 3; // Smaller line height for better detection
+  const whiteThreshold = 250; // Higher threshold for "white" space
   
   for (let y = lineHeight; y < canvas.height - lineHeight; y += lineHeight) {
     let whitePixels = 0;
     let totalPixels = 0;
     
-    // Sample pixels across the width at this height
-    for (let x = 0; x < canvas.width; x += 10) {
+    // Sample more pixels across the width for better detection
+    for (let x = 0; x < canvas.width; x += 5) {
       const index = (y * canvas.width + x) * 4;
       const r = data[index];
       const g = data[index + 1];
@@ -237,8 +240,8 @@ function detectContentSections(canvas: HTMLCanvasElement, scale: number): number
       totalPixels++;
     }
     
-    // If line is mostly white, it's a potential break point
-    if (totalPixels > 0 && (whitePixels / totalPixels) > 0.8) {
+    // If line is mostly white, it's a potential break point - more conservative
+    if (totalPixels > 0 && (whitePixels / totalPixels) > 0.9) {
       sections.push(y);
     }
   }
@@ -255,12 +258,12 @@ function findBestBreakPoint(
   idealY: number, 
   buffer: number
 ): number {
-  // Find sections within acceptable range
-  const acceptableRange = buffer * 2;
+  // Much more conservative range for break points
+  const acceptableRange = buffer * 3; // Larger range for finding breaks
   const minY = idealY - acceptableRange;
-  const maxY = idealY + (buffer / 2);
+  const maxY = idealY - (buffer * 0.5); // More conservative max range
   
-  // Find the best section within range
+  // Find sections within acceptable range
   const candidateSections = sections.filter(y => 
     y > currentY && y >= minY && y <= maxY
   );
