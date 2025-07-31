@@ -15,11 +15,11 @@ interface TemplatePreviewProps {
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto">
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-lg">
       {/* Creative Header with Diagonal Design */}
       <div className="relative overflow-hidden">
         <div 
-          className="h-48 flex items-center justify-center text-white relative"
+          className="h-40 flex items-center justify-center text-white relative print:h-32"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.accent} 70%, ${selectedColorTheme.secondary} 100%)`
           }}
@@ -56,10 +56,10 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="p-6 print:p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4">
           {/* Main Content - Larger Column */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6 print:space-y-4">
             {/* Creative Summary with Icon */}
             <div className="relative">
               <div className="flex items-start gap-4">
@@ -143,7 +143,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           </div>
 
           {/* Creative Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-5 print:space-y-3">
             {/* Skills as Creative Badges */}
             {enhancedContent.skills && enhancedContent.skills.length > 0 && (
               <div 

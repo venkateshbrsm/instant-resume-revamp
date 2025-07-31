@@ -14,9 +14,9 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-8 md:p-12 space-y-12">
+    <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
       {/* Minimalist Header */}
-      <div className="text-left space-y-4 border-b pb-8" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+      <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
         <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
           {enhancedContent.name}
         </h1>
@@ -43,7 +43,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
 
       {/* Experience */}
       {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-        <div className="space-y-8">
+        <div className="space-y-6 print:space-y-4">
           <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
             EXPERIENCE
           </h2>
@@ -76,7 +76,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
         {/* Skills */}
         {enhancedContent.skills && enhancedContent.skills.length > 0 && (
           <div className="space-y-4">

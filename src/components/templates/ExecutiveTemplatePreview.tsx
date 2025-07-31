@@ -15,10 +15,10 @@ interface TemplatePreviewProps {
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto">
+    <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0">
       {/* Executive Header - Premium Feel */}
       <div 
-        className="relative p-8 text-white"
+        className="relative p-6 text-white print:p-4"
         style={{
           background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
         }}
@@ -62,9 +62,9 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
         </div>
       </div>
 
-      <div className="p-8">
+      <div className="p-6 print:p-4">
         {/* Executive Summary - Premium Focus */}
-        <div className="mb-8">
+        <div className="mb-6 print:mb-4">
           <div className="flex items-center gap-4 mb-6">
             <div 
               className="w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-lg"
@@ -90,7 +90,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4">
           {/* Main Experience Column */}
           <div className="lg:col-span-2">
             {enhancedContent.experience && enhancedContent.experience.length > 0 && (
@@ -165,7 +165,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
           </div>
 
           {/* Executive Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-5 print:space-y-3">
             {/* Core Competencies */}
             {enhancedContent.skills && enhancedContent.skills.length > 0 && (
               <div 

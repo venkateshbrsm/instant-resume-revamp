@@ -15,9 +15,9 @@ interface TemplatePreviewProps {
 
 export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
       {/* Classic Header - Centered */}
-      <div className="text-center py-8 px-6 border-b-2" style={{ borderColor: selectedColorTheme.primary }}>
+      <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
         <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
           {enhancedContent.name}
         </h1>
@@ -33,7 +33,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         </div>
       </div>
 
-      <div className="p-8 space-y-8">
+      <div className="p-6 space-y-6 print:p-4 print:space-y-4">
         {/* Professional Summary */}
         <div>
           <h2 
@@ -89,7 +89,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
           {/* Core Competencies */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
             <div>

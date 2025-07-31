@@ -15,10 +15,10 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0">
       {/* Modern Header with Gradient */}
       <div 
-        className="relative rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 text-white overflow-hidden"
+        className="relative rounded-lg sm:rounded-xl p-4 mb-4 text-white overflow-hidden print:p-3 print:mb-3"
         style={{
           background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
@@ -43,9 +43,9 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 print:gap-3 print:p-3">
         {/* Main Content Column */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="lg:col-span-2 space-y-4 print:space-y-3">
           {/* Professional Summary with Icon */}
           <div className="flex items-start gap-3">
             <div 
@@ -129,7 +129,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-4 print:space-y-3">
           {/* Skills with Progress Bars */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
             <div className="bg-card rounded-xl p-4 sm:p-6 shadow-lg border border-border/50">
