@@ -110,7 +110,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         </div>
                         
                         {exp.achievements && exp.achievements.length > 0 && (
-                          <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
+                          <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-muted-foreground print:keep-together">
                             {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
                               <li key={achIndex} className="flex items-start gap-2">
                                 <span className="text-accent font-bold flex-shrink-0 mt-0.5">▸</span>

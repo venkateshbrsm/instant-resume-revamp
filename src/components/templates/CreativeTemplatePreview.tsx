@@ -121,7 +121,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       </div>
                       
                       {exp.achievements && exp.achievements.length > 0 && (
-                        <div className="space-y-3">
+                        <div className="space-y-3 print:keep-together">
                           {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
                             <div key={achIndex} className="flex items-start gap-3">
                               <div 

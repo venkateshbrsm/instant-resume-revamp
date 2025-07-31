@@ -107,16 +107,21 @@ export async function generatePdfFromElement(
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
     } else {
-      // Multi-page generation with smart text-aware page breaks
-      const printerMargin = 15; // Extra margin for printer-friendly output
+      // Enhanced multi-page generation with intelligent content-aware page breaks
+      const printerMargin = 8; // Reduced margin for more content space
       const effectivePageHeight = availableHeight - printerMargin;
-      const pagesNeeded = Math.ceil(finalHeight / effectivePageHeight);
       
-      // Calculate printer-friendly sections with intelligent text buffer
+      // Calculate optimal page sections with content-aware splitting
       const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
-      const textBuffer = scale * 12; // Larger buffer to avoid cutting through text (12mm in pixels)
-      const minSectionHeight = pixelsPerPage * 0.7; // Minimum section height to avoid tiny pages
+      
+      // Enhanced text buffer - larger buffer to prevent content cutting
+      const textBuffer = scale * 20; // Increased to 20mm in pixels for better content preservation
+      const minSectionHeight = pixelsPerPage * 0.8; // Increased minimum section height
+      const maxSectionHeight = pixelsPerPage - (scale * 5); // Leave 5mm at bottom for safety
+      
+      // Try to detect content boundaries for smarter page breaks
+      const contentSections = detectContentSections(canvas, scale);
       
       let currentY = 0;
       let pageIndex = 0;
@@ -126,22 +131,27 @@ export async function generatePdfFromElement(
           pdf.addPage();
         }
         
-        // Calculate remaining content height
         const remainingHeight = canvas.height - currentY;
         
-        // Skip if remaining content is too small to be meaningful
-        if (remainingHeight < textBuffer) {
+        // Skip tiny remaining content
+        if (remainingHeight < (scale * 15)) { // 15mm minimum content
           break;
         }
         
-        // Calculate section height with intelligent text-aware buffering
-        let sectionHeight = Math.min(pixelsPerPage, remainingHeight);
+        // Calculate optimal section height with content-aware breaks
+        let sectionHeight = Math.min(maxSectionHeight, remainingHeight);
         
-        // For pages that aren't the last, apply smart buffering to avoid text cutting
-        if (remainingHeight > pixelsPerPage) {
-          // Use buffer and ensure minimum section height
-          const bufferedHeight = sectionHeight - textBuffer;
-          sectionHeight = Math.max(bufferedHeight, minSectionHeight);
+        // For multi-page content, find the best break point
+        if (remainingHeight > pixelsPerPage && contentSections.length > 0) {
+          const idealBreakPoint = currentY + sectionHeight;
+          const bestBreakPoint = findBestBreakPoint(contentSections, currentY, idealBreakPoint, textBuffer);
+          
+          if (bestBreakPoint > currentY + minSectionHeight) {
+            sectionHeight = bestBreakPoint - currentY;
+          } else {
+            // Fallback: use buffer to avoid cutting content
+            sectionHeight = Math.max(sectionHeight - textBuffer, minSectionHeight);
+          }
         }
         
         // Create canvas for this page section
@@ -193,6 +203,76 @@ export async function generatePdfFromElement(
     console.error('Error generating PDF from canvas:', error);
     throw new Error('Failed to generate PDF from visual content');
   }
+}
+
+/**
+ * Detects potential content sections for smarter page breaks
+ */
+function detectContentSections(canvas: HTMLCanvasElement, scale: number): number[] {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return [];
+  
+  const sections: number[] = [];
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  // Look for horizontal white space (potential break points)
+  const lineHeight = scale * 5; // 5mm line height
+  const whiteThreshold = 240; // RGB threshold for "white" space
+  
+  for (let y = lineHeight; y < canvas.height - lineHeight; y += lineHeight) {
+    let whitePixels = 0;
+    let totalPixels = 0;
+    
+    // Sample pixels across the width at this height
+    for (let x = 0; x < canvas.width; x += 10) {
+      const index = (y * canvas.width + x) * 4;
+      const r = data[index];
+      const g = data[index + 1];
+      const b = data[index + 2];
+      
+      if (r > whiteThreshold && g > whiteThreshold && b > whiteThreshold) {
+        whitePixels++;
+      }
+      totalPixels++;
+    }
+    
+    // If line is mostly white, it's a potential break point
+    if (totalPixels > 0 && (whitePixels / totalPixels) > 0.8) {
+      sections.push(y);
+    }
+  }
+  
+  return sections;
+}
+
+/**
+ * Finds the best page break point near the ideal position
+ */
+function findBestBreakPoint(
+  sections: number[], 
+  currentY: number, 
+  idealY: number, 
+  buffer: number
+): number {
+  // Find sections within acceptable range
+  const acceptableRange = buffer * 2;
+  const minY = idealY - acceptableRange;
+  const maxY = idealY + (buffer / 2);
+  
+  // Find the best section within range
+  const candidateSections = sections.filter(y => 
+    y > currentY && y >= minY && y <= maxY
+  );
+  
+  if (candidateSections.length === 0) {
+    return idealY; // No good break point found, use ideal
+  }
+  
+  // Return the section closest to the ideal break point
+  return candidateSections.reduce((best, current) => 
+    Math.abs(current - idealY) < Math.abs(best - idealY) ? current : best
+  );
 }
 
 /**

@@ -62,7 +62,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                 </div>
                 
                 {exp.achievements && exp.achievements.length > 0 && (
-                  <div className="pl-4 space-y-2 border-l" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                  <div className="pl-4 space-y-2 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                     {exp.achievements.map((achievement: string, achIndex: number) => (
                       <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light">
                         {achievement}

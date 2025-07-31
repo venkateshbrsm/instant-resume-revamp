@@ -135,7 +135,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                       </div>
                       
                       {exp.achievements && exp.achievements.length > 0 && (
-                        <div className="space-y-3">
+                        <div className="space-y-3 print:keep-together">
                           <h4 className="font-semibold text-foreground flex items-center gap-2">
                             <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
                             Key Achievements

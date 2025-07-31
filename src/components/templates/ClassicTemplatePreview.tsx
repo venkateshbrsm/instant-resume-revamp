@@ -74,7 +74,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
-                    <ul className="mt-3 space-y-2">
+                    <ul className="mt-3 space-y-2 print:keep-together">
                       {exp.achievements.map((achievement: string, achIndex: number) => (
                         <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
                           <span className="mr-3 mt-1">•</span>

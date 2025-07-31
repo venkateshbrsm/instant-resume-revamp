@@ -170,26 +170,67 @@
   }
 }
 
-/* Print-specific styles for better page breaking */
+/* Enhanced print-specific styles for better page breaking */
 @media print {
   .print\:break-inside-avoid {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
   
   .print\:break-before-auto {
-    break-before: auto;
-    page-break-before: auto;
+    break-before: auto !important;
+    page-break-before: auto !important;
   }
   
   .print\:break-after-avoid {
-    break-after: avoid;
-    page-break-after: avoid;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  
+  .print\:break-before-page {
+    break-before: page !important;
+    page-break-before: always !important;
   }
   
   /* Improve creative template printing */
   .print\:overflow-visible {
     overflow: visible !important;
+  }
+  
+  /* Better spacing for print */
+  .print\:space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  .print\:space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  /* Enhanced content protection */
+  .print\:keep-together {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    display: block !important;
+  }
+  
+  /* Prevent orphaned content */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  
+  /* Keep list items together */
+  li {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Ensure backgrounds print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
 
 /* Floating animation for creative elements */
@@ -204,12 +245,4 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
-}
-  
-  /* Ensure backgrounds print correctly */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
 }
