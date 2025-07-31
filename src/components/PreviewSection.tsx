@@ -11,6 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
+import { ModernTemplatePreview } from "./templates/ModernTemplatePreview";
+import { ClassicTemplatePreview } from "./templates/ClassicTemplatePreview";
+import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
+import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
+import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
@@ -550,224 +555,41 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                    {/* Resume Content - This is what gets captured for PDF */}
-                    <div ref={resumeContentRef}>
-                     {/* Modern Header with Visual Elements */}
-                      <div 
-                        className="relative rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 text-white overflow-hidden"
-        style={{
-          background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
-        }}
-                      >
-                       <div className="absolute inset-0 bg-black/10"></div>
-                         <div className="relative z-10 text-left">
-                           {/* Name and Title Section */}
-                           <div className="mb-4 sm:mb-6 text-center sm:text-left">
-                             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 break-words leading-tight">{enhancedContent.name}</h1>
-                             <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.title}</p>
-                           </div>
-                          
-                           {/* Contact Information */}
-                            <div className="space-y-2">
-                               <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.email} • {enhancedContent.phone}</p>
-                               <p className="text-white/90 text-sm sm:text-base md:text-lg break-words leading-tight">{enhancedContent.location}</p>
-                               <div style={{ height: '12px' }}></div> {/* Spacer to maintain header height */}
-                              </div>
-                       </div>
+                      {/* Dynamic Template Preview */}
+                      <div ref={resumeContentRef}>
+                        {selectedTemplate.id === 'modern' && (
+                          <ModernTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'classic' && (
+                          <ClassicTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'creative' && (
+                          <CreativeTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'executive' && (
+                          <ExecutiveTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'minimalist' && (
+                          <MinimalistTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                      </div>
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                      {/* Main Content */}
-                      <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-                      
-                        {/* Professional Summary with Visual Enhancement */}
-                         <div className="bg-card rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 lg:p-6 shadow-lg border border-border/50">
-                          <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
-                            <div 
-                              className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
-              style={{
-                background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
-              }}
-                            >
-                              <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
-                            </div>
-                            <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedColorTheme.primary }}>Professional Summary</h3>
-                          </div>
-                         <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
-                         
-                       </div>
-
-                      {/* Professional Experience with Timeline */}
-                      {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-                         <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                           <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                             <div 
-                               className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
-                style={{
-                  background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
-                }}
-                             >
-                               <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
-                             </div>
-                             <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedColorTheme.primary }}>Professional Experience</h3>
-                           </div>
-                          
-                          <div className="space-y-4 sm:space-y-6">
-                             {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedColorTheme.accent}30` }}>
-                  <div 
-                    className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
-                    style={{ backgroundColor: selectedColorTheme.accent }}
-                  ></div>
-                  
-                  <div 
-                    className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
-                    style={{ 
-                      background: `linear-gradient(to right, ${selectedColorTheme.accent}08, ${selectedColorTheme.primary}08)` 
-                    }}
-                  >
-                                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
-                                     <div>
-                                       <h4 className="text-base sm:text-lg font-bold text-foreground break-words">{exp.title}</h4>
-                                       <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
-                                     </div>
-                                     <Badge 
-                                       variant="secondary" 
-                                       className="border self-start text-xs"
-                        style={{ 
-                          backgroundColor: `${selectedColorTheme.accent}10`, 
-                          color: selectedColorTheme.accent,
-                          borderColor: `${selectedColorTheme.accent}20`
-                        }}
-                                     >
-                                      {exp.duration}
-                                    </Badge>
-                                  </div>
-                                  
-                                  <div className="space-y-2 sm:space-y-3">
-                                    {exp.achievements.map((achievement: string, idx: number) => (
-                                      <div key={idx} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/50 rounded-lg">
-                                        <div className="w-5 sm:w-6 h-5 sm:h-6 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                          <TrendingUp className="w-2 sm:w-3 h-2 sm:h-3 text-white" />
-                                        </div>
-                                        <span className="text-foreground leading-relaxed text-xs sm:text-sm break-words">{achievement}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                     {/* Sidebar with Charts and Skills */}
-                     <div className="space-y-4 sm:space-y-6">
-                      
-                      {/* Skills Chart */}
-                      {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                        <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-           <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
-             <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
-             Skills Proficiency
-           </h3>
-                          
-                           <div className="space-y-3 sm:space-y-4">
-                             {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
-                               // Use a deterministic proficiency based on skill position and length
-                               const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
-                               const proficiency = Math.min(95, baseSkillLevel + (index * 2)); // Slight variation by position
-                               return (
-                                 <div key={index} className="space-y-1 sm:space-y-2">
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-xs sm:text-sm font-medium text-foreground break-words">{skill}</span>
-                                     <span className="text-xs text-muted-foreground">{Math.round(proficiency)}%</span>
-                                   </div>
-                                   <Progress value={proficiency} className="h-1.5 sm:h-2" />
-                                 </div>
-                               );
-                             })}
-                           </div>
-
-                          {/* Skills Tags */}
-                          <div className="mt-4 sm:mt-6">
-                            <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3">All Skills</h4>
-                            <div className="flex flex-wrap gap-1 sm:gap-2">
-                              {enhancedContent.skills.map((skill: string, index: number) => (
-                                <Badge key={index} variant="secondary" className="bg-gradient-to-r from-primary/10 to-accent/10 text-foreground border border-primary/20 hover:from-primary/20 hover:to-accent/20 transition-all duration-200 text-xs break-words">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Skills Distribution Chart */}
-                      {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-                        <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-          <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
-            <TrendingUp className="w-5 h-5" />
-            Skills Overview
-          </h3>
-          
-          <div className="space-y-3">
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
-              <div className="text-2xl font-bold" style={{ color: selectedColorTheme.primary }}>
-                {enhancedContent.skills.length}
-              </div>
-              <p className="text-sm text-muted-foreground">Total Skills</p>
-            </div>
-            
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.accent}08` }}>
-              <div className="text-2xl font-bold" style={{ color: selectedColorTheme.accent }}>
-                {enhancedContent.experience?.length || 0}
-              </div>
-              <p className="text-sm text-muted-foreground">Work Experiences</p>
-            </div>
-            
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.secondary}08` }}>
-              <div className="text-2xl font-bold" style={{ color: selectedColorTheme.secondary }}>
-                {enhancedContent.education?.length || 0}
-              </div>
-              <p className="text-sm text-muted-foreground">Educational Qualifications</p>
-            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Education */}
-                      {enhancedContent.education && enhancedContent.education.length > 0 && (
-                        <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-           <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
-             <Award className="w-5 h-5" />
-             Education
-           </h3>
-          <div className="space-y-4">
-            {enhancedContent.education.map((edu: any, index: number) => (
-               <div 
-                 key={index} 
-                 className="rounded-lg p-4 border"
-                 style={{ 
-                   background: `linear-gradient(to right, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}08)`,
-                   borderColor: `${selectedColorTheme.primary}10`
-                 }}
-               >
-                 <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
-                 <p className="font-medium" style={{ color: selectedColorTheme.accent }}>{edu.institution}</p>
-                <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
-              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                     </div>
-                   </div>
-                 </div>
-                 </div> {/* End of resumeContentRef */}
-               </div>
+                  </div>
               ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
