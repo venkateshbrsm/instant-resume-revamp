@@ -56,8 +56,8 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-6 print:p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4">
+      <div className="p-6 print:p-4 print:break-inside-avoid">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4 print:grid-cols-1">
           {/* Main Content - Larger Column */}
           <div className="lg:col-span-2 space-y-6 print:space-y-4">
             {/* Creative Summary with Icon */}
