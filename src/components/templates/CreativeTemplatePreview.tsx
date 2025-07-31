@@ -15,7 +15,7 @@ interface TemplatePreviewProps {
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-lg print:overflow-visible">
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0">
       {/* Creative Header with Diagonal Design */}
       <div className="relative overflow-hidden print:break-inside-avoid">
         <div 
@@ -95,25 +95,26 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   </h2>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-6 print:space-y-4">
                   {enhancedContent.experience.map((exp: any, index: number) => (
                     <div 
                       key={index} 
-                      className="relative p-6 rounded-2xl border-l-4 shadow-md hover:shadow-lg transition-shadow print:break-inside-avoid print:avoid-break print:shadow-none print:border-l-2"
+                      className="relative p-6 rounded-2xl border-l-4 shadow-md hover:shadow-lg transition-shadow print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-4"
                       style={{ 
                         background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
-                        borderColor: selectedColorTheme.accent
+                        borderColor: selectedColorTheme.accent,
+                        pageBreakInside: 'avoid'
                       }}
                     >
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4 print:mb-2">
                         <div>
-                          <h3 className="text-xl font-bold text-foreground">{exp.title}</h3>
-                          <p className="text-lg font-semibold" style={{ color: selectedColorTheme.accent }}>
+                          <h3 className="text-xl font-bold text-foreground print:text-lg">{exp.title}</h3>
+                          <p className="text-lg font-semibold print:text-base" style={{ color: selectedColorTheme.accent }}>
                             {exp.company}
                           </p>
                         </div>
                         <Badge 
-                          className="px-4 py-2 rounded-full text-white shadow-md"
+                          className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none"
                           style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
                         >
                           {exp.duration}
@@ -121,16 +122,16 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       </div>
                       
                       {exp.achievements && exp.achievements.length > 0 && (
-                        <div className="space-y-3 print:keep-together">
+                        <div className="space-y-3 print:space-y-2 print:keep-together" style={{ pageBreakInside: 'avoid' }}>
                           {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
-                            <div key={achIndex} className="flex items-start gap-3">
+                            <div key={achIndex} className="flex items-start gap-3 print:gap-2">
                               <div 
-                                className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                                className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
                                 style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
                               >
                                 <span className="text-white text-xs font-bold">✓</span>
                               </div>
-                              <p className="text-sm leading-relaxed text-muted-foreground">{achievement}</p>
+                              <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal">{achievement}</p>
                             </div>
                           ))}
                         </div>
