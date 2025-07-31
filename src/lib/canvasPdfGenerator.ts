@@ -107,18 +107,18 @@ export async function generatePdfFromElement(
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
     } else {
-      // Ultra-conservative multi-page generation - prioritize content preservation over page efficiency
-      const printerMargin = 5; // Minimal margin for maximum content space
+      // Efficient multi-page generation with reasonable margins
+      const printerMargin = 3; // Minimal margin for maximum content space
       const effectivePageHeight = availableHeight - printerMargin;
       
-      // Balanced approach: use 85% of page height for better page utilization
-      const conservativePageHeight = effectivePageHeight * 0.85;
-      const pixelsPerPageMm = conservativePageHeight / pixelsToMm / finalScale;
+      // Use 90% of page height for optimal page utilization
+      const usablePageHeight = effectivePageHeight * 0.9;
+      const pixelsPerPageMm = usablePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
       
-      // Reasonable buffer zone - 15mm to prevent content cutting
-      const safetyBuffer = scale * 15;
-      const absoluteMinSection = pixelsPerPage * 0.2;
+      // Small buffer zone - 8mm to prevent minor content cutting
+      const safetyBuffer = scale * 8;
+      const absoluteMinSection = pixelsPerPage * 0.15;
       
       let currentY = 0;
       let pageIndex = 0;
@@ -127,7 +127,7 @@ export async function generatePdfFromElement(
         canvasHeight: canvas.height,
         pixelsPerPage,
         safetyBuffer,
-        conservativePageHeight,
+        usablePageHeight,
         effectivePageHeight
       });
       
@@ -140,12 +140,12 @@ export async function generatePdfFromElement(
         console.log(`Page ${pageIndex + 1}: currentY=${currentY}, remaining=${remainingHeight}`);
         
         // Stop if very little content remains
-        if (remainingHeight < (scale * 25)) { // 25mm minimum
+        if (remainingHeight < (scale * 15)) { // 15mm minimum
           console.log('Stopping: remaining content too small');
           break;
         }
         
-        // Ultra-conservative section calculation
+        // Use most of available page space
         let sectionHeight = Math.min(pixelsPerPage - safetyBuffer, remainingHeight);
         
         // Ensure we don't create tiny sections
@@ -189,7 +189,7 @@ export async function generatePdfFromElement(
           const sectionHeightMm = (sectionHeight / scale) * pixelsToMm * finalScale;
           
           // Be very conservative with page boundaries
-          const maxAllowedHeight = Math.min(sectionHeightMm, conservativePageHeight / scale * pixelsToMm * finalScale);
+          const maxAllowedHeight = Math.min(sectionHeightMm, usablePageHeight / scale * pixelsToMm * finalScale);
           
           // Add to PDF with conservative margins
           const pageTopMargin = margin + (pageIndex === 0 ? 0 : 5);
