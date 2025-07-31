@@ -16,11 +16,11 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         
         {/* Clean, focused headline inspired by OutSpark */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          <span className="text-slate-900 dark:text-white">10x your shortlisting chances</span>
+          <span className="text-slate-900 dark:text-white">5x your interview chances</span>
           <br />
           <span className="text-slate-900 dark:text-white">with </span>
           <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent underline decoration-emerald-500 decoration-4 underline-offset-4">
-            AI Powered customized
+            AI Enhanced personalized
           </span>
           <br />
           <span className="text-slate-900 dark:text-white">Resumes</span>
@@ -28,7 +28,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
 
         {/* Clean value proposition */}
         <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-          Our AI knows what employers look for in candidates. Get your own customized AI powered resume.
+          Our intelligent system understands what recruiters seek in applicants. Receive your personalized AI enhanced resume.
         </p>
 
         {/* Primary CTA - Clean and prominent */}
@@ -63,10 +63,10 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         {/* Clean testimonial section inspired by OutSpark */}
         <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-8 mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-slate-900 dark:text-white">
-            Real People. Real Results. Real Talk.
+            Genuine People. Proven Results. Honest Reviews.
           </h2>
           <p className="text-center text-slate-600 dark:text-slate-300 mb-8">
-            What Indian professionals are saying after using our service
+            What Indian professionals share after using our resume enhancement service
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
