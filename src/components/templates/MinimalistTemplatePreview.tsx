@@ -48,7 +48,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             EXPERIENCE
           </h2>
           
-          <div className="space-y-10 print:space-y-16">{/* Much larger spacing for print */}
+          <div className="space-y-8">
             {enhancedContent.experience.map((exp: any, index: number) => (
               <div key={index} className="space-y-3">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
