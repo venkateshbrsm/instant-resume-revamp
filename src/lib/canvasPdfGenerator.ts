@@ -111,14 +111,14 @@ export async function generatePdfFromElement(
       const printerMargin = 5; // Minimal margin for maximum content space
       const effectivePageHeight = availableHeight - printerMargin;
       
-      // Much more conservative approach: use only 60% of page height
-      const conservativePageHeight = effectivePageHeight * 0.6;
+      // Balanced approach: use 85% of page height for better page utilization
+      const conservativePageHeight = effectivePageHeight * 0.85;
       const pixelsPerPageMm = conservativePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
       
-      // Massive buffer zone - 40mm to ensure no content cutting
-      const safetyBuffer = scale * 40;
-      const absoluteMinSection = pixelsPerPage * 0.3; // Very small minimum to avoid infinite pages
+      // Reasonable buffer zone - 15mm to prevent content cutting
+      const safetyBuffer = scale * 15;
+      const absoluteMinSection = pixelsPerPage * 0.2;
       
       let currentY = 0;
       let pageIndex = 0;
