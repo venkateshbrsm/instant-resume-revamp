@@ -62,7 +62,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             <p className="text-lg sm:text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-4xl mx-auto leading-relaxed font-light">
               Upload your resume and receive a <span className="font-semibold text-orange-700 dark:text-orange-400">comprehensive professional assessment</span> with enhanced formatting. 
               <span className="block mt-2 text-base sm:text-lg font-medium text-amber-700 dark:text-amber-400">
-                Secure Process • No Registration • Pay ₹1 Only If Satisfied
+                Secure Process • No Registration • Pay ₹499 Only If Satisfied
               </span>
             </p>
 
@@ -156,7 +156,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                       </div>
                     </div>
                     <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">Instant Download</h3>
-                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">Satisfied with results? Complete payment (₹1) and download your professional resume immediately.</p>
+                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">Satisfied with results? Complete payment (₹499) and download your professional resume immediately.</p>
                   </CardContent>
                 </Card>
               </div>

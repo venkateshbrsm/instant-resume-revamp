@@ -34,7 +34,7 @@ export default function PaymentSuccess() {
         setIsVerifying(false);
         setPayment({
           paymentId: searchParams.get('razorpay_payment_id') || 'unknown',
-          amount: '1',
+          amount: '499',
           status: 'paid'
         });
         toast({
@@ -74,7 +74,7 @@ export default function PaymentSuccess() {
         
         setPayment({
           paymentId: razorpayResponse.razorpay_payment_id,
-          amount: '1',
+          amount: '499',
           status: 'paid'
         });
         
@@ -92,7 +92,7 @@ export default function PaymentSuccess() {
         console.log('Payment verified successfully:', data);
         setPayment({
           paymentId: razorpayResponse.razorpay_payment_id,
-          amount: '1', // Since we know it's ₹1 from the logs
+          amount: '499', // Since we know it's ₹499 from the logs
           status: 'paid'
         });
         toast({
@@ -104,7 +104,7 @@ export default function PaymentSuccess() {
         // Still show success but with warning
         setPayment({
           paymentId: razorpayResponse.razorpay_payment_id,
-          amount: '1',
+          amount: '499',
           status: 'paid'
         });
         
@@ -123,7 +123,7 @@ export default function PaymentSuccess() {
         console.log('Payment ID found, showing success despite verification error');
         setPayment({
           paymentId: hasPaymentId,
-          amount: '1',
+          amount: '499',
           status: 'paid'
         });
         
