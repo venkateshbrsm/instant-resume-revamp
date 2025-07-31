@@ -29,7 +29,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         {/* Enhanced subheadline with clearer value prop */}
         <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-muted-foreground mb-4 sm:mb-6 md:mb-8 max-w-4xl mx-auto leading-relaxed px-2">
           Upload your resume and get a <span className="font-semibold text-accent">free professional preview</span> instantly. 
-          <span className="block mt-1 sm:mt-2 text-xs sm:text-sm md:text-base font-medium text-primary">No email • No signup • Pay only ₹299 if you love it</span>
+          <span className="block mt-1 sm:mt-2 text-xs sm:text-sm md:text-base font-medium text-primary">No email • No signup • Pay only ₹1 if you love it</span>
         </p>
 
         {/* Single, focused CTA with conversion triggers */}
@@ -123,7 +123,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                 Download
               </h3>
               <p className="text-xs sm:text-sm md:text-base text-muted-foreground px-2">
-                Love it? Pay ₹299 and download instantly.
+                Love it? Pay ₹1 and download instantly.
               </p>
             </div>
           </div>
