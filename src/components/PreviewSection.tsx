@@ -10,8 +10,10 @@ import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCir
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
+import { TemplateSelector } from "./TemplateSelector";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
+import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface PreviewSectionProps {
@@ -20,14 +22,7 @@ interface PreviewSectionProps {
   onBack: () => void;
 }
 
-const colorThemes = [
-  { id: 'navy', name: 'Navy Professional', primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
-  { id: 'charcoal', name: 'Charcoal Gray', primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
-  { id: 'burgundy', name: 'Burgundy Wine', primary: '#dc2626', secondary: '#ef4444', accent: '#f87171' },
-  { id: 'forest', name: 'Forest Green', primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
-  { id: 'bronze', name: 'Bronze Gold', primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
-  { id: 'slate', name: 'Slate Blue', primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' }
-];
+// Template system now imported from resumeTemplates.ts
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
@@ -41,7 +36,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [enhancementProgress, setEnhancementProgress] = useState(0);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState(colorThemes[0]);
+  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>(getDefaultTemplate());
+  const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
@@ -206,8 +202,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               // Also save other data
               sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
               sessionStorage.setItem('extractedTextForPayment', extractedText);
-              console.log('Saving theme to sessionStorage for payment:', selectedTheme);
-              sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
+              console.log('Saving template and theme to sessionStorage for payment:', selectedTemplate, selectedColorTheme);
+              sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+              sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
               
               onPurchase();
             };
@@ -227,8 +224,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         if (enhancedContent) {
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
-          console.log('Saving theme to sessionStorage for payment:', selectedTheme);
-          sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
+          console.log('Saving template and theme to sessionStorage for payment:', selectedTemplate, selectedColorTheme);
+          sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+          sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
         }
         onPurchase();
       } else {
@@ -260,8 +258,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
               sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
               sessionStorage.setItem('extractedTextForPayment', extractedText);
-              console.log('Saving theme to sessionStorage for login flow:', selectedTheme);
-              sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
+              console.log('Saving template and theme to sessionStorage for login flow:', selectedTemplate, selectedColorTheme);
+              sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+              sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
               
               // Navigate after saving
               navigate('/auth');
@@ -277,8 +276,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
           sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
           sessionStorage.setItem('extractedTextForPayment', extractedText);
-          console.log('Saving theme to sessionStorage for login flow:', selectedTheme);
-          sessionStorage.setItem('selectedThemeForPayment', JSON.stringify(selectedTheme));
+          console.log('Saving template and theme to sessionStorage for login flow:', selectedTemplate, selectedColorTheme);
+          sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+          sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
         }
         if (originalContent) {
           const contentToStore = typeof originalContent === 'string' ? originalContent : JSON.stringify(originalContent);
@@ -316,16 +316,33 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     try {
       toast({
         title: "Generating PDF",
-        description: "Creating a high-quality PDF from your enhanced resume...",
+        description: "Creating a text-based PDF from your enhanced resume...",
       });
 
-      const filename = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-      
-      await downloadPdfFromElement(resumeContentRef.current, {
-        filename,
-        quality: 0.95,
-        scale: 2
+      // Use the text-based PDF generation
+      const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+        body: {
+          enhancedContent,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
+        }
       });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to generate PDF');
+      }
+
+      // Create download link
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
       toast({
         title: "PDF Downloaded",
@@ -385,7 +402,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           originalText: extractedText,
           extractedText: extractedText,
           file: fileBase64 || null,
-          themeId: selectedTheme.id
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id
         }
       });
 
@@ -524,56 +542,22 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
                    >
                   
-                     {/* Color Theme Selector */}
-                     <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-card/80 rounded-lg border border-border/50">
-                       <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-                         <Sparkles className="w-3 h-3" />
-                         Themes
-                       </h4>
-                       <div className="flex flex-wrap gap-1">
-                        {colorThemes.map((theme) => (
-                          <button
-                            key={theme.id}
-                             onClick={() => {
-                               console.log('Theme selected:', theme);
-                               setSelectedTheme(theme);
-                             }}
-                            className={`flex items-center gap-1 p-1 rounded border transition-all duration-200 ${
-                              selectedTheme.id === theme.id 
-                                ? 'border-primary bg-primary/5' 
-                                : 'border-border hover:border-primary/50 bg-background'
-                            }`}
-                          >
-                            <div className="flex gap-0.5">
-                              <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ backgroundColor: theme.primary }}
-                              />
-                              <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ backgroundColor: theme.secondary }}
-                              />
-                              <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ backgroundColor: theme.accent }}
-                              />
-                            </div>
-                            {selectedTheme.id === theme.id && (
-                              <Sparkles className="w-2 h-2 text-primary" />
-                            )}
-                          </button>
-                        ))}
-                     </div>
-                  </div>
+                      {/* Template and Color Selector */}
+                      <TemplateSelector
+                        selectedTemplate={selectedTemplate}
+                        selectedColorTheme={selectedColorTheme}
+                        onTemplateChange={setSelectedTemplate}
+                        onColorThemeChange={setSelectedColorTheme}
+                      />
 
                     {/* Resume Content - This is what gets captured for PDF */}
                     <div ref={resumeContentRef}>
                      {/* Modern Header with Visual Elements */}
                       <div 
                         className="relative rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 text-white overflow-hidden"
-                        style={{
-                          background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                        }}
+        style={{
+          background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
+        }}
                       >
                        <div className="absolute inset-0 bg-black/10"></div>
                          <div className="relative z-10 text-left">
@@ -601,13 +585,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           <div className="flex items-center gap-1 sm:gap-2 md:gap-3 mb-2 sm:mb-3 md:mb-4">
                             <div 
                               className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 rounded-lg flex items-center justify-center text-white"
-                              style={{
-                                background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                              }}
+              style={{
+                background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
+              }}
                             >
                               <Users className="w-3 sm:w-4 md:w-5 h-3 sm:h-4 md:h-5" />
                             </div>
-                            <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Summary</h3>
+                            <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold" style={{ color: selectedColorTheme.primary }}>Professional Summary</h3>
                           </div>
                          <p className="text-foreground leading-relaxed text-xs sm:text-sm md:text-base">{enhancedContent.summary}</p>
                          
@@ -619,42 +603,42 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                              <div 
                                className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center text-white"
-                               style={{
-                                 background: `linear-gradient(to right, ${selectedTheme.primary}, ${selectedTheme.accent})`
-                               }}
+                style={{
+                  background: `linear-gradient(to right, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
+                }}
                              >
                                <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
                              </div>
-                             <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedTheme.primary }}>Professional Experience</h3>
+                             <h3 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: selectedColorTheme.primary }}>Professional Experience</h3>
                            </div>
                           
                           <div className="space-y-4 sm:space-y-6">
                              {enhancedContent.experience.map((exp: any, index: number) => (
-                               <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedTheme.accent}30` }}>
-                                 <div 
-                                   className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
-                                   style={{ backgroundColor: selectedTheme.accent }}
-                                 ></div>
-                                 
-                                 <div 
-                                   className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
-                                   style={{ 
-                                     background: `linear-gradient(to right, ${selectedTheme.accent}08, ${selectedTheme.primary}08)` 
-                                   }}
-                                 >
+                <div key={index} className="relative pl-6 sm:pl-8 border-l-2 last:border-l-0" style={{ borderColor: `${selectedColorTheme.accent}30` }}>
+                  <div 
+                    className="absolute left-[-6px] sm:left-[-9px] top-0 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-white shadow-lg"
+                    style={{ backgroundColor: selectedColorTheme.accent }}
+                  ></div>
+                  
+                  <div 
+                    className="rounded-lg p-3 sm:p-4 md:p-6 ml-2 sm:ml-4"
+                    style={{ 
+                      background: `linear-gradient(to right, ${selectedColorTheme.accent}08, ${selectedColorTheme.primary}08)` 
+                    }}
+                  >
                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-3 sm:mb-4">
                                      <div>
                                        <h4 className="text-base sm:text-lg font-bold text-foreground break-words">{exp.title}</h4>
-                                       <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedTheme.accent }}>{exp.company}</p>
+                                       <p className="font-semibold text-base sm:text-lg break-words" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                                      </div>
                                      <Badge 
                                        variant="secondary" 
                                        className="border self-start text-xs"
-                                       style={{ 
-                                         backgroundColor: `${selectedTheme.accent}10`, 
-                                         color: selectedTheme.accent,
-                                         borderColor: `${selectedTheme.accent}20`
-                                       }}
+                        style={{ 
+                          backgroundColor: `${selectedColorTheme.accent}10`, 
+                          color: selectedColorTheme.accent,
+                          borderColor: `${selectedColorTheme.accent}20`
+                        }}
                                      >
                                       {exp.duration}
                                     </Badge>
@@ -684,10 +668,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       {/* Skills Chart */}
                       {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                         <div className="bg-card rounded-xl p-3 sm:p-4 md:p-6 shadow-lg border border-border/50">
-                           <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                             <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
-                             Skills Proficiency
-                           </h3>
+           <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
+             <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
+             Skills Proficiency
+           </h3>
                           
                            <div className="space-y-3 sm:space-y-4">
                              {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => {
@@ -723,32 +707,32 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       {/* Skills Distribution Chart */}
                       {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                         <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                          <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                            <TrendingUp className="w-5 h-5" />
-                            Skills Overview
-                          </h3>
-                          
-                          <div className="space-y-3">
-                            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.primary}08` }}>
-                              <div className="text-2xl font-bold" style={{ color: selectedTheme.primary }}>
-                                {enhancedContent.skills.length}
-                              </div>
-                              <p className="text-sm text-muted-foreground">Total Skills</p>
-                            </div>
-                            
-                            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.accent}08` }}>
-                              <div className="text-2xl font-bold" style={{ color: selectedTheme.accent }}>
-                                {enhancedContent.experience?.length || 0}
-                              </div>
-                              <p className="text-sm text-muted-foreground">Work Experiences</p>
-                            </div>
-                            
-                            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedTheme.secondary}08` }}>
-                              <div className="text-2xl font-bold" style={{ color: selectedTheme.secondary }}>
-                                {enhancedContent.education?.length || 0}
-                              </div>
-                              <p className="text-sm text-muted-foreground">Educational Qualifications</p>
-                            </div>
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
+            <TrendingUp className="w-5 h-5" />
+            Skills Overview
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
+              <div className="text-2xl font-bold" style={{ color: selectedColorTheme.primary }}>
+                {enhancedContent.skills.length}
+              </div>
+              <p className="text-sm text-muted-foreground">Total Skills</p>
+            </div>
+            
+            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.accent}08` }}>
+              <div className="text-2xl font-bold" style={{ color: selectedColorTheme.accent }}>
+                {enhancedContent.experience?.length || 0}
+              </div>
+              <p className="text-sm text-muted-foreground">Work Experiences</p>
+            </div>
+            
+            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.secondary}08` }}>
+              <div className="text-2xl font-bold" style={{ color: selectedColorTheme.secondary }}>
+                {enhancedContent.education?.length || 0}
+              </div>
+              <p className="text-sm text-muted-foreground">Educational Qualifications</p>
+            </div>
                           </div>
                         </div>
                       )}
@@ -756,24 +740,24 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       {/* Education */}
                       {enhancedContent.education && enhancedContent.education.length > 0 && (
                         <div className="bg-card rounded-xl p-6 shadow-lg border border-border/50">
-                           <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedTheme.primary }}>
-                             <Award className="w-5 h-5" />
-                             Education
-                           </h3>
-                          <div className="space-y-4">
-                            {enhancedContent.education.map((edu: any, index: number) => (
-                               <div 
-                                 key={index} 
-                                 className="rounded-lg p-4 border"
-                                 style={{ 
-                                   background: `linear-gradient(to right, ${selectedTheme.primary}08, ${selectedTheme.accent}08)`,
-                                   borderColor: `${selectedTheme.primary}10`
-                                 }}
-                               >
-                                 <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
-                                 <p className="font-medium" style={{ color: selectedTheme.accent }}>{edu.institution}</p>
-                                <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
-                              </div>
+           <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
+             <Award className="w-5 h-5" />
+             Education
+           </h3>
+          <div className="space-y-4">
+            {enhancedContent.education.map((edu: any, index: number) => (
+               <div 
+                 key={index} 
+                 className="rounded-lg p-4 border"
+                 style={{ 
+                   background: `linear-gradient(to right, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}08)`,
+                   borderColor: `${selectedColorTheme.primary}10`
+                 }}
+               >
+                 <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                 <p className="font-medium" style={{ color: selectedColorTheme.accent }}>{edu.institution}</p>
+                <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+              </div>
                             ))}
                           </div>
                         </div>

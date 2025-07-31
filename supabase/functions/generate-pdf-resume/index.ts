@@ -19,8 +19,19 @@ const colorThemes = {
   orange: { primary: '#f97316', secondary: '#fb923c', accent: '#fdba74' }
 };
 
-async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
+async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'modern', themeId: string = 'navy'): Promise<Uint8Array> {
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
+  
+  // Template generators - for now using simplified versions
+  const templateGenerators = {
+    modern: () => generateModernHTML(resumeData, theme),
+    classic: () => generateClassicHTML(resumeData, theme),
+    creative: () => generateModernHTML(resumeData, theme), // Use modern as fallback
+    executive: () => generateClassicHTML(resumeData, theme), // Use classic as fallback  
+    minimalist: () => generateClassicHTML(resumeData, theme), // Use classic as fallback
+  };
+  
+  const generateHTML = templateGenerators[templateId as keyof typeof templateGenerators] || templateGenerators.modern;
   
   // Generate realistic skill proficiency percentages matching the preview
   const generateSkillProficiency = (skill: string) => {
@@ -28,7 +39,10 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
     return Math.min(95, baseSkillLevel);
   };
 
-  const htmlContent = `<!DOCTYPE html>
+  const htmlContent = generateHTML();
+  
+  function generateModernHTML(resumeData: any, theme: any) {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -602,6 +616,35 @@ async function generatePDFWithPDFShift(resumeData: any, themeId: string = 'navy'
   </div>
 </body>
 </html>`;
+  }
+  
+  function generateClassicHTML(resumeData: any, theme: any) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { size: A4; margin: 0.5in; }
+    body { font-family: 'Times New Roman', serif; line-height: 1.6; color: #2c3e50; }
+    .header { text-align: center; padding: 20pt 0; border-bottom: 2pt solid ${theme.primary}; margin-bottom: 20pt; }
+    .header h1 { font-size: 28pt; color: ${theme.primary}; }
+    .section { margin-bottom: 24pt; }
+    .section-title { font-size: 16pt; font-weight: 700; color: ${theme.primary}; border-bottom: 1pt solid ${theme.primary}30; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>${resumeData.name || 'Enhanced Resume'}</h1>
+    <div>${resumeData.title || 'Professional'}</div>
+    <div>${resumeData.email || 'email@example.com'} | ${resumeData.phone || 'phone'}</div>
+  </div>
+  <div class="section">
+    <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
+    <p>${resumeData.summary || 'Professional summary here.'}</p>
+  </div>
+</body>
+</html>`;
+  }
 
   // Use PDFShift as the reliable solution
   const pdfshiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
@@ -653,7 +696,7 @@ serve(async (req) => {
     console.log("Starting PDF resume generation...");
 
     const requestBody = await req.json();
-    const { paymentId, enhancedContent, themeId, fileName } = requestBody;
+    const { paymentId, enhancedContent, templateId, themeId, fileName } = requestBody;
     console.log("Request data:", { paymentId, hasEnhancedContent: !!enhancedContent, themeId, fileName });
 
     // If enhanced content is provided directly, use it (preferred method)
@@ -663,7 +706,8 @@ serve(async (req) => {
       const finalFileName = fileName || 'enhanced-resume';
       
       // Generate PDF using provided data
-      const pdfBytes = await generatePDFWithPDFShift(enhancedContent, finalThemeId);
+      const finalTemplateId = templateId || 'modern';
+      const pdfBytes = await generatePDFWithPDFShift(enhancedContent, finalTemplateId, finalThemeId);
       
       console.log("PDF generated successfully from direct content, size:", pdfBytes.length, "bytes");
       
