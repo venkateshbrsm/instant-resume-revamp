@@ -74,7 +74,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               >
                 <div className="relative flex items-center">
                   <Target className="w-5 h-5 mr-3" />
-                  <span>Begin Professional Assessment</span>
+                  <span>Make My Resume</span>
                   <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
                 </div>
               </Button>
