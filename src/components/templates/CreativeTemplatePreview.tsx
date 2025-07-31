@@ -284,7 +284,9 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                         <p className="font-medium text-sm print:text-xs" style={{ color: selectedColorTheme.accent }}>
                           {edu.institution}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">{edu.year}</p>
+                        {edu.year && edu.year !== "Year not specified" && (
+                          <p className="text-xs text-muted-foreground mt-1">{edu.year}</p>
+                        )}
                       </div>
                     ))}
                   </div>
