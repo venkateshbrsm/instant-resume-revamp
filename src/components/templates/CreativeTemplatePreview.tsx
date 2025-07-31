@@ -61,7 +61,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           {/* Main Content - Larger Column */}
           <div className="lg:col-span-2 space-y-6 print:space-y-4">
             {/* Creative Summary with Icon */}
-            <div className="relative print:break-inside-avoid">
+            <div className="relative print:break-inside-avoid print:avoid-break">
               <div className="flex items-start gap-4">
                 <div 
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
@@ -82,7 +82,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
 
             {/* Experience with Creative Cards */}
             {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-              <div className="print:break-inside-avoid">
+              <div className="print:break-inside-avoid print:avoid-break">
                 <div className="flex items-center gap-4 mb-6">
                   <div 
                     className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
@@ -99,7 +99,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   {enhancedContent.experience.map((exp: any, index: number) => (
                     <div 
                       key={index} 
-                      className="relative p-6 rounded-2xl border-l-4 shadow-md hover:shadow-lg transition-shadow print:break-inside-avoid print:shadow-none print:border-l-2"
+                      className="relative p-6 rounded-2xl border-l-4 shadow-md hover:shadow-lg transition-shadow print:break-inside-avoid print:avoid-break print:shadow-none print:border-l-2"
                       style={{ 
                         background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
                         borderColor: selectedColorTheme.accent
@@ -143,7 +143,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           </div>
 
           {/* Creative Sidebar */}
-          <div className="space-y-5 print:space-y-3 print:break-inside-avoid">
+          <div className="space-y-5 print:space-y-3 print:break-inside-avoid print:avoid-break">
             {/* Skills as Creative Badges */}
             {enhancedContent.skills && enhancedContent.skills.length > 0 && (
               <div 
@@ -229,7 +229,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   {enhancedContent.education.map((edu: any, index: number) => (
                     <div 
                       key={index}
-                      className="p-4 rounded-xl border-l-4"
+                      className="p-4 rounded-xl border-l-4 print:avoid-break"
                       style={{ 
                         background: 'white',
                         borderColor: selectedColorTheme.accent
