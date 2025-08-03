@@ -70,13 +70,13 @@ serve(async (req) => {
     let finalAmount = amount;
     let appliedCouponCode = null;
     
-    if (couponCode && couponCode.toUpperCase() === "FIRST100") {
+    if (couponCode && couponCode.toUpperCase() === "15AUGSALE") {
       if (amount === 299) {
         finalAmount = 299;
-        appliedCouponCode = "FIRST100";
-        console.log("FIRST100 coupon applied, amount set to 299 INR");
+        appliedCouponCode = "15AUGSALE";
+        console.log("15AUGSALE coupon applied, amount set to 299 INR");
       } else {
-        console.log("FIRST100 coupon provided but amount doesn't match expected discounted price");
+        console.log("15AUGSALE coupon provided but amount doesn't match expected discounted price");
       }
     }
 

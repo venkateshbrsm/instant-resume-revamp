@@ -143,12 +143,12 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
 
   const applyCoupon = () => {
     const trimmedCode = couponCode.trim().toUpperCase();
-    if (trimmedCode === "FIRST100") {
+    if (trimmedCode === "15AUGSALE") {
       setAppliedCoupon(trimmedCode);
       setDiscountedPrice(299);
       toast({
         title: "Coupon Applied!",
-        description: "FIRST100 coupon applied. Price reduced to ₹299",
+        description: "15AUGSALE coupon applied. Price reduced to ₹299",
       });
     } else if (trimmedCode === "") {
       toast({
