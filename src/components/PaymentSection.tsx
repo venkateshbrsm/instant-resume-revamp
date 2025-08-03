@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { RazorpayPayment } from "./RazorpayPayment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Download, CreditCard, FileDown, ArrowLeft, User } from "lucide-react";
+import { CheckCircle2, Download, CreditCard, FileDown, ArrowLeft, User, Tag } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
@@ -21,6 +22,9 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [lastPaymentAttempt, setLastPaymentAttempt] = useState<number>(0);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [discountedPrice, setDiscountedPrice] = useState(499);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -137,6 +141,40 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
     setIsPaymentProcessing(false);
   };
 
+  const applyCoupon = () => {
+    const trimmedCode = couponCode.trim().toUpperCase();
+    if (trimmedCode === "FIRST100") {
+      setAppliedCoupon(trimmedCode);
+      setDiscountedPrice(299);
+      toast({
+        title: "Coupon Applied!",
+        description: "FIRST100 coupon applied. Price reduced to ₹299",
+      });
+    } else if (trimmedCode === "") {
+      toast({
+        title: "Enter Coupon Code",
+        description: "Please enter a coupon code to apply",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Invalid Coupon",
+        description: "This coupon code is not valid",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountedPrice(499);
+    setCouponCode("");
+    toast({
+      title: "Coupon Removed",
+      description: "Price restored to original amount",
+    });
+  };
+
   const handlePaymentSuccess = () => {
     setPaymentCompleted(true);
     setShowPayment(false);
@@ -169,8 +207,9 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             <CardContent className="space-y-6">
               <RazorpayPayment
                 fileName={file.name}
-                amount={499}
+                amount={discountedPrice}
                 file={file}
+                couponCode={appliedCoupon}
               />
               <Button variant="outline" onClick={handlePaymentCancel} className="w-full">
                 Cancel
@@ -253,14 +292,52 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Coupon Section */}
+            <div className="space-y-4">
+              <div className="p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
+                <h4 className="font-semibold mb-3 text-sm sm:text-base">Have a Coupon Code?</h4>
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button variant="outline" onClick={applyCoupon} size="sm">
+                      <Tag className="w-4 h-4 mr-1" />
+                      Apply
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                    <span className="text-green-700 text-sm font-medium">
+                      {appliedCoupon} Applied!
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={removeCoupon} className="text-green-700 hover:text-green-800">
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Order Summary */}
             <div className="space-y-4">
               <div className="p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
                 <h4 className="font-semibold mb-2 text-sm sm:text-base">Order Summary</h4>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs sm:text-sm">AI Resume Enhancement</span>
-                  <span className="font-semibold text-sm sm:text-base">₹499</span>
+                  <span className={`font-semibold text-sm sm:text-base ${appliedCoupon ? 'line-through text-muted-foreground' : ''}`}>
+                    ₹499
+                  </span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs sm:text-sm text-green-600">After {appliedCoupon} discount</span>
+                    <span className="font-semibold text-sm sm:text-base text-green-600">₹{discountedPrice}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-xs sm:text-sm text-muted-foreground">
                   <span className="break-all">Original file: {file.name}</span>
                 </div>
@@ -269,7 +346,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               <div className="border-t pt-3 sm:pt-4">
                 <div className="flex justify-between items-center text-base sm:text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">₹499</span>
+                  <span className="text-primary">₹{discountedPrice}</span>
                 </div>
               </div>
             </div>
@@ -294,7 +371,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             >
               <CreditCard className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
                 {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
-                 user ? "Pay ₹499 with Razorpay" : "Sign In & Pay ₹499"}
+                 user ? `Pay ₹${discountedPrice} with Razorpay` : `Sign In & Pay ₹${discountedPrice}`}
             </Button>
 
             {/* Security Note */}

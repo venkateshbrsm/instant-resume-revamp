@@ -51,8 +51,8 @@ serve(async (req) => {
     console.log("User authenticated:", user.email);
 
     // Get request body
-    const { fileName, amount, filePath, enhancedContent, extractedText, selectedTheme } = await req.json();
-    console.log("Payment details:", { fileName, amount, filePath, hasEnhancedContent: !!enhancedContent, themeData: selectedTheme });
+    const { fileName, amount, filePath, enhancedContent, extractedText, selectedTheme, couponCode } = await req.json();
+    console.log("Payment details:", { fileName, amount, filePath, hasEnhancedContent: !!enhancedContent, themeData: selectedTheme, couponCode });
     console.log("Received theme object:", JSON.stringify(selectedTheme, null, 2));
     
     // Extract theme ID - handle both old format (string) and new format (object)
@@ -66,7 +66,21 @@ serve(async (req) => {
     }
     console.log("Extracted theme ID for database:", themeId);
 
-    if (!fileName || !amount) {
+    // Validate coupon code and adjust amount if applicable
+    let finalAmount = amount;
+    let appliedCouponCode = null;
+    
+    if (couponCode && couponCode.toUpperCase() === "FIRST100") {
+      if (amount === 299) {
+        finalAmount = 299;
+        appliedCouponCode = "FIRST100";
+        console.log("FIRST100 coupon applied, amount set to 299 INR");
+      } else {
+        console.log("FIRST100 coupon provided but amount doesn't match expected discounted price");
+      }
+    }
+
+    if (!fileName || !finalAmount) {
       throw new Error("Missing fileName or amount");
     }
 
@@ -89,7 +103,7 @@ serve(async (req) => {
 
     // Create Razorpay order
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    const amountInPaise = Math.round(amount * 100); // Convert to paise
+    const amountInPaise = Math.round(finalAmount * 100); // Convert to paise
 
     const orderData = {
       amount: amountInPaise,
@@ -131,12 +145,13 @@ serve(async (req) => {
         email: user.email || "",
         file_name: fileName,
         file_path: filePath || null,
-        amount: amount,
+        amount: finalAmount,
         currency: "INR",
         razorpay_order_id: razorpayOrder.id,
         status: "pending",
         enhanced_content: enhancedContent || null,
-        theme_id: themeId
+        theme_id: themeId,
+        coupon_code: appliedCouponCode
       })
       .select()
       .single();

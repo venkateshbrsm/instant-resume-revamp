@@ -8,6 +8,7 @@ interface RazorpayPaymentProps {
   amount: number;
   file: File;
   disabled?: boolean;
+  couponCode?: string | null;
 }
 
 declare global {
