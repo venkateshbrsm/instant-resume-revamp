@@ -17,6 +17,7 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          coupon_code: string | null
           created_at: string
           currency: string
           email: string
@@ -36,6 +37,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           email: string
@@ -55,6 +57,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           email?: string

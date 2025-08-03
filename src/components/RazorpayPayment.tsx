@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPaymentProps) => {
+export const RazorpayPayment = ({ fileName, amount, file, disabled = false, couponCode }: RazorpayPaymentProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -143,7 +143,8 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled }: RazorpayPa
           filePath,
           enhancedContent: enhancedContent,
           extractedText: extractedText,
-          selectedTheme: selectedTheme
+          selectedTheme: selectedTheme,
+          couponCode: couponCode
         }
       });
 
