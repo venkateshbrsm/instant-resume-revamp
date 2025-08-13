@@ -840,13 +840,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       color: #2d3748;
     }
     
-    /* Creative experience timeline */
-    .experience-timeline {
-      position: relative;
-      padding-left: 12pt;
-      margin-bottom: 12pt;
-    }
-    
+    /* Experience items - independent positioning */
     .experience-item {
       position: relative;
       margin-bottom: 12pt;
@@ -856,17 +850,11 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       border-left: 3pt solid ${theme.accent};
     }
     
-    .experience-item::before {
-      content: '';
-      position: absolute;
-      left: -21pt;
-      top: 16pt;
-      width: 12pt;
-      height: 12pt;
-      background: ${theme.accent};
-      border-radius: 50%;
-      border: 2pt solid white;
-      box-shadow: 0 0 0 2pt ${theme.accent}30;
+    /* Remove timeline positioning for independent cards */
+    .experience-timeline {
+      position: static;
+      padding-left: 0;
+      margin-bottom: 0;
     }
     
     .experience-header {
@@ -1092,17 +1080,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         </div>
       </div>
 
-      <!-- Experience Journey Cards -->
-      ${resumeData.experience && resumeData.experience.length > 0 ? `
-      <div class="card">
-        <div class="section">
-          <div class="section-header">
-            <div class="section-icon">💼</div>
-            <h3 class="section-title">Experience Journey</h3>
-          </div>
-          <div class="experience-timeline">
-            ${resumeData.experience.map((exp: any) => `
-            <div class="experience-item">
+      <!-- Individual Experience Cards -->
+      ${resumeData.experience && resumeData.experience.length > 0 ? 
+        resumeData.experience.map((exp: any, index: number) => `
+        <div class="card">
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon">💼</div>
+              <h3 class="section-title">${index === 0 ? 'Experience Journey' : 'Professional Experience'}</h3>
+            </div>
+            <div class="experience-item" style="margin-bottom: 0; position: static;">
               <div class="experience-header">
                 <div>
                   <div class="experience-title">${exp.title || 'Position Title'}</div>
@@ -1121,11 +1108,9 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
               </ul>
               `}
             </div>
-            `).join('')}
           </div>
         </div>
-      </div>
-      ` : ''}
+        `).join('') : ''}
 
       <!-- Creative Skills Card -->
       ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? `
