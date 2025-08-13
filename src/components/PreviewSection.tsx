@@ -325,7 +325,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       });
 
       // Use the text-based PDF generation
-      const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+      const response = await supabase.functions.invoke('generate-pdf-resume', {
         body: {
           enhancedContent,
           templateId: selectedTemplate.id,
@@ -334,12 +334,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to generate PDF');
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to generate PDF');
       }
 
-      // Create download link
-      const blob = new Blob([data], { type: 'application/pdf' });
+      // The response.data is already a Uint8Array from the edge function
+      const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
