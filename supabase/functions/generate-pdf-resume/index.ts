@@ -656,7 +656,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <style>
     @page { 
       size: A4; 
-      margin: 0.5in; 
+      margin: 0.25in; 
     }
     * { 
       margin: 0; 
@@ -665,18 +665,25 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       text-decoration: none !important; 
     }
     
+    /* Prevent any auto-linking behavior */
+    a, a:link, a:visited, a:hover, a:active {
+      text-decoration: none !important;
+      color: inherit !important;
+    }
+    
     body {
       font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
       line-height: 1.5; 
       color: #1a202c; 
       background: white;
-      font-size: 10pt; 
+      font-size: 9pt; 
       width: 100%; 
       min-height: auto;
     }
     
     .container { 
       background: white; 
+      overflow: hidden;
       width: 100%; 
       max-width: none;
     }
@@ -684,10 +691,9 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     .header {
       background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 70%, ${theme.secondary} 100%);
       color: white; 
-      padding: 16pt; 
+      padding: 12pt; 
       position: relative; 
       overflow: hidden;
-      margin-bottom: 16pt;
     }
     
     .header-content { 
@@ -697,84 +703,84 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     }
     
     .header h1 { 
-      font-size: 26pt; 
+      font-size: 22pt; 
       font-weight: 800; 
-      margin-bottom: 6pt; 
+      margin-bottom: 4pt; 
       line-height: 1.1; 
     }
     
     .header .title { 
-      font-size: 14pt; 
-      margin-bottom: 12pt; 
+      font-size: 12pt; 
+      margin-bottom: 8pt; 
       opacity: 0.95; 
       font-weight: 500; 
     }
     
     .contact-info { 
-      font-size: 10pt; 
+      font-size: 9pt; 
       font-weight: 500; 
     }
     
     .main-content { 
-      padding: 0 16pt; 
+      padding: 8pt 12pt; 
     }
     
     .section { 
-      margin-bottom: 20pt; 
+      margin-bottom: 12pt;
       break-inside: avoid;
     }
     
     .section-header { 
       display: flex; 
       align-items: center; 
-      gap: 8pt; 
-      margin-bottom: 12pt; 
+      gap: 6pt; 
+      margin-bottom: 8pt; 
     }
     
     .section-icon { 
-      width: 24pt; 
-      height: 24pt; 
-      border-radius: 6pt; 
+      width: 20pt; 
+      height: 20pt; 
+      border-radius: 4pt; 
       background: linear-gradient(135deg, ${theme.primary}, ${theme.accent}); 
       display: flex; 
       align-items: center; 
-      justify-content: center; 
+      justify-content: center;
       color: white; 
-      font-size: 12pt;
+      font-size: 10pt;
       font-weight: bold;
     }
     
     .section-title { 
-      font-size: 16pt; 
+      font-size: 13pt; 
       font-weight: 700; 
-      color: ${theme.primary}; 
+      color: ${theme.primary};
     }
     
     .creative-summary { 
       background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 14pt; 
-      border-radius: 8pt; 
-      border-left: 3pt solid ${theme.accent}; 
+      padding: 10pt; 
+      border-radius: 6pt; 
+      border-left: 2pt solid ${theme.accent}; 
       break-inside: avoid;
     }
     
     .summary-text { 
-      font-size: 11pt; 
+      font-size: 9pt;
       line-height: 1.6; 
       color: #2d3748; 
     }
     
     .experience-item { 
       background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 14pt; 
-      border-radius: 8pt; 
-      border-left: 3pt solid ${theme.accent}; 
-      margin-bottom: 14pt;
+      padding: 10pt; 
+      border-radius: 6pt; 
+      border-left: 2pt solid ${theme.accent}; 
+      margin-bottom: 10pt;
       break-inside: avoid;
     }
     
     .experience-header { 
-      display: flex; 
+      display: flex;
       justify-content: space-between; 
       align-items: flex-start; 
       margin-bottom: 8pt; 
