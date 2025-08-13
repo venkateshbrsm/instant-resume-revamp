@@ -722,7 +722,20 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     }
     
     .main-content { 
-      padding: 8pt 12pt; 
+      display: grid;
+      grid-template-columns: 1.4fr 0.6fr;
+      gap: 12pt;
+      padding: 12pt;
+      min-height: calc(297mm - 60pt);
+      width: 100%;
+    }
+    
+    .left-column {
+      space-y: 12pt;
+    }
+    
+    .sidebar {
+      space-y: 12pt;
     }
     
     .section { 
@@ -982,90 +995,94 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     </div>
 
     <div class="main-content">
-      <div class="section">
-        <div class="section-header">
-          <div class="section-icon">✨</div>
-          <h2 class="section-title">Creative Vision</h2>
+      <div class="left-column">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon">✨</div>
+            <h2 class="section-title">Creative Vision</h2>
+          </div>
+          <div class="creative-summary">
+            <p class="summary-text">${resumeData.summary || 'Dynamic creative professional with a passion for innovative design and strategic thinking. Expertise in delivering compelling visual solutions that drive engagement and achieve business objectives.'}</p>
+          </div>
         </div>
-        <div class="creative-summary">
-          <p class="summary-text">${resumeData.summary || 'Dynamic creative professional with a passion for innovative design and strategic thinking. Expertise in delivering compelling visual solutions that drive engagement and achieve business objectives.'}</p>
-        </div>
-      </div>
 
-      ${resumeData.experience && resumeData.experience.length > 0 ? `
-      <div class="section">
-        <div class="section-header">
-          <div class="section-icon">📈</div>
-          <h2 class="section-title">Experience Journey</h2>
-        </div>
-        ${resumeData.experience.map((exp: any) => `
-        <div class="experience-item">
-          <div class="experience-header">
-            <div>
-              <div class="experience-title">${exp.title || 'Position Title'}</div>
-              <div class="experience-company">${exp.company || 'Company Name'}</div>
+        ${resumeData.experience && resumeData.experience.length > 0 ? `
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon">📈</div>
+            <h2 class="section-title">Experience Journey</h2>
+          </div>
+          ${resumeData.experience.map((exp: any) => `
+          <div class="experience-item">
+            <div class="experience-header">
+              <div>
+                <div class="experience-title">${exp.title || 'Position Title'}</div>
+                <div class="experience-company">${exp.company || 'Company Name'}</div>
+              </div>
+              <div class="experience-duration">${exp.duration || 'Date Range'}</div>
             </div>
-            <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+            ${exp.achievements && exp.achievements.length > 0 ? `
+            <ul class="achievements">
+              ${exp.achievements.slice(0, 3).map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+            </ul>
+            ` : `
+            <ul class="achievements">
+              <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
+              <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
+            </ul>
+            `}
           </div>
-          ${exp.achievements && exp.achievements.length > 0 ? `
-          <ul class="achievements">
-            ${exp.achievements.slice(0, 3).map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
-          </ul>
-          ` : `
-          <ul class="achievements">
-            <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
-            <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
-          </ul>
-          `}
+          `).join('')}
         </div>
-        `).join('')}
-      </div>
-      ` : ''}
-
-      ${resumeData.skills && resumeData.skills.length > 0 ? `
-      <div class="skills-section">
-        <div class="skills-header">
-          <div class="section-icon">🎨</div>
-          <h3 class="skills-title">Creative Skills</h3>
-        </div>
-        <div class="skills-grid">
-          ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
-        </div>
-      </div>
-      ` : ''}
-
-      <div class="stats-section">
-        <div class="stats-header">
-          <div class="section-icon">📊</div>
-          <h3 class="stats-title">Portfolio Stats</h3>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-            <div class="stat-label">Creative Skills</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-            <div class="stat-label">Projects</div>
-          </div>
-        </div>
+        ` : ''}
       </div>
 
-      ${resumeData.education && resumeData.education.length > 0 ? `
-      <div class="education-section">
-        <div class="education-header">
-          <div class="section-icon">🎓</div>
-          <h3 class="education-title">Education</h3>
+      <div class="sidebar">
+        ${resumeData.skills && resumeData.skills.length > 0 ? `
+        <div class="skills-section">
+          <div class="skills-header">
+            <div class="section-icon">🎨</div>
+            <h3 class="skills-title">Creative Skills</h3>
+          </div>
+          <div class="skills-grid">
+            ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
+          </div>
         </div>
-        ${resumeData.education.map((edu: any) => `
-        <div class="education-item">
-          <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-          <div class="education-institution">${edu.institution || 'University Name'}</div>
-          ${edu.year && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+        ` : ''}
+
+        <div class="stats-section">
+          <div class="stats-header">
+            <div class="section-icon">📊</div>
+            <h3 class="stats-title">Portfolio Stats</h3>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+              <div class="stat-label">Creative Skills</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+              <div class="stat-label">Projects</div>
+            </div>
+          </div>
         </div>
-        `).join('')}
+
+        ${resumeData.education && resumeData.education.length > 0 ? `
+        <div class="education-section">
+          <div class="education-header">
+            <div class="section-icon">🎓</div>
+            <h3 class="education-title">Education</h3>
+          </div>
+          ${resumeData.education.map((edu: any) => `
+          <div class="education-item">
+            <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+            <div class="education-institution">${edu.institution || 'University Name'}</div>
+            ${edu.year && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+          </div>
+          `).join('')}
+        </div>
+        ` : ''}
       </div>
-      ` : ''}
     </div>
   </div>
 </body>
