@@ -783,26 +783,20 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       flex-shrink: 0;
     }
     
-    /* Main content grid matching the working layout */
+    /* Main content - single column for independent cards */
     .main-content {
-      display: grid;
-      grid-template-columns: 1.4fr 0.6fr;
-      gap: 12pt;
       padding: 12pt;
-      min-height: calc(297mm - 60pt);
       width: 100%;
     }
     
-    .left-column {
-      space-y: 12pt;
-    }
-    
-    .sidebar {
-      space-y: 12pt;
+    .card {
+      margin-bottom: 16pt;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
     
     .section {
-      margin-bottom: 12pt;
+      margin-bottom: 0;
       break-inside: avoid;
     }
     
@@ -1065,7 +1059,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     </div>
 
     <div class="main-content">
-      <div class="left-column">
+      <!-- Creative Vision Card -->
+      <div class="card">
         <div class="section">
           <div class="section-header">
             <div class="section-icon">✨</div>
@@ -1075,8 +1070,31 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
             <p class="summary-text">${resumeData.summary || 'Dynamic creative professional with a passion for innovative design and strategic thinking. Expertise in delivering compelling visual solutions that drive engagement and achieve business objectives.'}</p>
           </div>
         </div>
+      </div>
 
-        ${resumeData.experience && resumeData.experience.length > 0 ? `
+      <!-- Portfolio Stats Cards -->
+      <div class="card">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon">📊</div>
+            <h3 class="section-title">Portfolio Stats</h3>
+          </div>
+          <div class="stats-grid" style="display: flex; gap: 12pt; justify-content: space-between;">
+            <div class="stat-item" style="flex: 1;">
+              <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+              <div class="stat-label">Creative Skills</div>
+            </div>
+            <div class="stat-item" style="flex: 1; background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}15);">
+              <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+              <div class="stat-label">Projects</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience Journey Cards -->
+      ${resumeData.experience && resumeData.experience.length > 0 ? `
+      <div class="card">
         <div class="section">
           <div class="section-header">
             <div class="section-icon">💼</div>
@@ -1106,28 +1124,18 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
             `).join('')}
           </div>
         </div>
-        ` : ''}
       </div>
+      ` : ''}
 
-      <div class="sidebar">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-            <div class="stat-label">Creative Skills</div>
-          </div>
-          <div class="stat-item" style="background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}15);">
-            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-            <div class="stat-label">Projects</div>
-          </div>
-        </div>
-
-        ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? `
+      <!-- Creative Skills Card -->
+      ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? `
+      <div class="card">
         <div class="skills-section">
           <div class="section-header">
             <div class="section-icon">⚡</div>
             <h3 class="section-title">Creative Skills</h3>
           </div>
-          ${resumeData.skills.slice(0, 6).map((skill: string) => {
+          ${resumeData.skills.slice(0, 8).map((skill: string) => {
             const proficiency = 75 + (skill.length % 20);
             return `
             <div class="skill-item">
@@ -1142,9 +1150,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
             `;
           }).join('')}
         </div>
-        ` : ''}
+      </div>
+      ` : ''}
 
-        ${resumeData.education && resumeData.education.length > 0 ? `
+      <!-- Education Card -->
+      ${resumeData.education && resumeData.education.length > 0 ? `
+      <div class="card">
         <div class="education-section">
           <div class="section-header">
             <div class="section-icon">🎓</div>
@@ -1158,8 +1169,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
           </div>
           `).join('')}
         </div>
-        ` : ''}
       </div>
+      ` : ''}
     </div>
   </div>
 </body>
