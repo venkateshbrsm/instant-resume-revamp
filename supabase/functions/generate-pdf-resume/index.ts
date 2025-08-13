@@ -301,22 +301,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       position: relative;
     }
     
-    .achievement::after {
-      content: '↗';
-      position: absolute;
-      left: 3pt;
-      top: 2pt;
-      color: white;
-      font-size: 6pt;
-      font-weight: bold;
-    }
-    
-    /* Skills section matching preview exactly */
+    /* Skills section matching preview with progress bars */
     .skills-section {
       background: white;
       padding: 12pt;
       border-radius: 8pt;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
       border: 1pt solid rgba(0,0,0,0.05);
       margin-bottom: 12pt;
     }
@@ -356,11 +346,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       border-radius: 2pt;
     }
     
-    /* Skills overview stats matching preview */
-    .skills-overview {
-      margin-bottom: 12pt;
-    }
-    
+    /* Stats cards matching preview */
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -386,12 +372,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-top: 2pt;
     }
     
-    /* Education section */
+    /* Education section matching preview */
     .education-section {
       background: white;
       padding: 12pt;
       border-radius: 8pt;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
       border: 1pt solid rgba(0,0,0,0.05);
     }
     
@@ -425,55 +411,45 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 </head>
 <body>
   <div class="container">
-    <!-- Header exactly matching enhanced preview -->
     <div class="header">
       <div class="header-content">
         <h1>${resumeData.name || 'Enhanced Resume'}</h1>
         <div class="title">${resumeData.title || 'Professional'}</div>
-        
-        <div class="contact-info">
-          <div class="title">${resumeData.email || 'email@example.com'} • ${resumeData.phone || '+1 (555) 123-4567'}</div>
-          <div class="title">${resumeData.location || 'City, Country'}</div>
-          <div style="height: 12px;"></div> <!-- Spacer to maintain header height -->
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span>📧</span>
+            <span>${resumeData.email || 'email@example.com'}</span>
+          </div>
+          <div class="contact-item">
+            <span>📱</span>
+            <span>${resumeData.phone || '+1 (555) 123-4567'}</span>
+          </div>
+          <div class="contact-item">
+            <span>📍</span>
+            <span>${resumeData.location || 'City, Country'}</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="main-content">
-      <!-- Main Content -->
       <div class="left-column">
-        <!-- Professional Summary -->
         <div class="section">
           <div class="section-header">
-            <div class="section-icon">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-            </div>
+            <div class="section-icon">👤</div>
             <h3 class="section-title">Professional Summary</h3>
           </div>
           <div class="summary-card">
-            <p class="summary-text">${resumeData.summary || 'Dynamic and results-driven professional with extensive experience in delivering innovative solutions and driving organizational success. Proven track record of leadership, strategic thinking, and exceptional problem-solving abilities.'}</p>
+            <p class="summary-text">${resumeData.summary || 'Dynamic and results-driven professional with extensive experience in delivering innovative solutions and driving organizational success.'}</p>
           </div>
         </div>
 
-        <!-- Professional Experience -->
         ${resumeData.experience && resumeData.experience.length > 0 ? `
         <div class="section">
           <div class="section-header">
-            <div class="section-icon">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M8 2v4l-3 2 3 2v4"/>
-                <path d="M16 6l3-2-3-2"/>
-                <path d="M8 10l3 2 3-2"/>
-                <path d="M8 14l3 2 3-2"/>
-                <path d="M8 18l3 2 3-2"/>
-              </svg>
-            </div>
+            <div class="section-icon">💼</div>
             <h3 class="section-title">Professional Experience</h3>
           </div>
-          
           <div class="experience-timeline">
             ${resumeData.experience.map((exp: any) => `
             <div class="experience-item">
@@ -484,18 +460,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
                 </div>
                 <div class="experience-duration">${exp.duration || 'Date Range'}</div>
               </div>
-              
               ${exp.achievements && exp.achievements.length > 0 ? `
               <ul class="achievements">
-                ${exp.achievements.map((achievement: string) => `
-                <li class="achievement">${achievement}</li>
-                `).join('')}
+                ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
               </ul>
               ` : `
               <ul class="achievements">
                 <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
                 <li class="achievement">Collaborated effectively with cross-functional teams to achieve strategic objectives</li>
-                <li class="achievement">Implemented innovative solutions that improved operational efficiency</li>
               </ul>
               `}
             </div>
@@ -505,37 +477,23 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         ` : ''}
       </div>
 
-      <!-- Sidebar -->
       <div class="sidebar">
-        <!-- Skills Overview Stats -->
-        <div class="skills-overview">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-              <div class="stat-label">Total Skills</div>
-            </div>
-            <div class="stat-item" style="background: ${theme.accent}08;">
-              <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-              <div class="stat-label">Work Experiences</div>
-            </div>
-            <div class="stat-item" style="background: ${theme.secondary}08;">
-              <div class="stat-number" style="color: ${theme.secondary};">${resumeData.education ? resumeData.education.length : '1'}</div>
-              <div class="stat-label">Educational Qualifications</div>
-            </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+            <div class="stat-label">Total Skills</div>
+          </div>
+          <div class="stat-item" style="background: ${theme.accent}08;">
+            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+            <div class="stat-label">Work Experiences</div>
           </div>
         </div>
 
-        <!-- Skills -->
         <div class="skills-section">
           <div class="section-header">
-            <div class="section-icon">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
-              </svg>
-            </div>
+            <div class="section-icon">⚡</div>
             <h3 class="section-title">Skills Proficiency</h3>
           </div>
-          
           ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
             resumeData.skills.slice(0, 6).map((skill: string) => {
               const proficiency = generateSkillProficiency(skill);
@@ -561,37 +519,13 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
                 <div class="skill-progress" style="width: 92%"></div>
               </div>
             </div>
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">Leadership</span>
-                <span class="skill-percentage">88%</span>
-              </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: 88%"></div>
-              </div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">Problem Solving</span>
-                <span class="skill-percentage">85%</span>
-              </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: 85%"></div>
-              </div>
-            </div>
             `
           }
         </div>
 
-        <!-- Education -->
         <div class="education-section">
           <div class="section-header">
-            <div class="section-icon">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-              </svg>
-            </div>
+            <div class="section-icon">🎓</div>
             <h3 class="section-title">Education</h3>
           </div>
           ${resumeData.education && resumeData.education.length > 0 ? 
@@ -617,30 +551,123 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 </body>
 </html>`;
   }
-  
+
   function generateClassicHTML(resumeData: any, theme: any) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
     @page { size: A4; margin: 0.5in; }
-    body { font-family: 'Times New Roman', serif; line-height: 1.6; color: #2c3e50; }
-    .header { text-align: center; padding: 20pt 0; border-bottom: 2pt solid ${theme.primary}; margin-bottom: 20pt; }
-    .header h1 { font-size: 28pt; color: ${theme.primary}; }
+    * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none !important; }
+    
+    body {
+      font-family: 'Times New Roman', 'Georgia', serif;
+      line-height: 1.6; color: #2c3e50; background: white;
+      font-size: 11pt; width: 100%; min-height: auto;
+    }
+    
+    .container { background: white; width: 100%; max-width: none; }
+    
+    .header {
+      text-align: center; padding: 20pt 0; border-bottom: 2pt solid ${theme.primary};
+      margin-bottom: 20pt;
+    }
+    
+    .header h1 { font-size: 28pt; font-weight: 700; margin-bottom: 8pt; color: ${theme.primary}; }
+    .header .title { font-size: 16pt; margin-bottom: 12pt; color: #2c3e50; font-weight: 500; }
+    .header .contact { font-size: 11pt; color: #34495e; }
+    
     .section { margin-bottom: 24pt; }
-    .section-title { font-size: 16pt; font-weight: 700; color: ${theme.primary}; border-bottom: 1pt solid ${theme.primary}30; }
+    .section-title { 
+      font-size: 16pt; font-weight: 700; color: ${theme.primary}; 
+      margin-bottom: 12pt; padding-bottom: 4pt; 
+      border-bottom: 1pt solid ${theme.primary}30;
+    }
+    
+    .summary { font-size: 12pt; line-height: 1.6; color: #2c3e50; text-align: justify; }
+    
+    .experience-item { margin-bottom: 16pt; }
+    .experience-header { margin-bottom: 8pt; }
+    .experience-title { font-size: 14pt; font-weight: 700; color: #2c3e50; }
+    .experience-company { font-size: 12pt; font-weight: 600; color: ${theme.primary}; margin-bottom: 4pt; }
+    .experience-duration { font-size: 10pt; color: #7f8c8d; font-style: italic; }
+    
+    .achievements { margin-top: 8pt; padding-left: 20pt; }
+    .achievement { margin-bottom: 4pt; font-size: 11pt; line-height: 1.5; }
+    
+    .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8pt; }
+    .skill-item { font-size: 11pt; color: #2c3e50; padding: 4pt; }
+    
+    .education-item { margin-bottom: 12pt; }
+    .education-degree { font-weight: 700; color: #2c3e50; font-size: 12pt; }
+    .education-institution { font-weight: 600; color: ${theme.primary}; font-size: 11pt; }
+    .education-year { font-size: 10pt; color: #7f8c8d; font-style: italic; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>${resumeData.name || 'Enhanced Resume'}</h1>
-    <div>${resumeData.title || 'Professional'}</div>
-    <div>${resumeData.email || 'email@example.com'} | ${resumeData.phone || 'phone'}</div>
-  </div>
-  <div class="section">
-    <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
-    <p>${resumeData.summary || 'Professional summary here.'}</p>
+  <div class="container">
+    <div class="header">
+      <h1>${resumeData.name || 'Enhanced Resume'}</h1>
+      <div class="title">${resumeData.title || 'Professional'}</div>
+      <div class="contact">
+        ${resumeData.email || 'email@example.com'} | ${resumeData.phone || '+1 (555) 123-4567'} | ${resumeData.location || 'City, Country'}
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
+      <p class="summary">${resumeData.summary || 'Experienced professional with a proven track record of delivering high-quality results and driving organizational success through strategic thinking and effective leadership.'}</p>
+    </div>
+
+    ${resumeData.experience && resumeData.experience.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">PROFESSIONAL EXPERIENCE</h2>
+      ${resumeData.experience.map((exp: any) => `
+      <div class="experience-item">
+        <div class="experience-header">
+          <div class="experience-title">${exp.title || 'Position Title'}</div>
+          <div class="experience-company">${exp.company || 'Company Name'}</div>
+          <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+        </div>
+        ${exp.achievements && exp.achievements.length > 0 ? `
+        <ul class="achievements">
+          ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+        </ul>
+        ` : `
+        <ul class="achievements">
+          <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
+          <li class="achievement">Demonstrated strong leadership and collaboration skills</li>
+        </ul>
+        `}
+      </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">CORE COMPETENCIES</h2>
+      <div class="skills-grid">
+        ${resumeData.skills.map((skill: string) => `<div class="skill-item">• ${skill}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${resumeData.education && resumeData.education.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">EDUCATION</h2>
+      ${resumeData.education.map((edu: any) => `
+      <div class="education-item">
+        <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+        <div class="education-institution">${edu.institution || 'University Name'}</div>
+        <div class="education-year">${edu.year || 'Year'}</div>
+      </div>
+      `).join('')}
+    </div>
+    ` : ''}
   </div>
 </body>
 </html>`;
@@ -1138,6 +1165,129 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 </body>
 </html>`;
   }
+
+  console.log(`Generating PDF with PDFShift for template: ${templateId}, theme: ${themeId}`);
+  console.log('HTML content length:', htmlContent.length);
+
+  const API_KEY = Deno.env.get('PDFSHIFT_API_KEY');
+  if (!API_KEY) {
+    throw new Error('PDFSHIFT_API_KEY not found in environment variables');
+  }
+
+  const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${btoa(API_KEY + ':')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      source: htmlContent,
+      landscape: false,
+      use_print: true,
+      format: 'A4',
+      margin: '0.25in',
+      zoom: 1,
+      wait_for: 2000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('PDFShift API error:', errorText);
+    throw new Error(`PDFShift API failed: ${response.status} ${response.statusText}`);
+  }
+
+  const pdfBuffer = await response.arrayBuffer();
+  console.log('PDF generated successfully via PDFShift');
+  
+  return new Uint8Array(pdfBuffer);
+}
+
+serve(async (req) => {
+  console.log('PDF Generation function started');
+  
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    console.log('Starting PDF resume generation...');
+    
+    const { enhancedContent, paymentId, templateId = 'modern', themeId = 'navy', fileName } = await req.json();
+    
+    console.log('Request data:', {
+      paymentId,
+      hasEnhancedContent: !!enhancedContent,
+      themeId,
+      fileName: fileName || `Enhanced_Resume_${Date.now()}`
+    });
+
+    let resumeData = enhancedContent;
+
+    // If no enhanced content provided, fetch from payment data
+    if (!enhancedContent && paymentId) {
+      console.log('Fetching enhanced content from payment data...');
+      
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Missing Supabase configuration');
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      const { data: payment, error } = await supabase
+        .from('payments')
+        .select('enhanced_content')
+        .eq('id', paymentId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching payment data:', error);
+        throw new Error('Failed to fetch payment data');
+      }
+
+      if (!payment?.enhanced_content) {
+        throw new Error('No enhanced content found for this payment');
+      }
+
+      resumeData = payment.enhanced_content;
+    }
+
+    if (!resumeData) {
+      throw new Error('No resume data provided');
+    }
+
+    console.log('Using provided enhanced content directly');
+    
+    // Generate PDF
+    console.log('Generating PDF with PDFShift...');
+    const pdfBytes = await generatePDFWithPDFShift(resumeData, templateId, themeId);
+    
+    console.log(`PDF generated successfully from direct content, size: ${pdfBytes.length} bytes`);
+
+    return new Response(pdfBytes, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${fileName || `Enhanced_Resume_${Date.now()}`}.pdf"`,
+      },
+    });
+
+  } catch (error) {
+    console.error('Error in PDF generation function:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Failed to generate PDF',
+        details: error.message 
+      }), 
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });
