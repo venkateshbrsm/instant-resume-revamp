@@ -356,7 +356,7 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
   <style>
     @page { 
       size: A4; 
-      margin: 0.5in; 
+      margin: 0.6in; 
       @bottom-center {
         content: counter(page);
       }
@@ -380,21 +380,19 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     
     .container { 
       background: white; 
-      border-radius: 8pt; 
-      overflow: hidden; 
       width: 100%; 
       max-width: none;
-      page-break-inside: avoid;
     }
     
     .header {
       background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 70%, ${theme.secondary} 100%);
       color: white; 
-      padding: 16pt; 
+      padding: 20pt; 
       position: relative; 
       overflow: hidden;
       page-break-inside: avoid;
       break-inside: avoid;
+      margin-bottom: 24pt;
     }
     
     .header::before { 
@@ -426,15 +424,15 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     }
     
     .header h1 { 
-      font-size: 28pt; 
+      font-size: 26pt; 
       font-weight: 800; 
-      margin-bottom: 6pt; 
+      margin-bottom: 8pt; 
       line-height: 1.1; 
     }
     
     .header .title { 
-      font-size: 16pt; 
-      margin-bottom: 12pt; 
+      font-size: 14pt; 
+      margin-bottom: 16pt; 
       opacity: 0.95; 
       font-weight: 500; 
     }
@@ -442,7 +440,7 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     .contact-info { 
       display: flex; 
       justify-content: center; 
-      gap: 16pt; 
+      gap: 20pt; 
       font-size: 10pt; 
       font-weight: 500; 
     }
@@ -452,9 +450,11 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     }
     
     .section { 
-      margin-bottom: 20pt; 
+      margin-bottom: 32pt; 
       page-break-inside: avoid;
       break-inside: avoid;
+      orphans: 3;
+      widows: 3;
     }
     
     .section-header { 
@@ -506,12 +506,14 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     
     .experience-item { 
       background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 16pt; 
+      padding: 20pt; 
       border-radius: 12pt; 
       border-left: 4pt solid ${theme.accent}; 
-      margin-bottom: 16pt;
+      margin-bottom: 28pt;
       page-break-inside: avoid;
       break-inside: avoid;
+      orphans: 3;
+      widows: 3;
     }
     
     .experience-header { 
@@ -584,11 +586,13 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     
     .sidebar-section { 
       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15); 
-      padding: 16pt; 
+      padding: 18pt; 
       border-radius: 12pt; 
-      margin-bottom: 16pt;
+      margin-bottom: 24pt;
       page-break-inside: avoid;
       break-inside: avoid;
+      orphans: 2;
+      widows: 2;
     }
     
     .sidebar-header { 
