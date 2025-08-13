@@ -654,15 +654,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
-    @page { 
-      size: A4; 
-      margin: 0.25in; 
+    @page {
+      size: A4;
+      margin: 0.25in;
     }
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-      text-decoration: none !important; 
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      text-decoration: none !important;
     }
     
     /* Prevent any auto-linking behavior */
@@ -673,55 +674,90 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     
     body {
       font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.5; 
-      color: #1a202c; 
-      background: white;
-      font-size: 9pt; 
-      width: 100%; 
+      line-height: 1.5;
+      color: #1a202c;
+      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+      font-size: 9pt;
+      width: 100%;
       min-height: auto;
     }
     
-    .container { 
-      background: white; 
+    .container {
+      background: white;
+      border-radius: 6pt;
       overflow: hidden;
-      width: 100%; 
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+      width: 100%;
       max-width: none;
     }
     
+    /* Creative Header with gradient */
     .header {
       background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 70%, ${theme.secondary} 100%);
-      color: white; 
-      padding: 12pt; 
-      position: relative; 
+      color: white;
+      padding: 12pt;
+      position: relative;
       overflow: hidden;
     }
     
-    .header-content { 
-      position: relative; 
-      z-index: 10; 
-      text-align: center; 
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.1);
+      pointer-events: none;
     }
     
-    .header h1 { 
-      font-size: 22pt; 
-      font-weight: 800; 
-      margin-bottom: 4pt; 
-      line-height: 1.1; 
+    .header-content {
+      position: relative;
+      z-index: 10;
     }
     
-    .header .title { 
-      font-size: 12pt; 
-      margin-bottom: 8pt; 
-      opacity: 0.95; 
-      font-weight: 500; 
+    .header h1 {
+      font-size: 24pt;
+      font-weight: 800;
+      margin-bottom: 4pt;
+      line-height: 1.1;
     }
     
-    .contact-info { 
-      font-size: 9pt; 
-      font-weight: 500; 
+    .header .title {
+      font-size: 14pt;
+      margin-bottom: 16pt;
+      opacity: 0.95;
+      font-weight: 500;
     }
     
-    .main-content { 
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8pt;
+      margin-top: 12pt;
+    }
+    
+    .contact-item {
+      font-size: 9pt;
+      opacity: 0.9;
+      display: flex;
+      align-items: flex-start;
+      gap: 6pt;
+      font-weight: 500;
+      text-decoration: none;
+      line-height: 1.15;
+      padding: 2.3pt 0;
+    }
+    
+    .icon {
+      width: 10pt;
+      height: 10pt;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+    
+    /* Main content grid matching the working layout */
+    .main-content {
       display: grid;
       grid-template-columns: 1.4fr 0.6fr;
       gap: 12pt;
@@ -738,247 +774,243 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       space-y: 12pt;
     }
     
-    .section { 
+    .section {
       margin-bottom: 12pt;
       break-inside: avoid;
     }
     
-    .section-header { 
-      display: flex; 
-      align-items: center; 
-      gap: 6pt; 
-      margin-bottom: 8pt; 
+    /* Creative section headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 6pt;
+      margin-bottom: 8pt;
     }
     
-    .section-icon { 
-      width: 20pt; 
-      height: 20pt; 
-      border-radius: 4pt; 
-      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent}); 
-      display: flex; 
-      align-items: center; 
+    .section-icon {
+      width: 24pt;
+      height: 24pt;
+      border-radius: 6pt;
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
+      display: flex;
+      align-items: center;
       justify-content: center;
-      color: white; 
-      font-size: 10pt;
-      font-weight: bold;
+      color: white;
     }
     
-    .section-title { 
-      font-size: 13pt; 
-      font-weight: 700; 
+    .section-title {
+      font-size: 14pt;
+      font-weight: 700;
       color: ${theme.primary};
     }
     
-    .creative-summary { 
-      background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 10pt; 
-      border-radius: 6pt; 
-      border-left: 2pt solid ${theme.accent}; 
-      break-inside: avoid;
+    /* Creative summary card */
+    .summary-card {
+      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
+      border-left: 3pt solid ${theme.accent};
     }
     
-    .summary-text { 
-      font-size: 9pt;
-      line-height: 1.6; 
-      color: #2d3748; 
+    .summary-text {
+      font-size: 10pt;
+      line-height: 1.6;
+      color: #2d3748;
     }
     
-    .experience-item { 
-      background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 10pt; 
-      border-radius: 6pt; 
-      border-left: 2pt solid ${theme.accent}; 
-      margin-bottom: 10pt;
-      break-inside: avoid;
+    /* Creative experience timeline */
+    .experience-timeline {
+      position: relative;
+      padding-left: 12pt;
+      margin-bottom: 12pt;
     }
     
-    .experience-header { 
+    .experience-item {
+      position: relative;
+      margin-bottom: 12pt;
+      padding: 10pt;
+      border-radius: 6pt;
+      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+      border-left: 3pt solid ${theme.accent};
+    }
+    
+    .experience-item::before {
+      content: '';
+      position: absolute;
+      left: -21pt;
+      top: 16pt;
+      width: 12pt;
+      height: 12pt;
+      background: ${theme.accent};
+      border-radius: 50%;
+      border: 2pt solid white;
+      box-shadow: 0 0 0 2pt ${theme.accent}30;
+    }
+    
+    .experience-header {
       display: flex;
-      justify-content: space-between; 
-      align-items: flex-start; 
-      margin-bottom: 8pt; 
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8pt;
     }
     
-    .experience-title { 
-      font-size: 13pt; 
-      font-weight: 700; 
-      color: #1a202c; 
-      margin-bottom: 2pt; 
+    .experience-title {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 2pt;
     }
     
-    .experience-company { 
-      font-size: 11pt; 
-      font-weight: 600; 
-      color: ${theme.accent}; 
+    .experience-company {
+      font-size: 11pt;
+      font-weight: 600;
+      color: ${theme.accent};
     }
     
-    .experience-duration { 
-      background: linear-gradient(135deg, ${theme.secondary}, ${theme.accent}); 
-      color: white; 
-      padding: 4pt 8pt; 
-      border-radius: 12pt; 
-      font-size: 9pt; 
-      font-weight: 600; 
+    .experience-duration {
+      background: linear-gradient(135deg, ${theme.accent}, ${theme.secondary});
+      color: white;
+      padding: 4pt 8pt;
+      border-radius: 12pt;
+      font-size: 8pt;
+      font-weight: 600;
+      border: 1pt solid ${theme.accent}20;
     }
     
-    .achievements { 
-      list-style: none; 
-      margin-top: 8pt; 
+    .achievements {
+      list-style: none;
+      margin-top: 8pt;
     }
     
-    .achievement { 
-      display: flex; 
-      align-items: flex-start; 
-      gap: 6pt; 
-      margin-bottom: 6pt; 
-      font-size: 10pt; 
-      line-height: 1.5; 
-    }
-    
-    .achievement::before { 
-      content: '✓'; 
-      background: linear-gradient(135deg, ${theme.accent}, ${theme.primary}); 
-      color: white; 
-      width: 14pt; 
-      height: 14pt; 
-      border-radius: 50%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 7pt; 
-      font-weight: bold; 
-      flex-shrink: 0; 
-      margin-top: 1pt; 
-    }
-    
-    .skills-section { 
-      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15); 
-      padding: 14pt; 
-      border-radius: 8pt; 
-      margin-bottom: 16pt;
-      break-inside: avoid;
-    }
-    
-    .skills-header { 
-      display: flex; 
-      align-items: center; 
-      gap: 8pt; 
-      margin-bottom: 10pt; 
-    }
-    
-    .skills-title { 
-      font-size: 14pt; 
-      font-weight: 700; 
-      color: ${theme.primary}; 
-    }
-    
-    .skills-grid { 
-      display: flex; 
-      flex-wrap: wrap; 
-      gap: 4pt; 
-    }
-    
-    .skill-badge { 
-      background: white; 
-      border: 1pt solid ${theme.accent}; 
-      color: ${theme.primary}; 
-      padding: 3pt 6pt; 
-      border-radius: 12pt; 
-      font-size: 9pt; 
-      font-weight: 600; 
-    }
-    
-    .stats-section { 
-      background: linear-gradient(135deg, ${theme.accent}10, ${theme.secondary}15); 
-      padding: 14pt; 
-      border-radius: 8pt; 
-      text-align: center; 
-      margin-bottom: 16pt;
-      break-inside: avoid;
-    }
-    
-    .stats-header { 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 8pt; 
-      margin-bottom: 10pt; 
-    }
-    
-    .stats-title { 
-      font-size: 14pt; 
-      font-weight: 700; 
-      color: ${theme.primary}; 
-    }
-    
-    .stats-grid { 
-      display: flex; 
-      justify-content: center; 
-      gap: 16pt; 
-    }
-    
-    .stat-item { 
-      text-align: center; 
-    }
-    
-    .stat-number { 
-      font-size: 20pt; 
-      font-weight: 700; 
-      color: ${theme.primary}; 
-    }
-    
-    .stat-label { 
-      font-size: 9pt; 
-      color: #6b7280; 
-      margin-top: 2pt; 
-    }
-    
-    .education-section { 
-      background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10); 
-      padding: 14pt; 
-      border-radius: 8pt; 
-      break-inside: avoid;
-    }
-    
-    .education-header { 
-      display: flex; 
-      align-items: center; 
-      gap: 8pt; 
-      margin-bottom: 10pt; 
-    }
-    
-    .education-title { 
-      font-size: 14pt; 
-      font-weight: 700; 
-      color: ${theme.primary}; 
-    }
-    
-    .education-item { 
-      background: white; 
-      border-left: 3pt solid ${theme.accent}; 
-      padding: 8pt; 
-      border-radius: 4pt; 
+    .achievement {
       margin-bottom: 6pt;
-      break-inside: avoid;
+      font-size: 9pt;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 8pt;
+      padding: 6pt 8pt;
+      background: rgba(255,255,255,0.5);
+      border-radius: 6pt;
     }
     
-    .education-degree { 
-      font-weight: 700; 
-      color: #1a202c; 
-      font-size: 10pt; 
-      margin-bottom: 2pt; 
+    .achievement::before {
+      content: '';
+      width: 12pt;
+      height: 12pt;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2pt;
+      position: relative;
     }
     
-    .education-institution { 
-      font-weight: 600; 
-      color: ${theme.accent}; 
-      font-size: 9pt; 
-      margin-bottom: 2pt; 
+    /* Creative skills section */
+    .skills-section {
+      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
+      border: 1pt solid rgba(0,0,0,0.05);
+      margin-bottom: 12pt;
     }
     
-    .education-year { 
-      font-size: 8pt; 
-      color: #6b7280; 
+    .skill-item {
+      margin-bottom: 12pt;
+    }
+    
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4pt;
+    }
+    
+    .skill-name {
+      font-weight: 600;
+      color: #1a202c;
+      font-size: 9pt;
+    }
+    
+    .skill-percentage {
+      font-size: 8pt;
+      color: #6b7280;
+    }
+    
+    .skill-bar {
+      height: 4pt;
+      background: #e5e7eb;
+      border-radius: 2pt;
+      overflow: hidden;
+    }
+    
+    .skill-progress {
+      height: 100%;
+      background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
+      border-radius: 2pt;
+    }
+    
+    /* Creative stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8pt;
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 8pt;
+      border-radius: 6pt;
+      background: linear-gradient(135deg, ${theme.accent}10, ${theme.secondary}15);
+    }
+    
+    .stat-number {
+      font-size: 18pt;
+      font-weight: 700;
+      color: ${theme.primary};
+    }
+    
+    .stat-label {
+      font-size: 8pt;
+      color: #6b7280;
+      margin-top: 2pt;
+    }
+    
+    /* Creative education */
+    .education-section {
+      background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
+      border: 1pt solid rgba(0,0,0,0.05);
+    }
+    
+    .education-item {
+      padding: 10pt;
+      border-radius: 6pt;
+      margin-bottom: 6pt;
+      background: rgba(255,255,255,0.8);
+      border-left: 3pt solid ${theme.accent};
+    }
+    
+    .education-degree {
+      font-weight: 700;
+      color: #1a202c;
+      font-size: 11pt;
+      margin-bottom: 2pt;
+    }
+    
+    .education-institution {
+      font-weight: 600;
+      color: ${theme.accent};
+      font-size: 10pt;
+      margin-bottom: 2pt;
+    }
+    
+    .education-year {
+      font-size: 8pt;
+      color: #6b7280;
     }
   </style>
 </head>
@@ -988,8 +1020,19 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       <div class="header-content">
         <h1>${resumeData.name || 'Enhanced Resume'}</h1>
         <div class="title">${resumeData.title || 'Creative Professional'}</div>
-        <div class="contact-info">
-          ${resumeData.email || 'email@example.com'} • ${resumeData.phone || '+1 (555) 123-4567'} • ${resumeData.location || 'City, Country'}
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span>📧</span>
+            <span>${resumeData.email || 'email@example.com'}</span>
+          </div>
+          <div class="contact-item">
+            <span>📱</span>
+            <span>${resumeData.phone || '+1 (555) 123-4567'}</span>
+          </div>
+          <div class="contact-item">
+            <span>📍</span>
+            <span>${resumeData.location || 'City, Country'}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -999,9 +1042,9 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         <div class="section">
           <div class="section-header">
             <div class="section-icon">✨</div>
-            <h2 class="section-title">Creative Vision</h2>
+            <h3 class="section-title">Creative Vision</h3>
           </div>
-          <div class="creative-summary">
+          <div class="summary-card">
             <p class="summary-text">${resumeData.summary || 'Dynamic creative professional with a passion for innovative design and strategic thinking. Expertise in delivering compelling visual solutions that drive engagement and achieve business objectives.'}</p>
           </div>
         </div>
@@ -1009,75 +1052,82 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         ${resumeData.experience && resumeData.experience.length > 0 ? `
         <div class="section">
           <div class="section-header">
-            <div class="section-icon">📈</div>
-            <h2 class="section-title">Experience Journey</h2>
+            <div class="section-icon">💼</div>
+            <h3 class="section-title">Experience Journey</h3>
           </div>
-          ${resumeData.experience.map((exp: any) => `
-          <div class="experience-item">
-            <div class="experience-header">
-              <div>
-                <div class="experience-title">${exp.title || 'Position Title'}</div>
-                <div class="experience-company">${exp.company || 'Company Name'}</div>
+          <div class="experience-timeline">
+            ${resumeData.experience.map((exp: any) => `
+            <div class="experience-item">
+              <div class="experience-header">
+                <div>
+                  <div class="experience-title">${exp.title || 'Position Title'}</div>
+                  <div class="experience-company">${exp.company || 'Company Name'}</div>
+                </div>
+                <div class="experience-duration">${exp.duration || 'Date Range'}</div>
               </div>
-              <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+              ${exp.achievements && exp.achievements.length > 0 ? `
+              <ul class="achievements">
+                ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+              </ul>
+              ` : `
+              <ul class="achievements">
+                <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
+                <li class="achievement">Collaborated effectively with cross-functional teams to achieve strategic objectives</li>
+              </ul>
+              `}
             </div>
-            ${exp.achievements && exp.achievements.length > 0 ? `
-            <ul class="achievements">
-              ${exp.achievements.slice(0, 3).map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
-            </ul>
-            ` : `
-            <ul class="achievements">
-              <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
-              <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
-            </ul>
-            `}
+            `).join('')}
           </div>
-          `).join('')}
         </div>
         ` : ''}
       </div>
 
       <div class="sidebar">
-        ${resumeData.skills && resumeData.skills.length > 0 ? `
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+            <div class="stat-label">Creative Skills</div>
+          </div>
+          <div class="stat-item" style="background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}15);">
+            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+            <div class="stat-label">Projects</div>
+          </div>
+        </div>
+
+        ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? `
         <div class="skills-section">
-          <div class="skills-header">
-            <div class="section-icon">🎨</div>
-            <h3 class="skills-title">Creative Skills</h3>
+          <div class="section-header">
+            <div class="section-icon">⚡</div>
+            <h3 class="section-title">Creative Skills</h3>
           </div>
-          <div class="skills-grid">
-            ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
-          </div>
+          ${resumeData.skills.slice(0, 6).map((skill: string) => {
+            const proficiency = 75 + (skill.length % 20);
+            return `
+            <div class="skill-item">
+              <div class="skill-header">
+                <span class="skill-name">${skill}</span>
+                <span class="skill-percentage">${Math.round(proficiency)}%</span>
+              </div>
+              <div class="skill-bar">
+                <div class="skill-progress" style="width: ${proficiency}%"></div>
+              </div>
+            </div>
+            `;
+          }).join('')}
         </div>
         ` : ''}
 
-        <div class="stats-section">
-          <div class="stats-header">
-            <div class="section-icon">📊</div>
-            <h3 class="stats-title">Portfolio Stats</h3>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-              <div class="stat-label">Creative Skills</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-              <div class="stat-label">Projects</div>
-            </div>
-          </div>
-        </div>
-
         ${resumeData.education && resumeData.education.length > 0 ? `
         <div class="education-section">
-          <div class="education-header">
+          <div class="section-header">
             <div class="section-icon">🎓</div>
-            <h3 class="education-title">Education</h3>
+            <h3 class="section-title">Education</h3>
           </div>
           ${resumeData.education.map((edu: any) => `
           <div class="education-item">
             <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
             <div class="education-institution">${edu.institution || 'University Name'}</div>
-            ${edu.year && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+            <div class="education-year">${edu.year || 'Year'}</div>
           </div>
           `).join('')}
         </div>
@@ -1088,140 +1138,6 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 </body>
 </html>`;
   }
-
-  // Use PDFShift as the reliable solution
-  const pdfshiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
-  
-  if (!pdfshiftApiKey) {
-    console.error('PDFShift API key not found');
-    throw new Error('PDF generation service not configured');
-  }
-
-  console.log("Generating PDF with PDFShift...");
-  
-  const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${btoa(`api:${pdfshiftApiKey}`)}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      source: htmlContent,
-      format: 'A4',
-      margin: '0.5in',
-      landscape: false,
-      use_print: true
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("PDFShift API error:", response.status, errorText);
-    throw new Error(`PDF generation failed: ${response.status} ${errorText}`);
-  }
-
-  console.log("PDF generated successfully via PDFShift");
-  
-  const pdfArrayBuffer = await response.arrayBuffer();
-  return new Uint8Array(pdfArrayBuffer);
-}
-
-
-serve(async (req) => {
-  console.log("PDF Generation function started");
-  
-  if (req.method === 'OPTIONS') {
-    console.log("Handling OPTIONS request");
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    console.log("Starting PDF resume generation...");
-
-    const requestBody = await req.json();
-    const { paymentId, enhancedContent, templateId, themeId, fileName } = requestBody;
-    console.log("Request data:", { paymentId, hasEnhancedContent: !!enhancedContent, themeId, fileName });
-
-    // If enhanced content is provided directly, use it (preferred method)
-    if (enhancedContent) {
-      console.log("Using provided enhanced content directly");
-      const finalThemeId = themeId || 'navy';
-      const finalFileName = fileName || 'enhanced-resume';
-      
-      // Generate PDF using provided data
-      const finalTemplateId = templateId || 'modern';
-      const pdfBytes = await generatePDFWithPDFShift(enhancedContent, finalTemplateId, finalThemeId);
-      
-      console.log("PDF generated successfully from direct content, size:", pdfBytes.length, "bytes");
-      
-      return new Response(pdfBytes, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="enhanced-resume-${finalFileName.replace(/\.[^/.]+$/, "")}.pdf"`,
-          'Content-Length': pdfBytes.length.toString(),
-        },
-      });
-    }
-
-    // Fallback: use payment ID to fetch from database
-    if (!paymentId) {
-      throw new Error("Either enhancedContent or paymentId is required");
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
-
-    console.log("Fallback: Fetching payment details from database...");
-    const { data: payment, error: paymentError } = await supabaseClient
-      .from("payments")
-      .select("*")
-      .eq("razorpay_payment_id", paymentId)
-      .eq("status", "completed")
-      .single();
-
-    if (paymentError || !payment) {
-      console.error("Payment not found:", paymentError);
-      throw new Error("Payment not found or not completed");
-    }
-
-    console.log("Found payment:", payment.id, "for file:", payment.file_name);
-
-    if (!payment.enhanced_content) {
-      throw new Error("Enhanced content not found for this payment");
-    }
-
-    console.log("Generating PDF with PDFShift using database content...");
-    const finalThemeId = payment.theme_id || 'navy';
-    
-    // Generate PDF using database content
-    const pdfBytes = await generatePDFWithPDFShift(payment.enhanced_content, finalThemeId);
-    
-    console.log("PDF generated successfully from database, size:", pdfBytes.length, "bytes");
-    
-    return new Response(pdfBytes, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="enhanced-resume-${payment.file_name.replace(/\.[^/.]+$/, "")}.pdf"`,
-        'Content-Length': pdfBytes.length.toString(),
-      },
-    });
-
-  } catch (error) {
-    console.error("Error in PDF generation function:", error);
-    return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Failed to generate PDF",
-        details: error instanceof Error ? error.stack : "Unknown error"
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
     );
   }
 });
