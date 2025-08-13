@@ -356,10 +356,7 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
   <style>
     @page { 
       size: A4; 
-      margin: 0.6in; 
-      @bottom-center {
-        content: counter(page);
-      }
+      margin: 0.5in; 
     }
     * { 
       margin: 0; 
@@ -387,12 +384,10 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     .header {
       background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 70%, ${theme.secondary} 100%);
       color: white; 
-      padding: 20pt; 
+      padding: 16pt; 
       position: relative; 
       overflow: hidden;
-      page-break-inside: avoid;
-      break-inside: avoid;
-      margin-bottom: 24pt;
+      margin-bottom: 16pt;
     }
     
     .header::before { 
@@ -426,70 +421,62 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     .header h1 { 
       font-size: 26pt; 
       font-weight: 800; 
-      margin-bottom: 8pt; 
+      margin-bottom: 6pt; 
       line-height: 1.1; 
     }
     
     .header .title { 
       font-size: 14pt; 
-      margin-bottom: 16pt; 
+      margin-bottom: 12pt; 
       opacity: 0.95; 
       font-weight: 500; 
     }
     
     .contact-info { 
-      display: flex; 
-      justify-content: center; 
-      gap: 20pt; 
       font-size: 10pt; 
       font-weight: 500; 
     }
     
     .main-content { 
-      padding: 16pt; 
+      padding: 0 16pt; 
     }
     
     .section { 
-      margin-bottom: 32pt; 
-      page-break-inside: avoid;
+      margin-bottom: 20pt; 
       break-inside: avoid;
-      orphans: 3;
-      widows: 3;
     }
     
     .section-header { 
       display: flex; 
       align-items: center; 
-      gap: 12pt; 
+      gap: 8pt; 
       margin-bottom: 12pt; 
     }
     
     .section-icon { 
-      width: 32pt; 
-      height: 32pt; 
-      border-radius: 8pt; 
+      width: 24pt; 
+      height: 24pt; 
+      border-radius: 6pt; 
       background: linear-gradient(135deg, ${theme.primary}, ${theme.accent}); 
       display: flex; 
       align-items: center; 
       justify-content: center; 
       color: white; 
-      font-size: 14pt;
+      font-size: 12pt;
       font-weight: bold;
     }
     
     .section-title { 
-      font-size: 18pt; 
+      font-size: 16pt; 
       font-weight: 700; 
       color: ${theme.primary}; 
     }
     
     .creative-summary { 
       background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 16pt; 
-      border-radius: 12pt; 
-      border-left: 4pt solid ${theme.accent}; 
-      margin-bottom: 20pt;
-      page-break-inside: avoid;
+      padding: 14pt; 
+      border-radius: 8pt; 
+      border-left: 3pt solid ${theme.accent}; 
       break-inside: avoid;
     }
     
@@ -499,39 +486,31 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
       color: #2d3748; 
     }
     
-    .experience-container {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
     .experience-item { 
       background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
-      padding: 20pt; 
-      border-radius: 12pt; 
-      border-left: 4pt solid ${theme.accent}; 
-      margin-bottom: 28pt;
-      page-break-inside: avoid;
+      padding: 14pt; 
+      border-radius: 8pt; 
+      border-left: 3pt solid ${theme.accent}; 
+      margin-bottom: 14pt;
       break-inside: avoid;
-      orphans: 3;
-      widows: 3;
     }
     
     .experience-header { 
       display: flex; 
       justify-content: space-between; 
       align-items: flex-start; 
-      margin-bottom: 12pt; 
+      margin-bottom: 8pt; 
     }
     
     .experience-title { 
-      font-size: 14pt; 
+      font-size: 13pt; 
       font-weight: 700; 
       color: #1a202c; 
-      margin-bottom: 4pt; 
+      margin-bottom: 2pt; 
     }
     
     .experience-company { 
-      font-size: 12pt; 
+      font-size: 11pt; 
       font-weight: 600; 
       color: ${theme.accent}; 
     }
@@ -539,83 +518,71 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     .experience-duration { 
       background: linear-gradient(135deg, ${theme.secondary}, ${theme.accent}); 
       color: white; 
-      padding: 6pt 12pt; 
-      border-radius: 20pt; 
+      padding: 4pt 8pt; 
+      border-radius: 12pt; 
       font-size: 9pt; 
       font-weight: 600; 
     }
     
     .achievements { 
       list-style: none; 
-      margin-top: 12pt; 
+      margin-top: 8pt; 
     }
     
     .achievement { 
       display: flex; 
       align-items: flex-start; 
-      gap: 8pt; 
-      margin-bottom: 8pt; 
+      gap: 6pt; 
+      margin-bottom: 6pt; 
       font-size: 10pt; 
       line-height: 1.5; 
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     
     .achievement::before { 
       content: '✓'; 
       background: linear-gradient(135deg, ${theme.accent}, ${theme.primary}); 
       color: white; 
-      width: 16pt; 
-      height: 16pt; 
+      width: 14pt; 
+      height: 14pt; 
       border-radius: 50%; 
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      font-size: 8pt; 
+      font-size: 7pt; 
       font-weight: bold; 
       flex-shrink: 0; 
-      margin-top: 2pt; 
+      margin-top: 1pt; 
     }
     
-    .two-column { 
-      display: grid; 
-      grid-template-columns: 2fr 1fr; 
-      gap: 24pt; 
-      margin-top: 20pt; 
-    }
-    
-    .sidebar-section { 
+    .skills-section { 
       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15); 
-      padding: 18pt; 
-      border-radius: 12pt; 
-      margin-bottom: 24pt;
-      page-break-inside: avoid;
+      padding: 14pt; 
+      border-radius: 8pt; 
+      margin-bottom: 16pt;
       break-inside: avoid;
-      orphans: 2;
-      widows: 2;
     }
     
-    .sidebar-header { 
+    .skills-header { 
       display: flex; 
       align-items: center; 
       gap: 8pt; 
-      margin-bottom: 12pt; 
+      margin-bottom: 10pt; 
     }
     
-    .sidebar-icon { 
-      width: 24pt; 
-      height: 24pt; 
-      border-radius: 6pt; 
+    .skills-icon { 
+      width: 20pt; 
+      height: 20pt; 
+      border-radius: 4pt; 
       background: linear-gradient(135deg, ${theme.primary}, ${theme.accent}); 
       display: flex; 
       align-items: center; 
       justify-content: center; 
       color: white; 
-      font-size: 10pt;
+      font-size: 8pt;
       font-weight: bold;
     }
     
-    .sidebar-title { 
+    .skills-title { 
       font-size: 14pt; 
       font-weight: 700; 
       color: ${theme.primary}; 
@@ -624,29 +591,67 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
     .skills-grid { 
       display: flex; 
       flex-wrap: wrap; 
-      gap: 6pt; 
+      gap: 4pt; 
     }
     
     .skill-badge { 
       background: white; 
-      border: 2pt solid ${theme.accent}; 
+      border: 1pt solid ${theme.accent}; 
       color: ${theme.primary}; 
-      padding: 4pt 8pt; 
-      border-radius: 20pt; 
+      padding: 3pt 6pt; 
+      border-radius: 12pt; 
       font-size: 9pt; 
       font-weight: 600; 
     }
     
-    .stats-container { 
+    .stats-section { 
+      background: linear-gradient(135deg, ${theme.accent}10, ${theme.secondary}15); 
+      padding: 14pt; 
+      border-radius: 8pt; 
       text-align: center; 
+      margin-bottom: 16pt;
+      break-inside: avoid;
+    }
+    
+    .stats-header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8pt; 
+      margin-bottom: 10pt; 
+    }
+    
+    .stats-icon { 
+      width: 20pt; 
+      height: 20pt; 
+      border-radius: 4pt; 
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent}); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      color: white; 
+      font-size: 8pt;
+      font-weight: bold;
+    }
+    
+    .stats-title { 
+      font-size: 14pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
+    .stats-grid { 
+      display: flex; 
+      justify-content: center; 
+      gap: 16pt; 
     }
     
     .stat-item { 
-      margin-bottom: 12pt; 
+      text-align: center; 
     }
     
     .stat-number { 
-      font-size: 24pt; 
+      font-size: 20pt; 
       font-weight: 700; 
       color: ${theme.primary}; 
     }
@@ -657,57 +662,82 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
       margin-top: 2pt; 
     }
     
+    .education-section { 
+      background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10); 
+      padding: 14pt; 
+      border-radius: 8pt; 
+      break-inside: avoid;
+    }
+    
+    .education-header { 
+      display: flex; 
+      align-items: center; 
+      gap: 8pt; 
+      margin-bottom: 10pt; 
+    }
+    
+    .education-icon { 
+      width: 20pt; 
+      height: 20pt; 
+      border-radius: 4pt; 
+      background: linear-gradient(135deg, ${theme.secondary}, ${theme.primary}); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      color: white; 
+      font-size: 8pt;
+      font-weight: bold;
+    }
+    
+    .education-title { 
+      font-size: 14pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
     .education-item { 
       background: white; 
-      border-left: 4pt solid ${theme.accent}; 
-      padding: 12pt; 
-      border-radius: 8pt; 
-      margin-bottom: 8pt;
-      page-break-inside: avoid;
+      border-left: 3pt solid ${theme.accent}; 
+      padding: 8pt; 
+      border-radius: 4pt; 
+      margin-bottom: 6pt;
       break-inside: avoid;
     }
     
     .education-degree { 
       font-weight: 700; 
       color: #1a202c; 
-      font-size: 11pt; 
+      font-size: 10pt; 
       margin-bottom: 2pt; 
     }
     
     .education-institution { 
       font-weight: 600; 
       color: ${theme.accent}; 
-      font-size: 10pt; 
+      font-size: 9pt; 
       margin-bottom: 2pt; 
     }
     
     .education-year { 
-      font-size: 9pt; 
+      font-size: 8pt; 
       color: #6b7280; 
     }
-
-    /* Ensure proper page breaks */
-    .page-break-before { page-break-before: always; }
-    .page-break-after { page-break-after: always; }
-    .no-page-break { page-break-inside: avoid; break-inside: avoid; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header no-page-break">
+    <div class="header">
       <div class="header-content">
         <h1>${resumeData.name || 'Enhanced Resume'}</h1>
         <div class="title">${resumeData.title || 'Creative Professional'}</div>
         <div class="contact-info">
-          <span>${resumeData.email || 'email@example.com'}</span>
-          <span>${resumeData.phone || '+1 (555) 123-4567'}</span>
-          <span>${resumeData.location || 'City, Country'}</span>
+          ${resumeData.email || 'email@example.com'} • ${resumeData.phone || '+1 (555) 123-4567'} • ${resumeData.location || 'City, Country'}
         </div>
       </div>
     </div>
 
     <div class="main-content">
-      <div class="section no-page-break">
+      <div class="section">
         <div class="section-header">
           <div class="section-icon">✨</div>
           <h2 class="section-title">Creative Vision</h2>
@@ -717,86 +747,80 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
         </div>
       </div>
 
-      <div class="two-column">
-        <div class="left-column">
-          ${resumeData.experience && resumeData.experience.length > 0 ? `
-          <div class="section experience-container">
-            <div class="section-header">
-              <div class="section-icon">📈</div>
-              <h2 class="section-title">Experience Journey</h2>
-            </div>
-            ${resumeData.experience.map((exp: any) => `
-            <div class="experience-item no-page-break">
-              <div class="experience-header">
-                <div>
-                  <div class="experience-title">${exp.title || 'Position Title'}</div>
-                  <div class="experience-company">${exp.company || 'Company Name'}</div>
-                </div>
-                <div class="experience-duration">${exp.duration || 'Date Range'}</div>
-              </div>
-              ${exp.achievements && exp.achievements.length > 0 ? `
-              <ul class="achievements">
-                ${exp.achievements.slice(0, 3).map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
-              </ul>
-              ` : `
-              <ul class="achievements">
-                <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
-                <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
-              </ul>
-              `}
-            </div>
-            `).join('')}
-          </div>
-          ` : ''}
+      ${resumeData.experience && resumeData.experience.length > 0 ? `
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">📈</div>
+          <h2 class="section-title">Experience Journey</h2>
         </div>
-
-        <div class="right-column">
-          ${resumeData.skills && resumeData.skills.length > 0 ? `
-          <div class="sidebar-section no-page-break">
-            <div class="sidebar-header">
-              <div class="sidebar-icon">🎨</div>
-              <h3 class="sidebar-title">Creative Skills</h3>
+        ${resumeData.experience.map((exp: any) => `
+        <div class="experience-item">
+          <div class="experience-header">
+            <div>
+              <div class="experience-title">${exp.title || 'Position Title'}</div>
+              <div class="experience-company">${exp.company || 'Company Name'}</div>
             </div>
-            <div class="skills-grid">
-              ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
-            </div>
+            <div class="experience-duration">${exp.duration || 'Date Range'}</div>
           </div>
-          ` : ''}
+          ${exp.achievements && exp.achievements.length > 0 ? `
+          <ul class="achievements">
+            ${exp.achievements.slice(0, 3).map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+          </ul>
+          ` : `
+          <ul class="achievements">
+            <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
+            <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
+          </ul>
+          `}
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
 
-          <div class="sidebar-section no-page-break">
-            <div class="sidebar-header">
-              <div class="sidebar-icon">📊</div>
-              <h3 class="sidebar-title">Portfolio Stats</h3>
-            </div>
-            <div class="stats-container">
-              <div class="stat-item">
-                <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-                <div class="stat-label">Creative Skills</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-                <div class="stat-label">Projects</div>
-              </div>
-            </div>
-          </div>
-
-          ${resumeData.education && resumeData.education.length > 0 ? `
-          <div class="sidebar-section no-page-break">
-            <div class="sidebar-header">
-              <div class="sidebar-icon">🎓</div>
-              <h3 class="sidebar-title">Education</h3>
-            </div>
-            ${resumeData.education.map((edu: any) => `
-            <div class="education-item no-page-break">
-              <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-              <div class="education-institution">${edu.institution || 'University Name'}</div>
-              ${edu.year && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
-            </div>
-            `).join('')}
-          </div>
-          ` : ''}
+      ${resumeData.skills && resumeData.skills.length > 0 ? `
+      <div class="skills-section">
+        <div class="skills-header">
+          <div class="skills-icon">🎨</div>
+          <h3 class="skills-title">Creative Skills</h3>
+        </div>
+        <div class="skills-grid">
+          ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
         </div>
       </div>
+      ` : ''}
+
+      <div class="stats-section">
+        <div class="stats-header">
+          <div class="stats-icon">📊</div>
+          <h3 class="stats-title">Portfolio Stats</h3>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+            <div class="stat-label">Creative Skills</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+            <div class="stat-label">Projects</div>
+          </div>
+        </div>
+      </div>
+
+      ${resumeData.education && resumeData.education.length > 0 ? `
+      <div class="education-section">
+        <div class="education-header">
+          <div class="education-icon">🎓</div>
+          <h3 class="education-title">Education</h3>
+        </div>
+        ${resumeData.education.map((edu: any) => `
+        <div class="education-item">
+          <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+          <div class="education-institution">${edu.institution || 'University Name'}</div>
+          ${edu.year && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
     </div>
   </div>
 </body>
