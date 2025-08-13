@@ -26,7 +26,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   const templateGenerators = {
     modern: () => generateModernHTML(resumeData, theme),
     classic: () => generateClassicHTML(resumeData, theme),
-    creative: () => generateModernHTML(resumeData, theme), // Use modern as fallback
+    creative: () => generateCreativeHTML(resumeData, theme), // Use creative template
     executive: () => generateClassicHTML(resumeData, theme), // Use classic as fallback  
     minimalist: () => generateClassicHTML(resumeData, theme), // Use classic as fallback
   };
@@ -641,6 +641,426 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <div class="section">
     <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
     <p>${resumeData.summary || 'Professional summary here.'}</p>
+  </div>
+</body>
+</html>`;
+  }
+
+  function generateCreativeHTML(resumeData: any, theme: any) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Resume - ${resumeData.name}</title>
+  <style>
+    @page { 
+      size: A4; 
+      margin: 0.5in; 
+    }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      text-decoration: none !important; 
+    }
+    
+    body {
+      font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+      line-height: 1.5; 
+      color: #1a202c; 
+      background: white;
+      font-size: 10pt; 
+      width: 100%; 
+      min-height: auto;
+    }
+    
+    .container { 
+      background: white; 
+      width: 100%; 
+      max-width: none;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 70%, ${theme.secondary} 100%);
+      color: white; 
+      padding: 16pt; 
+      position: relative; 
+      overflow: hidden;
+      margin-bottom: 16pt;
+    }
+    
+    .header-content { 
+      position: relative; 
+      z-index: 10; 
+      text-align: center; 
+    }
+    
+    .header h1 { 
+      font-size: 26pt; 
+      font-weight: 800; 
+      margin-bottom: 6pt; 
+      line-height: 1.1; 
+    }
+    
+    .header .title { 
+      font-size: 14pt; 
+      margin-bottom: 12pt; 
+      opacity: 0.95; 
+      font-weight: 500; 
+    }
+    
+    .contact-info { 
+      font-size: 10pt; 
+      font-weight: 500; 
+    }
+    
+    .main-content { 
+      padding: 0 16pt; 
+    }
+    
+    .section { 
+      margin-bottom: 20pt; 
+      break-inside: avoid;
+    }
+    
+    .section-header { 
+      display: flex; 
+      align-items: center; 
+      gap: 8pt; 
+      margin-bottom: 12pt; 
+    }
+    
+    .section-icon { 
+      width: 24pt; 
+      height: 24pt; 
+      border-radius: 6pt; 
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent}); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      color: white; 
+      font-size: 12pt;
+      font-weight: bold;
+    }
+    
+    .section-title { 
+      font-size: 16pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
+    .creative-summary { 
+      background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
+      padding: 14pt; 
+      border-radius: 8pt; 
+      border-left: 3pt solid ${theme.accent}; 
+      break-inside: avoid;
+    }
+    
+    .summary-text { 
+      font-size: 11pt; 
+      line-height: 1.6; 
+      color: #2d3748; 
+    }
+    
+    .experience-item { 
+      background: linear-gradient(135deg, ${theme.primary}05, ${theme.accent}10); 
+      padding: 14pt; 
+      border-radius: 8pt; 
+      border-left: 3pt solid ${theme.accent}; 
+      margin-bottom: 14pt;
+      break-inside: avoid;
+    }
+    
+    .experience-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-start; 
+      margin-bottom: 8pt; 
+    }
+    
+    .experience-title { 
+      font-size: 13pt; 
+      font-weight: 700; 
+      color: #1a202c; 
+      margin-bottom: 2pt; 
+    }
+    
+    .experience-company { 
+      font-size: 11pt; 
+      font-weight: 600; 
+      color: ${theme.accent}; 
+    }
+    
+    .experience-duration { 
+      background: linear-gradient(135deg, ${theme.secondary}, ${theme.accent}); 
+      color: white; 
+      padding: 4pt 8pt; 
+      border-radius: 12pt; 
+      font-size: 9pt; 
+      font-weight: 600; 
+    }
+    
+    .achievements { 
+      list-style: none; 
+      margin-top: 8pt; 
+    }
+    
+    .achievement { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: 6pt; 
+      margin-bottom: 6pt; 
+      font-size: 10pt; 
+      line-height: 1.5; 
+    }
+    
+    .achievement::before { 
+      content: '✓'; 
+      background: linear-gradient(135deg, ${theme.accent}, ${theme.primary}); 
+      color: white; 
+      width: 14pt; 
+      height: 14pt; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 7pt; 
+      font-weight: bold; 
+      flex-shrink: 0; 
+      margin-top: 1pt; 
+    }
+    
+    .skills-section { 
+      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15); 
+      padding: 14pt; 
+      border-radius: 8pt; 
+      margin-bottom: 16pt;
+      break-inside: avoid;
+    }
+    
+    .skills-header { 
+      display: flex; 
+      align-items: center; 
+      gap: 8pt; 
+      margin-bottom: 10pt; 
+    }
+    
+    .skills-title { 
+      font-size: 14pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
+    .skills-grid { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 4pt; 
+    }
+    
+    .skill-badge { 
+      background: white; 
+      border: 1pt solid ${theme.accent}; 
+      color: ${theme.primary}; 
+      padding: 3pt 6pt; 
+      border-radius: 12pt; 
+      font-size: 9pt; 
+      font-weight: 600; 
+    }
+    
+    .stats-section { 
+      background: linear-gradient(135deg, ${theme.accent}10, ${theme.secondary}15); 
+      padding: 14pt; 
+      border-radius: 8pt; 
+      text-align: center; 
+      margin-bottom: 16pt;
+      break-inside: avoid;
+    }
+    
+    .stats-header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8pt; 
+      margin-bottom: 10pt; 
+    }
+    
+    .stats-title { 
+      font-size: 14pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
+    .stats-grid { 
+      display: flex; 
+      justify-content: center; 
+      gap: 16pt; 
+    }
+    
+    .stat-item { 
+      text-align: center; 
+    }
+    
+    .stat-number { 
+      font-size: 20pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
+    .stat-label { 
+      font-size: 9pt; 
+      color: #6b7280; 
+      margin-top: 2pt; 
+    }
+    
+    .education-section { 
+      background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10); 
+      padding: 14pt; 
+      border-radius: 8pt; 
+      break-inside: avoid;
+    }
+    
+    .education-header { 
+      display: flex; 
+      align-items: center; 
+      gap: 8pt; 
+      margin-bottom: 10pt; 
+    }
+    
+    .education-title { 
+      font-size: 14pt; 
+      font-weight: 700; 
+      color: ${theme.primary}; 
+    }
+    
+    .education-item { 
+      background: white; 
+      border-left: 3pt solid ${theme.accent}; 
+      padding: 8pt; 
+      border-radius: 4pt; 
+      margin-bottom: 6pt;
+      break-inside: avoid;
+    }
+    
+    .education-degree { 
+      font-weight: 700; 
+      color: #1a202c; 
+      font-size: 10pt; 
+      margin-bottom: 2pt; 
+    }
+    
+    .education-institution { 
+      font-weight: 600; 
+      color: ${theme.accent}; 
+      font-size: 9pt; 
+      margin-bottom: 2pt; 
+    }
+    
+    .education-year { 
+      font-size: 8pt; 
+      color: #6b7280; 
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-content">
+        <h1>${resumeData.name || 'Enhanced Resume'}</h1>
+        <div class="title">${resumeData.title || 'Creative Professional'}</div>
+        <div class="contact-info">
+          ${resumeData.email || 'email@example.com'} • ${resumeData.phone || '+1 (555) 123-4567'} • ${resumeData.location || 'City, Country'}
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">✨</div>
+          <h2 class="section-title">Creative Vision</h2>
+        </div>
+        <div class="creative-summary">
+          <p class="summary-text">${resumeData.summary || 'Dynamic creative professional with a passion for innovative design and strategic thinking. Expertise in delivering compelling visual solutions that drive engagement and achieve business objectives.'}</p>
+        </div>
+      </div>
+
+      ${resumeData.experience && resumeData.experience.length > 0 ? `
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">📈</div>
+          <h2 class="section-title">Experience Journey</h2>
+        </div>
+        ${resumeData.experience.map((exp: any) => `
+        <div class="experience-item">
+          <div class="experience-header">
+            <div>
+              <div class="experience-title">${exp.title || 'Position Title'}</div>
+              <div class="experience-company">${exp.company || 'Company Name'}</div>
+            </div>
+            <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+          </div>
+          ${exp.achievements && exp.achievements.length > 0 ? `
+          <ul class="achievements">
+            ${exp.achievements.slice(0, 3).map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+          </ul>
+          ` : `
+          <ul class="achievements">
+            <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
+            <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
+          </ul>
+          `}
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      ${resumeData.skills && resumeData.skills.length > 0 ? `
+      <div class="skills-section">
+        <div class="skills-header">
+          <div class="section-icon">🎨</div>
+          <h3 class="skills-title">Creative Skills</h3>
+        </div>
+        <div class="skills-grid">
+          ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      <div class="stats-section">
+        <div class="stats-header">
+          <div class="section-icon">📊</div>
+          <h3 class="stats-title">Portfolio Stats</h3>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+            <div class="stat-label">Creative Skills</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+            <div class="stat-label">Projects</div>
+          </div>
+        </div>
+      </div>
+
+      ${resumeData.education && resumeData.education.length > 0 ? `
+      <div class="education-section">
+        <div class="education-header">
+          <div class="section-icon">🎓</div>
+          <h3 class="education-title">Education</h3>
+        </div>
+        ${resumeData.education.map((edu: any) => `
+        <div class="education-item">
+          <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+          <div class="education-institution">${edu.institution || 'University Name'}</div>
+          ${edu.year && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
+    </div>
   </div>
 </body>
 </html>`;
