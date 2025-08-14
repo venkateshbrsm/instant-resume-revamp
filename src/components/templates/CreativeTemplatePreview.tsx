@@ -14,6 +14,8 @@ interface TemplatePreviewProps {
 }
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+  // Debug logging to check for N/A values
+  console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
       className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
@@ -284,9 +286,9 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                         <p className="font-medium text-sm print:text-xs" style={{ color: selectedColorTheme.accent }}>
                           {edu.institution}
                         </p>
-                        {edu.year && edu.year !== "Year not specified" && (
-                          <p className="text-xs text-muted-foreground mt-1">{edu.year}</p>
-                        )}
+                         {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                           <p className="text-xs text-muted-foreground mt-1">{edu.year}</p>
+                         )}
                       </div>
                     ))}
                   </div>
