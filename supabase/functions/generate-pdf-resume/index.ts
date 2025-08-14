@@ -77,14 +77,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       min-height: auto;
     }
     
-    .container {
-      background: white;
-      border-radius: 6pt;
-      overflow: hidden;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-      width: 100%;
-      max-width: none;
-    }
+     .container {
+       background: white;
+       border-radius: 6pt;
+       overflow: hidden;
+       box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+       width: 100%;
+       max-width: none;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     /* Header matching the enhanced preview exactly */
     .header {
@@ -169,10 +171,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       space-y: 12pt;
     }
     
-    .section {
-      margin-bottom: 12pt;
-      break-inside: avoid;
-    }
+     .section {
+       margin-bottom: 12pt;
+       break-inside: avoid;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     /* Section titles with gradient icons matching preview */
     .section-header {
@@ -200,13 +204,15 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     }
     
     /* Professional Summary Card */
-    .summary-card {
-      background: white;
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1pt solid rgba(0,0,0,0.05);
-    }
+     .summary-card {
+       background: white;
+       padding: 12pt;
+       border-radius: 8pt;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+       border: 1pt solid rgba(0,0,0,0.05);
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .summary-text {
       font-size: 10pt;
@@ -221,14 +227,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-bottom: 12pt;
     }
     
-    .experience-item {
-      position: relative;
-      margin-bottom: 12pt;
-      padding: 10pt;
-      border-radius: 6pt;
-      background: linear-gradient(to right, ${theme.accent}08, ${theme.primary}08);
-      border-left: 2pt solid ${theme.accent}30;
-    }
+     .experience-item {
+       position: relative;
+       margin-bottom: 12pt;
+       padding: 10pt;
+       border-radius: 6pt;
+       background: linear-gradient(to right, ${theme.accent}08, ${theme.primary}08);
+       border-left: 2pt solid ${theme.accent}30;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .experience-item::before {
       content: '';
@@ -373,21 +381,25 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     }
     
     /* Education section matching preview */
-    .education-section {
-      background: white;
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-      border: 1pt solid rgba(0,0,0,0.05);
-    }
+     .education-section {
+       background: white;
+       padding: 12pt;
+       border-radius: 8pt;
+       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
+       border: 1pt solid rgba(0,0,0,0.05);
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .education-item {
-      padding: 10pt;
-      border-radius: 6pt;
-      margin-bottom: 6pt;
-      background: linear-gradient(to right, ${theme.primary}08, ${theme.accent}08);
-      border: 1pt solid ${theme.primary}10;
-    }
+     .education-item {
+       padding: 10pt;
+       border-radius: 6pt;
+       margin-bottom: 6pt;
+       background: linear-gradient(to right, ${theme.primary}08, ${theme.accent}08);
+       border: 1pt solid ${theme.primary}10;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .education-degree {
       font-weight: 700;
