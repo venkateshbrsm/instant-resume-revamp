@@ -111,87 +111,10 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     lineHeight: element.style.lineHeight
   };
 
-  // Inject comprehensive CSS for PDF page break optimization
+  // Inject CSS for div page break avoidance
   const style = document.createElement('style');
   style.textContent = `
-    /* Comprehensive page break controls */
-    div, section, article { 
-      page-break-inside: avoid !important; 
-      break-inside: avoid !important;
-    }
-    
-    /* Strategic page breaks for major sections */
-    h1, h2, .section-title, .major-section {
-      page-break-after: avoid !important;
-      break-after: avoid !important;
-    }
-    
-    /* Keep related content together */
-    .experience-item, .education-item, .job-entry, .degree-entry {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      page-break-after: avoid !important;
-      break-after: avoid !important;
-    }
-    
-    /* Table and list protection */
-    table, ul, ol, dl {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-    }
-    
-    /* Text flow controls */
-    p, li {
-      orphans: 3;
-      widows: 3;
-    }
-    
-    /* Content overflow management */
-    img, table, .content-block {
-      max-width: 100% !important;
-      max-height: 80vh !important;
-      object-fit: contain !important;
-    }
-    
-    /* PDF-specific layout adjustments */
-    @media print {
-      body, html {
-        font-size: 12pt !important;
-        line-height: 1.4 !important;
-        color: #000 !important;
-        background: white !important;
-      }
-      
-      .container, .main-content {
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 10mm !important;
-      }
-      
-      /* Remove shadows and borders that don't print well */
-      * {
-        box-shadow: none !important;
-        text-shadow: none !important;
-      }
-      
-      /* Ensure proper spacing between sections */
-      .section {
-        margin-bottom: 8mm !important;
-        padding-bottom: 4mm !important;
-      }
-      
-      /* Force new page for major sections when needed */
-      .page-break-before {
-        page-break-before: always !important;
-        break-before: page !important;
-      }
-      
-      /* Avoid breaks in these elements */
-      .page-break-avoid {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-      }
-    }
+    div { page-break-inside: avoid !important; }
   `;
   document.head.appendChild(style);
 
