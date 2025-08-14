@@ -104,11 +104,13 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             <div className="space-y-4">
               {enhancedContent.education.map((edu: any, index: number) => (
                 <div key={index} className="space-y-1">
-                  <h3 className="text-base font-medium text-foreground">{edu.degree}</h3>
-                  <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
-                    {edu.institution}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-light">{edu.year}</p>
+                   <h3 className="text-base font-medium text-foreground">{edu.degree}</h3>
+                   <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
+                     {edu.institution}
+                   </p>
+                   {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                     <p className="text-sm text-muted-foreground font-light">{edu.year}</p>
+                   )}
                 </div>
               ))}
             </div>

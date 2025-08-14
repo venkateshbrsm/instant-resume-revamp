@@ -128,11 +128,13 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               <div className="space-y-4">
                 {enhancedContent.education.map((edu: any, index: number) => (
                   <div key={index} className="print:avoid-break">
-                    <h3 className="font-bold text-foreground">{edu.degree}</h3>
-                    <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
-                      {edu.institution}
-                    </p>
-                    <p className="text-sm text-muted-foreground italic">{edu.year}</p>
+                     <h3 className="font-bold text-foreground">{edu.degree}</h3>
+                     <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
+                       {edu.institution}
+                     </p>
+                     {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                       <p className="text-sm text-muted-foreground italic">{edu.year}</p>
+                     )}
                   </div>
                 ))}
               </div>

@@ -212,9 +212,11 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                       borderColor: `${selectedColorTheme.primary}10`
                     }}
                   >
-                    <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
-                    <p className="font-medium" style={{ color: selectedColorTheme.accent }}>{edu.institution}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+                     <h4 className="font-bold text-foreground text-base">{edu.degree}</h4>
+                     <p className="font-medium" style={{ color: selectedColorTheme.accent }}>{edu.institution}</p>
+                     {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                       <p className="text-sm text-muted-foreground mt-1">{edu.year}</p>
+                     )}
                   </div>
                 ))}
               </div>

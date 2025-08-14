@@ -202,11 +202,11 @@ export function generateModernTemplate({ resumeData, theme }: PDFTemplateContext
           </div>
           ${resumeData.education && resumeData.education.length > 0 ? 
             resumeData.education.map((edu: any) => `
-            <div class="education-item">
-              <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-              <div class="education-institution">${edu.institution || 'University Name'}</div>
-              <div class="education-year">${edu.year || 'Year'}</div>
-            </div>
+             <div class="education-item">
+               <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+               <div class="education-institution">${edu.institution || 'University Name'}</div>
+               ${edu.year && edu.year !== 'N/A' && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+             </div>
             `).join('') :
             `
             <div class="education-item">
@@ -332,11 +332,11 @@ export function generateClassicTemplate({ resumeData, theme }: PDFTemplateContex
     <div class="section">
       <h2 class="section-title">EDUCATION</h2>
       ${resumeData.education.map((edu: any) => `
-      <div class="education-item">
-        <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-        <div class="education-institution">${edu.institution || 'University Name'}</div>
-        <div class="education-year">${edu.year || 'Year'}</div>
-      </div>
+       <div class="education-item">
+         <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+         <div class="education-institution">${edu.institution || 'University Name'}</div>
+         ${edu.year && edu.year !== 'N/A' && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+       </div>
       `).join('')}
     </div>
     ` : ''}

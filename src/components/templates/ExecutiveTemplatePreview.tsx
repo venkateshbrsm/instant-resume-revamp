@@ -252,11 +252,13 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                       className="p-4 rounded-lg bg-white/70 border-l-4"
                       style={{ borderColor: selectedColorTheme.accent }}
                     >
-                      <h4 className="font-bold text-foreground text-sm">{edu.degree}</h4>
-                      <p className="font-semibold text-sm" style={{ color: selectedColorTheme.primary }}>
-                        {edu.institution}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1 font-medium">{edu.year}</p>
+                       <h4 className="font-bold text-foreground text-sm">{edu.degree}</h4>
+                       <p className="font-semibold text-sm" style={{ color: selectedColorTheme.primary }}>
+                         {edu.institution}
+                       </p>
+                       {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                         <p className="text-xs text-muted-foreground mt-1 font-medium">{edu.year}</p>
+                       )}
                     </div>
                   ))}
                 </div>
