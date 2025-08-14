@@ -84,6 +84,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       break-inside: avoid;
     }
     
+    /* Images and tables should not break across pages */
+    img, table {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
     /* Avoid breaks right after headings */
     h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
       page-break-after: avoid;
@@ -659,6 +665,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       break-inside: avoid;
     }
     
+    /* Images and tables should not break across pages */
+    img, table {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
     /* Avoid breaks right after headings */
     h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
       page-break-after: avoid;
@@ -846,6 +858,12 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     }
     
     .skills-item, .skill-bar, .contact-item, .experience-card, .summary-card, .education-section, .skills-section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Images and tables should not break across pages */
+    img, table {
       page-break-inside: avoid;
       break-inside: avoid;
     }
