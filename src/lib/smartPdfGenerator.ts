@@ -33,19 +33,19 @@ export async function generateSmartPdf(
 
     // Configure html2pdf with proper page break handling
     const opt = {
-      margin: margin,
+      margin: [20, 20, 20, 20],
       filename: filename,
       image: { 
         type: 'jpeg', 
         quality: quality 
       },
       html2canvas: { 
-        scale: 2,
-        useCORS: true,
+        allowTaint: true,
         letterRendering: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
         logging: false,
+        scale: 0.4,
+        useCORS: true,
+        backgroundColor: '#ffffff',
         scrollX: 0,
         scrollY: 0,
         width: element.scrollWidth,
@@ -63,6 +63,11 @@ export async function generateSmartPdf(
         before: '.page-break-before',
         after: '.page-break-after',
         avoid: '.page-break-avoid'
+      },
+      // Crucial for handling text flow across pages
+      autoPaging: 'text',
+      callback: function (jsPdf: any) {
+        // PDF generation completed, return the blob
       }
     };
 
