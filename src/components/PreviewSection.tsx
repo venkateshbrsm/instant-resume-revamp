@@ -321,66 +321,102 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     try {
       toast({
-        title: "Generating PDF",
-        description: "Creating high-quality PDF with smart page breaks...",
+        title: "Generating ATS-Readable Resume",
+        description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
       });
 
-      // First try the smart PDF generation with proper page breaks
-      try {
-        await downloadSmartPdf(resumeContentRef.current, {
-          filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
-          margin: 10,
-          quality: 0.98
-        });
-
-        toast({
-          title: "PDF Downloaded",
-          description: "Your enhanced resume has been downloaded with smart page breaks!",
-        });
-        return;
-      } catch (smartPdfError) {
-        console.warn('Smart PDF generation failed, trying server-side fallback:', smartPdfError);
-        
-        toast({
-          title: "Generating PDF",
-          description: "Using server-side PDF generation as fallback...",
-        });
-
-        // Fallback to server-side PDF generation
-        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
-          body: {
-            enhancedContent,
-            templateId: selectedTemplate.id,
-            themeId: selectedColorTheme.id,
-            fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
-          }
-        });
-
-        if (error) {
-          throw new Error(error.message || 'Failed to generate PDF');
+      // Use server-side text-based PDF generation for ATS compatibility
+      const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+        body: {
+          enhancedContent,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
         }
+      });
 
-        // Create download link
-        const blob = new Blob([data], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toast({
-          title: "PDF Downloaded",
-          description: "Your enhanced resume has been downloaded successfully!",
-        });
+      if (error) {
+        throw new Error(error.message || 'Failed to generate ATS-readable PDF');
       }
+
+      // Create download link
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "ATS-Readable PDF Downloaded",
+        description: "Your resume is optimized for Applicant Tracking Systems with selectable text!",
+      });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error generating ATS-readable PDF:', error);
       toast({
         title: "Download Failed",
-        description: "Failed to generate PDF. Please try again.",
+        description: "Failed to generate ATS-readable PDF. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDownloadDocx = async () => {
+    if (!enhancedContent) {
+      toast({
+        title: "Preview Not Ready",
+        description: "Please wait for the enhanced resume to load completely.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingPdf(true);
+    
+    try {
+      toast({
+        title: "Generating DOCX Resume",
+        description: "Creating editable Word document - perfect for ATS systems...",
+      });
+
+      // Use the DOCX generation endpoint
+      const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
+        body: {
+          paymentId: 'preview', // Special case for preview downloads
+          enhancedContent,
+          themeId: selectedColorTheme.id
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to generate DOCX');
+      }
+
+      // Create download link for DOCX
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "DOCX Downloaded",
+        description: "Editable Word document downloaded - 100% ATS compatible!",
+      });
+    } catch (error) {
+      console.error('Error generating DOCX:', error);
+      toast({
+        title: "Download Failed", 
+        description: "Failed to generate DOCX. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -683,16 +719,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               </Button>
               
               {enhancedContent && user?.email === 'venkateshbrsm@gmail.com' && (
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={handleTestDownload}
-                  className="w-full"
-                  disabled={isGeneratingPdf}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  {isGeneratingPdf ? 'Generating PDF...' : 'Test Download (Preview)'}
-                </Button>
+                <div className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={handleTestDownload}
+                    className="w-full"
+                    disabled={isGeneratingPdf}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {isGeneratingPdf ? 'Generating PDF...' : 'Download ATS PDF (Preview)'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={handleDownloadDocx}
+                    className="w-full"
+                    disabled={isGeneratingPdf}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    {isGeneratingPdf ? 'Generating DOCX...' : 'Download DOCX (Preview)'}
+                  </Button>
+                </div>
               )}
               
               <p className="text-xs text-muted-foreground">
@@ -715,6 +763,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
                 <span>ATS-friendly formatting</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-accent rounded-full" />
+                <span>ATS-readable PDF & DOCX formats</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
