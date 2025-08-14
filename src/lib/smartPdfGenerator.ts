@@ -39,17 +39,11 @@ export async function generateSmartPdf(
         type: 'jpeg', 
         quality: quality 
       },
-      html2canvas: { 
-        scale: 2,
-        useCORS: true,
+      html2canvas: {
+        allowTaint: true,
         letterRendering: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
         logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: element.scrollWidth,
-        height: element.scrollHeight
+        scale: 0.4, // Adjust the scale to fit content
       },
       jsPDF: { 
         unit: 'mm', 
