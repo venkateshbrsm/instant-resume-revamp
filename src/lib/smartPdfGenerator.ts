@@ -111,6 +111,13 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     lineHeight: element.style.lineHeight
   };
 
+  // Inject CSS for div page break avoidance
+  const style = document.createElement('style');
+  style.textContent = `
+    div { page-break-inside: avoid !important; }
+  `;
+  document.head.appendChild(style);
+
   // Apply PDF-optimized styles
   element.style.width = '210mm'; // A4 width
   element.style.maxWidth = '210mm';
@@ -162,5 +169,8 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     addedClasses.forEach(({ element, className }) => {
       element.classList.remove(className);
     });
+
+    // Remove injected style
+    document.head.removeChild(style);
   };
 }
