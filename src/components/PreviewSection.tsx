@@ -700,7 +700,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         <Card className="max-w-md mx-auto bg-gradient-primary/5 border-primary/20">
           <CardContent className="p-4 sm:p-6 text-center">
             <div className="mb-4 sm:mb-6">
-              <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">₹1</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">₹299</div>
               <p className="text-muted-foreground text-xs sm:text-sm">One-time payment • Instant download</p>
             </div>
             

@@ -96,7 +96,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                 </div>
               </div>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
-                "The formatting was perfect and content suggestions were spot-on. Worth every rupee of the ₹1!"
+                "The formatting was perfect and content suggestions were spot-on. Worth every rupee of the ₹299!"
               </p>
             </div>
             
