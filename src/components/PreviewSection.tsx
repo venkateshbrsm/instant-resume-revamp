@@ -364,6 +364,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setIsGeneratingPdf(false);
     }
   };
+
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
@@ -514,8 +515,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         </div>
 
         {/* Enhanced Resume Display */}
-        <div className="w-full max-w-4xl mx-auto mb-6 sm:mb-8">
-
+        <div className="w-full max-w-6xl mx-auto mb-6 sm:mb-8">
           <Card className="bg-card/80 backdrop-blur-sm border-accent/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -541,55 +541,56 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   </div>
                 </div>
               ) : enhancedContent ? (
-                 <div className="w-full border border-border/20 rounded-lg">
-                   <div 
-                     ref={enhancedResumeRef}
-                     className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
-                   >
-                  
-                      {/* Template and Color Selector */}
+                <div className="print-preview-container w-full">
+                  <div ref={enhancedResumeRef} className="print-page-wrapper">
+                    {/* Template and Color Selector */}
+                    <div className="mb-4 print:hidden">
                       <TemplateSelector
                         selectedTemplate={selectedTemplate}
                         selectedColorTheme={selectedColorTheme}
                         onTemplateChange={setSelectedTemplate}
                         onColorThemeChange={setSelectedColorTheme}
                       />
+                    </div>
 
-                      {/* Dynamic Template Preview */}
-                      <div ref={resumeContentRef}>
-                        {selectedTemplate.id === 'modern' && (
-                          <ModernTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'classic' && (
-                          <ClassicTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'creative' && (
-                          <CreativeTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'executive' && (
-                          <ExecutiveTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'minimalist' && (
-                          <MinimalistTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                      </div>
+                    {/* Print page shadow and border */}
+                    <div className="print-page-shadow"></div>
+                    
+                    {/* Dynamic Template Preview */}
+                    <div ref={resumeContentRef} className="print-page">
+                      {selectedTemplate.id === 'modern' && (
+                        <ModernTemplatePreview 
+                          enhancedContent={enhancedContent}
+                          selectedColorTheme={selectedColorTheme}
+                        />
+                      )}
+                      {selectedTemplate.id === 'classic' && (
+                        <ClassicTemplatePreview 
+                          enhancedContent={enhancedContent}
+                          selectedColorTheme={selectedColorTheme}
+                        />
+                      )}
+                      {selectedTemplate.id === 'creative' && (
+                        <CreativeTemplatePreview 
+                          enhancedContent={enhancedContent}
+                          selectedColorTheme={selectedColorTheme}
+                        />
+                      )}
+                      {selectedTemplate.id === 'executive' && (
+                        <ExecutiveTemplatePreview 
+                          enhancedContent={enhancedContent}
+                          selectedColorTheme={selectedColorTheme}
+                        />
+                      )}
+                      {selectedTemplate.id === 'minimalist' && (
+                        <MinimalistTemplatePreview 
+                          enhancedContent={enhancedContent}
+                          selectedColorTheme={selectedColorTheme}
+                        />
+                      )}
                     </div>
                   </div>
+                </div>
               ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">

@@ -246,3 +246,44 @@
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Print Preview Layout Styles */
+.print-preview-container {
+  @apply w-full flex justify-center bg-gray-50 p-4 sm:p-6 md:p-8;
+}
+
+.print-page-wrapper {
+  @apply relative max-w-[210mm] w-full;
+}
+
+.print-page-shadow {
+  @apply absolute top-2 left-2 w-full h-full bg-gray-400/20 rounded-sm -z-10;
+}
+
+.print-page {
+  @apply relative w-full min-h-[297mm] bg-white shadow-2xl border border-gray-200 rounded-sm overflow-hidden;
+  /* A4 aspect ratio: 210mm x 297mm */
+  aspect-ratio: 210 / 297;
+}
+
+/* Responsive adjustments for print preview */
+@media (max-width: 768px) {
+  .print-preview-container {
+    @apply p-2;
+  }
+  
+  .print-page {
+    @apply min-h-[calc(100vw*1.414)] shadow-lg;
+    /* Maintain A4 ratio on mobile */
+  }
+  
+  .print-page-shadow {
+    @apply top-1 left-1;
+  }
+}
+
+@media (max-width: 640px) {
+  .print-page {
+    @apply min-h-[calc(100vw*1.414-2rem)] text-xs;
+  }
+}
