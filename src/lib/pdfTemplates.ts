@@ -21,15 +21,52 @@ export function generateModernTemplate({ resumeData, theme }: PDFTemplateContext
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
-  <style>
-    @page { size: A4; margin: 0.25in; }
-    * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none !important; }
-    
-    body {
-      font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.5; color: #1a202c; background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-      font-size: 9pt; width: 100%; min-height: auto;
-    }
+   <style>
+     @page { 
+       size: A4; 
+       margin: 20mm;
+     }
+     * { 
+       margin: 0; 
+       padding: 0; 
+       box-sizing: border-box; 
+       text-decoration: none !important; 
+     }
+     
+     body {
+       font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+       line-height: 1.4; 
+       color: #1a202c; 
+       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+       font-size: 9pt; 
+       width: 100%; 
+       min-height: auto;
+     }
+     
+     /* Section-level page break controls */
+     .section {
+       page-break-inside: avoid;
+       break-inside: avoid;
+       margin-bottom: 12pt;
+     }
+     
+     .experience-item, .education-item {
+       page-break-inside: avoid;
+       break-inside: avoid;
+       margin-bottom: 8pt;
+     }
+     
+     /* Prevent images and tables from breaking */
+     img, table {
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
+     
+     /* Keep headers with content */
+     .section-title, .section-header {
+       page-break-after: avoid;
+       break-after: avoid;
+     }
     
     .container { background: white; border-radius: 6pt; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.08); width: 100%; max-width: none; }
     
@@ -195,7 +232,7 @@ export function generateModernTemplate({ resumeData, theme }: PDFTemplateContext
           }
         </div>
 
-        <div class="education-section">
+         <div class="education-section section">
           <div class="section-header">
             <div class="section-icon">🎓</div>
             <h3 class="section-title">Education</h3>

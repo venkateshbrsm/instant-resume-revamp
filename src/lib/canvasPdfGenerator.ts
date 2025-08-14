@@ -92,13 +92,15 @@ export async function generatePdfFromElement(
       availableHeight 
     });
     
-    // Create PDF
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-      compress: true
-    });
+     // Create PDF with better page break handling
+     const pdf = new jsPDF({
+       orientation: 'portrait',
+       unit: 'mm',
+       format: 'a4',
+       compress: true,
+       putOnlyUsedFonts: true,
+       floatPrecision: 16
+     });
 
     // Check if content fits on one page
     if (finalHeight <= availableHeight) {

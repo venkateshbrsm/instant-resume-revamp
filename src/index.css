@@ -172,6 +172,34 @@
 
 /* Enhanced print-specific styles for better page breaking */
 @media print {
+  @page {
+    margin: 20mm;
+    size: A4 portrait;
+  }
+  
+  body {
+    line-height: 1.4;
+    font-size: 11pt;
+  }
+  
+  /* Section-level page break controls */
+  .section, .experience-item, .education-item {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Prevent images and tables from breaking */
+  img, table {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Keep headers with content */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  
   .print\:break-inside-avoid {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
