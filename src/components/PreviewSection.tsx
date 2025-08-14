@@ -18,6 +18,7 @@ import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
+import { downloadSmartPdf } from "@/lib/smartPdfGenerator";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -321,38 +322,60 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     try {
       toast({
         title: "Generating PDF",
-        description: "Creating a text-based PDF from your enhanced resume...",
+        description: "Creating high-quality PDF with smart page breaks...",
       });
 
-      // Use the text-based PDF generation
-      const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
-        body: {
-          enhancedContent,
-          templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.id,
-          fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
+      // First try the smart PDF generation with proper page breaks
+      try {
+        await downloadSmartPdf(resumeContentRef.current, {
+          filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+          margin: 10,
+          quality: 0.98
+        });
+
+        toast({
+          title: "PDF Downloaded",
+          description: "Your enhanced resume has been downloaded with smart page breaks!",
+        });
+        return;
+      } catch (smartPdfError) {
+        console.warn('Smart PDF generation failed, trying server-side fallback:', smartPdfError);
+        
+        toast({
+          title: "Generating PDF",
+          description: "Using server-side PDF generation as fallback...",
+        });
+
+        // Fallback to server-side PDF generation
+        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+          body: {
+            enhancedContent,
+            templateId: selectedTemplate.id,
+            themeId: selectedColorTheme.id,
+            fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
+          }
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Failed to generate PDF');
         }
-      });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to generate PDF');
+        // Create download link
+        const blob = new Blob([data], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "PDF Downloaded",
+          description: "Your enhanced resume has been downloaded successfully!",
+        });
       }
-
-      // Create download link
-      const blob = new Blob([data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "PDF Downloaded",
-        description: "Your enhanced resume has been downloaded successfully!",
-      });
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({

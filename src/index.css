@@ -234,6 +234,23 @@
     margin-top: 0.75rem !important;
   }
   
+  
+  /* Page break classes for html2pdf.js */
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+  
+  .page-break-after {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  
+  .page-break-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
   /* Enhanced content protection */
   .print\:keep-together {
     break-inside: avoid !important;
