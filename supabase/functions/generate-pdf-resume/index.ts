@@ -52,6 +52,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     @page {
       size: A4;
       margin: 0.25in;
+      page-break-inside: avoid;
     }
     
     * {
@@ -59,6 +60,34 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 0;
       box-sizing: border-box;
       text-decoration: none !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Page break rules for printer-friendly output */
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      break-after: avoid;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .section, .header, .content-section, .contact-info, .skills-grid, .experience-item, .education-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      orphans: 3;
+      widows: 3;
+    }
+    
+    .skills-item, .skill-bar, .contact-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Avoid breaks right after headings */
+    h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
+      page-break-after: avoid;
+      break-after: avoid;
     }
     
     /* Prevent any auto-linking behavior */
@@ -596,8 +625,45 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
-    @page { size: A4; margin: 0.5in; }
-    * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none !important; }
+    @page { 
+      size: A4; 
+      margin: 0.5in; 
+      page-break-inside: avoid;
+    }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      text-decoration: none !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Page break rules for printer-friendly output */
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      break-after: avoid;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .section, .header, .content-section, .contact-info, .skills-grid, .experience-item, .education-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      orphans: 3;
+      widows: 3;
+    }
+    
+    .skills-item, .skill-bar, .contact-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Avoid breaks right after headings */
+    h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
     
     body {
       font-family: 'Times New Roman', 'Georgia', serif;
@@ -760,6 +826,34 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 0;
       box-sizing: border-box;
       text-decoration: none !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Page break rules for printer-friendly output */
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      break-after: avoid;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .section, .header, .content-section, .contact-info, .skills-grid, .experience-item, .education-item, .card {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      orphans: 3;
+      widows: 3;
+    }
+    
+    .skills-item, .skill-bar, .contact-item, .experience-card, .summary-card, .education-section, .skills-section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Avoid breaks right after headings */
+    h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
+      page-break-after: avoid;
+      break-after: avoid;
     }
     
     /* Prevent any auto-linking behavior */
@@ -1280,7 +1374,36 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       format: 'A4',
       margin: '0.25in',
       zoom: 1,
-      wait_for: 2000,
+      wait_for: 3000,
+      sandbox: false,
+      protect: false,
+      filename: 'enhanced_resume.pdf',
+      // Enhanced page break handling options
+      css: `
+        @media print {
+          * { 
+            -webkit-print-color-adjust: exact !important; 
+            color-adjust: exact !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .page-break-before { page-break-before: always !important; }
+          .page-break-after { page-break-after: always !important; }
+          .page-break-avoid { page-break-inside: avoid !important; break-inside: avoid !important; }
+          .section, .header, .experience-item, .education-item, .skills-section, .card {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            orphans: 3 !important;
+            widows: 3 !important;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+        }
+      `,
     }),
   });
 
