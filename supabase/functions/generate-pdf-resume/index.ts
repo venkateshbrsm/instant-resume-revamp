@@ -1396,6 +1396,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       sandbox: false,
       protect: false,
       filename: 'enhanced_resume.pdf',
+      autoPaging: 'text',
       // Enhanced page break handling options
       css: `
         @media print {
