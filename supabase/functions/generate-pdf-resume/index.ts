@@ -1138,25 +1138,24 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       </div>
       ` : ''}
 
-      <!-- Individual Education Cards -->
-      ${resumeData.education && resumeData.education.length > 0 ? 
-        resumeData.education.map((edu: any, index: number) => `
-        <div class="card">
-          <div class="section">
-            <div class="section-header">
-              <div class="section-icon">🎓</div>
-              <h3 class="section-title">${index === 0 ? 'Education' : 'Academic Background'}</h3>
-            </div>
-            <div class="education-section" style="padding: 0; margin-bottom: 0; box-shadow: none; border: none; background: transparent;">
-              <div class="education-item">
-                <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-                <div class="education-institution">${edu.institution || 'University Name'}</div>
-                <div class="education-year">${edu.year || 'Year'}</div>
-              </div>
-            </div>
+      <!-- Education Card -->
+      ${resumeData.education && resumeData.education.length > 0 ? `
+      <div class="card">
+        <div class="education-section">
+          <div class="section-header">
+            <div class="section-icon">🎓</div>
+            <h3 class="section-title">Education</h3>
           </div>
+          ${resumeData.education.map((edu: any) => `
+          <div class="education-item">
+            <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+            <div class="education-institution">${edu.institution || 'University Name'}</div>
+            <div class="education-year">${edu.year || 'Year'}</div>
+          </div>
+          `).join('')}
         </div>
-        `).join('') : ''}
+      </div>
+      ` : ''}
     </div>
   </div>
 </body>
