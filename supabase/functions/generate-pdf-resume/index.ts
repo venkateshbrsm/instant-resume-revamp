@@ -725,6 +725,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 12pt;
       position: relative;
       overflow: hidden;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
     
     .header::before {
@@ -793,11 +795,13 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-bottom: 16pt;
       break-inside: avoid;
       page-break-inside: avoid;
+      position: relative;
     }
     
     .section {
       margin-bottom: 0;
       break-inside: avoid;
+      page-break-inside: avoid;
     }
     
     /* Creative section headers */
@@ -840,21 +844,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       color: #2d3748;
     }
     
-    /* Experience items - independent positioning */
-    .experience-item {
-      position: relative;
-      margin-bottom: 12pt;
-      padding: 10pt;
-      border-radius: 6pt;
+    /* Experience items - independent cards */
+    .experience-card {
       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+      padding: 12pt;
+      border-radius: 8pt;
+      box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
       border-left: 3pt solid ${theme.accent};
-    }
-    
-    /* Remove timeline positioning for independent cards */
-    .experience-timeline {
       position: static;
-      padding-left: 0;
-      margin-bottom: 0;
     }
     
     .experience-header {
@@ -921,8 +918,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 12pt;
       border-radius: 8pt;
       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-      border: 1pt solid rgba(0,0,0,0.05);
-      margin-bottom: 12pt;
+      border-left: 3pt solid ${theme.accent};
     }
     
     .skill-item {
@@ -962,9 +958,9 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     
     /* Creative stats */
     .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8pt;
+      display: flex;
+      gap: 12pt;
+      justify-content: space-between;
     }
     
     .stat-item {
@@ -972,6 +968,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 8pt;
       border-radius: 6pt;
       background: linear-gradient(135deg, ${theme.accent}10, ${theme.secondary}15);
+      flex: 1;
     }
     
     .stat-number {
@@ -992,7 +989,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 12pt;
       border-radius: 8pt;
       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-      border: 1pt solid rgba(0,0,0,0.05);
+      border-left: 3pt solid ${theme.accent};
     }
     
     .education-item {
@@ -1000,7 +997,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       border-radius: 6pt;
       margin-bottom: 6pt;
       background: rgba(255,255,255,0.8);
-      border-left: 3pt solid ${theme.accent};
+      border-left: 2pt solid ${theme.accent}40;
     }
     
     .education-degree {
@@ -1060,21 +1057,23 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         </div>
       </div>
 
-      <!-- Portfolio Stats Cards -->
+      <!-- Portfolio Stats Card -->
       <div class="card">
         <div class="section">
           <div class="section-header">
             <div class="section-icon">📊</div>
             <h3 class="section-title">Portfolio Stats</h3>
           </div>
-          <div class="stats-grid" style="display: flex; gap: 12pt; justify-content: space-between;">
-            <div class="stat-item" style="flex: 1;">
-              <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-              <div class="stat-label">Creative Skills</div>
-            </div>
-            <div class="stat-item" style="flex: 1; background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}15);">
-              <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-              <div class="stat-label">Projects</div>
+          <div class="summary-card">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
+                <div class="stat-label">Creative Skills</div>
+              </div>
+              <div class="stat-item" style="background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}15);">
+                <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
+                <div class="stat-label">Projects</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1089,7 +1088,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
               <div class="section-icon">💼</div>
               <h3 class="section-title">${index === 0 ? 'Experience Journey' : 'Professional Experience'}</h3>
             </div>
-            <div class="experience-item" style="margin-bottom: 0; position: static;">
+            <div class="experience-card">
               <div class="experience-header">
                 <div>
                   <div class="experience-title">${exp.title || 'Position Title'}</div>
@@ -1112,47 +1111,50 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         </div>
         `).join('') : ''}
 
+      <!-- Individual Education Cards -->
+      ${resumeData.education && resumeData.education.length > 0 ? 
+        resumeData.education.map((edu: any, index: number) => `
+        <div class="card">
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon">🎓</div>
+              <h3 class="section-title">${index === 0 ? 'Education' : 'Academic Background'}</h3>
+            </div>
+            <div class="education-section">
+              <div class="education-item">
+                <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+                <div class="education-institution">${edu.institution || 'University Name'}</div>
+                <div class="education-year">${edu.year || 'Year'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `).join('') : ''}
+
       <!-- Creative Skills Card -->
       ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? `
       <div class="card">
-        <div class="skills-section">
+        <div class="section">
           <div class="section-header">
             <div class="section-icon">⚡</div>
             <h3 class="section-title">Creative Skills</h3>
           </div>
-          ${resumeData.skills.slice(0, 8).map((skill: string) => {
-            const proficiency = 75 + (skill.length % 20);
-            return `
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">${skill}</span>
-                <span class="skill-percentage">${Math.round(proficiency)}%</span>
+          <div class="skills-section">
+            ${resumeData.skills.slice(0, 8).map((skill: string) => {
+              const proficiency = 75 + (skill.length % 20);
+              return `
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">${skill}</span>
+                  <span class="skill-percentage">${Math.round(proficiency)}%</span>
+                </div>
+                <div class="skill-bar">
+                  <div class="skill-progress" style="width: ${proficiency}%"></div>
+                </div>
               </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: ${proficiency}%"></div>
-              </div>
-            </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-      ` : ''}
-
-      <!-- Education Card -->
-      ${resumeData.education && resumeData.education.length > 0 ? `
-      <div class="card">
-        <div class="education-section">
-          <div class="section-header">
-            <div class="section-icon">🎓</div>
-            <h3 class="section-title">Education</h3>
+              `;
+            }).join('')}
           </div>
-          ${resumeData.education.map((edu: any) => `
-          <div class="education-item">
-            <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-            <div class="education-institution">${edu.institution || 'University Name'}</div>
-            <div class="education-year">${edu.year || 'Year'}</div>
-          </div>
-          `).join('')}
         </div>
       </div>
       ` : ''}

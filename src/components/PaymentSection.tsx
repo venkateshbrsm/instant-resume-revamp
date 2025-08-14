@@ -231,7 +231,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               
               <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Payment Successful! 🎉</h2>
               <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 px-2">
-                Your AI-enhanced resume is ready for download. You'll receive both PDF and Word formats.
+                Your AI-enhanced resume is ready for download in professional PDF format.
               </p>
 
               <div className="space-y-4 mb-6 sm:mb-8">
@@ -253,8 +253,8 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
                   </div>
                   <div className="p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
                     <FileDown className="w-6 sm:w-8 h-6 sm:h-8 text-primary mx-auto mb-1 sm:mb-2" />
-                    <h4 className="font-semibold text-sm sm:text-base">Word Format</h4>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Easy to edit</p>
+                    <h4 className="font-semibold text-sm sm:text-base">ATS Optimized</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Recruiter friendly</p>
                   </div>
                 </div>
               </div>
@@ -264,10 +264,10 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
                   <h4 className="font-semibold mb-2 text-sm sm:text-base">What's Included:</h4>
                   <ul className="text-xs sm:text-sm text-muted-foreground space-y-1">
                     <li>• Professionally formatted PDF resume</li>
-                    <li>• Editable Word document version</li>
                     <li>• ATS-optimized formatting</li>
                     <li>• Enhanced content with action verbs</li>
                     <li>• Modern, professional design</li>
+                    <li>• Multiple template options</li>
                   </ul>
                 </div>
 
@@ -386,8 +386,8 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               <h5 className="font-semibold text-sm sm:text-base">You'll receive:</h5>
               <ul className="space-y-1 text-muted-foreground">
                 <li>✓ Professional PDF resume</li>
-                <li>✓ Editable Word document</li>
                 <li>✓ ATS-friendly formatting</li>
+                <li>✓ Enhanced content</li>
                 <li>✓ Instant download</li>
               </ul>
             </div>

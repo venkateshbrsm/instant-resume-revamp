@@ -687,7 +687,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>Editable Word document</span>
+                <span>ATS-optimized format</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
