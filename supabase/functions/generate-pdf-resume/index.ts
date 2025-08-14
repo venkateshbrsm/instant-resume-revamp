@@ -153,23 +153,29 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       flex-shrink: 0;
     }
     
-    /* Main content grid matching the preview layout */
-    .main-content {
-      display: grid;
-      grid-template-columns: 1.4fr 0.6fr;
-      gap: 12pt;
-      padding: 12pt;
-      min-height: calc(297mm - 60pt);
-      width: 100%;
-    }
+     /* Main content grid matching the preview layout */
+     .main-content {
+       display: grid;
+       grid-template-columns: 1.4fr 0.6fr;
+       gap: 12pt;
+       padding: 12pt;
+       min-height: calc(297mm - 60pt);
+       width: 100%;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .left-column {
-      space-y: 12pt;
-    }
-    
-    .sidebar {
-      space-y: 12pt;
-    }
+     .left-column {
+       space-y: 12pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
+     
+     .sidebar {
+       space-y: 12pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
      .section {
        margin-bottom: 12pt;
@@ -178,13 +184,15 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
        break-inside: avoid;
      }
     
-    /* Section titles with gradient icons matching preview */
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 6pt;
-      margin-bottom: 8pt;
-    }
+     /* Section titles with gradient icons matching preview */
+     .section-header {
+       display: flex;
+       align-items: center;
+       gap: 6pt;
+       margin-bottom: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .section-icon {
       width: 24pt;
@@ -220,12 +228,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       color: #2d3748;
     }
     
-    /* Experience timeline matching preview */
-    .experience-timeline {
-      position: relative;
-      padding-left: 12pt;
-      margin-bottom: 12pt;
-    }
+     /* Experience timeline matching preview */
+     .experience-timeline {
+       position: relative;
+       padding-left: 12pt;
+       margin-bottom: 12pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
      .experience-item {
        position: relative;
@@ -251,12 +261,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       box-shadow: 0 0 0 2pt ${theme.accent}30;
     }
     
-    .experience-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8pt;
-    }
+     .experience-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: flex-start;
+       margin-bottom: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .experience-title {
       font-size: 12pt;
@@ -281,22 +293,26 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       border: 1pt solid ${theme.accent}20;
     }
     
-    .achievements {
-      list-style: none;
-      margin-top: 8pt;
-    }
+     .achievements {
+       list-style: none;
+       margin-top: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .achievement {
-      margin-bottom: 6pt;
-      font-size: 9pt;
-      line-height: 1.5;
-      display: flex;
-      align-items: flex-start;
-      gap: 8pt;
-      padding: 6pt 8pt;
-      background: rgba(255,255,255,0.5);
-      border-radius: 6pt;
-    }
+     .achievement {
+       margin-bottom: 6pt;
+       font-size: 9pt;
+       line-height: 1.5;
+       display: flex;
+       align-items: flex-start;
+       gap: 8pt;
+       padding: 6pt 8pt;
+       background: rgba(255,255,255,0.5);
+       border-radius: 6pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .achievement::before {
       content: '';
@@ -319,16 +335,20 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-bottom: 12pt;
     }
     
-    .skill-item {
-      margin-bottom: 12pt;
-    }
+     .skill-item {
+       margin-bottom: 12pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .skill-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4pt;
-    }
+     .skill-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       margin-bottom: 4pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .skill-name {
       font-weight: 600;
@@ -355,18 +375,22 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     }
     
     /* Stats cards matching preview */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8pt;
-    }
+     .stats-grid {
+       display: grid;
+       grid-template-columns: 1fr;
+       gap: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .stat-item {
-      text-align: center;
-      padding: 8pt;
-      border-radius: 6pt;
-      background: ${theme.primary}08;
-    }
+     .stat-item {
+       text-align: center;
+       padding: 8pt;
+       border-radius: 6pt;
+       background: ${theme.primary}08;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .stat-number {
       font-size: 18pt;
@@ -581,7 +605,13 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       font-size: 11pt; width: 100%; min-height: auto;
     }
     
-    .container { background: white; width: 100%; max-width: none; }
+     .container { 
+       background: white; 
+       width: 100%; 
+       max-width: none; 
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .header {
       text-align: center; padding: 20pt 0; border-bottom: 2pt solid ${theme.primary};
@@ -592,7 +622,11 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     .header .title { font-size: 16pt; margin-bottom: 12pt; color: #2c3e50; font-weight: 500; }
     .header .contact { font-size: 11pt; color: #34495e; }
     
-    .section { margin-bottom: 24pt; }
+     .section { 
+       margin-bottom: 24pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     .section-title { 
       font-size: 16pt; font-weight: 700; color: ${theme.primary}; 
       margin-bottom: 12pt; padding-bottom: 4pt; 
@@ -601,19 +635,42 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     
     .summary { font-size: 12pt; line-height: 1.6; color: #2c3e50; text-align: justify; }
     
-    .experience-item { margin-bottom: 16pt; }
-    .experience-header { margin-bottom: 8pt; }
+     .experience-item { 
+       margin-bottom: 16pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
+     .experience-header { 
+       margin-bottom: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     .experience-title { font-size: 14pt; font-weight: 700; color: #2c3e50; }
     .experience-company { font-size: 12pt; font-weight: 600; color: ${theme.primary}; margin-bottom: 4pt; }
     .experience-duration { font-size: 10pt; color: #7f8c8d; font-style: italic; }
     
-    .achievements { margin-top: 8pt; padding-left: 20pt; }
-    .achievement { margin-bottom: 4pt; font-size: 11pt; line-height: 1.5; }
+     .achievements { 
+       margin-top: 8pt; 
+       padding-left: 20pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
+     .achievement { 
+       margin-bottom: 4pt; 
+       font-size: 11pt; 
+       line-height: 1.5;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8pt; }
     .skill-item { font-size: 11pt; color: #2c3e50; padding: 4pt; }
     
-    .education-item { margin-bottom: 12pt; }
+     .education-item { 
+       margin-bottom: 12pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     .education-degree { font-weight: 700; color: #2c3e50; font-size: 12pt; }
     .education-institution { font-weight: 600; color: ${theme.primary}; font-size: 11pt; }
     .education-year { font-size: 10pt; color: #7f8c8d; font-style: italic; }
@@ -721,14 +778,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       min-height: auto;
     }
     
-    .container {
-      background: white;
-      border-radius: 6pt;
-      overflow: hidden;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-      width: 100%;
-      max-width: none;
-    }
+     .container {
+       background: white;
+       border-radius: 6pt;
+       overflow: hidden;
+       box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+       width: 100%;
+       max-width: none;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     /* Creative Header with gradient */
     .header {
@@ -797,18 +856,22 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       flex-shrink: 0;
     }
     
-    /* Main content - single column for independent cards */
-    .main-content {
-      padding: 12pt;
-      width: 100%;
-    }
-    
-    .card {
-      margin-bottom: 16pt;
-      break-inside: avoid;
-      page-break-inside: avoid;
-      position: relative;
-    }
+     /* Main content - single column for independent cards */
+     .main-content {
+       padding: 12pt;
+       width: 100%;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
+     
+     .card {
+       margin-bottom: 16pt;
+       break-inside: avoid;
+       page-break-inside: avoid;
+       position: relative;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .section {
       margin-bottom: 0;
@@ -816,13 +879,15 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       page-break-inside: avoid;
     }
     
-    /* Creative section headers */
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 6pt;
-      margin-bottom: 8pt;
-    }
+     /* Creative section headers */
+     .section-header {
+       display: flex;
+       align-items: center;
+       gap: 6pt;
+       margin-bottom: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .section-icon {
       width: 24pt;
@@ -841,14 +906,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       color: ${theme.primary};
     }
     
-    /* Creative summary card */
-    .summary-card {
-      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
-      border-left: 3pt solid ${theme.accent};
-    }
+     /* Creative summary card */
+     .summary-card {
+       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+       padding: 12pt;
+       border-radius: 8pt;
+       box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
+       border-left: 3pt solid ${theme.accent};
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .summary-text {
       font-size: 10pt;
@@ -856,22 +923,26 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       color: #2d3748;
     }
     
-    /* Experience items - independent cards */
-    .experience-card {
-      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
-      border-left: 3pt solid ${theme.accent};
-      position: static;
-    }
+     /* Experience items - independent cards */
+     .experience-card {
+       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+       padding: 12pt;
+       border-radius: 8pt;
+       box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
+       border-left: 3pt solid ${theme.accent};
+       position: static;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .experience-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8pt;
-    }
+     .experience-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: flex-start;
+       margin-bottom: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .experience-title {
       font-size: 12pt;
@@ -896,22 +967,26 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       border: 1pt solid ${theme.accent}20;
     }
     
-    .achievements {
-      list-style: none;
-      margin-top: 8pt;
-    }
+     .achievements {
+       list-style: none;
+       margin-top: 8pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .achievement {
-      margin-bottom: 6pt;
-      font-size: 9pt;
-      line-height: 1.5;
-      display: flex;
-      align-items: flex-start;
-      gap: 8pt;
-      padding: 6pt 8pt;
-      background: rgba(255,255,255,0.5);
-      border-radius: 6pt;
-    }
+     .achievement {
+       margin-bottom: 6pt;
+       font-size: 9pt;
+       line-height: 1.5;
+       display: flex;
+       align-items: flex-start;
+       gap: 8pt;
+       padding: 6pt 8pt;
+       background: rgba(255,255,255,0.5);
+       border-radius: 6pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .achievement::before {
       content: '';
@@ -924,18 +999,22 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       position: relative;
     }
     
-    /* Creative skills section */
-    .skills-section {
-      background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-      border-left: 3pt solid ${theme.accent};
-    }
+     /* Creative skills section */
+     .skills-section {
+       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
+       padding: 12pt;
+       border-radius: 8pt;
+       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
+       border-left: 3pt solid ${theme.accent};
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .skill-item {
-      margin-bottom: 12pt;
-    }
+     .skill-item {
+       margin-bottom: 12pt;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .skill-header {
       display: flex;
@@ -995,22 +1074,26 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-top: 2pt;
     }
     
-    /* Creative education */
-    .education-section {
-      background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10);
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-      border-left: 3pt solid ${theme.accent};
-    }
+     /* Creative education */
+     .education-section {
+       background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10);
+       padding: 12pt;
+       border-radius: 8pt;
+       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
+       border-left: 3pt solid ${theme.accent};
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
-    .education-item {
-      padding: 10pt;
-      border-radius: 6pt;
-      margin-bottom: 6pt;
-      background: rgba(255,255,255,0.8);
-      border-left: 2pt solid ${theme.accent}40;
-    }
+     .education-item {
+       padding: 10pt;
+       border-radius: 6pt;
+       margin-bottom: 6pt;
+       background: rgba(255,255,255,0.8);
+       border-left: 2pt solid ${theme.accent}40;
+       page-break-inside: avoid;
+       break-inside: avoid;
+     }
     
     .education-degree {
       font-weight: 700;
