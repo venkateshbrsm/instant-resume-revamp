@@ -60,8 +60,39 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 0;
       box-sizing: border-box;
       text-decoration: none !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
+    }
+    
+    /* Comprehensive page break controls for PDF optimization */
+    div, section, article, .card, .experience-item, .education-item, .skill-item {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Content grouping and overflow management */
+    .job-entry, .degree-entry, .skill-group, .achievement-list {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+    
+    /* Table and list protection */
+    table, ul, ol, dl {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Text flow optimization */
+    p, li {
+      orphans: 3;
+      widows: 3;
+    }
+    
+    /* Content overflow management */
+    img, table, .content-block {
+      max-width: 100% !important;
+      max-height: 80vh !important;
+      object-fit: contain !important;
     }
     
     /* Page break rules for printer-friendly output */
@@ -641,8 +672,39 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 0; 
       box-sizing: border-box; 
       text-decoration: none !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
+    }
+    
+    /* Comprehensive page break controls for PDF optimization */
+    div, section, article, .card, .experience-item, .education-item, .skill-item {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Content grouping and overflow management */
+    .job-entry, .degree-entry, .skill-group, .achievement-list {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+    
+    /* Table and list protection */
+    table, ul, ol, dl {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Text flow optimization */
+    p, li {
+      orphans: 3;
+      widows: 3;
+    }
+    
+    /* Content overflow management */
+    img, table, .content-block {
+      max-width: 100% !important;
+      max-height: 80vh !important;
+      object-fit: contain !important;
     }
     
     /* Page break rules for printer-friendly output */
@@ -838,8 +900,39 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       padding: 0;
       box-sizing: border-box;
       text-decoration: none !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
+    }
+    
+    /* Comprehensive page break controls for PDF optimization */
+    div, section, article, .card, .experience-item, .education-item, .skill-item {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Content grouping and overflow management */
+    .job-entry, .degree-entry, .skill-group, .achievement-list {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+    
+    /* Table and list protection */
+    table, ul, ol, dl {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Text flow optimization */
+    p, li {
+      orphans: 3;
+      widows: 3;
+    }
+    
+    /* Content overflow management */
+    img, table, .content-block {
+      max-width: 100% !important;
+      max-height: 80vh !important;
+      object-fit: contain !important;
     }
     
     /* Page break rules for printer-friendly output */
