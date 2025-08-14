@@ -696,7 +696,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>Lifetime access</span>
+                <span>Instant download</span>
               </div>
             </div>
           </CardContent>
