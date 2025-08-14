@@ -718,30 +718,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
-              {enhancedContent && user?.email === 'venkateshbrsm@gmail.com' && (
-                <div className="space-y-2">
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    onClick={handleTestDownload}
-                    className="w-full"
-                    disabled={isGeneratingPdf}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    {isGeneratingPdf ? 'Generating PDF...' : 'Download ATS PDF (Preview)'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    onClick={handleDownloadDocx}
-                    className="w-full"
-                    disabled={isGeneratingPdf}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    {isGeneratingPdf ? 'Generating DOCX...' : 'Download DOCX (Preview)'}
-                  </Button>
-                </div>
-              )}
               
               <p className="text-xs text-muted-foreground">
                 {enhancedContent 
