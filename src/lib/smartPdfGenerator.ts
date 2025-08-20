@@ -128,6 +128,19 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-inside: avoid !important;
     }
     
+    /* Target ALL low-level containers to prevent cutting */
+    div, span, p, a, strong, em, b, i, u, small, sub, sup,
+    article, section, aside, nav, header, footer, main,
+    figure, figcaption, blockquote, pre, code, kbd, samp, var,
+    details, summary, mark, ins, del, dfn, abbr, time,
+    address, cite, q, s, strike, tt, big,
+    .text-xs, .text-sm, .text-base, .text-lg, .text-xl,
+    .font-medium, .font-semibold, .font-bold,
+    .opacity-90, .opacity-80, .opacity-75, .opacity-60 {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
     /* Template-specific content structures */
     .experience-item,
     .education-item,
@@ -227,14 +240,21 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   element.style.fontSize = '12pt';
   element.style.lineHeight = '1.4';
   
-  // Apply comprehensive page break classes to all relevant elements
+  // Apply comprehensive page break classes to all relevant elements including lowest level containers
   const allContentElements = element.querySelectorAll(`
     .section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, 
     .progress-bar, [class*="skill"], [class*="progress"], [class*="achievement"], 
     .border-l-2, .border-l-4, .pl-6, .relative.p-6, .space-y-3, .space-y-4, .space-y-6, .space-y-8,
     ul, ol, .list-container, .grid, .flex-wrap, .badge, .card, 
     .experience-entry, .job-entry, .education-entry, .degree-entry,
-    li, .flex.items-center, .achievement-wrapper, .sidebar-section
+    li, .flex.items-center, .achievement-wrapper, .sidebar-section,
+    div, span, p, a, strong, em, b, i, u, small, h1, h2, h3, h4, h5, h6,
+    .text-xs, .text-sm, .text-base, .text-lg, .text-xl, .text-2xl, .text-3xl,
+    .font-medium, .font-semibold, .font-bold, .font-light, .font-normal,
+    .opacity-90, .opacity-80, .opacity-75, .opacity-60, .opacity-50,
+    .mb-2, .mb-3, .mb-4, .mb-6, .mb-8, .mt-2, .mt-3, .mt-4, .mt-6, .mt-8,
+    .px-2, .px-3, .px-4, .py-1, .py-2, .py-3, .p-3, .p-4, .p-6, .p-8,
+    .rounded, .rounded-lg, .rounded-full, .rounded-xl, .bg-white
   `);
   
   const addedClasses: { element: Element; className: string }[] = [];
