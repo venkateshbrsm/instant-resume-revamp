@@ -33,7 +33,7 @@ export async function generateSmartPdf(
 
     // Configure html2pdf with proper page break handling
     const opt = {
-      margin: [15, 10, 15, 10], // top, right, bottom, left margins in mm
+      margin: [20, 15, 20, 15], // Increased margins: top, right, bottom, left in mm
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -43,18 +43,22 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.85, // Slightly increased scale for better quality
+        scale: 0.75, // Reduced scale to fit content better within margins
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 794, // A4 width in pixels at 96 DPI
-        height: 1123, // A4 height in pixels at 96 DPI
+        width: 750, // Reduced width to prevent cutoff
+        height: 1060, // Adjusted height accordingly
+        windowWidth: 750,
+        windowHeight: 1060,
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: true
+        compress: true,
+        putOnlyUsedFonts: true,
+        floatPrecision: 16 // Higher precision for better layout
       },
       // Critical: Enable CSS page break handling
       pagebreak: { 
@@ -149,11 +153,18 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     /* Media Print Styles for PDF Generation */
     @media print {
       body {
-        margin: 1cm !important;
-        font-size: 12pt !important;
-        line-height: 1.4 !important;
+        margin: 2cm !important;
+        font-size: 11pt !important;
+        line-height: 1.3 !important;
         color: black !important;
         background: white !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Ensure content fits within printable area */
+      * {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
       }
       
       /* Ensure proper margins and spacing */
@@ -183,7 +194,7 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       }
     }
     
-    /* Content-specific page break avoidance */
+    /* Content-specific page break avoidance with margins */
     .skills-section,
     .experience-item,
     .education-item,
@@ -191,9 +202,18 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     .progress-bar-container,
     .card,
     [class*="skill"],
-    [class*="progress"] {
+    [class*="progress"],
+    .section {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      margin-bottom: 8mm !important;
+      padding: 2mm !important;
+    }
+    
+    /* Prevent content from getting too close to page edges */
+    .content-section {
+      margin: 5mm 0 !important;
+      padding: 2mm !important;
     }
     
     /* Enhanced span protection */
@@ -247,14 +267,15 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles
-  element.style.width = '210mm'; // A4 width
-  element.style.maxWidth = '210mm';
-  element.style.margin = '0';
-  element.style.padding = '0';
+  // Apply PDF-optimized styles with better margins
+  element.style.width = '190mm'; // Reduced width to account for margins
+  element.style.maxWidth = '190mm';
+  element.style.margin = '10mm auto'; // Center with margins
+  element.style.padding = '15mm'; // Internal padding for content
   element.style.overflow = 'visible';
-  element.style.fontSize = '12pt';
-  element.style.lineHeight = '1.4';
+  element.style.fontSize = '11pt'; // Slightly smaller font for better fitting
+  element.style.lineHeight = '1.3';
+  element.style.boxSizing = 'border-box';
   
   // Apply page break classes to sections and skill-related elements
   const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
