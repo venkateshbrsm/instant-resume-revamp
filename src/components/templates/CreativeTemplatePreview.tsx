@@ -14,6 +14,8 @@ interface TemplatePreviewProps {
 }
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+  // Debug logging to check for N/A values
+  console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
       className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
@@ -74,7 +76,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 print:p-4">
+      <div className="p-6 print:p-4">
         {/* Main Content in Single Column for Print */}
         <div className="print:space-y-6">
           
@@ -102,7 +104,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           </div>
 
           {/* Grid Layout for Large Screens, Single Column for Print */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 print:gap-4 print:grid-cols-1">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4 print:grid-cols-1">
             {/* Main Content - Experience */}
             <div className="lg:col-span-2 space-y-6 print:space-y-4 print:col-span-1">
               {/* Experience with Creative Cards */}

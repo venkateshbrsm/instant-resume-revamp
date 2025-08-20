@@ -14,13 +14,13 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 print:p-4 print:space-y-6 print:max-w-none">
+    <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
       {/* Minimalist Header */}
-      <div className="text-left space-y-3 border-b pb-4 sm:pb-6 print:pb-4 print:page-break-inside-avoid" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+      <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+        <div className="flex items-start gap-6">
           {/* Profile Photo - Only show if photo exists */}
           {enhancedContent.photo && (
-            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border mx-auto sm:mx-0" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -29,15 +29,15 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </div>
           )}
           
-          <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-wide print:text-3xl" style={{ color: selectedColorTheme.primary }}>
+          <div className="flex-1">
+            <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground font-light print:text-lg">
+            <p className="text-xl text-muted-foreground font-light">
               {enhancedContent.title}
             </p>
             
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 lg:gap-8 text-xs sm:text-sm text-muted-foreground font-light pt-2 print:text-xs print:gap-2">
+            <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
               <span className="break-all">{enhancedContent.email}</span>
               <span>{enhancedContent.phone}</span>
               <span>{enhancedContent.location}</span>
@@ -109,7 +109,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 print:gap-6 print:grid-cols-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
         {/* Skills */}
         {enhancedContent.skills && enhancedContent.skills.length > 0 && (
           <div className="space-y-4">

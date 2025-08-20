@@ -15,10 +15,10 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 print:rounded-none flex flex-col lg:flex-row min-h-[600px] print:flex-col print:min-h-0">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
       {/* Left Sidebar */}
       <div 
-        className="w-full lg:w-64 p-4 sm:p-6 text-white print:w-full print:p-4"
+        className="w-64 p-6 text-white"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
@@ -129,29 +129,29 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-4 sm:p-6 lg:p-8 print:p-4">
+      <div className="flex-1 p-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8 print:mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 print:text-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             {enhancedContent.name}
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground mb-4 print:text-base">
+          <p className="text-lg text-muted-foreground mb-4">
             {enhancedContent.title}
           </p>
         </div>
 
         {/* About Section */}
-        <div className="mb-6 sm:mb-8 print:mb-4 print:page-break-inside-avoid">
-          <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-3 print:text-lg print:mb-3" style={{ color: selectedColorTheme.primary }}>
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
             <div 
-              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-white print:w-5 print:h-5"
+              className="w-6 h-6 rounded-full flex items-center justify-center text-white"
               style={{ backgroundColor: selectedColorTheme.primary }}
             >
               <User className="w-3 h-3" />
             </div>
             About & Professional Summary
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed print:text-sm print:leading-normal">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {enhancedContent.summary}
           </p>
         </div>
