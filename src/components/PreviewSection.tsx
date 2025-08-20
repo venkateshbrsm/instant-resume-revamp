@@ -630,8 +630,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Scrollable Template Preview - Printer Friendly */}
-                      <div className="h-[600px] w-full overflow-auto border rounded-lg">
+                      {/* Template Preview - Printer Friendly */}
+                      <div className="w-full border rounded-lg">
                         <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
                              style={{ minHeight: '297mm' }}>
                           {selectedTemplate.id === 'modern' && (
