@@ -43,7 +43,10 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.4, // Adjust the scale to fit content
+        scale: 0.8, // Increased scale for better quality
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
       },
       jsPDF: { 
         unit: 'mm', 
@@ -111,10 +114,45 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     lineHeight: element.style.lineHeight
   };
 
-  // Inject CSS for div page break avoidance
+  // Inject CSS for comprehensive page break handling
   const style = document.createElement('style');
   style.textContent = `
-    div { page-break-inside: avoid !important; }
+    /* Prevent content from being cut off at page breaks */
+    .page-break-avoid,
+    .skills-section,
+    .experience-item,
+    .education-item,
+    .skill-item,
+    .progress-bar-container,
+    .card,
+    [class*="skill"],
+    [class*="progress"] {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Ensure proper spacing around sections */
+    .section, .major-section {
+      page-break-after: avoid !important;
+    }
+    
+    /* Force breaks before major headings (except first) */
+    .page-break-before {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+    
+    /* General content protection */
+    div, p, li, span {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Specific protection for skill bars and lists */
+    ul, ol, .list-container {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -127,8 +165,8 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   element.style.fontSize = '12pt';
   element.style.lineHeight = '1.4';
   
-  // Apply page break classes to sections
-  const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section]');
+  // Apply page break classes to sections and skill-related elements
+  const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
   const addedClasses: { element: Element; className: string }[] = [];
   
   sections.forEach(section => {
@@ -143,6 +181,13 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   [...experienceItems, ...educationItems].forEach(item => {
     item.classList.add('page-break-avoid');
     addedClasses.push({ element: item, className: 'page-break-avoid' });
+  });
+
+  // Add page break avoidance to skill and progress elements specifically
+  const skillElements = element.querySelectorAll('.skill-bar, .progress-container, .skill-list, ul, ol, .list-group, .grid, [role="progressbar"]');
+  skillElements.forEach(skillElement => {
+    skillElement.classList.add('page-break-avoid');
+    addedClasses.push({ element: skillElement, className: 'page-break-avoid' });
   });
 
   // Add break-before class to major sections (except first)
