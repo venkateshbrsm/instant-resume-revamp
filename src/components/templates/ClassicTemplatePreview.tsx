@@ -86,14 +86,33 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
-                    <ul className="mt-3 space-y-2 print:keep-together">
-                      {exp.achievements.map((achievement: string, achIndex: number) => (
-                        <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
-                          <span className="mr-3 mt-1">•</span>
-                          <span>{achievement}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-base mb-3" style={{ color: selectedColorTheme.primary }}>
+                        Key Responsibilities & Achievements:
+                      </h4>
+                      <ul className="space-y-3 print:keep-together">
+                        {exp.achievements.map((achievement: string, achIndex: number) => (
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
+                            <span className="mr-3 mt-1 font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                            <span className="flex-1">{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {exp.technologies && exp.technologies.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-sm mb-2" style={{ color: selectedColorTheme.primary }}>
+                        Technologies Used:
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {exp.technologies.map((tech: string, techIndex: number) => (
+                          <Badge key={techIndex} variant="outline" className="text-xs px-2 py-1">
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
@@ -114,11 +133,11 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               >
                 CORE COMPETENCIES
               </h2>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="text-sm text-muted-foreground flex items-center">
-                    <span className="mr-3" style={{ color: selectedColorTheme.primary }}>•</span>
-                    <span>{skill}</span>
+                  <div key={index} className="text-sm text-muted-foreground flex items-start p-2 rounded-md border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                    <span className="mr-3 mt-0.5" style={{ color: selectedColorTheme.primary }}>▪</span>
+                    <span className="flex-1 font-medium">{skill}</span>
                   </div>
                 ))}
               </div>
@@ -137,15 +156,34 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               >
                 EDUCATION
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {enhancedContent.education.map((edu: any, index: number) => (
-                  <div key={index} className="print:avoid-break">
-                     <h3 className="font-bold text-foreground">{edu.degree}</h3>
-                     <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
+                  <div key={index} className="print:avoid-break p-3 rounded-md border-l-4" style={{ borderColor: selectedColorTheme.primary, backgroundColor: `${selectedColorTheme.primary}05` }}>
+                     <h3 className="font-bold text-lg text-foreground">{edu.degree}</h3>
+                     <p className="font-semibold text-base mb-1" style={{ color: selectedColorTheme.primary }}>
                        {edu.institution}
                      </p>
                      {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
-                       <p className="text-sm text-muted-foreground italic">{edu.year}</p>
+                       <p className="text-sm text-muted-foreground italic mb-2">{edu.year}</p>
+                     )}
+                     {edu.gpa && (
+                       <p className="text-sm text-muted-foreground">GPA: {edu.gpa}</p>
+                     )}
+                     {edu.honors && edu.honors.length > 0 && (
+                       <div className="mt-2">
+                         <p className="text-sm font-medium text-muted-foreground">Honors & Awards:</p>
+                         <ul className="text-sm text-muted-foreground ml-4">
+                           {edu.honors.map((honor: string, honorIndex: number) => (
+                             <li key={honorIndex}>• {honor}</li>
+                           ))}
+                         </ul>
+                       </div>
+                     )}
+                     {edu.coursework && edu.coursework.length > 0 && (
+                       <div className="mt-2">
+                         <p className="text-sm font-medium text-muted-foreground">Relevant Coursework:</p>
+                         <p className="text-sm text-muted-foreground">{edu.coursework.join(', ')}</p>
+                       </div>
                      )}
                   </div>
                 ))}
@@ -153,6 +191,126 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </div>
           )}
         </div>
+
+        {/* Additional Sections for More Detail */}
+        {(enhancedContent.certifications || enhancedContent.projects || enhancedContent.awards || enhancedContent.languages) && (
+          <div className="mt-8 space-y-6 print:mt-6 print:space-y-4">
+            {/* Certifications */}
+            {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+              <div className="print:avoid-break">
+                <h2 
+                  className="text-xl font-bold mb-4 pb-2 border-b"
+                  style={{ 
+                    color: selectedColorTheme.primary,
+                    borderColor: `${selectedColorTheme.primary}30`
+                  }}
+                >
+                  CERTIFICATIONS & LICENSES
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {enhancedContent.certifications.map((cert: any, index: number) => (
+                    <div key={index} className="p-3 rounded-md border-l-4" style={{ borderColor: selectedColorTheme.accent, backgroundColor: `${selectedColorTheme.accent}05` }}>
+                      <h3 className="font-bold text-foreground">{cert.name}</h3>
+                      <p className="text-sm font-medium" style={{ color: selectedColorTheme.accent }}>{cert.issuer}</p>
+                      {cert.date && <p className="text-sm text-muted-foreground">{cert.date}</p>}
+                      {cert.id && <p className="text-xs text-muted-foreground">ID: {cert.id}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Projects */}
+            {enhancedContent.projects && enhancedContent.projects.length > 0 && (
+              <div className="print:avoid-break">
+                <h2 
+                  className="text-xl font-bold mb-4 pb-2 border-b"
+                  style={{ 
+                    color: selectedColorTheme.primary,
+                    borderColor: `${selectedColorTheme.primary}30`
+                  }}
+                >
+                  KEY PROJECTS
+                </h2>
+                <div className="space-y-4">
+                  {enhancedContent.projects.map((project: any, index: number) => (
+                    <div key={index} className="p-4 rounded-md border-l-4" style={{ borderColor: selectedColorTheme.secondary, backgroundColor: `${selectedColorTheme.secondary}05` }}>
+                      <h3 className="font-bold text-lg text-foreground mb-2">{project.name}</h3>
+                      {project.description && (
+                        <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
+                      )}
+                      {project.technologies && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {project.technologies.map((tech: string, techIndex: number) => (
+                            <Badge key={techIndex} variant="outline" className="text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      {project.url && (
+                        <p className="text-sm" style={{ color: selectedColorTheme.primary }}>
+                          URL: {project.url}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Awards & Recognition */}
+            {enhancedContent.awards && enhancedContent.awards.length > 0 && (
+              <div className="print:avoid-break">
+                <h2 
+                  className="text-xl font-bold mb-4 pb-2 border-b"
+                  style={{ 
+                    color: selectedColorTheme.primary,
+                    borderColor: `${selectedColorTheme.primary}30`
+                  }}
+                >
+                  AWARDS & RECOGNITION
+                </h2>
+                <div className="space-y-3">
+                  {enhancedContent.awards.map((award: any, index: number) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-md" style={{ backgroundColor: `${selectedColorTheme.primary}05` }}>
+                      <span className="text-xl" style={{ color: selectedColorTheme.primary }}>🏆</span>
+                      <div>
+                        <h3 className="font-bold text-foreground">{award.title}</h3>
+                        <p className="text-sm font-medium" style={{ color: selectedColorTheme.primary }}>{award.issuer}</p>
+                        {award.date && <p className="text-sm text-muted-foreground">{award.date}</p>}
+                        {award.description && <p className="text-sm text-muted-foreground mt-1">{award.description}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Languages */}
+            {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+              <div className="print:avoid-break">
+                <h2 
+                  className="text-xl font-bold mb-4 pb-2 border-b"
+                  style={{ 
+                    color: selectedColorTheme.primary,
+                    borderColor: `${selectedColorTheme.primary}30`
+                  }}
+                >
+                  LANGUAGES
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {enhancedContent.languages.map((lang: any, index: number) => (
+                    <div key={index} className="p-3 rounded-md text-center border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                      <h3 className="font-bold text-foreground">{lang.name}</h3>
+                      <p className="text-sm" style={{ color: selectedColorTheme.primary }}>{lang.proficiency}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

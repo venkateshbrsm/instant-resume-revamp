@@ -159,7 +159,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                             className="space-y-3 print:space-y-2" 
                             style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
                           >
-                            {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
+                            {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
                                 className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 

@@ -74,8 +74,8 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Skills</h3>
               </div>
               <div className="space-y-2">
-                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => (
-                  <div key={index} className="text-xs opacity-90">
+                {enhancedContent.skills.map((skill: string, index: number) => (
+                  <div key={index} className="text-xs opacity-90 p-1 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                     • {skill}
                   </div>
                 ))}
@@ -107,12 +107,18 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Education</h3>
               </div>
               <div className="space-y-3">
-                {enhancedContent.education.slice(0, 2).map((edu: any, index: number) => (
-                  <div key={index} className="text-xs opacity-90">
+                {enhancedContent.education.map((edu: any, index: number) => (
+                  <div key={index} className="text-xs opacity-90 p-2 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
                     <div className="font-medium">{edu.degree}</div>
-                    <div className="text-xs opacity-75">{edu.institution}</div>
-                    {edu.year && edu.year !== "N/A" && (
+                    <div className="text-xs opacity-75 mt-1">{edu.institution}</div>
+                    {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
                       <div className="text-xs opacity-75">{edu.year}</div>
+                    )}
+                    {edu.gpa && <div className="text-xs opacity-75 mt-1">GPA: {edu.gpa}</div>}
+                    {edu.honors && edu.honors.length > 0 && (
+                      <div className="text-xs opacity-75 mt-1">
+                        Honors: {edu.honors.join(', ')}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -191,19 +197,104 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
-                      <ul className="space-y-2 text-sm text-muted-foreground mt-3">
-                        {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="flex items-start gap-2">
-                            <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: selectedColorTheme.accent }}>•</span>
-                            <span className="leading-relaxed">{achievement}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-sm mb-3" style={{ color: selectedColorTheme.primary }}>
+                          Key Achievements & Responsibilities:
+                        </h4>
+                        <ul className="space-y-3 text-sm text-muted-foreground">
+                          {exp.achievements.map((achievement: string, achIndex: number) => (
+                            <li key={achIndex} className="flex items-start gap-2">
+                              <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: selectedColorTheme.accent }}>▸</span>
+                              <span className="leading-relaxed">{achievement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {exp.technologies && exp.technologies.length > 0 && (
+                      <div className="mt-3">
+                        <h4 className="font-semibold text-sm mb-2" style={{ color: selectedColorTheme.primary }}>
+                          Technologies:
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {exp.technologies.map((tech: string, techIndex: number) => (
+                            <Badge key={techIndex} variant="outline" className="text-xs px-2 py-0.5" 
+                              style={{ borderColor: selectedColorTheme.accent, color: selectedColorTheme.accent }}>
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Additional Professional Sections */}
+        {(enhancedContent.certifications || enhancedContent.projects || enhancedContent.awards) && (
+          <div className="mt-8 space-y-6">
+            {/* Certifications */}
+            {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <div 
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white"
+                    style={{ backgroundColor: selectedColorTheme.primary }}
+                  >
+                    <Award className="w-3 h-3" />
+                  </div>
+                  Professional Certifications
+                </h2>
+                <div className="space-y-3">
+                  {enhancedContent.certifications.map((cert: any, index: number) => (
+                    <div key={index} className="border-l-2 pl-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                      <h3 className="font-bold text-foreground">{cert.name}</h3>
+                      <p className="text-sm font-medium" style={{ color: selectedColorTheme.accent }}>{cert.issuer}</p>
+                      {cert.date && <p className="text-sm text-muted-foreground">{cert.date}</p>}
+                      {cert.id && <p className="text-xs text-muted-foreground">Credential ID: {cert.id}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Notable Projects */}
+            {enhancedContent.projects && enhancedContent.projects.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <div 
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white"
+                    style={{ backgroundColor: selectedColorTheme.secondary }}
+                  >
+                    <Briefcase className="w-3 h-3" />
+                  </div>
+                  Notable Projects
+                </h2>
+                <div className="space-y-4">
+                  {enhancedContent.projects.map((project: any, index: number) => (
+                    <div key={index} className="border-l-2 pl-4 pb-4" style={{ borderColor: `${selectedColorTheme.secondary}20` }}>
+                      <h3 className="font-bold text-lg text-foreground">{project.name}</h3>
+                      {project.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
+                      )}
+                      {project.technologies && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {project.technologies.map((tech: string, techIndex: number) => (
+                            <Badge key={techIndex} variant="outline" className="text-xs" 
+                              style={{ borderColor: selectedColorTheme.secondary, color: selectedColorTheme.secondary }}>
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -60,7 +60,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                 Core Competencies
               </h3>
               <div className="space-y-2">
-                {enhancedContent.skills.slice(0, 8).map((skill: string, index: number) => (
+                {enhancedContent.skills.map((skill: string, index: number) => (
                   <div key={index} className="flex items-center gap-2 skill-item">
                     <div className="w-2 h-2 rounded-full bg-white/80"></div>
                     <span className="text-sm font-medium">{skill}</span>
@@ -168,22 +168,52 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                     
                     {exp.achievements && exp.achievements.length > 0 && (
                       <div className="page-break-avoid">
-                        <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                        <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                           <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
-                          Key Achievements
+                          Key Achievements & Responsibilities
                         </h4>
-                        <div className="space-y-2">
-                          {exp.achievements.slice(0, 4).map((achievement: string, achIndex: number) => (
-                            <div key={achIndex} className="flex items-start gap-2">
+                        <div className="space-y-3">
+                          {exp.achievements.map((achievement: string, achIndex: number) => (
+                            <div key={achIndex} className="flex items-start gap-3">
                               <div 
-                                className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                                className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
                                 style={{ backgroundColor: selectedColorTheme.accent }}
                               >
-                                <span className="text-white text-xs">✓</span>
+                                <span className="text-white text-xs font-bold">✓</span>
                               </div>
-                              <p className="text-sm leading-relaxed text-gray-600">
+                              <p className="text-sm leading-relaxed text-gray-600 flex-1">
                                 {achievement}
                               </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {exp.technologies && exp.technologies.length > 0 && (
+                      <div className="mt-4 page-break-avoid">
+                        <h4 className="font-semibold text-gray-900 mb-3">Technologies & Tools</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {exp.technologies.map((tech: string, techIndex: number) => (
+                            <Badge key={techIndex} variant="outline" className="text-xs px-2 py-1" 
+                              style={{ borderColor: selectedColorTheme.primary, color: selectedColorTheme.primary }}>
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {exp.metrics && exp.metrics.length > 0 && (
+                      <div className="mt-4 page-break-avoid">
+                        <h4 className="font-semibold text-gray-900 mb-3">Key Metrics & Results</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {exp.metrics.map((metric: any, metricIndex: number) => (
+                            <div key={metricIndex} className="bg-gray-50 p-3 rounded-lg text-center">
+                              <div className="text-lg font-bold" style={{ color: selectedColorTheme.primary }}>
+                                {metric.value}
+                              </div>
+                              <p className="text-xs text-gray-600">{metric.label}</p>
                             </div>
                           ))}
                         </div>
@@ -194,6 +224,119 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Additional Executive Sections */}
+      <div className="print:block">
+        <div className="bg-white p-6 print:p-4">
+          <div className="max-w-5xl mx-auto space-y-8 print:space-y-6">
+            
+            {/* Board Positions & Advisory Roles */}
+            {enhancedContent.boardPositions && enhancedContent.boardPositions.length > 0 && (
+              <div className="page-break-avoid">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <Users className="w-6 h-6" />
+                  Board Positions & Advisory Roles
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {enhancedContent.boardPositions.map((position: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg border-l-4" style={{ borderColor: selectedColorTheme.primary }}>
+                      <h3 className="font-bold text-gray-900">{position.title}</h3>
+                      <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>{position.organization}</p>
+                      <p className="text-sm text-gray-600">{position.duration}</p>
+                      {position.description && <p className="text-sm text-gray-600 mt-2">{position.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Professional Certifications */}
+            {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+              <div className="page-break-avoid">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <Award className="w-6 h-6" />
+                  Professional Certifications & Licenses
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {enhancedContent.certifications.map((cert: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg border-l-4" style={{ borderColor: selectedColorTheme.accent }}>
+                      <h3 className="font-bold text-gray-900">{cert.name}</h3>
+                      <p className="font-semibold" style={{ color: selectedColorTheme.accent }}>{cert.issuer}</p>
+                      {cert.date && <p className="text-sm text-gray-600">{cert.date}</p>}
+                      {cert.id && <p className="text-xs text-gray-500">Credential ID: {cert.id}</p>}
+                      {cert.expires && <p className="text-xs text-gray-500">Expires: {cert.expires}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Awards & Recognition */}
+            {enhancedContent.awards && enhancedContent.awards.length > 0 && (
+              <div className="page-break-avoid">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <Star className="w-6 h-6" />
+                  Awards & Recognition
+                </h2>
+                <div className="space-y-4">
+                  {enhancedContent.awards.map((award: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg border-l-4" style={{ borderColor: selectedColorTheme.secondary }}>
+                      <div className="flex items-start gap-4">
+                        <div className="text-2xl">🏆</div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900">{award.title}</h3>
+                          <p className="font-semibold" style={{ color: selectedColorTheme.secondary }}>{award.issuer}</p>
+                          {award.date && <p className="text-sm text-gray-600">{award.date}</p>}
+                          {award.description && <p className="text-sm text-gray-600 mt-2 leading-relaxed">{award.description}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Publications & Speaking */}
+            {enhancedContent.publications && enhancedContent.publications.length > 0 && (
+              <div className="page-break-avoid">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <TrendingUp className="w-6 h-6" />
+                  Publications & Speaking Engagements
+                </h2>
+                <div className="space-y-4">
+                  {enhancedContent.publications.map((pub: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="font-bold text-gray-900">{pub.title}</h3>
+                      <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>{pub.venue || pub.journal}</p>
+                      {pub.date && <p className="text-sm text-gray-600">{pub.date}</p>}
+                      {pub.authors && <p className="text-sm text-gray-600">Co-authors: {pub.authors}</p>}
+                      {pub.url && <p className="text-sm" style={{ color: selectedColorTheme.primary }}>URL: {pub.url}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Languages & International Experience */}
+            {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+              <div className="page-break-avoid">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+                  <Target className="w-6 h-6" />
+                  Languages & International Experience
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {enhancedContent.languages.map((lang: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg text-center">
+                      <h3 className="font-bold text-gray-900">{lang.name}</h3>
+                      <p className="text-sm font-semibold" style={{ color: selectedColorTheme.primary }}>{lang.proficiency}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
