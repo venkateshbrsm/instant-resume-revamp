@@ -197,7 +197,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             
             <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-2 pl-6 relative" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-2 pl-6 relative break-inside-avoid page-break-inside-avoid" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div 
                     className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
                     style={{ backgroundColor: selectedColorTheme.primary }}
@@ -227,7 +227,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
                         <ul className="space-y-3 text-sm text-muted-foreground">
                           {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li key={achIndex} className="flex items-center gap-3">
+                            <li key={achIndex} className="flex items-center gap-3 break-inside-avoid page-break-inside-avoid">
                               <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
                                 <span className="text-white text-[10px] font-bold leading-none">✓</span>
                               </div>

@@ -125,11 +125,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                     </h2>
                   </div>
                   
-                  <div className="space-y-8 print:space-y-6">
-                    {enhancedContent.experience.map((exp: any, index: number) => (
-                      <div 
-                        key={index} 
-                        className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg"
+            <div className="space-y-8 print:space-y-6">
+              {enhancedContent.experience.map((exp: any, index: number) => (
+                <div 
+                  key={index} 
+                  className="relative p-6 rounded-2xl border-l-4 shadow-md break-inside-avoid page-break-inside-avoid print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg"
                         style={{ 
                           background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
                           borderColor: selectedColorTheme.accent,
@@ -165,7 +165,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                             {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
-                                className="flex items-center gap-3 print:gap-2 print:break-inside-avoid" 
+                                className="flex items-center gap-3 break-inside-avoid page-break-inside-avoid print:gap-2 print:break-inside-avoid" 
                                 style={{ pageBreakInside: 'avoid' }}
                               >
                                 <div 

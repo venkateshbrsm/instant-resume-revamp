@@ -76,7 +76,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </h2>
             <div className="space-y-8">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-4 pl-6 print:avoid-break" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-4 pl-6 break-inside-avoid page-break-inside-avoid print:avoid-break" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
@@ -93,7 +93,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                       </h4>
                       <ul className="space-y-3">
                         {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-center">
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-center break-inside-avoid page-break-inside-avoid">
                             <span className="mr-3 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
                             <span className="font-medium">{achievement}</span>
                           </li>
