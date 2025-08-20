@@ -30,7 +30,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
         <div 
-          className="h-32 sm:h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
+          className="h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.accent} 70%, ${selectedColorTheme.secondary} 100%)`,
             pageBreakInside: 'avoid'
@@ -44,8 +44,8 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           </div>
           
           <div className="relative z-10 text-center">
-            <div className="flex flex-col sm:flex-row items-center justify-center mb-4 gap-3 sm:gap-0">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center sm:mr-4 overflow-hidden">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4 overflow-hidden">
                 {enhancedContent.photo ? (
                   <img 
                     src={enhancedContent.photo} 
@@ -56,13 +56,13 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   <Palette className="w-8 h-8 text-white" />
                 )}
               </div>
-              <div className="text-center sm:text-left">
-                <h1 className="text-2xl sm:text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
-                <p className="text-lg sm:text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+              <div>
+                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
+                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
+            <div className="flex justify-center space-x-6 text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
               <div className="flex items-center gap-2 print:justify-center">
                 <Mail className="w-4 h-4" />
                 <span className="break-all">{enhancedContent.email}</span>
@@ -85,17 +85,17 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             className="relative mb-6 print:mb-4 print:break-inside-avoid print:page-break-inside-avoid" 
             style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
           >
-              <div className="flex items-start gap-3 sm:gap-4 print:gap-3">
-                <div 
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white shadow-lg print:w-10 print:h-10 print:shadow-none flex-shrink-0"
-                  style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
-                >
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 print:w-5 print:h-5" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 print:text-xl print:mb-2" style={{ color: selectedColorTheme.primary }}>
-                    Creative Vision
-                  </h2>
+            <div className="flex items-start gap-4 print:gap-3">
+              <div 
+                className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg print:w-10 print:h-10 print:shadow-none"
+                style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
+              >
+                <Sparkles className="w-6 h-6 print:w-5 print:h-5" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-3 print:text-xl print:mb-2" style={{ color: selectedColorTheme.primary }}>
+                  Creative Vision
+                </h2>
                 <p className="text-base leading-relaxed text-muted-foreground print:text-sm print:leading-normal">
                   {enhancedContent.summary}
                 </p>
