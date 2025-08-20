@@ -166,11 +166,18 @@
 
   /* Remove underlines from email and phone */
   .no-underline,
+  .no-underline *,
+  span.no-underline,
   a[href^="mailto:"],
   a[href^="tel:"],
   span:has(a[href^="mailto:"]),
-  span:has(a[href^="tel:"]) {
+  span:has(a[href^="tel:"]),
+  span[class*="no-underline"] {
     text-decoration: none !important;
+    text-decoration-line: none !important;
+    text-decoration-color: transparent !important;
+    text-decoration-thickness: 0 !important;
+    border-bottom: none !important;
   }
 
   /* Global email and phone styling */

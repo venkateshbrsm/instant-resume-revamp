@@ -225,6 +225,8 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     
     /* Remove underlines from email and phone in PDFs */
     .no-underline,
+    .no-underline *,
+    span.no-underline,
     a[href^="mailto:"],
     a[href^="tel:"],
     span:has(a[href^="mailto:"]),
@@ -232,8 +234,15 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     [data-email],
     [data-phone],
     .email,
-    .phone {
+    .phone,
+    span[class*="no-underline"] {
       text-decoration: none !important;
+      text-decoration-line: none !important;
+      text-decoration-color: transparent !important;
+      text-decoration-thickness: 0 !important;
+      border-bottom: none !important;
+      -webkit-text-decoration: none !important;
+      -moz-text-decoration: none !important;
     }
   `;
   document.head.appendChild(style);
