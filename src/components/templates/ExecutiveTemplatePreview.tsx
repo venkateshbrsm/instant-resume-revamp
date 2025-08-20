@@ -25,10 +25,10 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
       >
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-0">
             <div>
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
                   {enhancedContent.photo ? (
                     <img 
                       src={enhancedContent.photo} 
@@ -40,12 +40,12 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                   )}
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold mb-1">{enhancedContent.name}</h1>
-                  <p className="text-xl opacity-95 font-medium">{enhancedContent.title}</p>
+                  <h1 className="text-2xl sm:text-4xl font-bold mb-1">{enhancedContent.name}</h1>
+                  <p className="text-lg sm:text-xl opacity-95 font-medium">{enhancedContent.title}</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-6 text-sm opacity-90">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm opacity-90">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   <span>{enhancedContent.email}</span>
@@ -58,12 +58,12 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             </div>
             
             {/* Executive Stats */}
-            <div className="text-right">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl font-bold">
+            <div className="text-center lg:text-right">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold">
                   {enhancedContent.experience?.length || 0}+
                 </div>
-                <div className="text-sm opacity-90">Years Leadership</div>
+                <div className="text-xs sm:text-sm opacity-90">Years Leadership</div>
               </div>
             </div>
           </div>
@@ -73,26 +73,26 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
       <div className="p-6 print:p-4">
         {/* Executive Summary - Premium Focus */}
         <div className="mb-6 print:mb-4">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div 
-              className="w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-lg"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-white shadow-lg"
               style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
             >
-              <Target className="w-6 h-6" />
+              <Target className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h2 className="text-2xl font-bold" style={{ color: selectedColorTheme.primary }}>
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: selectedColorTheme.primary }}>
               Executive Summary
             </h2>
           </div>
           
           <div 
-            className="p-6 rounded-xl border-l-4 bg-gradient-to-r from-transparent to-opacity-5"
+            className="p-4 sm:p-6 rounded-xl border-l-4 bg-gradient-to-r from-transparent to-opacity-5"
             style={{ 
               borderColor: selectedColorTheme.primary,
               background: `linear-gradient(135deg, ${selectedColorTheme.primary}03, ${selectedColorTheme.accent}08)`
             }}
           >
-            <p className="text-lg leading-relaxed text-muted-foreground">
+            <p className="text-base sm:text-lg leading-relaxed text-muted-foreground">
               {enhancedContent.summary}
             </p>
           </div>
@@ -103,36 +103,36 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
           <div className="lg:col-span-2">
             {enhancedContent.experience && enhancedContent.experience.length > 0 && (
               <div>
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-lg"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-white shadow-lg"
                     style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
                   >
-                    <TrendingUp className="w-6 h-6" />
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <h2 className="text-2xl font-bold" style={{ color: selectedColorTheme.primary }}>
+                  <h2 className="text-xl sm:text-2xl font-bold" style={{ color: selectedColorTheme.primary }}>
                     Leadership Experience
                   </h2>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {enhancedContent.experience.map((exp: any, index: number) => (
                     <div 
                       key={index}
-                      className="relative p-6 rounded-xl border shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-r from-white to-opacity-5"
+                      className="relative p-4 sm:p-6 rounded-xl border shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-r from-white to-opacity-5"
                       style={{ 
                         borderColor: `${selectedColorTheme.primary}20`,
                         background: `linear-gradient(135deg, white 0%, ${selectedColorTheme.primary}02 100%)`
                       }}
                     >
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 sm:mb-4 gap-2 sm:gap-0">
                         <div>
-                          <h3 className="text-xl font-bold text-foreground mb-1">{exp.title}</h3>
-                          <p className="text-lg font-semibold" style={{ color: selectedColorTheme.primary }}>
+                          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">{exp.title}</h3>
+                          <p className="text-base sm:text-lg font-semibold" style={{ color: selectedColorTheme.primary }}>
                             {exp.company}
                           </p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <Badge 
                             className="px-4 py-2 text-white font-medium shadow-md"
                             style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}

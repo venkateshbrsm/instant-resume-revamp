@@ -17,7 +17,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
       {/* Classic Header - Centered */}
-      <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
+      <div className="text-center py-4 sm:py-6 px-3 sm:px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
         {/* Profile Photo */}
         <div className="mb-4">
           <div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg bg-muted flex items-center justify-center" style={{ borderColor: selectedColorTheme.primary }}>
@@ -32,36 +32,36 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             )}
           </div>
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
           {enhancedContent.name}
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-4 font-medium">
           {enhancedContent.title}
         </p>
-        <div className="text-sm text-muted-foreground space-x-4">
-          <span>{enhancedContent.email}</span>
-          <span>•</span>
+        <div className="text-xs sm:text-sm text-muted-foreground flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-4">
+          <span className="break-all">{enhancedContent.email}</span>
+          <span className="hidden sm:inline">•</span>
           <span>{enhancedContent.phone}</span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span>{enhancedContent.location}</span>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 print:p-4 print:space-y-4">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 print:p-4 print:space-y-4">
         {/* Professional Summary */}
         <div className="print:avoid-break">
-          <h2 
-            className="text-xl font-bold mb-4 pb-2 border-b"
-            style={{ 
-              color: selectedColorTheme.primary,
-              borderColor: `${selectedColorTheme.primary}30`
-            }}
-          >
-            PROFESSIONAL SUMMARY
-          </h2>
-          <p className="text-base leading-relaxed text-muted-foreground text-justify">
-            {enhancedContent.summary}
-          </p>
+            <h2 
+              className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 pb-2 border-b"
+              style={{ 
+                color: selectedColorTheme.primary,
+                borderColor: `${selectedColorTheme.primary}30`
+              }}
+            >
+              PROFESSIONAL SUMMARY
+            </h2>
+            <p className="text-sm sm:text-base leading-relaxed text-muted-foreground text-justify">
+              {enhancedContent.summary}
+            </p>
         </div>
 
         {/* Professional Experience */}
@@ -103,7 +103,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 print:gap-4">
           {/* Core Competencies */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
             <div className="print:avoid-break">
