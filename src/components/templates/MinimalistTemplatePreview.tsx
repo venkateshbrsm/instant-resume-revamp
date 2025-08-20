@@ -72,9 +72,18 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                     <p className="text-base font-light" style={{ color: selectedColorTheme.primary }}>
                       {exp.company}
                     </p>
+                    {exp.location && (
+                      <p className="text-sm text-muted-foreground font-light">{exp.location}</p>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground font-light">{exp.duration}</p>
                 </div>
+                
+                {exp.summary && (
+                  <p className="text-sm leading-relaxed text-muted-foreground font-light italic">
+                    {exp.summary}
+                  </p>
+                )}
                 
                 {exp.achievements && exp.achievements.length > 0 && (
                   <div className="pl-4 space-y-2 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
@@ -83,6 +92,28 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                         {achievement}
                       </p>
                     ))}
+                  </div>
+                )}
+                
+                {exp.responsibilities && exp.responsibilities.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-muted-foreground">Key Responsibilities:</h4>
+                    <div className="pl-4 space-y-1 border-l" style={{ borderColor: `${selectedColorTheme.accent}20` }}>
+                      {exp.responsibilities.map((resp: string, respIndex: number) => (
+                        <p key={respIndex} className="text-sm leading-relaxed text-muted-foreground font-light">
+                          {resp}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {exp.technologies && exp.technologies.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-muted-foreground">Technologies:</h4>
+                    <p className="text-sm text-muted-foreground font-light">
+                      {exp.technologies.join(' • ')}
+                    </p>
                   </div>
                 )}
               </div>
@@ -118,15 +149,26 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             
             <div className="space-y-4">
               {enhancedContent.education.map((edu: any, index: number) => (
-                <div key={index} className="space-y-1">
-                   <h3 className="text-base font-medium text-foreground">{edu.degree}</h3>
-                   <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
-                     {edu.institution}
-                   </p>
-                   {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
-                     <p className="text-sm text-muted-foreground font-light">{edu.year}</p>
-                   )}
-                </div>
+               <div key={index} className="space-y-1">
+                  <h3 className="text-base font-medium text-foreground">{edu.degree}</h3>
+                  <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
+                    {edu.institution}
+                  </p>
+                  {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                    <p className="text-sm text-muted-foreground font-light">{edu.year}</p>
+                  )}
+                  {edu.gpa && (
+                    <p className="text-sm text-muted-foreground font-light">GPA: {edu.gpa}</p>
+                  )}
+                  {edu.honors && (
+                    <p className="text-sm text-muted-foreground font-light italic">{edu.honors}</p>
+                  )}
+                  {edu.relevantCourses && edu.relevantCourses.length > 0 && (
+                    <p className="text-sm text-muted-foreground font-light">
+                      Relevant Courses: {edu.relevantCourses.join(', ')}
+                    </p>
+                  )}
+               </div>
               ))}
             </div>
           </div>

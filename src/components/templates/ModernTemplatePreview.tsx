@@ -74,7 +74,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Skills</h3>
               </div>
               <div className="space-y-2">
-                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => (
+                {enhancedContent.skills.map((skill: string, index: number) => (
                   <div key={index} className="text-xs opacity-90">
                     • {skill}
                   </div>
@@ -107,12 +107,18 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Education</h3>
               </div>
               <div className="space-y-3">
-                {enhancedContent.education.slice(0, 2).map((edu: any, index: number) => (
+                {enhancedContent.education.map((edu: any, index: number) => (
                   <div key={index} className="text-xs opacity-90">
                     <div className="font-medium">{edu.degree}</div>
                     <div className="text-xs opacity-75">{edu.institution}</div>
-                    {edu.year && edu.year !== "N/A" && (
+                    {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
                       <div className="text-xs opacity-75">{edu.year}</div>
+                    )}
+                    {edu.gpa && (
+                      <div className="text-xs opacity-75">GPA: {edu.gpa}</div>
+                    )}
+                    {edu.honors && (
+                      <div className="text-xs opacity-75">{edu.honors}</div>
                     )}
                   </div>
                 ))}
@@ -192,13 +198,36 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     
                     {exp.achievements && exp.achievements.length > 0 && (
                       <ul className="space-y-2 text-sm text-muted-foreground mt-3">
-                        {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
+                        {exp.achievements.map((achievement: string, achIndex: number) => (
                           <li key={achIndex} className="flex items-start gap-2">
                             <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: selectedColorTheme.accent }}>•</span>
                             <span className="leading-relaxed">{achievement}</span>
                           </li>
                         ))}
                       </ul>
+                    )}
+                    
+                    {exp.description && (
+                      <div className="mt-3 text-sm text-muted-foreground">
+                        <p className="leading-relaxed">{exp.description}</p>
+                      </div>
+                    )}
+                    
+                    {exp.technologies && exp.technologies.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Technologies Used:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {exp.technologies.map((tech: string, techIndex: number) => (
+                            <span key={techIndex} className="px-2 py-1 text-xs rounded-md" style={{ 
+                              backgroundColor: `${selectedColorTheme.primary}10`, 
+                              color: selectedColorTheme.primary,
+                              border: `1px solid ${selectedColorTheme.primary}20`
+                            }}>
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

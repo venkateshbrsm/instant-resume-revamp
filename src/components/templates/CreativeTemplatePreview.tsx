@@ -155,11 +155,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                         </div>
                         
                         {exp.achievements && exp.achievements.length > 0 && (
-                          <div 
-                            className="space-y-3 print:space-y-2" 
-                            style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                          >
-                            {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
+                           <div 
+                             className="space-y-3 print:space-y-2" 
+                             style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                           >
+                             {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
                                 className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 
@@ -172,11 +172,35 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                   <span className="text-white text-xs font-bold">✓</span>
                                 </div>
                                 <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal">{achievement}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                               </div>
+                             ))}
+                           </div>
+                         )}
+                         
+                         {exp.description && (
+                           <div className="mt-4 p-3 rounded-lg" style={{ 
+                             background: `${selectedColorTheme.primary}05`,
+                             pageBreakInside: 'avoid'
+                           }}>
+                             <p className="text-sm text-muted-foreground italic leading-relaxed">{exp.description}</p>
+                           </div>
+                         )}
+                         
+                         {exp.skills && exp.skills.length > 0 && (
+                           <div className="mt-4" style={{ pageBreakInside: 'avoid' }}>
+                             <p className="text-xs font-semibold text-muted-foreground mb-2">Project Skills:</p>
+                             <div className="flex flex-wrap gap-1">
+                               {exp.skills.map((skill: string, skillIndex: number) => (
+                                 <span key={skillIndex} className="px-2 py-1 text-xs rounded-full text-white" style={{ 
+                                   background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.secondary})`
+                                 }}>
+                                   {skill}
+                                 </span>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+                       </div>
                     ))}
                   </div>
                 </div>
