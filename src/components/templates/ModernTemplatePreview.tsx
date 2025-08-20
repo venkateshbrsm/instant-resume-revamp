@@ -18,25 +18,37 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 max-w-none">
       {/* Header with Profile Photo and Name */}
       <div 
-        className="relative px-4 md:px-6 py-6 md:py-8 text-white overflow-hidden"
+        className="relative px-6 py-8 text-white overflow-hidden"
         style={{
           background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
       >
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-6">
           {/* Profile Photo */}
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/30 flex items-center justify-center text-xl md:text-2xl">
+          <div className="w-24 h-24 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {enhancedContent.photo ? (
+              <img 
+                src={enhancedContent.photo} 
+                alt="Profile" 
+                className="w-full h-full object-cover rounded-full"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl ${enhancedContent.photo ? 'hidden' : ''}`}>
               👤
             </div>
           </div>
           
           {/* Name and Title */}
           <div className="flex-1">
-            <h1 className="text-xl md:text-2xl font-bold mb-1 leading-tight">
+            <h1 className="text-3xl font-bold mb-2 leading-tight">
               {enhancedContent.name || 'John Smith'}
             </h1>
-            <p className="text-sm md:text-base opacity-90 font-medium">
+            <p className="text-lg opacity-90 font-medium">
               {enhancedContent.title || 'Software Engineer'}
             </p>
           </div>
