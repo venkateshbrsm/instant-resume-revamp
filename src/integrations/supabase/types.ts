@@ -82,7 +82,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_payment_processing: {
+        Args: {
+          enhanced_file_path?: string
+          new_status?: string
+          payment_id: string
+          razorpay_payment_id?: string
+          razorpay_response?: Json
+          razorpay_signature?: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
