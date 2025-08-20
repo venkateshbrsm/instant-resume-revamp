@@ -15,10 +15,10 @@ interface TemplatePreviewProps {
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 flex print:page-break-inside-avoid">
+    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 flex print:block print:max-w-none">
       {/* Left Sidebar - Dark Background */}
       <div 
-        className="w-1/3 p-6 text-white print:p-4"
+        className="w-1/3 p-6 text-white print:p-4 print:w-full print:break-inside-avoid"
         style={{
           background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
         }}
@@ -111,7 +111,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
       </div>
 
       {/* Right Main Content - Light Background */}
-      <div className="w-2/3 p-6 bg-gray-50 print:p-4">
+      <div className="w-2/3 p-6 bg-gray-50 print:p-4 print:w-full print:bg-white">
         {/* Executive Summary */}
         <div className="mb-8 print:page-break-inside-avoid print:mb-6">
           <div className="flex items-center gap-3 mb-4">
