@@ -125,85 +125,80 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                     </h2>
                   </div>
                   
-            <div className="space-y-8 print:space-y-6">
-              {enhancedContent.experience.map((exp: any, index: number) => (
-                <div 
-                  key={index} 
-                  className="relative p-6 rounded-2xl border-l-4 shadow-md break-inside-avoid page-break-inside-avoid print:break-inside-avoid print:page-break-inside-avoid print:avoid-break print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
-                    borderColor: selectedColorTheme.accent,
-                    pageBreakInside: 'avoid',
-                    breakInside: 'avoid'
-                  }}
-                >
-                  <div className="flex flex-col gap-4 mb-6 print:mb-4 break-inside-avoid page-break-inside-avoid print:avoid-break">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2 break-inside-avoid page-break-inside-avoid">
-                      <div className="break-inside-avoid page-break-inside-avoid">
-                        <h3 className="text-xl font-bold text-foreground print:text-lg">{exp.title}</h3>
-                        <p className="text-lg font-semibold print:text-base" style={{ color: selectedColorTheme.accent }}>
-                          {exp.company}
-                        </p>
-                      </div>
-                      <Badge 
-                        className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start break-inside-avoid page-break-inside-avoid"
-                        style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
-                      >
-                        {exp.duration}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  {exp.achievements && exp.achievements.length > 0 && (
-                    <div 
-                      className="space-y-4 print:space-y-3 break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid" 
-                      style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                    >
-                      <h4 className="text-base font-semibold print:text-sm break-inside-avoid page-break-inside-avoid" style={{ color: selectedColorTheme.primary }}>
-                        Key Achievements & Quantifiable Impact:
-                      </h4>
+                  <div className="space-y-8 print:space-y-6">
+                    {enhancedContent.experience.map((exp: any, index: number) => (
                       <div 
-                        className="space-y-4 print:space-y-3 break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                        style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                      >
-                        {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <div 
-                            key={achIndex} 
-                            className="flex items-center gap-3 break-inside-avoid page-break-inside-avoid print:gap-2 print:break-inside-avoid print:avoid-break print:page-break-inside-avoid" 
-                            style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                          >
-                            <div 
-                              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 print:w-4 print:h-4"
-                              style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
-                            >
-                              <span className="text-white text-[8px] font-bold leading-none flex items-center justify-center">✓</span>
-                            </div>
-                            <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium">{achievement}</p>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Additional Professional Context */}
-                      <div 
-                        className="mt-4 p-4 rounded-lg print:p-3 print:rounded-md break-inside-avoid page-break-inside-avoid print:break-inside-avoid print:avoid-break print:page-break-inside-avoid"
+                        key={index} 
+                        className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg"
                         style={{ 
-                          background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                          background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
+                          borderColor: selectedColorTheme.accent,
                           pageBreakInside: 'avoid',
                           breakInside: 'avoid'
                         }}
                       >
-                        <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1 break-inside-avoid page-break-inside-avoid" style={{ color: selectedColorTheme.primary }}>
-                          Core Responsibilities & Strategic Impact:
-                        </h5>
-                        <p className="text-xs leading-relaxed text-muted-foreground print:text-xs break-inside-avoid page-break-inside-avoid">
-                          Spearheaded cross-functional collaboration initiatives, driving operational excellence through strategic process optimization and team leadership. Consistently delivered measurable results by implementing data-driven solutions, mentoring high-performing teams, and maintaining rigorous quality standards while adapting to dynamic business environments and stakeholder requirements.
-                        </p>
+                        <div className="flex flex-col gap-4 mb-6 print:mb-4">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2">
+                            <div>
+                              <h3 className="text-xl font-bold text-foreground print:text-lg">{exp.title}</h3>
+                              <p className="text-lg font-semibold print:text-base" style={{ color: selectedColorTheme.accent }}>
+                                {exp.company}
+                              </p>
+                            </div>
+                            <Badge 
+                              className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start"
+                              style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
+                            >
+                              {exp.duration}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {exp.achievements && exp.achievements.length > 0 && (
+                          <div 
+                            className="space-y-4 print:space-y-3" 
+                            style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                          >
+                            <h4 className="text-base font-semibold print:text-sm" style={{ color: selectedColorTheme.primary }}>
+                              Key Achievements & Quantifiable Impact:
+                            </h4>
+                            {exp.achievements.map((achievement: string, achIndex: number) => (
+                              <div 
+                                key={achIndex} 
+                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 
+                                style={{ pageBreakInside: 'avoid' }}
+                              >
+                                <div 
+                                  className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
+                                  style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
+                                >
+                                  <span className="text-white text-xs font-bold">✓</span>
+                                </div>
+                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium">{achievement}</p>
+                              </div>
+                            ))}
+                            
+                            {/* Additional Professional Context */}
+                            <div 
+                              className="mt-4 p-4 rounded-lg print:p-3 print:rounded-md print:break-inside-avoid"
+                              style={{ 
+                                background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                                pageBreakInside: 'avoid',
+                                breakInside: 'avoid'
+                              }}
+                            >
+                              <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
+                                Core Responsibilities & Strategic Impact:
+                              </h5>
+                              <p className="text-xs leading-relaxed text-muted-foreground print:text-xs">
+                                Spearheaded cross-functional collaboration initiatives, driving operational excellence through strategic process optimization and team leadership. Consistently delivered measurable results by implementing data-driven solutions, mentoring high-performing teams, and maintaining rigorous quality standards while adapting to dynamic business environments and stakeholder requirements.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

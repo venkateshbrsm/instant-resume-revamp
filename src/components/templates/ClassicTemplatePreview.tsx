@@ -74,18 +74,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             >
               PROFESSIONAL EXPERIENCE & ACHIEVEMENTS
             </h2>
-            <div className="space-y-8 print:space-y-6">
+            <div className="space-y-8">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div 
-                  key={index} 
-                  className="border-l-4 pl-6 break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid" 
-                  style={{ 
-                    borderColor: `${selectedColorTheme.primary}20`,
-                    pageBreakInside: 'avoid',
-                    breakInside: 'avoid'
-                  }}
-                >
-                  <div className="mb-4 break-inside-avoid page-break-inside-avoid print:avoid-break">
+                <div key={index} className="border-l-4 pl-6 print:avoid-break" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                  <div className="mb-4">
                     <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
                       {exp.company}
@@ -94,44 +86,29 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
-                    <div 
-                      className="break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid print:keep-together"
-                      style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                    >
-                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2 break-inside-avoid page-break-inside-avoid">
+                    <div className="print:keep-together">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
                         Key Achievements & Quantifiable Results:
                       </h4>
-                      <ul 
-                        className="space-y-3 break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                        style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                      >
+                      <ul className="space-y-3">
                         {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li 
-                            key={achIndex} 
-                            className="text-sm leading-relaxed text-muted-foreground flex items-center break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                            style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                          >
-                            <span className="mr-3 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
+                            <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
                             <span className="font-medium">{achievement}</span>
                           </li>
                         ))}
                       </ul>
                       
                       {/* Additional Professional Context */}
-                      <div 
-                        className="mt-4 p-4 rounded-lg border break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid" 
-                        style={{ 
-                          backgroundColor: `${selectedColorTheme.primary}05`,
-                          borderColor: `${selectedColorTheme.primary}20`,
-                          pageBreakInside: 'avoid',
-                          breakInside: 'avoid'
-                        }}
-                      >
-                        <h5 className="text-sm font-semibold mb-2 text-foreground break-inside-avoid page-break-inside-avoid">
+                      <div className="mt-4 p-4 rounded-lg border" style={{ 
+                        backgroundColor: `${selectedColorTheme.primary}05`,
+                        borderColor: `${selectedColorTheme.primary}20`
+                      }}>
+                        <h5 className="text-sm font-semibold mb-2 text-foreground">
                           Core Responsibilities & Strategic Impact:
                         </h5>
-                        <p className="text-xs leading-relaxed text-muted-foreground break-inside-avoid page-break-inside-avoid">
+                        <p className="text-xs leading-relaxed text-muted-foreground">
                           Demonstrated excellence in strategic planning, cross-functional leadership, and operational optimization. Consistently delivered measurable business outcomes through innovative problem-solving, stakeholder management, and team development initiatives. Maintained high performance standards while fostering collaborative environments and driving organizational growth.
                         </p>
                       </div>

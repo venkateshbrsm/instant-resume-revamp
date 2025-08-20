@@ -195,31 +195,23 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               Work & Related Experience
             </h2>
             
-            <div className="space-y-6 print:space-y-4">
+            <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div 
-                  key={index} 
-                  className="border-l-2 pl-6 relative break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid" 
-                  style={{ 
-                    borderColor: `${selectedColorTheme.primary}20`,
-                    pageBreakInside: 'avoid',
-                    breakInside: 'avoid'
-                  }}
-                >
+                <div key={index} className="border-l-2 pl-6 relative" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div 
                     className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
                     style={{ backgroundColor: selectedColorTheme.primary }}
                   ></div>
                   
-                  <div className="mb-4 break-inside-avoid page-break-inside-avoid print:avoid-break">
-                    <div className="flex justify-between items-start mb-2 break-inside-avoid page-break-inside-avoid">
-                      <div className="break-inside-avoid page-break-inside-avoid">
+                  <div className="mb-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
                         <h3 className="font-bold text-lg text-foreground">{exp.title}</h3>
                         <p className="font-medium text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                       </div>
                       <Badge 
                         variant="outline" 
-                        className="text-xs px-2 py-1 break-inside-avoid page-break-inside-avoid" 
+                        className="text-xs px-2 py-1" 
                         style={{ 
                           backgroundColor: `${selectedColorTheme.primary}10`, 
                           color: selectedColorTheme.primary,
@@ -231,23 +223,13 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
-                      <div 
-                        className="mt-4 break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                        style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                      >
-                        <h4 className="text-sm font-semibold mb-3 opacity-90 break-inside-avoid page-break-inside-avoid">Key Achievements & Impact:</h4>
-                        <ul 
-                          className="space-y-3 text-sm text-muted-foreground break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                          style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                        >
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
+                        <ul className="space-y-3 text-sm text-muted-foreground">
                           {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li 
-                              key={achIndex} 
-                              className="flex items-center gap-3 break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                              style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                            >
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
-                                <span className="text-white text-[8px] font-bold leading-none flex items-center justify-center">✓</span>
+                            <li key={achIndex} className="flex items-start gap-3">
+                              <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
+                                <span className="text-white text-xs font-bold">✓</span>
                               </div>
                               <span className="leading-relaxed font-medium">{achievement}</span>
                             </li>
@@ -255,12 +237,9 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         </ul>
                         
                         {/* Additional context for experience */}
-                        <div 
-                          className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm break-inside-avoid page-break-inside-avoid print:avoid-break print:break-inside-avoid print:page-break-inside-avoid"
-                          style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
-                        >
-                          <h5 className="text-xs font-semibold mb-2 opacity-90 break-inside-avoid page-break-inside-avoid">Core Responsibilities:</h5>
-                          <p className="text-xs opacity-80 leading-relaxed break-inside-avoid page-break-inside-avoid">
+                        <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                          <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
+                          <p className="text-xs opacity-80 leading-relaxed">
                             Led cross-functional teams in developing innovative solutions, managing stakeholder relationships, and driving strategic initiatives that resulted in measurable business outcomes. Collaborated with diverse teams to optimize processes, implement best practices, and mentor junior team members while maintaining high standards of quality and performance.
                           </p>
                         </div>

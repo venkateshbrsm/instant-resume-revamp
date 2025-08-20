@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
+  // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -82,27 +82,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      update_payment_processing: {
-        Args:
-          | {
-              enhanced_file_path?: string
-              new_status?: string
-              payment_id: string
-              payu_response?: Json
-              razorpay_payment_id?: string
-              razorpay_response?: Json
-              razorpay_signature?: string
-            }
-          | {
-              enhanced_file_path?: string
-              new_status?: string
-              payment_id: string
-              razorpay_payment_id?: string
-              razorpay_response?: Json
-              razorpay_signature?: string
-            }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
