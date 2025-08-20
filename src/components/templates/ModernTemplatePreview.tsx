@@ -15,18 +15,18 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 print:rounded-none print:max-w-none print:mx-0 flex flex-col lg:flex-row min-h-[600px] print:min-h-0">
       {/* Left Sidebar */}
       <div 
-        className="w-64 p-6 text-white"
+        className="w-full lg:w-64 p-4 sm:p-6 text-white print:p-4 print:w-full print:mb-4"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
       >
         {/* Profile Photo - Only show if photo exists */}
         {enhancedContent.photo && (
-          <div className="text-center mb-6">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden">
+          <div className="text-center mb-4 sm:mb-6 print:mb-4">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full overflow-hidden print:w-16 print:h-16">
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -37,28 +37,28 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         )}
 
         {/* Sidebar Sections */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 print:space-y-4">
           {/* Contact Details */}
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Mail className="w-4 h-4" />
+          <div className="print:break-inside-avoid">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 print:mb-3">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center print:w-6 print:h-6">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 print:w-3 print:h-3" />
               </div>
-              <h3 className="font-semibold text-sm tracking-wide uppercase">Contact</h3>
+              <h3 className="font-semibold text-xs sm:text-sm tracking-wide uppercase print:text-xs">Contact</h3>
             </div>
-            <div className="space-y-3 text-sm opacity-90">
-              <div className="flex items-center gap-2">
-                <Mail className="w-3 h-3" />
-                <span className="break-all text-xs">{enhancedContent.email}</span>
+            <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm opacity-90 print:space-y-2 print:text-xs">
+              <div className="flex items-start gap-2">
+                <Mail className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                <span className="break-all">{enhancedContent.email}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-3 h-3" />
-                <span className="text-xs">{enhancedContent.phone}</span>
+                <Phone className="w-3 h-3 flex-shrink-0" />
+                <span>{enhancedContent.phone}</span>
               </div>
               {enhancedContent.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-3 h-3" />
-                  <span className="text-xs">{enhancedContent.location}</span>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  <span>{enhancedContent.location}</span>
                 </div>
               )}
             </div>
@@ -129,13 +129,13 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 print:p-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-6 sm:mb-8 print:mb-6 print:break-inside-avoid">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 print:text-2xl">
             {enhancedContent.name}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className="text-base sm:text-lg text-muted-foreground mb-4 print:text-base">
             {enhancedContent.title}
           </p>
         </div>

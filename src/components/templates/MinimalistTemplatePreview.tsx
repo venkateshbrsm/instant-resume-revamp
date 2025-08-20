@@ -14,13 +14,13 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
+    <div className="bg-white max-w-4xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 print:p-4 print:space-y-6 print:max-w-none print:mx-0">
       {/* Minimalist Header */}
-      <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-        <div className="flex items-start gap-6">
+      <div className="text-left space-y-3 border-b pb-4 sm:pb-6 print:pb-4 print:break-inside-avoid" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 print:flex-row">
           {/* Profile Photo - Only show if photo exists */}
           {enhancedContent.photo && (
-            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 border self-center sm:self-start print:w-14 print:h-14" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -29,15 +29,15 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </div>
           )}
           
-          <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
+          <div className="flex-1 text-center sm:text-left print:text-left">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-wide print:text-3xl" style={{ color: selectedColorTheme.primary }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-xl text-muted-foreground font-light">
+            <p className="text-lg sm:text-xl text-muted-foreground font-light print:text-lg">
               {enhancedContent.title}
             </p>
             
-            <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 md:gap-8 text-sm text-muted-foreground font-light pt-2 print:flex-row print:gap-4">
               <span className="break-all">{enhancedContent.email}</span>
               <span>{enhancedContent.phone}</span>
               <span>{enhancedContent.location}</span>
@@ -109,17 +109,17 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 print:gap-6 print:grid-cols-1">
         {/* Skills */}
         {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
+          <div className="space-y-4 print:break-inside-avoid print:mb-6">
+            <h2 className="text-base sm:text-lg font-medium tracking-wide print:text-base" style={{ color: selectedColorTheme.primary }}>
               SKILLS
             </h2>
             
             <div className="space-y-2">
               {enhancedContent.skills.map((skill: string, index: number) => (
-                <p key={index} className="text-sm text-muted-foreground font-light">
+                <p key={index} className="text-xs sm:text-sm text-muted-foreground font-light print:text-xs">
                   {skill}
                 </p>
               ))}

@@ -30,7 +30,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
         <div 
-          className="h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
+          className="h-32 sm:h-40 flex items-center justify-center text-white relative print:h-24 print:break-inside-avoid"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.accent} 70%, ${selectedColorTheme.secondary} 100%)`,
             pageBreakInside: 'avoid'
@@ -38,14 +38,14 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         >
           {/* Geometric Background Pattern */}
           <div className="absolute inset-0 opacity-20 print:opacity-10">
-            <div className="absolute top-4 left-4 w-16 h-16 border-2 border-white rounded-full print:hidden"></div>
-            <div className="absolute top-8 right-8 w-12 h-12 border-2 border-white transform rotate-45 print:hidden"></div>
-            <div className="absolute bottom-4 left-1/4 w-8 h-8 bg-white opacity-30 rounded-full print:hidden"></div>
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 w-12 h-12 sm:w-16 sm:h-16 border-2 border-white rounded-full print:hidden"></div>
+            <div className="absolute top-4 sm:top-8 right-4 sm:right-8 w-8 h-8 sm:w-12 sm:h-12 border-2 border-white transform rotate-45 print:hidden"></div>
+            <div className="absolute bottom-2 sm:bottom-4 left-1/4 w-6 h-6 sm:w-8 sm:h-8 bg-white opacity-30 rounded-full print:hidden"></div>
           </div>
           
-          <div className="relative z-10 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4 overflow-hidden">
+          <div className="relative z-10 text-center px-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center mb-3 sm:mb-4 print:mb-3">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-2 sm:mb-0 sm:mr-4 overflow-hidden print:w-12 print:h-12 print:mb-2 print:sm:mb-0">
                 {enhancedContent.photo ? (
                   <img 
                     src={enhancedContent.photo} 
@@ -53,22 +53,22 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Palette className="w-8 h-8 text-white" />
+                  <Palette className="w-6 h-6 sm:w-8 sm:h-8 text-white print:w-6 print:h-6" />
                 )}
               </div>
               <div>
-                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
-                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+                <h1 className="text-2xl sm:text-4xl font-bold print:text-xl">{enhancedContent.name}</h1>
+                <p className="text-base sm:text-xl opacity-90 print:text-sm">{enhancedContent.title}</p>
               </div>
             </div>
             
-            <div className="flex justify-center space-x-6 text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
-              <div className="flex items-center gap-2 print:justify-center">
-                <Mail className="w-4 h-4" />
+            <div className="flex flex-col sm:flex-row justify-center sm:space-x-6 space-y-1 sm:space-y-0 text-xs sm:text-sm print:flex-col print:space-x-0 print:space-y-1 print:text-xs">
+              <div className="flex items-center justify-center gap-2">
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4 print:w-3 print:h-3" />
                 <span className="break-all">{enhancedContent.email}</span>
               </div>
-              <div className="flex items-center gap-2 print:justify-center">
-                <Phone className="w-4 h-4" />
+              <div className="flex items-center justify-center gap-2">
+                <Phone className="w-3 h-3 sm:w-4 sm:h-4 print:w-3 print:h-3" />
                 <span>{enhancedContent.phone}</span>
               </div>
             </div>
