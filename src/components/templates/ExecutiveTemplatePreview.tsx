@@ -25,10 +25,10 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
       >
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-3 lg:gap-4 mb-3">
-                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
                   {enhancedContent.photo ? (
                     <img 
                       src={enhancedContent.photo} 
@@ -36,16 +36,16 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Crown className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
+                    <Crown className="w-8 h-8 text-white" />
                   )}
                 </div>
                 <div>
-                  <h1 className="text-2xl lg:text-4xl font-bold mb-1">{enhancedContent.name}</h1>
-                  <p className="text-lg lg:text-xl opacity-95 font-medium">{enhancedContent.title}</p>
+                  <h1 className="text-4xl font-bold mb-1">{enhancedContent.name}</h1>
+                  <p className="text-xl opacity-95 font-medium">{enhancedContent.title}</p>
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 lg:space-x-6 text-sm opacity-90 gap-2 sm:gap-0">
+              <div className="flex items-center space-x-6 text-sm opacity-90">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   <span>{enhancedContent.email}</span>
@@ -58,19 +58,19 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             </div>
             
             {/* Executive Stats */}
-            <div className="text-center lg:text-right">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 lg:p-4 inline-block lg:block">
-                <div className="text-xl lg:text-2xl font-bold">
+            <div className="text-right">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl font-bold">
                   {enhancedContent.experience?.length || 0}+
                 </div>
-                <div className="text-xs lg:text-sm opacity-90">Years Leadership</div>
+                <div className="text-sm opacity-90">Years Leadership</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-4 lg:p-6 print:p-4">
+      <div className="p-6 print:p-4">
         {/* Executive Summary - Premium Focus */}
         <div className="mb-6 print:mb-4">
           <div className="flex items-center gap-4 mb-6">
