@@ -10,7 +10,6 @@ import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCir
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { TemplateSelector } from "./TemplateSelector";
 import { ModernTemplatePreview } from "./templates/ModernTemplatePreview";
 import { ClassicTemplatePreview } from "./templates/ClassicTemplatePreview";
@@ -601,10 +600,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   </div>
                 </div>
               ) : enhancedContent ? (
-                 <div className="w-full border border-border/20 rounded-lg">
+                 <div className="w-full border border-border/20 rounded-lg overflow-hidden">
                    <div 
                      ref={enhancedResumeRef}
-                     className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-2xl border border-accent/20"
+                     className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
                    >
                   
                       {/* Template and Color Selector */}
@@ -615,42 +614,39 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Dynamic Template Preview with Horizontal & Vertical Scroll */}
-                      <ScrollArea className="w-full h-[600px] md:h-[700px] lg:h-[800px]">
-                        <div ref={resumeContentRef} className="min-w-[900px] w-max pr-4">
-                          {selectedTemplate.id === 'modern' && (
-                            <ModernTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'classic' && (
-                            <ClassicTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'creative' && (
-                            <CreativeTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'executive' && (
-                            <ExecutiveTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'minimalist' && (
-                            <MinimalistTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                        </div>
-                        <ScrollBar orientation="horizontal" />
-                      </ScrollArea>
+                      {/* Responsive Template Preview */}
+                      <div ref={resumeContentRef} className="w-full">
+                        {selectedTemplate.id === 'modern' && (
+                          <ModernTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'classic' && (
+                          <ClassicTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'creative' && (
+                          <CreativeTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'executive' && (
+                          <ExecutiveTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                        {selectedTemplate.id === 'minimalist' && (
+                          <MinimalistTemplatePreview 
+                            enhancedContent={enhancedContent}
+                            selectedColorTheme={selectedColorTheme}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
               ) : (
