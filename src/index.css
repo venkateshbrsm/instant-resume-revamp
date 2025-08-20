@@ -164,21 +164,33 @@
     scroll-behavior: smooth;
   }
 
-  /* Remove underlines from email and phone */
+  /* Remove underlines from email and phone - comprehensive */
   .no-underline,
   a[href^="mailto:"],
   a[href^="tel:"],
   span:has(a[href^="mailto:"]),
-  span:has(a[href^="tel:"]) {
+  span:has(a[href^="tel:"]),
+  .email,
+  .phone,
+  .contact-email,
+  .contact-phone,
+  .contact-item,
+  [data-email],
+  [data-phone] {
     text-decoration: none !important;
+    border-bottom: none !important;
+    text-decoration-line: none !important;
+    text-decoration-color: transparent !important;
+    text-decoration-style: none !important;
   }
 
-  /* Global email and phone styling */
-  [data-email],
-  [data-phone],
-  .email,
-  .phone {
+  /* Ensure email and phone spans never get underlined */
+  span[class*="email"],
+  span[class*="phone"],
+  span[class*="contact"],
+  .contact * {
     text-decoration: none !important;
+    border-bottom: none !important;
   }
 }
 
