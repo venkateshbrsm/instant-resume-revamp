@@ -15,7 +15,7 @@ interface TemplatePreviewProps {
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 flex">
+    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 flex print:page-break-inside-avoid">
       {/* Left Sidebar - Dark Background */}
       <div 
         className="w-1/3 p-6 text-white print:p-4"
@@ -149,7 +149,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             
             <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="bg-white p-5 rounded-lg shadow-sm border-l-4" style={{ borderColor: selectedColorTheme.accent }}>
+                <div key={index} className="bg-white p-5 rounded-lg shadow-sm border-l-4 print:page-break-inside-avoid print:mb-6" style={{ borderColor: selectedColorTheme.accent }}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 mb-1">{exp.title}</h3>
