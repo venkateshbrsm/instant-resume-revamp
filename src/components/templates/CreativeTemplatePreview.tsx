@@ -57,18 +57,18 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 )}
               </div>
               <div>
-                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
-                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
+                <p className="text-base sm:text-lg lg:text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
               </div>
             </div>
             
-            <div className="flex justify-center space-x-6 text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
+            <div className="flex flex-col sm:flex-row sm:justify-center gap-2 sm:gap-6 text-xs sm:text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
               <div className="flex items-center gap-2 print:justify-center">
-                <Mail className="w-4 h-4" />
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="break-all">{enhancedContent.email}</span>
               </div>
               <div className="flex items-center gap-2 print:justify-center">
-                <Phone className="w-4 h-4" />
+                <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{enhancedContent.phone}</span>
               </div>
             </div>
@@ -76,7 +76,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-6 print:p-4">
+      <div className="p-4 sm:p-6 print:p-4">
         {/* Main Content in Single Column for Print */}
         <div className="print:space-y-6">
           

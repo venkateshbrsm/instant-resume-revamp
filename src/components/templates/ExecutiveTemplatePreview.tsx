@@ -16,61 +16,61 @@ interface TemplatePreviewProps {
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0">
-      {/* Executive Header - Premium Feel */}
-      <div 
-        className="relative p-6 text-white print:p-4"
-        style={{
-          background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
-        }}
-      >
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                  {enhancedContent.photo ? (
-                    <img 
-                      src={enhancedContent.photo} 
-                      alt={enhancedContent.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Crown className="w-8 h-8 text-white" />
-                  )}
+        {/* Executive Header - Premium Feel */}
+        <div 
+          className="relative p-4 sm:p-6 text-white print:p-4"
+          style={{
+            background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
+          }}
+        >
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                    {enhancedContent.photo ? (
+                      <img 
+                        src={enhancedContent.photo} 
+                        alt={enhancedContent.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1">{enhancedContent.name}</h1>
+                    <p className="text-base sm:text-lg lg:text-xl opacity-95 font-medium">{enhancedContent.title}</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-4xl font-bold mb-1">{enhancedContent.name}</h1>
-                  <p className="text-xl opacity-95 font-medium">{enhancedContent.title}</p>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm opacity-90">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="break-all">{enhancedContent.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>{enhancedContent.phone}</span>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-6 text-sm opacity-90">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{enhancedContent.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  <span>{enhancedContent.phone}</span>
-                </div>
-              </div>
-            </div>
             
             {/* Executive Stats */}
-            <div className="text-right">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl font-bold">
+            <div className="text-right hidden sm:block">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold">
                   {enhancedContent.experience?.length || 0}+
                 </div>
-                <div className="text-sm opacity-90">Years Leadership</div>
+                <div className="text-xs sm:text-sm opacity-90">Years Leadership</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6 print:p-4">
+      <div className="p-4 sm:p-6 print:p-4">
         {/* Executive Summary - Premium Focus */}
         <div className="mb-6 print:mb-4">
           <div className="flex items-center gap-4 mb-6">
