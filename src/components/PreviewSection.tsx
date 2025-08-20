@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
@@ -614,39 +615,41 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Responsive Template Preview */}
-                      <div ref={resumeContentRef} className="w-full">
-                        {selectedTemplate.id === 'modern' && (
-                          <ModernTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'classic' && (
-                          <ClassicTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'creative' && (
-                          <CreativeTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'executive' && (
-                          <ExecutiveTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                        {selectedTemplate.id === 'minimalist' && (
-                          <MinimalistTemplatePreview 
-                            enhancedContent={enhancedContent}
-                            selectedColorTheme={selectedColorTheme}
-                          />
-                        )}
-                      </div>
+                      {/* Scrollable Template Preview */}
+                      <ScrollArea className="h-[600px] w-full">
+                        <div ref={resumeContentRef} className="w-full pr-4">
+                          {selectedTemplate.id === 'modern' && (
+                            <ModernTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'classic' && (
+                            <ClassicTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'creative' && (
+                            <CreativeTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'executive' && (
+                            <ExecutiveTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'minimalist' && (
+                            <MinimalistTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                        </div>
+                      </ScrollArea>
                     </div>
                   </div>
               ) : (
