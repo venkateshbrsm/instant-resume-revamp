@@ -216,19 +216,39 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       padding: 2mm !important;
     }
     
-    /* Enhanced span protection */
-    span {
+    /* Enhanced text protection - prevent text splitting */
+    p, span, div, li, h1, h2, h3, h4, h5, h6 {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 2 !important;
-      widows: 2 !important;
-      display: inline-block !important;
+      orphans: 3 !important;
+      widows: 3 !important;
+      word-break: keep-all !important;
+      overflow-wrap: break-word !important;
     }
     
-    /* General content protection */
-    div, p, li {
+    /* Inline elements should never break */
+    span, a, strong, em, b, i, code {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      display: inline-block !important;
+      white-space: nowrap !important;
+    }
+    
+    /* Text containers */
+    p, div {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -ms-hyphens: none !important;
+    }
+    
+    /* Prevent line breaking within important text elements */
+    .text-content, .content-text, [class*="text"] {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 4 !important;
+      widows: 4 !important;
     }
     
     /* List protection */
