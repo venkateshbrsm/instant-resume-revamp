@@ -117,8 +117,71 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   // Inject CSS for comprehensive page break handling
   const style = document.createElement('style');
   style.textContent = `
-    /* Prevent content from being cut off at page breaks */
-    .page-break-avoid,
+    /* Enhanced Page Break Control Classes */
+    .page-break {
+      page-break-before: always !important;
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+      break-before: page !important;
+      break-after: page !important;
+      break-inside: avoid !important;
+    }
+    
+    .page-break-before {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+    
+    .page-break-after {
+      page-break-after: always !important;
+      break-after: page !important;
+    }
+    
+    .page-break-avoid {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-before: avoid !important;
+      page-break-after: avoid !important;
+    }
+    
+    /* Media Print Styles for PDF Generation */
+    @media print {
+      body {
+        margin: 1cm !important;
+        font-size: 12pt !important;
+        line-height: 1.4 !important;
+        color: black !important;
+        background: white !important;
+      }
+      
+      /* Ensure proper margins and spacing */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
+      /* Page break control for content */
+      h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-after: avoid !important;
+        break-inside: avoid !important;
+      }
+      
+      /* Keep sections together */
+      .section, .major-section {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      
+      /* Prevent orphans and widows */
+      p, li, div {
+        orphans: 2 !important;
+        widows: 2 !important;
+      }
+    }
+    
+    /* Content-specific page break avoidance */
     .skills-section,
     .experience-item,
     .education-item,
@@ -131,18 +194,7 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-inside: avoid !important;
     }
     
-    /* Ensure proper spacing around sections */
-    .section, .major-section {
-      page-break-after: avoid !important;
-    }
-    
-    /* Force breaks before major headings (except first) */
-    .page-break-before {
-      page-break-before: always !important;
-      break-before: page !important;
-    }
-    
-    /* Enhanced span protection - force spans to next page if they would be cut */
+    /* Enhanced span protection */
     span {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
@@ -157,8 +209,14 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-inside: avoid !important;
     }
     
-    /* Specific protection for skill bars and lists */
+    /* List protection */
     ul, ol, .list-container {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    
+    /* Table protection */
+    table, thead, tbody, tr {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
