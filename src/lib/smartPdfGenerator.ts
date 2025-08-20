@@ -33,7 +33,7 @@ export async function generateSmartPdf(
 
     // Configure html2pdf with proper page break handling
     const opt = {
-      margin: margin,
+      margin: [15, 10, 15, 10], // top, right, bottom, left margins in mm
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -43,14 +43,16 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.8, // Increased scale for better quality
+        scale: 0.85, // Slightly increased scale for better quality
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
+        width: 794, // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
       },
       jsPDF: { 
         unit: 'mm', 
-        format: format, 
+        format: 'a4', 
         orientation: orientation,
         compress: true
       },

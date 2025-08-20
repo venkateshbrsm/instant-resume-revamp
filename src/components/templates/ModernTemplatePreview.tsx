@@ -66,7 +66,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
 
           {/* Core Technical Skills */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-            <div>
+            <div className="page-break-avoid section">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Star className="w-4 h-4" />
@@ -75,7 +75,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               </div>
               <div className="space-y-2">
                 {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="text-xs opacity-90 flex items-center gap-2">
+                  <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
                     <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
                     <span className="font-medium">{skill}</span>
                     <div className="flex-1 flex justify-end">
@@ -90,7 +90,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
           )}
 
           {/* Language Proficiency */}
-          <div>
+          <div className="page-break-avoid section">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <Globe className="w-4 h-4" />
@@ -98,15 +98,15 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               <h3 className="font-semibold text-sm tracking-wide uppercase">Language Proficiency</h3>
             </div>
             <div className="space-y-3 text-xs opacity-90">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center page-break-avoid">
                 <span className="font-medium">English</span>
                 <span className="text-xs opacity-75">Native/Fluent</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center page-break-avoid">
                 <span className="font-medium">Spanish</span>
                 <span className="text-xs opacity-75">Professional Working</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center page-break-avoid">
                 <span className="font-medium">French</span>
                 <span className="text-xs opacity-75">Conversational</span>
               </div>
@@ -114,7 +114,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
           </div>
 
           {/* Professional Certifications */}
-          <div>
+          <div className="page-break-avoid section">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <Award className="w-4 h-4" />
@@ -122,16 +122,16 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               <h3 className="font-semibold text-sm tracking-wide uppercase">Certifications</h3>
             </div>
             <div className="space-y-2 text-xs opacity-90">
-              <div className="font-medium">• Project Management Professional (PMP)</div>
-              <div className="font-medium">• Certified Scrum Master (CSM)</div>
-              <div className="font-medium">• AWS Solutions Architect</div>
-              <div className="font-medium">• Google Analytics Certified</div>
+              <div className="font-medium page-break-avoid">• Project Management Professional (PMP)</div>
+              <div className="font-medium page-break-avoid">• Certified Scrum Master (CSM)</div>
+              <div className="font-medium page-break-avoid">• AWS Solutions Architect</div>
+              <div className="font-medium page-break-avoid">• Google Analytics Certified</div>
             </div>
           </div>
 
           {/* Education */}
           {enhancedContent.education && enhancedContent.education.length > 0 && (
-            <div>
+            <div className="page-break-avoid section">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <BookOpen className="w-4 h-4" />
@@ -140,7 +140,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               </div>
               <div className="space-y-3">
                 {enhancedContent.education.slice(0, 2).map((edu: any, index: number) => (
-                  <div key={index} className="text-xs opacity-90">
+                  <div key={index} className="text-xs opacity-90 page-break-avoid education-item">
                     <div className="font-medium">{edu.degree}</div>
                     <div className="text-xs opacity-75">{edu.institution}</div>
                     {edu.year && edu.year !== "N/A" && (
@@ -167,7 +167,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         </div>
 
         {/* About Section */}
-        <div className="mb-8">
+        <div className="mb-8 page-break-avoid section">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
             <div 
               className="w-6 h-6 rounded-full flex items-center justify-center text-white"
@@ -184,7 +184,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
 
         {/* Work Experience */}
         {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-          <div>
+          <div className="page-break-before section">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
               <div 
                 className="w-6 h-6 rounded-full flex items-center justify-center text-white"
@@ -197,7 +197,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             
             <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-2 pl-6 relative" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-2 pl-6 relative page-break-avoid experience-item" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div 
                     className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
                     style={{ backgroundColor: selectedColorTheme.primary }}
@@ -223,11 +223,11 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
-                      <div className="mt-4">
+                      <div className="mt-4 page-break-avoid">
                         <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
                         <ul className="space-y-3 text-sm text-muted-foreground">
                           {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li key={achIndex} className="flex items-start gap-3">
+                            <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
                               <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
                                 <span className="text-white text-xs font-bold">✓</span>
                               </div>
@@ -237,7 +237,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         </ul>
                         
                         {/* Additional context for experience */}
-                        <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                        <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid">
                           <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
                           <p className="text-xs opacity-80 leading-relaxed">
                             Led cross-functional teams in developing innovative solutions, managing stakeholder relationships, and driving strategic initiatives that resulted in measurable business outcomes. Collaborated with diverse teams to optimize processes, implement best practices, and mentor junior team members while maintaining high standards of quality and performance.
