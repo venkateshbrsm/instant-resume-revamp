@@ -31,37 +31,40 @@ export async function generateSmartPdf(
     // Wait for any layout changes to settle
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Configure html2pdf with proper page break handling
-    const opt = {
-      margin: margin,
-      filename: filename,
-      image: { 
-        type: 'jpeg', 
-        quality: quality 
-      },
-      html2canvas: {
-        allowTaint: true,
-        letterRendering: true,
-        logging: false,
-        scale: 0.8, // Increased scale for better quality
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: format, 
-        orientation: orientation,
-        compress: true
-      },
-      // Critical: Enable CSS page break handling
-      pagebreak: { 
-        mode: ['avoid-all', 'css', 'legacy'],
-        before: '.page-break-before',
-        after: '.page-break-after',
-        avoid: '.page-break-avoid'
-      }
-    };
+  // Configure html2pdf with printer-friendly settings
+  const opt = {
+    margin: Array.isArray(margin) ? margin : [15, 15, 15, 15], // Generous margins for printing
+    filename: filename,
+    image: { 
+      type: 'jpeg', 
+      quality: 0.95 // Higher quality for print
+    },
+    html2canvas: {
+      allowTaint: true,
+      letterRendering: true,
+      logging: false,
+      scale: 1.2, // Higher scale for crisp print quality
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0,
+      dpi: 300, // Print-quality DPI
+      backgroundColor: '#ffffff'
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: format, 
+      orientation: orientation,
+      compress: false, // Don't compress for better print quality
+      precision: 16
+    },
+    // Enhanced page break handling for printer-friendly output
+    pagebreak: { 
+      mode: ['avoid-all', 'css', 'legacy'],
+      before: '.page-break-before',
+      after: '.page-break-after',
+      avoid: '.page-break-avoid, .print-keep-together'
+    }
+  };
 
     // Generate PDF blob
     const pdf = await html2pdf().set(opt).from(element).output('blob');
@@ -114,11 +117,29 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     lineHeight: element.style.lineHeight
   };
 
-  // Inject CSS for comprehensive page break handling
+  // Inject CSS for printer-friendly page break handling
   const style = document.createElement('style');
   style.textContent = `
+    /* Print-specific optimizations */
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      body {
+        margin: 0 !important;
+        padding: 15mm !important;
+        background: white !important;
+        font-size: 11pt !important;
+        line-height: 1.3 !important;
+      }
+    }
+    
     /* Prevent content from being cut off at page breaks */
     .page-break-avoid,
+    .print-keep-together,
     .skills-section,
     .experience-item,
     .education-item,
@@ -126,14 +147,20 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     .progress-bar-container,
     .card,
     [class*="skill"],
-    [class*="progress"] {
+    [class*="progress"],
+    .border-l-4,
+    .pl-6 {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      display: block !important;
+      overflow: visible !important;
     }
     
-    /* Ensure proper spacing around sections */
+    /* Ensure sections stay together */
     .section, .major-section {
       page-break-after: avoid !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
     }
     
     /* Force breaks before major headings (except first) */
@@ -142,14 +169,28 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-before: page !important;
     }
     
-    /* General content protection */
-    div, p, li, span {
+    /* General content protection with orphan/widow control */
+    div, p, li, span, h1, h2, h3, h4, h5, h6 {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 3 !important;
+      widows: 3 !important;
+    }
+    
+    /* Specific protection for lists and containers */
+    ul, ol, .list-container, .grid, .space-y-3, .space-y-4, .space-y-6, .space-y-8 {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
     
-    /* Specific protection for skill bars and lists */
-    ul, ol, .list-container {
+    /* Printer-friendly spacing */
+    .print-section {
+      margin-bottom: 8mm !important;
+      padding-bottom: 4mm !important;
+    }
+    
+    /* Ensure images and badges stay with their content */
+    img, .badge, .rounded-full {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }

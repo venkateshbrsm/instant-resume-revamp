@@ -64,7 +64,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
 
         {/* Professional Experience - Enhanced and Detailed */}
         {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-          <div className="print:avoid-break">
+          <div className="print:avoid-break print-keep-together">
             <h2 
               className="text-xl font-bold mb-6 pb-2 border-b"
               style={{ 
@@ -76,7 +76,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </h2>
             <div className="space-y-8">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-4 pl-6 print:avoid-break" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-4 pl-6 print:avoid-break print-keep-together experience-item" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
@@ -86,14 +86,14 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
-                    <div className="print:keep-together">
+                    <div className="print:keep-together print-keep-together">
                       <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
                         Key Achievements & Quantifiable Results:
                       </h4>
-                      <ul className="space-y-3">
+                      <ul className="space-y-3 print-keep-together">
                         {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start print-keep-together">
                             <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
                             <span className="font-medium">{achievement}</span>
                           </li>
@@ -101,7 +101,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                       </ul>
                       
                       {/* Additional Professional Context */}
-                      <div className="mt-4 p-4 rounded-lg border" style={{ 
+                      <div className="mt-4 p-4 rounded-lg border print-keep-together" style={{ 
                         backgroundColor: `${selectedColorTheme.primary}05`,
                         borderColor: `${selectedColorTheme.primary}20`
                       }}>
@@ -123,7 +123,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
           {/* Core Competencies - Enhanced with Proficiency Levels */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-            <div className="print:avoid-break">
+            <div className="print:avoid-break print-keep-together">
               <h2 
                 className="text-xl font-bold mb-4 pb-2 border-b"
                 style={{ 
@@ -133,9 +133,9 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               >
                 CORE COMPETENCIES & TECHNICAL SKILLS
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-3 print-keep-together">
                 {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div key={index} className="flex items-center justify-between print-keep-together">
                     <div className="text-sm text-muted-foreground flex items-center">
                       <span className="mr-3 w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
                       <span className="font-medium">{skill}</span>
@@ -156,7 +156,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               </div>
               
               {/* Additional Professional Skills */}
-              <div className="mt-6 p-4 rounded-lg border" style={{
+              <div className="mt-6 p-4 rounded-lg border print-keep-together" style={{
                 backgroundColor: `${selectedColorTheme.primary}05`,
                 borderColor: `${selectedColorTheme.primary}20`
               }}>
@@ -175,7 +175,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
 
           {/* Education */}
           {enhancedContent.education && enhancedContent.education.length > 0 && (
-            <div className="print:avoid-break">
+            <div className="print:avoid-break print-keep-together">
               <h2 
                 className="text-xl font-bold mb-4 pb-2 border-b"
                 style={{ 
@@ -185,9 +185,9 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               >
                 EDUCATION
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-4 print-keep-together">
                 {enhancedContent.education.map((edu: any, index: number) => (
-                  <div key={index} className="print:avoid-break">
+                  <div key={index} className="print:avoid-break print-keep-together">
                      <h3 className="font-bold text-foreground">{edu.degree}</h3>
                      <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
                        {edu.institution}
