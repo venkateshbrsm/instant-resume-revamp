@@ -37,9 +37,9 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           {enhancedContent.title}
         </p>
         <div className="text-sm text-muted-foreground space-x-4">
-          <span>{enhancedContent.email}</span>
+          <span className="no-underline">{enhancedContent.email}</span>
           <span>•</span>
-          <span>{enhancedContent.phone}</span>
+          <span className="no-underline">{enhancedContent.phone}</span>
           <span>•</span>
           <span>{enhancedContent.location}</span>
         </div>

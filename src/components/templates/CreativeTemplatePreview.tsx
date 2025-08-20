@@ -65,11 +65,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             <div className="flex justify-center space-x-6 text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
               <div className="flex items-center gap-2 print:justify-center">
                 <Mail className="w-4 h-4" />
-                <span className="break-all">{enhancedContent.email}</span>
+                <span className="break-all no-underline">{enhancedContent.email}</span>
               </div>
               <div className="flex items-center gap-2 print:justify-center">
                 <Phone className="w-4 h-4" />
-                <span>{enhancedContent.phone}</span>
+                <span className="no-underline">{enhancedContent.phone}</span>
               </div>
             </div>
           </div>

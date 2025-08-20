@@ -43,11 +43,11 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             <div className="space-y-2 text-sm opacity-90">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="break-all">{enhancedContent.email}</span>
+                <span className="break-all no-underline">{enhancedContent.email}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 flex-shrink-0" />
-                <span>{enhancedContent.phone}</span>
+                <span className="no-underline">{enhancedContent.phone}</span>
               </div>
             </div>
           </div>
