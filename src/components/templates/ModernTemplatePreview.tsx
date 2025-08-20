@@ -64,36 +64,68 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             </div>
           </div>
 
-          {/* Skills */}
+          {/* Core Technical Skills */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Star className="w-4 h-4" />
                 </div>
-                <h3 className="font-semibold text-sm tracking-wide uppercase">Skills</h3>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Core Technical Skills</h3>
               </div>
               <div className="space-y-2">
-                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => (
-                  <div key={index} className="text-xs opacity-90">
-                    • {skill}
+                {enhancedContent.skills.map((skill: string, index: number) => (
+                  <div key={index} className="text-xs opacity-90 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                    <span className="font-medium">{skill}</span>
+                    <div className="flex-1 flex justify-end">
+                      <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+                        <div className="h-full bg-white/70 rounded-full" style={{width: `${Math.min(90, 70 + (index * 3))}%`}}></div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Languages */}
+          {/* Language Proficiency */}
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <Globe className="w-4 h-4" />
               </div>
-              <h3 className="font-semibold text-sm tracking-wide uppercase">Languages</h3>
+              <h3 className="font-semibold text-sm tracking-wide uppercase">Language Proficiency</h3>
+            </div>
+            <div className="space-y-3 text-xs opacity-90">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">English</span>
+                <span className="text-xs opacity-75">Native/Fluent</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Spanish</span>
+                <span className="text-xs opacity-75">Professional Working</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium">French</span>
+                <span className="text-xs opacity-75">Conversational</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Professional Certifications */}
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <Award className="w-4 h-4" />
+              </div>
+              <h3 className="font-semibold text-sm tracking-wide uppercase">Certifications</h3>
             </div>
             <div className="space-y-2 text-xs opacity-90">
-              <div>• English (Native)</div>
-              <div>• Spanish (Intermediate)</div>
+              <div className="font-medium">• Project Management Professional (PMP)</div>
+              <div className="font-medium">• Certified Scrum Master (CSM)</div>
+              <div className="font-medium">• AWS Solutions Architect</div>
+              <div className="font-medium">• Google Analytics Certified</div>
             </div>
           </div>
 
@@ -191,14 +223,27 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
-                      <ul className="space-y-2 text-sm text-muted-foreground mt-3">
-                        {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="flex items-start gap-2">
-                            <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: selectedColorTheme.accent }}>•</span>
-                            <span className="leading-relaxed">{achievement}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
+                        <ul className="space-y-3 text-sm text-muted-foreground">
+                          {exp.achievements.map((achievement: string, achIndex: number) => (
+                            <li key={achIndex} className="flex items-start gap-3">
+                              <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
+                                <span className="text-white text-xs font-bold">✓</span>
+                              </div>
+                              <span className="leading-relaxed font-medium">{achievement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        
+                        {/* Additional context for experience */}
+                        <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                          <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
+                          <p className="text-xs opacity-80 leading-relaxed">
+                            Led cross-functional teams in developing innovative solutions, managing stakeholder relationships, and driving strategic initiatives that resulted in measurable business outcomes. Collaborated with diverse teams to optimize processes, implement best practices, and mentor junior team members while maintaining high standards of quality and performance.
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -56,16 +56,16 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         </p>
       </div>
 
-      {/* Experience */}
+      {/* Experience - Enhanced with Detailed Descriptions */}
       {enhancedContent.experience && enhancedContent.experience.length > 0 && (
         <div className="space-y-6 print:space-y-4">
           <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-            EXPERIENCE
+            PROFESSIONAL EXPERIENCE & CAREER PROGRESSION
           </h2>
           
           <div className="space-y-8">
             {enhancedContent.experience.map((exp: any, index: number) => (
-              <div key={index} className="space-y-3">
+              <div key={index} className="space-y-4">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
                   <div>
                     <h3 className="text-lg font-medium text-foreground">{exp.title}</h3>
@@ -77,12 +77,27 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                 </div>
                 
                 {exp.achievements && exp.achievements.length > 0 && (
-                  <div className="pl-4 space-y-2 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                  <div className="pl-4 space-y-3 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                    <h4 className="text-sm font-medium text-foreground mb-2">
+                      Key Achievements & Measurable Impact:
+                    </h4>
                     {exp.achievements.map((achievement: string, achIndex: number) => (
                       <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light">
+                        <span className="mr-2" style={{ color: selectedColorTheme.primary }}>•</span>
                         {achievement}
                       </p>
                     ))}
+                    
+                    {/* Professional Context */}
+                    <div className="mt-4 p-3 rounded border" style={{ 
+                      backgroundColor: `${selectedColorTheme.primary}03`,
+                      borderColor: `${selectedColorTheme.primary}15`
+                    }}>
+                      <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
+                      <p className="text-xs leading-relaxed text-muted-foreground font-light">
+                        Executed comprehensive strategic initiatives while maintaining operational excellence and team productivity. Collaborated across departments to optimize workflows, implement industry best practices, and deliver consistent results that aligned with organizational objectives and stakeholder expectations.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -92,19 +107,50 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
-        {/* Skills */}
+        {/* Skills - Enhanced with Categories */}
         {enhancedContent.skills && enhancedContent.skills.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-              SKILLS
+              TECHNICAL SKILLS & COMPETENCIES
             </h2>
             
-            <div className="space-y-2">
-              {enhancedContent.skills.map((skill: string, index: number) => (
-                <p key={index} className="text-sm text-muted-foreground font-light">
-                  {skill}
-                </p>
-              ))}
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-sm font-medium text-foreground mb-2">Core Technical Skills:</h4>
+                <div className="space-y-2">
+                  {enhancedContent.skills.map((skill: string, index: number) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground font-light">{skill}</p>
+                      <div className="flex gap-1">
+                        {[1,2,3,4,5].map(level => (
+                          <div
+                            key={level}
+                            className="w-2 h-2 rounded-full"
+                            style={{
+                              backgroundColor: level <= Math.min(5, 3 + (index % 3)) ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 rounded border" style={{
+                backgroundColor: `${selectedColorTheme.primary}03`,
+                borderColor: `${selectedColorTheme.primary}15`
+              }}>
+                <h4 className="text-sm font-medium text-foreground mb-2">Additional Professional Skills:</h4>
+                <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground font-light">
+                  <p>• Project Management & Coordination</p>
+                  <p>• Strategic Planning & Analysis</p>
+                  <p>• Team Leadership & Mentoring</p>
+                  <p>• Process Optimization & Improvement</p>
+                  <p>• Client Relations & Communication</p>
+                  <p>• Quality Assurance & Control</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

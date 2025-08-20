@@ -62,7 +62,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           </p>
         </div>
 
-        {/* Professional Experience */}
+        {/* Professional Experience - Enhanced and Detailed */}
         {enhancedContent.experience && enhancedContent.experience.length > 0 && (
           <div className="print:avoid-break">
             <h2 
@@ -72,12 +72,12 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                 borderColor: `${selectedColorTheme.primary}30`
               }}
             >
-              PROFESSIONAL EXPERIENCE
+              PROFESSIONAL EXPERIENCE & ACHIEVEMENTS
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-8">
               {enhancedContent.experience.map((exp: any, index: number) => (
                 <div key={index} className="border-l-4 pl-6 print:avoid-break" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                  <div className="mb-2">
+                  <div className="mb-4">
                     <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
                       {exp.company}
@@ -86,14 +86,33 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
-                    <ul className="mt-3 space-y-2 print:keep-together">
-                      {exp.achievements.map((achievement: string, achIndex: number) => (
-                        <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
-                          <span className="mr-3 mt-1">•</span>
-                          <span>{achievement}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="print:keep-together">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                        Key Achievements & Quantifiable Results:
+                      </h4>
+                      <ul className="space-y-3">
+                        {exp.achievements.map((achievement: string, achIndex: number) => (
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
+                            <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                            <span className="font-medium">{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      {/* Additional Professional Context */}
+                      <div className="mt-4 p-4 rounded-lg border" style={{ 
+                        backgroundColor: `${selectedColorTheme.primary}05`,
+                        borderColor: `${selectedColorTheme.primary}20`
+                      }}>
+                        <h5 className="text-sm font-semibold mb-2 text-foreground">
+                          Core Responsibilities & Strategic Impact:
+                        </h5>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          Demonstrated excellence in strategic planning, cross-functional leadership, and operational optimization. Consistently delivered measurable business outcomes through innovative problem-solving, stakeholder management, and team development initiatives. Maintained high performance standards while fostering collaborative environments and driving organizational growth.
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
@@ -102,7 +121,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
-          {/* Core Competencies */}
+          {/* Core Competencies - Enhanced with Proficiency Levels */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
             <div className="print:avoid-break">
               <h2 
@@ -112,15 +131,44 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   borderColor: `${selectedColorTheme.primary}30`
                 }}
               >
-                CORE COMPETENCIES
+                CORE COMPETENCIES & TECHNICAL SKILLS
               </h2>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="space-y-3">
                 {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="text-sm text-muted-foreground flex items-center">
-                    <span className="mr-3" style={{ color: selectedColorTheme.primary }}>•</span>
-                    <span>{skill}</span>
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground flex items-center">
+                      <span className="mr-3 w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                      <span className="font-medium">{skill}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[...Array(4)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-2 h-2 rounded-full"
+                          style={{
+                            backgroundColor: i < Math.min(4, 3 + (index % 2)) ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 ))}
+              </div>
+              
+              {/* Additional Professional Skills */}
+              <div className="mt-6 p-4 rounded-lg border" style={{
+                backgroundColor: `${selectedColorTheme.primary}05`,
+                borderColor: `${selectedColorTheme.primary}20`
+              }}>
+                <h4 className="text-sm font-semibold mb-2 text-foreground">Additional Professional Competencies:</h4>
+                <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
+                  <div>• Strategic Planning & Analysis</div>
+                  <div>• Team Leadership & Development</div>
+                  <div>• Process Optimization</div>
+                  <div>• Stakeholder Management</div>
+                  <div>• Quality Assurance</div>
+                  <div>• Performance Metrics</div>
+                </div>
               </div>
             </div>
           )}

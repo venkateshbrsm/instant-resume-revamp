@@ -107,7 +107,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4 print:grid-cols-1">
             {/* Main Content - Experience */}
             <div className="lg:col-span-2 space-y-6 print:space-y-4 print:col-span-1">
-              {/* Experience with Creative Cards */}
+              {/* Creative Experience with Enhanced Achievements */}
               {enhancedContent.experience && enhancedContent.experience.length > 0 && (
                 <div 
                   className="print:break-inside-avoid print:page-break-inside-avoid" 
@@ -121,15 +121,15 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       <TrendingUp className="w-6 h-6 print:w-5 print:h-5" />
                     </div>
                     <h2 className="text-2xl font-bold print:text-xl" style={{ color: selectedColorTheme.primary }}>
-                      Experience Journey
+                      Professional Experience & Achievements
                     </h2>
                   </div>
                   
-                  <div className="space-y-6 print:space-y-4">
+                  <div className="space-y-8 print:space-y-6">
                     {enhancedContent.experience.map((exp: any, index: number) => (
                       <div 
                         key={index} 
-                        className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-6 print:rounded-lg"
+                        className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg"
                         style={{ 
                           background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
                           borderColor: selectedColorTheme.accent,
@@ -137,7 +137,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                           breakInside: 'avoid'
                         }}
                       >
-                        <div className="flex flex-col gap-3 mb-4 print:mb-2">
+                        <div className="flex flex-col gap-4 mb-6 print:mb-4">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2">
                             <div>
                               <h3 className="text-xl font-bold text-foreground print:text-lg">{exp.title}</h3>
@@ -156,10 +156,13 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                         
                         {exp.achievements && exp.achievements.length > 0 && (
                           <div 
-                            className="space-y-3 print:space-y-2" 
+                            className="space-y-4 print:space-y-3" 
                             style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
                           >
-                            {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
+                            <h4 className="text-base font-semibold print:text-sm" style={{ color: selectedColorTheme.primary }}>
+                              Key Achievements & Quantifiable Impact:
+                            </h4>
+                            {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
                                 className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 
@@ -171,9 +174,26 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                 >
                                   <span className="text-white text-xs font-bold">✓</span>
                                 </div>
-                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal">{achievement}</p>
+                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium">{achievement}</p>
                               </div>
                             ))}
+                            
+                            {/* Additional Professional Context */}
+                            <div 
+                              className="mt-4 p-4 rounded-lg print:p-3 print:rounded-md print:break-inside-avoid"
+                              style={{ 
+                                background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                                pageBreakInside: 'avoid',
+                                breakInside: 'avoid'
+                              }}
+                            >
+                              <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
+                                Core Responsibilities & Strategic Impact:
+                              </h5>
+                              <p className="text-xs leading-relaxed text-muted-foreground print:text-xs">
+                                Spearheaded cross-functional collaboration initiatives, driving operational excellence through strategic process optimization and team leadership. Consistently delivered measurable results by implementing data-driven solutions, mentoring high-performing teams, and maintaining rigorous quality standards while adapting to dynamic business environments and stakeholder requirements.
+                              </p>
+                            </div>
                           </div>
                         )}
                       </div>

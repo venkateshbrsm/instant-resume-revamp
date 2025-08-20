@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
@@ -631,9 +631,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                       />
 
                       {/* Scrollable Template Preview - Printer Friendly */}
-                      <div className="h-[600px] w-full overflow-auto border rounded-lg">
-                        <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
-                             style={{ minHeight: '297mm' }}>
+                      <div className="relative">
+                        <p className="text-sm text-muted-foreground mb-2 text-center">
+                          📄 Scroll to view full resume • Use mouse wheel or drag scrollbars
+                        </p>
+                        <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
+                          <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
+                               style={{ minHeight: '297mm' }}>
                           {selectedTemplate.id === 'modern' && (
                             <ModernTemplatePreview 
                               enhancedContent={enhancedContent}
@@ -664,7 +668,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                               selectedColorTheme={selectedColorTheme}
                             />
                           )}
-                        </div>
+                          </div>
+                          <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
                       </div>
                     </div>
                   </div>

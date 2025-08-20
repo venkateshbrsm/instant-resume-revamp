@@ -133,67 +133,75 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             </div>
           </div>
 
-          {/* Professional Experience */}
-          {enhancedContent.experience && enhancedContent.experience.length > 0 && (
-            <div className="section">
-              <div className="flex items-center gap-3 mb-6">
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
-                  style={{ background: selectedColorTheme.secondary }}
-                >
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-bold" style={{ color: selectedColorTheme.primary }}>
-                  Professional Experience
-                </h2>
-              </div>
-              
-              <div className="space-y-6">
-                {enhancedContent.experience.map((exp: any, index: number) => (
-                  <div key={index} className="bg-white p-5 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-6" style={{ borderColor: selectedColorTheme.accent }} data-experience>
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">{exp.title}</h3>
-                        <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
-                          {exp.company}
-                        </p>
-                      </div>
-                      <Badge 
-                        className="px-3 py-1 text-white text-xs"
-                        style={{ backgroundColor: selectedColorTheme.primary }}
-                      >
-                        {exp.duration}
-                      </Badge>
+              {/* Professional Experience - Enhanced with Detailed Achievements */}
+              {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+                <div className="section">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+                      style={{ background: selectedColorTheme.secondary }}
+                    >
+                      <TrendingUp className="w-5 h-5" />
                     </div>
-                    
-                    {exp.achievements && exp.achievements.length > 0 && (
-                      <div className="page-break-avoid">
-                        <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                          <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
-                          Key Achievements
-                        </h4>
-                        <div className="space-y-2">
-                          {exp.achievements.slice(0, 4).map((achievement: string, achIndex: number) => (
-                            <div key={achIndex} className="flex items-start gap-2">
-                              <div 
-                                className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
-                                style={{ backgroundColor: selectedColorTheme.accent }}
-                              >
-                                <span className="text-white text-xs">✓</span>
-                              </div>
-                              <p className="text-sm leading-relaxed text-gray-600">
-                                {achievement}
+                    <h2 className="text-xl font-bold" style={{ color: selectedColorTheme.primary }}>
+                      Executive Leadership Experience
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-8">
+                    {enhancedContent.experience.map((exp: any, index: number) => (
+                      <div key={index} className="bg-white p-6 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-8" style={{ borderColor: selectedColorTheme.accent }} data-experience>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">{exp.title}</h3>
+                            <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
+                              {exp.company}
+                            </p>
+                          </div>
+                          <Badge 
+                            className="px-3 py-1 text-white text-xs"
+                            style={{ backgroundColor: selectedColorTheme.primary }}
+                          >
+                            {exp.duration}
+                          </Badge>
+                        </div>
+                        
+                        {exp.achievements && exp.achievements.length > 0 && (
+                          <div className="page-break-avoid">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                              <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
+                              Strategic Achievements & Leadership Impact
+                            </h4>
+                            <div className="space-y-3">
+                              {exp.achievements.map((achievement: string, achIndex: number) => (
+                                <div key={achIndex} className="flex items-start gap-3">
+                                  <div 
+                                    className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                                    style={{ backgroundColor: selectedColorTheme.accent }}
+                                  >
+                                    <span className="text-white text-xs">✓</span>
+                                  </div>
+                                  <p className="text-sm leading-relaxed text-gray-600 font-medium">
+                                    {achievement}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Executive Context */}
+                            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
+                              <p className="text-xs leading-relaxed text-gray-600">
+                                Demonstrated exceptional leadership capabilities by orchestrating multi-million dollar initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence, stakeholder alignment, and sustainable growth trajectories across diverse business units and market conditions.
                               </p>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
         </div>
       </div>
     </div>
