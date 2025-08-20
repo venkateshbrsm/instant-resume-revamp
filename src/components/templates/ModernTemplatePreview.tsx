@@ -229,7 +229,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                           {exp.achievements.map((achievement: string, achIndex: number) => (
                             <li key={achIndex} className="flex items-center gap-3">
                               <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
-                                <span className="text-white text-xs font-bold">✓</span>
+                                <span className="text-white text-[10px] font-bold leading-none">✓</span>
                               </div>
                               <span className="leading-relaxed font-medium">{achievement}</span>
                             </li>
