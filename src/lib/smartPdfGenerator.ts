@@ -117,6 +117,14 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   // Inject CSS for comprehensive page break handling
   const style = document.createElement('style');
   style.textContent = `
+    /* Universal page break prevention */
+    * {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 3 !important;
+      widows: 3 !important;
+    }
+    
     /* Core page break prevention for all content structures */
     .page-break-avoid,
     .print\\:avoid-break,
@@ -128,7 +136,8 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-inside: avoid !important;
     }
     
-    /* Target ALL low-level containers to prevent cutting */
+    /* Target ALL HTML elements to prevent cutting */
+    *, *::before, *::after,
     div, span, p, a, strong, em, b, i, u, small, sub, sup,
     article, section, aside, nav, header, footer, main,
     figure, figcaption, blockquote, pre, code, kbd, samp, var,
@@ -139,6 +148,8 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     .opacity-90, .opacity-80, .opacity-75, .opacity-60 {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      orphans: 3 !important;
+      widows: 3 !important;
     }
     
     /* Template-specific content structures */
