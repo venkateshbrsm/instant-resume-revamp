@@ -14,35 +14,20 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-12 space-y-12 print:p-8 print:space-y-8 min-h-screen">
-      {/* Ultra Minimalist Header */}
-      <div className="text-left space-y-6 pb-8" style={{ borderBottom: '1px solid #f0f0f0' }}>
-        {/* Profile Photo - minimal */}
-        {enhancedContent.photo && (
-          <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-200 mb-6">
-            <img 
-              src={enhancedContent.photo} 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
-        )}
-        
-        <h1 className="text-5xl font-light tracking-wider text-gray-900 leading-tight">
-          {enhancedContent.name || 'Name'}
+    <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
+      {/* Minimalist Header */}
+      <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+        <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
+          {enhancedContent.name}
         </h1>
-        <p className="text-lg text-gray-600 font-light tracking-wide">
-          {enhancedContent.title || 'Title'}
+        <p className="text-xl text-muted-foreground font-light">
+          {enhancedContent.title}
         </p>
         
-        <div className="flex flex-wrap gap-8 text-sm text-gray-500 font-light pt-4">
-          <span className="break-all">{enhancedContent.email || 'email@example.com'}</span>
-          <span>{enhancedContent.phone || 'Phone'}</span>
-          <span>{enhancedContent.location || 'Location'}</span>
+        <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
+          <span className="break-all">{enhancedContent.email}</span>
+          <span>{enhancedContent.phone}</span>
+          <span>{enhancedContent.location}</span>
         </div>
       </div>
 

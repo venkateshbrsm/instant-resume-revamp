@@ -16,35 +16,20 @@ interface TemplatePreviewProps {
 export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
-      {/* Classic Header - Centered with Photo */}
-      <div className="text-center py-8 px-6 border-b border-gray-300" style={{ borderBottomWidth: '1px' }}>
-        {/* Profile Photo */}
-        {enhancedContent.photo && (
-          <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-gray-200">
-            <img 
-              src={enhancedContent.photo} 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
-        )}
-        
-        <h1 className="text-3xl font-bold mb-1 tracking-wider text-gray-900 uppercase">
-          {enhancedContent.name || 'John Smith'}
+      {/* Classic Header - Centered */}
+      <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
+          {enhancedContent.name}
         </h1>
-        <p className="text-base text-gray-600 mb-3 font-normal uppercase tracking-widest">
-          {enhancedContent.title || 'Software Engineer'}
+        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+          {enhancedContent.title}
         </p>
-        <div className="text-sm text-gray-600 space-x-3 font-normal">
-          <span>{enhancedContent.email || 'john@email.com'}</span>
+        <div className="text-sm text-muted-foreground space-x-4">
+          <span>{enhancedContent.email}</span>
           <span>•</span>
-          <span>{enhancedContent.phone || '+1 (555) 123-4567'}</span>
+          <span>{enhancedContent.phone}</span>
           <span>•</span>
-          <span>{enhancedContent.location || 'New York, NY'}</span>
+          <span>{enhancedContent.location}</span>
         </div>
       </div>
 

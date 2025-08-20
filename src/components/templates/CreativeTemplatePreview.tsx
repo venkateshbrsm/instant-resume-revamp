@@ -24,49 +24,46 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         breakInside: 'avoid'
       }}
     >
-      {/* Creative Header with Vibrant Design */}
+      {/* Creative Header with Diagonal Design */}
       <div 
-        className="relative overflow-hidden print:break-inside-avoid print:page-break-inside-avoid h-64" 
-        style={{ 
-          pageBreakInside: 'avoid', 
-          breakInside: 'avoid',
-          background: `linear-gradient(135deg, #FF6B35 0%, #F7931E 30%, #FFD23F 70%, #06FFA5 100%)`
-        }}
+        className="relative overflow-hidden print:break-inside-avoid print:page-break-inside-avoid" 
+        style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
-        {/* Large circular elements */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full transform translate-x-24 -translate-y-12 opacity-80"></div>
-        <div className="absolute top-8 right-16 w-32 h-32 bg-gradient-to-br from-orange-400 to-red-500 rounded-full opacity-70"></div>
-        <div className="absolute top-12 right-12 w-6 h-6 bg-white rounded-full opacity-60"></div>
-        
-        {/* Bottom curved section */}
-        <div className="absolute bottom-0 left-0 w-80 h-40 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transform -translate-x-32 translate-y-20 opacity-80"></div>
-        
-        <div className="relative z-10 p-8 h-full flex flex-col justify-center">
-          {/* Profile Photo */}
-          {enhancedContent.photo && (
-            <div className="w-20 h-20 mb-4 rounded-full overflow-hidden border-4 border-white/30">
-              <img 
-                src={enhancedContent.photo} 
-                alt="Profile" 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
+        <div 
+          className="h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
+          style={{
+            background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.accent} 70%, ${selectedColorTheme.secondary} 100%)`,
+            pageBreakInside: 'avoid'
+          }}
+        >
+          {/* Geometric Background Pattern */}
+          <div className="absolute inset-0 opacity-20 print:opacity-10">
+            <div className="absolute top-4 left-4 w-16 h-16 border-2 border-white rounded-full print:hidden"></div>
+            <div className="absolute top-8 right-8 w-12 h-12 border-2 border-white transform rotate-45 print:hidden"></div>
+            <div className="absolute bottom-4 left-1/4 w-8 h-8 bg-white opacity-30 rounded-full print:hidden"></div>
+          </div>
           
-          <div className="text-white">
-            <h1 className="text-6xl font-black mb-2 text-black leading-none">
-              Without<br />the<br />Creative<br />Best
-            </h1>
-            <p className="text-xl text-black font-bold tracking-wide">
-              {enhancedContent.title || 'Creative Professional'}
-            </p>
-            <p className="text-lg text-black/80 font-medium mt-2">
-              {enhancedContent.name || 'John Smith'}
-            </p>
+          <div className="relative z-10 text-center">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4">
+                <Palette className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
+                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+              </div>
+            </div>
+            
+            <div className="flex justify-center space-x-6 text-sm print:space-x-4 print:text-xs print:flex-col print:space-x-0 print:space-y-1">
+              <div className="flex items-center gap-2 print:justify-center">
+                <Mail className="w-4 h-4" />
+                <span className="break-all">{enhancedContent.email}</span>
+              </div>
+              <div className="flex items-center gap-2 print:justify-center">
+                <Phone className="w-4 h-4" />
+                <span>{enhancedContent.phone}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
