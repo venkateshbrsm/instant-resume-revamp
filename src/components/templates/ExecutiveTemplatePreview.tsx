@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Award, TrendingUp, Users, Crown, Target, Star } from "lucide-react";
+import { Mail, Phone, Award, TrendingUp, Users, Crown, Target, Star, User } from "lucide-react";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -28,8 +28,16 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-4 mb-3">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Crown className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                  {enhancedContent.photo ? (
+                    <img 
+                      src={enhancedContent.photo} 
+                      alt={enhancedContent.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Crown className="w-8 h-8 text-white" />
+                  )}
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold mb-1">{enhancedContent.name}</h1>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Palette, Brush, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Palette, Brush, Sparkles, User } from "lucide-react";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -45,8 +45,16 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           
           <div className="relative z-10 text-center">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4">
-                <Palette className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4 overflow-hidden">
+                {enhancedContent.photo ? (
+                  <img 
+                    src={enhancedContent.photo} 
+                    alt={enhancedContent.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Palette className="w-8 h-8 text-white" />
+                )}
               </div>
               <div>
                 <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
