@@ -27,17 +27,16 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
         >
           {/* Profile Section */}
           <div className="mb-8 page-break-avoid">
-            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden mb-4 mx-auto">
-              {enhancedContent.photo ? (
+            {/* Profile Photo - Only show if photo exists */}
+            {enhancedContent.photo && (
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden mb-4 mx-auto">
                 <img 
                   src={enhancedContent.photo} 
                   alt={enhancedContent.name}
                   className="w-full h-full object-cover"
                 />
-              ) : (
-                <User className="w-10 h-10 text-white" />
-              )}
-            </div>
+              </div>
+            )}
             <h1 className="text-2xl font-bold mb-2 text-center">{enhancedContent.name}</h1>
             <p className="text-lg opacity-95 font-medium text-center mb-4">{enhancedContent.title}</p>
             

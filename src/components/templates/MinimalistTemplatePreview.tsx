@@ -18,18 +18,16 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
       {/* Minimalist Header */}
       <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
         <div className="flex items-start gap-6">
-          {/* Profile Photo */}
-          <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-            {enhancedContent.photo ? (
+          {/* Profile Photo - Only show if photo exists */}
+          {enhancedContent.photo && (
+            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
                 className="w-full h-full object-cover"
               />
-            ) : (
-              <User className="w-6 h-6 text-muted-foreground" />
-            )}
-          </div>
+            </div>
+          )}
           
           <div className="flex-1">
             <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>

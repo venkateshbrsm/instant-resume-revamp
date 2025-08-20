@@ -23,20 +23,18 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
       >
-        {/* Profile Photo */}
-        <div className="text-center mb-6">
-          <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
-            {enhancedContent.photo ? (
+        {/* Profile Photo - Only show if photo exists */}
+        {enhancedContent.photo && (
+          <div className="text-center mb-6">
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden">
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
                 className="w-full h-full object-cover"
               />
-            ) : (
-              <User className="w-12 h-12 text-white/70" />
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Sidebar Sections */}
         <div className="space-y-6">
