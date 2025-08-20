@@ -615,9 +615,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Dynamic Template Preview with Horizontal Scroll */}
+                      {/* Dynamic Template Preview with Horizontal & Vertical Scroll */}
                       <ScrollArea className="w-full h-[600px] md:h-[700px] lg:h-[800px]">
-                        <div ref={resumeContentRef} className="min-w-[800px] w-full">
+                        <div ref={resumeContentRef} className="min-w-[900px] w-max pr-4">
                           {selectedTemplate.id === 'modern' && (
                             <ModernTemplatePreview 
                               enhancedContent={enhancedContent}
