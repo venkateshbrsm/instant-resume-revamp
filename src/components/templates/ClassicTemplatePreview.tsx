@@ -93,8 +93,8 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                       </h4>
                       <ul className="space-y-3">
                         {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
-                            <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-center">
+                            <span className="mr-3 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
                             <span className="font-medium">{achievement}</span>
                           </li>
                         ))}

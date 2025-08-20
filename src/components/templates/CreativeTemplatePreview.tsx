@@ -165,11 +165,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                             {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
-                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 
+                                className="flex items-center gap-3 print:gap-2 print:break-inside-avoid" 
                                 style={{ pageBreakInside: 'avoid' }}
                               >
                                 <div 
-                                  className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
+                                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 print:w-4 print:h-4"
                                   style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
                                 >
                                   <span className="text-white text-xs font-bold">✓</span>
