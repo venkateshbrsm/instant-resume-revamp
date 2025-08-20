@@ -16,49 +16,134 @@ interface TemplatePreviewProps {
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0">
-      {/* Executive Header - Premium Feel */}
-      <div 
-        className="relative p-6 text-white print:p-4"
-        style={{
-          background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
-        }}
-      >
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Crown className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold mb-1">{enhancedContent.name}</h1>
-                  <p className="text-xl opacity-95 font-medium">{enhancedContent.title}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-6 text-sm opacity-90">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{enhancedContent.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  <span>{enhancedContent.phone}</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Executive Stats */}
-            <div className="text-right">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl font-bold">
-                  {enhancedContent.experience?.length || 0}+
-                </div>
-                <div className="text-sm opacity-90">Years Leadership</div>
+      <div className="grid grid-cols-3 min-h-screen">
+        {/* Left Sidebar - Dark */}
+        <div className="bg-slate-800 p-6 text-white space-y-6">
+          {/* Profile Photo */}
+          <div className="text-center mb-8">
+            <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-yellow-600/30 mb-4">
+              {enhancedContent.photo ? (
+                <img 
+                  src={enhancedContent.photo} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              <div className={`w-full h-full bg-slate-700 flex items-center justify-center text-4xl ${enhancedContent.photo ? 'hidden' : ''}`}>
+                👤
               </div>
             </div>
           </div>
+
+          {/* Contact Info */}
+          <div className="space-y-4">
+            <h3 className="text-yellow-400 font-bold text-sm tracking-wider mb-4">CONTACT</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-400">📧</span>
+                <span className="break-all">{enhancedContent.email || 'email@example.com'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-400">📞</span>
+                <span>{enhancedContent.phone || '+1 (555) 123-4567'}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-400">📍</span>
+                <span>{enhancedContent.location || 'Location'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="space-y-4">
+            <h3 className="text-yellow-400 font-bold text-sm tracking-wider">SKILLS</h3>
+            <div className="space-y-2">
+              {(enhancedContent.skills || []).slice(0, 8).map((skill: string, index: number) => (
+                <div key={index} className="text-sm">
+                  <div className="flex justify-between mb-1">
+                    <span>{skill}</span>
+                    <span className="text-yellow-400">●●●●○</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Education */}
+          <div className="space-y-4">
+            <h3 className="text-yellow-400 font-bold text-sm tracking-wider">EDUCATION</h3>
+            <div className="space-y-3">
+              {(enhancedContent.education || []).map((edu: any, index: number) => (
+                <div key={index} className="text-sm">
+                  <div className="font-semibold">{edu.degree || "Bachelor's Degree"}</div>
+                  <div className="text-yellow-400 text-xs">{edu.institution || "University"}</div>
+                  {edu.year && edu.year !== "N/A" && (
+                    <div className="text-xs opacity-80">{edu.year}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Content Area */}
+        <div className="col-span-2 p-8 space-y-8">
+          {/* Header */}
+          <div className="border-b border-yellow-600/30 pb-6">
+            <h1 className="text-4xl font-bold text-slate-800 mb-2">
+              {enhancedContent.name || 'Alvank Witham'}
+            </h1>
+            <p className="text-xl text-yellow-600 font-medium">
+              {enhancedContent.title || 'Senior Executive'}
+            </p>
+          </div>
+
+          {/* Achievements */}
+          <div>
+            <h2 className="text-yellow-600 font-bold text-lg mb-4 flex items-center gap-2">
+              <span>🏆</span> Achievements
+            </h2>
+            <div className="prose text-sm text-slate-700 leading-relaxed">
+              {enhancedContent.summary || 'Professional summary and key achievements will be displayed here.'}
+            </div>
+          </div>
+
+          {/* Experience */}
+          {enhancedContent.experience && enhancedContent.experience.length > 0 && (
+            <div>
+              <h2 className="text-yellow-600 font-bold text-lg mb-4 flex items-center gap-2">
+                <span>🎯</span> Experience
+              </h2>
+              <div className="space-y-6">
+                {enhancedContent.experience.map((exp: any, index: number) => (
+                  <div key={index} className="border-l-2 border-yellow-600/30 pl-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-bold text-slate-800">{exp.title}</h3>
+                        <p className="text-yellow-600 font-medium">{exp.company}</p>
+                      </div>
+                      <span className="text-sm text-slate-600">{exp.duration}</span>
+                    </div>
+                    {exp.achievements && (
+                      <ul className="text-sm text-slate-700 space-y-1">
+                        {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
+                          <li key={achIndex} className="flex items-start gap-2">
+                            <span className="text-yellow-600 text-xs mt-1">●</span>
+                            <span>{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
