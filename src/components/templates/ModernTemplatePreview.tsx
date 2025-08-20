@@ -15,17 +15,17 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex flex-col lg:flex-row min-h-fit">
       {/* Left Sidebar */}
       <div 
-        className="w-64 p-6 text-white"
+        className="w-full lg:w-64 p-4 lg:p-6 text-white"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
       >
         {/* Profile Photo */}
-        <div className="text-center mb-6">
-          <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
+        <div className="text-center lg:text-left mb-4 lg:mb-6">
+          <div className="w-16 h-16 lg:w-24 lg:h-24 mx-auto lg:mx-auto mb-3 lg:mb-4 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
             {enhancedContent.photo ? (
               <img 
                 src={enhancedContent.photo} 
@@ -39,7 +39,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         </div>
 
         {/* Sidebar Sections */}
-        <div className="space-y-6">
+        <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6 lg:gap-0">
           {/* Contact Details */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -125,20 +125,20 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 lg:p-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
             {enhancedContent.name}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className="text-base lg:text-lg text-muted-foreground mb-4">
             {enhancedContent.title}
           </p>
         </div>
 
         {/* About Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+        <div className="mb-6 lg:mb-8">
+          <h2 className="text-lg lg:text-xl font-bold mb-3 lg:mb-4 flex items-center gap-2 lg:gap-3" style={{ color: selectedColorTheme.primary }}>
             <div 
               className="w-6 h-6 rounded-full flex items-center justify-center text-white"
               style={{ backgroundColor: selectedColorTheme.primary }}
@@ -155,7 +155,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         {/* Work Experience */}
         {enhancedContent.experience && enhancedContent.experience.length > 0 && (
           <div>
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+            <h2 className="text-lg lg:text-xl font-bold mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3" style={{ color: selectedColorTheme.primary }}>
               <div 
                 className="w-6 h-6 rounded-full flex items-center justify-center text-white"
                 style={{ backgroundColor: selectedColorTheme.primary }}
