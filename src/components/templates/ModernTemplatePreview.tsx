@@ -49,11 +49,11 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             <div className="space-y-3 text-sm opacity-90">
               <div className="flex items-center gap-2">
                 <Mail className="w-3 h-3" />
-                <span className="break-all text-xs contact-email">{enhancedContent.email}</span>
+                <span className="break-all text-xs no-underline">{enhancedContent.email}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3 h-3" />
-                <span className="text-xs contact-phone">{enhancedContent.phone}</span>
+                <span className="text-xs no-underline">{enhancedContent.phone}</span>
               </div>
               {enhancedContent.location && (
                 <div className="flex items-center gap-2">

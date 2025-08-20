@@ -64,19 +64,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       break-inside: avoid;
     }
     
-    /* Remove all underlines from email and phone numbers - comprehensive */
+    /* Comprehensive underline removal for email and phone */
     a, a:link, a:visited, a:hover, a:active,
-    .contact, .contact-item, .contact-grid, .contact-email, .contact-phone,
-    .email, .phone, .no-underline,
+    .contact, .contact-item, .contact-grid,
     span[href], span[data-email], span[data-phone],
-    *[href^="mailto:"], *[href^="tel:"],
-    span[class*="email"], span[class*="phone"], span[class*="contact"] {
+    *[href^="mailto:"], *[href^="tel:"] {
       text-decoration: none !important;
       border-bottom: none !important;
       outline: none !important;
-      text-decoration-line: none !important;
-      text-decoration-color: transparent !important;
-      text-decoration-style: none !important;
     }
     
     /* Page break rules for printer-friendly output */
@@ -660,19 +655,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       break-inside: avoid;
     }
     
-    /* Remove all underlines from email and phone numbers - comprehensive */
+    /* Comprehensive underline removal for email and phone */
     a, a:link, a:visited, a:hover, a:active,
-    .contact, .contact-item, .contact-grid, .contact-email, .contact-phone,
-    .email, .phone, .no-underline,
+    .contact, .contact-item, .contact-grid,
     span[href], span[data-email], span[data-phone],
-    *[href^="mailto:"], *[href^="tel:"],
-    span[class*="email"], span[class*="phone"], span[class*="contact"] {
+    *[href^="mailto:"], *[href^="tel:"] {
       text-decoration: none !important;
       border-bottom: none !important;
       outline: none !important;
-      text-decoration-line: none !important;
-      text-decoration-color: transparent !important;
-      text-decoration-style: none !important;
     }
     
     /* Page break rules for printer-friendly output */
@@ -872,19 +862,14 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       break-inside: avoid;
     }
     
-    /* Remove all underlines from email and phone numbers - comprehensive */
+    /* Comprehensive underline removal for email and phone */
     a, a:link, a:visited, a:hover, a:active,
-    .contact, .contact-item, .contact-grid, .contact-email, .contact-phone,
-    .email, .phone, .no-underline,
+    .contact, .contact-item, .contact-grid,
     span[href], span[data-email], span[data-phone],
-    *[href^="mailto:"], *[href^="tel:"],
-    span[class*="email"], span[class*="phone"], span[class*="contact"] {
+    *[href^="mailto:"], *[href^="tel:"] {
       text-decoration: none !important;
       border-bottom: none !important;
       outline: none !important;
-      text-decoration-line: none !important;
-      text-decoration-color: transparent !important;
-      text-decoration-style: none !important;
     }
     
     /* Page break rules for printer-friendly output */
