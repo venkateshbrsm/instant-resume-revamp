@@ -15,18 +15,18 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 print:rounded-none print:max-w-none print:mx-0 flex flex-col lg:flex-row min-h-[600px] print:min-h-0">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
       {/* Left Sidebar */}
       <div 
-        className="w-full lg:w-64 p-4 sm:p-6 text-white print:p-4 print:w-full print:mb-4"
+        className="w-64 p-6 text-white"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
       >
         {/* Profile Photo - Only show if photo exists */}
         {enhancedContent.photo && (
-          <div className="text-center mb-4 sm:mb-6 print:mb-4">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full overflow-hidden print:w-16 print:h-16">
+          <div className="text-center mb-6">
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden">
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -37,28 +37,28 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         )}
 
         {/* Sidebar Sections */}
-        <div className="space-y-4 sm:space-y-6 print:space-y-4">
+        <div className="space-y-6">
           {/* Contact Details */}
-          <div className="print:break-inside-avoid">
-            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 print:mb-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center print:w-6 print:h-6">
-                <Mail className="w-3 h-3 sm:w-4 sm:h-4 print:w-3 print:h-3" />
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <Mail className="w-4 h-4" />
               </div>
-              <h3 className="font-semibold text-xs sm:text-sm tracking-wide uppercase print:text-xs">Contact</h3>
+              <h3 className="font-semibold text-sm tracking-wide uppercase">Contact</h3>
             </div>
-            <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm opacity-90 print:space-y-2 print:text-xs">
-              <div className="flex items-start gap-2">
-                <Mail className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                <span className="break-all">{enhancedContent.email}</span>
+            <div className="space-y-3 text-sm opacity-90">
+              <div className="flex items-center gap-2">
+                <Mail className="w-3 h-3" />
+                <span className="break-all text-xs">{enhancedContent.email}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-3 h-3 flex-shrink-0" />
-                <span>{enhancedContent.phone}</span>
+                <Phone className="w-3 h-3" />
+                <span className="text-xs">{enhancedContent.phone}</span>
               </div>
               {enhancedContent.location && (
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                  <span>{enhancedContent.location}</span>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3 h-3" />
+                  <span className="text-xs">{enhancedContent.location}</span>
                 </div>
               )}
             </div>
@@ -74,8 +74,8 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Skills</h3>
               </div>
               <div className="space-y-2">
-                {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="text-xs opacity-90 p-1 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => (
+                  <div key={index} className="text-xs opacity-90">
                     • {skill}
                   </div>
                 ))}
@@ -107,18 +107,12 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Education</h3>
               </div>
               <div className="space-y-3">
-                {enhancedContent.education.map((edu: any, index: number) => (
-                  <div key={index} className="text-xs opacity-90 p-2 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                {enhancedContent.education.slice(0, 2).map((edu: any, index: number) => (
+                  <div key={index} className="text-xs opacity-90">
                     <div className="font-medium">{edu.degree}</div>
-                    <div className="text-xs opacity-75 mt-1">{edu.institution}</div>
-                    {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                    <div className="text-xs opacity-75">{edu.institution}</div>
+                    {edu.year && edu.year !== "N/A" && (
                       <div className="text-xs opacity-75">{edu.year}</div>
-                    )}
-                    {edu.gpa && <div className="text-xs opacity-75 mt-1">GPA: {edu.gpa}</div>}
-                    {edu.honors && edu.honors.length > 0 && (
-                      <div className="text-xs opacity-75 mt-1">
-                        Honors: {edu.honors.join(', ')}
-                      </div>
                     )}
                   </div>
                 ))}
@@ -129,13 +123,13 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-4 sm:p-6 lg:p-8 print:p-4">
+      <div className="flex-1 p-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8 print:mb-6 print:break-inside-avoid">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 print:text-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             {enhancedContent.name}
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground mb-4 print:text-base">
+          <p className="text-lg text-muted-foreground mb-4">
             {enhancedContent.title}
           </p>
         </div>
@@ -197,104 +191,19 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="font-semibold text-sm mb-3" style={{ color: selectedColorTheme.primary }}>
-                          Key Achievements & Responsibilities:
-                        </h4>
-                        <ul className="space-y-3 text-sm text-muted-foreground">
-                          {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li key={achIndex} className="flex items-start gap-2">
-                              <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: selectedColorTheme.accent }}>▸</span>
-                              <span className="leading-relaxed">{achievement}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {exp.technologies && exp.technologies.length > 0 && (
-                      <div className="mt-3">
-                        <h4 className="font-semibold text-sm mb-2" style={{ color: selectedColorTheme.primary }}>
-                          Technologies:
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {exp.technologies.map((tech: string, techIndex: number) => (
-                            <Badge key={techIndex} variant="outline" className="text-xs px-2 py-0.5" 
-                              style={{ borderColor: selectedColorTheme.accent, color: selectedColorTheme.accent }}>
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+                      <ul className="space-y-2 text-sm text-muted-foreground mt-3">
+                        {exp.achievements.slice(0, 3).map((achievement: string, achIndex: number) => (
+                          <li key={achIndex} className="flex items-start gap-2">
+                            <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: selectedColorTheme.accent }}>•</span>
+                            <span className="leading-relaxed">{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Additional Professional Sections */}
-        {(enhancedContent.certifications || enhancedContent.projects || enhancedContent.awards) && (
-          <div className="mt-8 space-y-6">
-            {/* Certifications */}
-            {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
-              <div>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
-                  <div 
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white"
-                    style={{ backgroundColor: selectedColorTheme.primary }}
-                  >
-                    <Award className="w-3 h-3" />
-                  </div>
-                  Professional Certifications
-                </h2>
-                <div className="space-y-3">
-                  {enhancedContent.certifications.map((cert: any, index: number) => (
-                    <div key={index} className="border-l-2 pl-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                      <h3 className="font-bold text-foreground">{cert.name}</h3>
-                      <p className="text-sm font-medium" style={{ color: selectedColorTheme.accent }}>{cert.issuer}</p>
-                      {cert.date && <p className="text-sm text-muted-foreground">{cert.date}</p>}
-                      {cert.id && <p className="text-xs text-muted-foreground">Credential ID: {cert.id}</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Notable Projects */}
-            {enhancedContent.projects && enhancedContent.projects.length > 0 && (
-              <div>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
-                  <div 
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white"
-                    style={{ backgroundColor: selectedColorTheme.secondary }}
-                  >
-                    <Briefcase className="w-3 h-3" />
-                  </div>
-                  Notable Projects
-                </h2>
-                <div className="space-y-4">
-                  {enhancedContent.projects.map((project: any, index: number) => (
-                    <div key={index} className="border-l-2 pl-4 pb-4" style={{ borderColor: `${selectedColorTheme.secondary}20` }}>
-                      <h3 className="font-bold text-lg text-foreground">{project.name}</h3>
-                      {project.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
-                      )}
-                      {project.technologies && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {project.technologies.map((tech: string, techIndex: number) => (
-                            <Badge key={techIndex} variant="outline" className="text-xs" 
-                              style={{ borderColor: selectedColorTheme.secondary, color: selectedColorTheme.secondary }}>
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>

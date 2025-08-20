@@ -75,7 +75,7 @@ export const RichDocumentPreview = ({ content, fileType, fileName }: RichDocumen
           <p className="text-sm text-muted-foreground">File: {fileName}</p>
         </div>
       </div>
-      <div className="pr-2">
+      <div className="overflow-y-auto max-h-[600px] pr-2">
         {renderContent()}
       </div>
     </div>

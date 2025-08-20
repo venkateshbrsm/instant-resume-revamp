@@ -14,13 +14,13 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 print:p-4 print:space-y-6 print:max-w-none print:mx-0">
+    <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
       {/* Minimalist Header */}
-      <div className="text-left space-y-3 border-b pb-4 sm:pb-6 print:pb-4 print:break-inside-avoid" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 print:flex-row">
+      <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+        <div className="flex items-start gap-6">
           {/* Profile Photo - Only show if photo exists */}
           {enhancedContent.photo && (
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 border self-center sm:self-start print:w-14 print:h-14" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -29,15 +29,15 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </div>
           )}
           
-          <div className="flex-1 text-center sm:text-left print:text-left">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-wide print:text-3xl" style={{ color: selectedColorTheme.primary }}>
+          <div className="flex-1">
+            <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground font-light print:text-lg">
+            <p className="text-xl text-muted-foreground font-light">
               {enhancedContent.title}
             </p>
             
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 md:gap-8 text-sm text-muted-foreground font-light pt-2 print:flex-row print:gap-4">
+            <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
               <span className="break-all">{enhancedContent.email}</span>
               <span>{enhancedContent.phone}</span>
               <span>{enhancedContent.location}</span>
@@ -77,30 +77,12 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                 </div>
                 
                 {exp.achievements && exp.achievements.length > 0 && (
-                  <div className="pl-4 space-y-3 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h4 className="text-sm font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-                      RESPONSIBILITIES & ACHIEVEMENTS
-                    </h4>
+                  <div className="pl-4 space-y-2 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                     {exp.achievements.map((achievement: string, achIndex: number) => (
-                      <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light pl-2">
-                        — {achievement}
+                      <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light">
+                        {achievement}
                       </p>
                     ))}
-                  </div>
-                )}
-                {exp.technologies && exp.technologies.length > 0 && (
-                  <div className="pl-4 mt-3 border-l" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h4 className="text-sm font-medium tracking-wide mb-2" style={{ color: selectedColorTheme.primary }}>
-                      TECHNOLOGIES
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {exp.technologies.map((tech: string, techIndex: number) => (
-                        <span key={techIndex} className="text-xs px-2 py-1 rounded border font-light" 
-                          style={{ borderColor: `${selectedColorTheme.primary}30`, color: selectedColorTheme.primary }}>
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
@@ -109,17 +91,17 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 print:gap-6 print:grid-cols-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
         {/* Skills */}
         {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-          <div className="space-y-4 print:break-inside-avoid print:mb-6">
-            <h2 className="text-base sm:text-lg font-medium tracking-wide print:text-base" style={{ color: selectedColorTheme.primary }}>
+          <div className="space-y-4">
+            <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
               SKILLS
             </h2>
             
             <div className="space-y-2">
               {enhancedContent.skills.map((skill: string, index: number) => (
-                <p key={index} className="text-xs sm:text-sm text-muted-foreground font-light print:text-xs">
+                <p key={index} className="text-sm text-muted-foreground font-light">
                   {skill}
                 </p>
               ))}
@@ -134,9 +116,9 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
               EDUCATION
             </h2>
             
-            <div className="space-y-5">
+            <div className="space-y-4">
               {enhancedContent.education.map((edu: any, index: number) => (
-                <div key={index} className="space-y-2 pb-4 border-b" style={{ borderColor: `${selectedColorTheme.primary}10` }}>
+                <div key={index} className="space-y-1">
                    <h3 className="text-base font-medium text-foreground">{edu.degree}</h3>
                    <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
                      {edu.institution}
@@ -144,123 +126,12 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                    {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
                      <p className="text-sm text-muted-foreground font-light">{edu.year}</p>
                    )}
-                   {edu.gpa && (
-                     <p className="text-sm text-muted-foreground font-light">GPA: {edu.gpa}</p>
-                   )}
-                   {edu.honors && edu.honors.length > 0 && (
-                     <div className="text-sm text-muted-foreground font-light">
-                       <span className="font-medium">Honors:</span> {edu.honors.join(', ')}
-                     </div>
-                   )}
-                   {edu.coursework && edu.coursework.length > 0 && (
-                     <div className="text-sm text-muted-foreground font-light">
-                       <span className="font-medium">Relevant Coursework:</span> {edu.coursework.join(', ')}
-                     </div>
-                   )}
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
-
-      {/* Extended Professional Information */}
-      {(enhancedContent.certifications || enhancedContent.projects || enhancedContent.awards || enhancedContent.publications) && (
-        <div className="space-y-8 mt-8 print:space-y-6 print:mt-6">
-          
-          {/* Professional Certifications */}
-          {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-                PROFESSIONAL CERTIFICATIONS
-              </h2>
-              <div className="space-y-4">
-                {enhancedContent.certifications.map((cert: any, index: number) => (
-                  <div key={index} className="border-l pl-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h3 className="text-base font-medium text-foreground">{cert.name}</h3>
-                    <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>{cert.issuer}</p>
-                    {cert.date && <p className="text-sm text-muted-foreground font-light">{cert.date}</p>}
-                    {cert.id && <p className="text-xs text-muted-foreground font-light">ID: {cert.id}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Key Projects */}
-          {enhancedContent.projects && enhancedContent.projects.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-                KEY PROJECTS
-              </h2>
-              <div className="space-y-6">
-                {enhancedContent.projects.map((project: any, index: number) => (
-                  <div key={index} className="border-l pl-4 space-y-2" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h3 className="text-base font-medium text-foreground">{project.name}</h3>
-                    {project.description && (
-                      <p className="text-sm text-muted-foreground font-light leading-relaxed">{project.description}</p>
-                    )}
-                    {project.technologies && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {project.technologies.map((tech: string, techIndex: number) => (
-                          <span key={techIndex} className="text-xs px-2 py-1 rounded border font-light" 
-                            style={{ borderColor: `${selectedColorTheme.primary}30`, color: selectedColorTheme.primary }}>
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {project.url && (
-                      <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
-                        {project.url}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Awards & Recognition */}
-          {enhancedContent.awards && enhancedContent.awards.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-                AWARDS & RECOGNITION
-              </h2>
-              <div className="space-y-4">
-                {enhancedContent.awards.map((award: any, index: number) => (
-                  <div key={index} className="border-l pl-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h3 className="text-base font-medium text-foreground">{award.title}</h3>
-                    <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>{award.issuer}</p>
-                    {award.date && <p className="text-sm text-muted-foreground font-light">{award.date}</p>}
-                    {award.description && <p className="text-sm text-muted-foreground font-light mt-1 leading-relaxed">{award.description}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Publications */}
-          {enhancedContent.publications && enhancedContent.publications.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-                PUBLICATIONS & RESEARCH
-              </h2>
-              <div className="space-y-4">
-                {enhancedContent.publications.map((pub: any, index: number) => (
-                  <div key={index} className="border-l pl-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h3 className="text-base font-medium text-foreground">{pub.title}</h3>
-                    <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>{pub.journal || pub.venue}</p>
-                    {pub.date && <p className="text-sm text-muted-foreground font-light">{pub.date}</p>}
-                    {pub.authors && <p className="text-sm text-muted-foreground font-light">Authors: {pub.authors}</p>}
-                    {pub.url && <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>{pub.url}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

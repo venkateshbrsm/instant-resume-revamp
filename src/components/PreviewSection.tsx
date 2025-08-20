@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
@@ -630,52 +630,41 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Template Preview - With Enhanced Scrolling */}
-                      <div className="w-full border rounded-lg bg-background/50 backdrop-blur-sm">
-                        <div className="bg-muted/30 p-2 border-b rounded-t-lg">
-                          <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
-                            <span className="inline-block w-2 h-2 bg-primary/60 rounded-full animate-pulse"></span>
-                            Scroll horizontally and vertically to view the full resume
-                            <span className="inline-block w-2 h-2 bg-primary/60 rounded-full animate-pulse"></span>
-                          </p>
+                      {/* Scrollable Template Preview - Printer Friendly */}
+                      <div className="h-[600px] w-full overflow-auto border rounded-lg">
+                        <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
+                             style={{ minHeight: '297mm' }}>
+                          {selectedTemplate.id === 'modern' && (
+                            <ModernTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'classic' && (
+                            <ClassicTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'creative' && (
+                            <CreativeTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'executive' && (
+                            <ExecutiveTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'minimalist' && (
+                            <MinimalistTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
                         </div>
-                        <ScrollArea className="h-[70vh] w-full border-0 print:h-auto print:overflow-visible">
-                          <div className="w-full min-w-[800px] p-4 print:min-w-0 print:p-0">
-                            <div ref={resumeContentRef} className="resume-preview w-full max-w-full mx-auto p-2 sm:p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full sm:min-w-[210mm] sm:w-[210mm] min-h-[80vh] print:min-h-[297mm] shadow-lg rounded-lg border border-border/20">
-                              {selectedTemplate.id === 'modern' && (
-                                <ModernTemplatePreview 
-                                  enhancedContent={enhancedContent}
-                                  selectedColorTheme={selectedColorTheme}
-                                />
-                              )}
-                              {selectedTemplate.id === 'classic' && (
-                                <ClassicTemplatePreview 
-                                  enhancedContent={enhancedContent}
-                                  selectedColorTheme={selectedColorTheme}
-                                />
-                              )}
-                              {selectedTemplate.id === 'creative' && (
-                                <CreativeTemplatePreview 
-                                  enhancedContent={enhancedContent}
-                                  selectedColorTheme={selectedColorTheme}
-                                />
-                              )}
-                              {selectedTemplate.id === 'executive' && (
-                                <ExecutiveTemplatePreview 
-                                  enhancedContent={enhancedContent}
-                                  selectedColorTheme={selectedColorTheme}
-                                />
-                              )}
-                              {selectedTemplate.id === 'minimalist' && (
-                                <MinimalistTemplatePreview 
-                                  enhancedContent={enhancedContent}
-                                  selectedColorTheme={selectedColorTheme}
-                                />
-                              )}
-                            </div>
-                          </div>
-                          <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
                       </div>
                     </div>
                   </div>
