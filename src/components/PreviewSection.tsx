@@ -468,7 +468,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           extractedText: extractedText,
           file: fileBase64 || null,
           templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.id
+          themeId: selectedColorTheme.id,
+          profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
         }
       });
 

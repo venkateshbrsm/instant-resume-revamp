@@ -1,6 +1,7 @@
 import * as mammoth from 'mammoth';
 import { supabase } from "@/integrations/supabase/client";
 import * as pdfjsLib from 'pdfjs-dist';
+import { extractPhotosFromFile, optimizePhoto } from './photoExtractor';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -8,6 +9,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 export interface ExtractedContent {
   text: string;
   pdfUrl?: string; // For visual preview
+  profilePhotoUrl?: string; // Profile photo if found
   originalFile: File;
   fileType: 'docx' | 'pdf' | 'txt';
 }
@@ -26,6 +28,10 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
   try {
     let text: string;
     let pdfUrl: string | undefined;
+    let profilePhotoUrl: string | undefined;
+
+    // Extract photos in parallel with text
+    const photoExtractionPromise = extractPhotosFromFile(file);
 
     if (fileType === 'pdf') {
       // For PDFs, extract text and keep original file for visual preview
@@ -40,9 +46,23 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
       text = await file.text();
     }
 
+    // Process photos
+    try {
+      const photoResult = await photoExtractionPromise;
+      if (photoResult.profilePhoto) {
+        console.log('Profile photo found, optimizing...');
+        const optimizedPhoto = await optimizePhoto(photoResult.profilePhoto);
+        profilePhotoUrl = URL.createObjectURL(optimizedPhoto);
+        console.log('Profile photo processed successfully');
+      }
+    } catch (error) {
+      console.warn('Photo extraction failed:', error);
+    }
+
     return {
       text,
       pdfUrl,
+      profilePhotoUrl,
       originalFile: file,
       fileType
     };

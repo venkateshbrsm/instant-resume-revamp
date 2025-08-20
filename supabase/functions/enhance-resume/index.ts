@@ -972,11 +972,12 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const { fileName, originalText, extractedText, filePath, userEmail, file, themeId } = await req.json();
+    const { fileName, originalText, extractedText, filePath, userEmail, file, themeId, profilePhotoUrl } = await req.json();
 
     console.log('Enhancing resume for:', fileName);
     console.log('Original text length:', originalText?.length || 0);
     console.log('Extracted text length:', extractedText?.length || 0);
+    console.log('Profile photo provided:', !!profilePhotoUrl);
 
     // Use the actual extracted text from the resume
     let resumeContent = extractedText || originalText || '';
@@ -1137,11 +1138,15 @@ Education: Professional qualifications and education background`;
 ACTUAL RESUME CONTENT TO ANALYZE:
 ${resumeContent}
 
+PROFILE PHOTO STATUS:
+${profilePhotoUrl ? `A profile photo has been detected and extracted from the resume. The photo URL will be included in the final output: ${profilePhotoUrl}` : 'No profile photo was found in the resume document.'}
+
 CRITICAL INSTRUCTIONS:
 1. READ the resume content above carefully
 2. Extract ONLY the real information present in the resume
 3. DO NOT invent companies, achievements, or metrics not mentioned
 4. DO NOT create fake numbers, percentages, or project counts
+5. ${profilePhotoUrl ? 'Include the provided profile photo URL in the response' : 'Do not include any profile photo information'}
 5. If a detail is missing, leave it out or use a generic placeholder
 6. Use the ACTUAL name, education, experience, and skills from the resume
 
@@ -1170,6 +1175,7 @@ Return ONLY this JSON format:
   "email": "professional.email@example.com",
   "phone": "+91 XXXXX XXXXX", 
   "location": "City, India",
+  "profilePhoto": ${profilePhotoUrl ? '"' + profilePhotoUrl + '"' : 'null'},
   "summary": "Summary based on actual experience without fake metrics",
   "experience": [
     {
