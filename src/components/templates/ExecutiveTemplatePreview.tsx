@@ -60,7 +60,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                 Core Competencies
               </h3>
               <div className="space-y-2">
-                {enhancedContent.skills.map((skill: string, index: number) => (
+                {enhancedContent.skills.slice(0, 8).map((skill: string, index: number) => (
                   <div key={index} className="flex items-center gap-2 skill-item">
                     <div className="w-2 h-2 rounded-full bg-white/80"></div>
                     <span className="text-sm font-medium">{skill}</span>
@@ -173,41 +173,20 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                           Key Achievements
                         </h4>
                         <div className="space-y-2">
-                           {exp.achievements.map((achievement: string, achIndex: number) => (
-                             <div key={achIndex} className="flex items-start gap-2">
-                               <div 
-                                 className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
-                                 style={{ backgroundColor: selectedColorTheme.accent }}
-                               >
-                                 <span className="text-white text-xs">✓</span>
-                               </div>
-                               <p className="text-sm leading-relaxed text-gray-600">
-                                 {achievement}
-                               </p>
-                             </div>
-                           ))}
-                         </div>
-                         
-                         {exp.impact && (
-                           <div className="mt-4 p-3 rounded-lg bg-gray-50 border-l-4" style={{ borderColor: selectedColorTheme.primary }}>
-                             <h5 className="font-semibold text-gray-900 text-sm mb-2">Leadership Impact:</h5>
-                             <p className="text-sm text-gray-600 leading-relaxed">{exp.impact}</p>
-                           </div>
-                         )}
-                         
-                         {exp.teamSize && (
-                           <div className="mt-3 flex items-center gap-2">
-                             <Users className="w-4 h-4" style={{ color: selectedColorTheme.primary }} />
-                             <span className="text-sm text-gray-600">Team Size: {exp.teamSize}</span>
-                           </div>
-                         )}
-                         
-                         {exp.budget && (
-                           <div className="mt-2 flex items-center gap-2">
-                             <TrendingUp className="w-4 h-4" style={{ color: selectedColorTheme.primary }} />
-                             <span className="text-sm text-gray-600">Budget Managed: {exp.budget}</span>
-                           </div>
-                         )}
+                          {exp.achievements.slice(0, 4).map((achievement: string, achIndex: number) => (
+                            <div key={achIndex} className="flex items-start gap-2">
+                              <div 
+                                className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                                style={{ backgroundColor: selectedColorTheme.accent }}
+                              >
+                                <span className="text-white text-xs">✓</span>
+                              </div>
+                              <p className="text-sm leading-relaxed text-gray-600">
+                                {achievement}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

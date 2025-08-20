@@ -85,36 +85,16 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                     <p className="text-sm text-muted-foreground italic">{exp.duration}</p>
                   </div>
                   
-                    {exp.achievements && exp.achievements.length > 0 && (
-                      <ul className="mt-3 space-y-2 print:keep-together">
-                        {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
-                            <span className="mr-3 mt-1">•</span>
-                            <span>{achievement}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    
-                    {exp.description && (
-                      <div className="mt-3 text-sm text-muted-foreground">
-                        <p className="leading-relaxed italic">{exp.description}</p>
-                      </div>
-                    )}
-                    
-                    {exp.responsibilities && exp.responsibilities.length > 0 && (
-                      <div className="mt-3">
-                        <p className="text-sm font-semibold text-muted-foreground mb-2">Key Responsibilities:</p>
-                        <ul className="space-y-1">
-                          {exp.responsibilities.map((resp: string, respIndex: number) => (
-                            <li key={respIndex} className="text-sm text-muted-foreground flex items-start">
-                              <span className="mr-2 mt-1" style={{ color: selectedColorTheme.primary }}>▸</span>
-                              <span>{resp}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                  {exp.achievements && exp.achievements.length > 0 && (
+                    <ul className="mt-3 space-y-2 print:keep-together">
+                      {exp.achievements.map((achievement: string, achIndex: number) => (
+                        <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start">
+                          <span className="mr-3 mt-1">•</span>
+                          <span>{achievement}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
             </div>
