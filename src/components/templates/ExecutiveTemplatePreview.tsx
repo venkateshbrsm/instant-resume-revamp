@@ -15,7 +15,7 @@ interface TemplatePreviewProps {
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 flex">
+    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 flex print:page-break-inside-avoid">
       {/* Left Sidebar - Dark Background */}
       <div 
         className="w-1/3 p-6 text-white print:p-4"
@@ -53,7 +53,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
 
         {/* Core Competencies in Sidebar */}
         {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-8 print:page-break-inside-avoid">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Users className="w-5 h-5" />
               Core Competencies
@@ -70,7 +70,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
         )}
 
         {/* Executive Metrics */}
-        <div className="mb-8">
+        <div className="mb-8 print:page-break-inside-avoid">
           <h3 className="text-lg font-bold mb-4">Leadership Impact</h3>
           <div className="space-y-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
@@ -90,14 +90,14 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
 
         {/* Education in Sidebar */}
         {enhancedContent.education && enhancedContent.education.length > 0 && (
-          <div>
+          <div className="print:page-break-inside-avoid">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Award className="w-5 h-5" />
               Education
             </h3>
             <div className="space-y-3">
               {enhancedContent.education.map((edu: any, index: number) => (
-                <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 print:page-break-inside-avoid">
                   <h4 className="font-bold text-sm">{edu.degree}</h4>
                   <p className="text-sm opacity-90">{edu.institution}</p>
                   {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
@@ -113,7 +113,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
       {/* Right Main Content - Light Background */}
       <div className="w-2/3 p-6 bg-gray-50 print:p-4">
         {/* Executive Summary */}
-        <div className="mb-8">
+        <div className="mb-8 print:page-break-inside-avoid print:mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div 
               className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
@@ -149,7 +149,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             
             <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="bg-white p-5 rounded-lg shadow-sm border-l-4" style={{ borderColor: selectedColorTheme.accent }}>
+                <div key={index} className="bg-white p-5 rounded-lg shadow-sm border-l-4 print:page-break-inside-avoid print:mb-6" style={{ borderColor: selectedColorTheme.accent }}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 mb-1">{exp.title}</h3>
@@ -166,7 +166,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
-                    <div>
+                    <div className="print:page-break-inside-avoid">
                       <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
                         <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
                         Key Achievements
