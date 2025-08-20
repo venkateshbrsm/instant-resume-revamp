@@ -142,8 +142,17 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-before: page !important;
     }
     
+    /* Enhanced span protection - force spans to next page if they would be cut */
+    span {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 2 !important;
+      widows: 2 !important;
+      display: inline-block !important;
+    }
+    
     /* General content protection */
-    div, p, li, span {
+    div, p, li {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
