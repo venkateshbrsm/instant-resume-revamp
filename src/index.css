@@ -165,7 +165,19 @@
   }
 
   /* Remove underlines from email and phone */
-  .no-underline {
+  .no-underline,
+  a[href^="mailto:"],
+  a[href^="tel:"],
+  span:has(a[href^="mailto:"]),
+  span:has(a[href^="tel:"]) {
+    text-decoration: none !important;
+  }
+
+  /* Global email and phone styling */
+  [data-email],
+  [data-phone],
+  .email,
+  .phone {
     text-decoration: none !important;
   }
 }

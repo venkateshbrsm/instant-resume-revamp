@@ -220,6 +220,19 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
+    
+    /* Remove underlines from email and phone in PDFs */
+    .no-underline,
+    a[href^="mailto:"],
+    a[href^="tel:"],
+    span:has(a[href^="mailto:"]),
+    span:has(a[href^="tel:"]),
+    [data-email],
+    [data-phone],
+    .email,
+    .phone {
+      text-decoration: none !important;
+    }
   `;
   document.head.appendChild(style);
 
