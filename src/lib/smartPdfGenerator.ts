@@ -117,15 +117,43 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   // Inject CSS for comprehensive page break handling
   const style = document.createElement('style');
   style.textContent = `
-    /* Universal page break prevention */
+    /* AGGRESSIVE page break prevention - Force whole containers to next page */
     * {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 3 !important;
-      widows: 3 !important;
+      orphans: 4 !important;
+      widows: 4 !important;
     }
     
-    /* Core page break prevention for all content structures */
+    /* Ultra-aggressive container protection - prevent ANY splitting */
+    div, span, p, a, strong, em, b, i, u, small, sub, sup,
+    article, section, aside, nav, header, footer, main,
+    figure, figcaption, blockquote, pre, code, kbd, samp, var,
+    details, summary, mark, ins, del, dfn, abbr, time,
+    address, cite, q, s, strike, tt, big {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-before: auto !important;
+      break-before: auto !important;
+      orphans: 4 !important;
+      widows: 4 !important;
+      /* Force containers to stay together */
+      min-height: 0 !important;
+      box-decoration-break: clone !important;
+    }
+    
+    /* Smallest containers - NEVER split these */
+    span, small, em, strong, b, i, u, sub, sup, code, kbd, samp, var,
+    .text-xs, .text-sm, .opacity-60, .opacity-75, .opacity-80, .opacity-90 {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      display: inline-block !important;
+      white-space: nowrap !important;
+      orphans: 5 !important;
+      widows: 5 !important;
+    }
+    
+    /* Core page break prevention classes */
     .page-break-avoid,
     .print\\:avoid-break,
     .print\\:break-inside-avoid,
@@ -134,22 +162,6 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     .page-break-inside-avoid {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-    }
-    
-    /* Target ALL HTML elements to prevent cutting */
-    *, *::before, *::after,
-    div, span, p, a, strong, em, b, i, u, small, sub, sup,
-    article, section, aside, nav, header, footer, main,
-    figure, figcaption, blockquote, pre, code, kbd, samp, var,
-    details, summary, mark, ins, del, dfn, abbr, time,
-    address, cite, q, s, strike, tt, big,
-    .text-xs, .text-sm, .text-base, .text-lg, .text-xl,
-    .font-medium, .font-semibold, .font-bold,
-    .opacity-90, .opacity-80, .opacity-75, .opacity-60 {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      orphans: 3 !important;
-      widows: 3 !important;
     }
     
     /* Template-specific content structures */
