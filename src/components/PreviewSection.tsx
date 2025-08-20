@@ -138,11 +138,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingStage("Analyzing document structure...");
       console.log('Extracting content from file:', file.name);
       
-      setLoadingProgress(60);
-      setLoadingStage("Extracting text and preparing visual preview...");
+      setLoadingProgress(50);
+      setLoadingStage("Scanning for photos and images...");
       
       // Use the new enhanced extraction function
       const extractedContent = await extractContentFromFile(file);
+      
+      setLoadingProgress(70);
+      
+      // Provide feedback about photo extraction
+      if (extractedContent.profilePhotoUrl) {
+        console.log('✅ Profile photo found and extracted:', extractedContent.profilePhotoUrl);
+        setLoadingStage("Profile photo detected! Processing...");
+        toast({
+          title: "Photo Found!",
+          description: "A profile photo was detected and extracted from your resume.",
+        });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        console.log('❌ No profile photo found in document');
+        setLoadingStage("No photos found in document");
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       
       setLoadingProgress(85);
       setLoadingStage("Processing content...");
@@ -159,23 +176,20 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         title: "File Processed",
         description: "Resume content extracted successfully.",
       });
+      
     } catch (error) {
-      console.error('Error extracting file content:', error);
-      setLoadingProgress(100);
-      setLoadingStage("Processing with fallback...");
-      
-      const fallbackContent = `📄 Resume Document: ${file.name}\n\nFile Size: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}\nUploaded: ${new Date().toLocaleString()}\n\n⚠️ Content extraction encountered an issue, but the file was uploaded successfully.\n\nThe AI enhancement process will work directly with your original document to create an improved version.\n\nNote: Some file formats or protected documents may not display preview text, but enhancement will still work properly.`;
-      setOriginalContent(fallbackContent);
-      
+      console.error('Error extracting content:', error);
       toast({
-        title: "Limited Preview",
-        description: "File uploaded successfully. Enhancement will process the original content.",
-        variant: "destructive"
+        title: "Extraction Error",
+        description: "There was an issue processing your file. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      // Add a small delay to show completion
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingProgress(0);
+        setLoadingStage("");
+      }, 1000);
     }
   };
 

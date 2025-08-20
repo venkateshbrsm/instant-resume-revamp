@@ -18,103 +18,145 @@ export interface PhotoExtractionResult {
   profilePhoto?: ExtractedPhoto;
 }
 
-// Face detection using Hugging Face transformers
+// Face detection using basic image analysis and AI
 const detectFaces = async (imageBlob: Blob): Promise<number> => {
   try {
-    console.log('Detecting faces in image...');
-    const detector = await pipeline('object-detection', 'Xenova/detr-resnet-50', {
-      device: 'webgpu'
-    });
+    console.log('Analyzing image for faces...');
     
-    const imageUrl = URL.createObjectURL(imageBlob);
-    const result = await detector(imageUrl);
-    
-    URL.revokeObjectURL(imageUrl);
-    
-    // Count faces (person objects with high confidence)
-    const faces = result.filter((obj: any) => 
-      obj.label === 'person' && obj.score > 0.5
-    );
-    
-    console.log(`Detected ${faces.length} faces`);
-    return faces.length;
+    // First try with a proper face detection model
+    try {
+      const detector = await pipeline('object-detection', 'Xenova/yolos-tiny', {
+        device: 'webgpu'
+      });
+      
+      const imageUrl = URL.createObjectURL(imageBlob);
+      const result = await detector(imageUrl);
+      URL.revokeObjectURL(imageUrl);
+      
+      // Look for person objects
+      const faces = result.filter((obj: any) => 
+        obj.label === 'person' && obj.score > 0.3
+      );
+      
+      console.log(`AI detected ${faces.length} faces with YOLOS`);
+      return faces.length;
+    } catch (aiError) {
+      console.log('AI face detection failed, trying CPU fallback...', aiError);
+      
+      // Fallback to CPU
+      try {
+        const detector = await pipeline('object-detection', 'Xenova/yolos-tiny', {
+          device: 'cpu'
+        });
+        
+        const imageUrl = URL.createObjectURL(imageBlob);
+        const result = await detector(imageUrl);
+        URL.revokeObjectURL(imageUrl);
+        
+        const faces = result.filter((obj: any) => 
+          obj.label === 'person' && obj.score > 0.3
+        );
+        
+        console.log(`CPU detected ${faces.length} faces`);
+        return faces.length;
+      } catch (cpuError) {
+        console.log('CPU face detection also failed, using heuristics...', cpuError);
+        return await detectFacesHeuristic(imageBlob);
+      }
+    }
   } catch (error) {
-    console.warn('Face detection failed:', error);
+    console.warn('Face detection completely failed:', error);
+    return await detectFacesHeuristic(imageBlob);
+  }
+};
+
+// Heuristic face detection based on image properties
+const detectFacesHeuristic = async (imageBlob: Blob): Promise<number> => {
+  try {
+    const img = new Image();
+    const imageUrl = URL.createObjectURL(imageBlob);
+    
+    return new Promise((resolve) => {
+      img.onload = () => {
+        URL.revokeObjectURL(imageUrl);
+        
+        const { width, height } = img;
+        const aspectRatio = width / height;
+        const size = imageBlob.size;
+        
+        // Heuristic: likely a profile photo if:
+        // - Square-ish aspect ratio (0.7 to 1.4)
+        // - Reasonable file size (10KB to 2MB)
+        // - Not too small or too large
+        const isLikelyProfile = 
+          aspectRatio > 0.7 && aspectRatio < 1.4 &&
+          size > 10000 && size < 2000000 &&
+          width > 100 && width < 2000 &&
+          height > 100 && height < 2000;
+        
+        console.log(`Heuristic analysis: ${width}x${height}, ratio: ${aspectRatio.toFixed(2)}, size: ${size}, likely profile: ${isLikelyProfile}`);
+        resolve(isLikelyProfile ? 1 : 0);
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(imageUrl);
+        resolve(0);
+      };
+      
+      img.src = imageUrl;
+    });
+  } catch (error) {
+    console.warn('Heuristic face detection failed:', error);
     return 0;
   }
 };
 
-// Extract images from PDF
+// Extract images from PDF - simplified approach due to pdf-lib limitations
 export const extractImagesFromPDF = async (file: File): Promise<PhotoExtractionResult> => {
   try {
-    console.log('Extracting images from PDF...');
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    console.log('Extracting images from PDF - using external service...');
+    
+    // PDF image extraction is complex with pdf-lib alone
+    // For now, we'll use a simplified approach that relies on the backend
+    // In a production system, you'd use pdf.js or a dedicated service
     
     const photos: ExtractedPhoto[] = [];
-    const pages = pdfDoc.getPages();
     
-    for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
-      try {
-        const page = pages[pageIndex];
-        const { width, height } = page.getSize();
-        
-        // Get page content (this is simplified - in reality PDF image extraction is complex)
-        // For now, we'll use a different approach via the existing PDF processing
-        console.log(`Checked page ${pageIndex + 1} (${width}x${height})`);
-      } catch (error) {
-        console.warn(`Failed to process page ${pageIndex + 1}:`, error);
-      }
-    }
-    
-    return await processExtractedPhotos(photos);
-  } catch (error) {
-    console.error('PDF image extraction failed:', error);
-    return { photos: [] };
-  }
-};
-
-// Extract images from DOCX using mammoth
-export const extractImagesFromDOCX = async (file: File): Promise<PhotoExtractionResult> => {
-  try {
-    console.log('Extracting images from DOCX...');
-    const arrayBuffer = await file.arrayBuffer();
-    const photos: ExtractedPhoto[] = [];
-    
-    // Configure mammoth to extract images
-    const options = {
-      convertImage: mammoth.images.imgElement(async (image: any) => {
-        console.log('Found image in DOCX:', image.contentType);
-        
-        try {
-          const imageBuffer = await image.read();
-          const imageBlob = new Blob([imageBuffer], { type: image.contentType });
-          
-          // Only process reasonable sized images
-          if (imageBlob.size > 1024 && imageBlob.size < 5 * 1024 * 1024) {
-            const url = URL.createObjectURL(imageBlob);
+    // Try to call the backend PDF processing service for image extraction
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/extract-pdf-images', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.images && result.images.length > 0) {
+          for (const imageData of result.images) {
+            // Convert base64 to blob
+            const blob = await fetch(imageData.dataUrl).then(r => r.blob());
+            const url = URL.createObjectURL(blob);
             
             photos.push({
-              blob: imageBlob,
+              blob,
               url,
               type: 'other',
               confidence: 0.5
             });
           }
-          
-          return { src: '' }; // We don't need the HTML img element
-        } catch (error) {
-          console.warn('Failed to process image:', error);
-          return { src: '' };
         }
-      })
-    };
+      }
+    } catch (serviceError) {
+      console.log('PDF image service not available, skipping image extraction:', serviceError);
+    }
     
-    await mammoth.convertToHtml({ arrayBuffer }, options);
-    
+    console.log(`Found ${photos.length} images in PDF`);
     return await processExtractedPhotos(photos);
   } catch (error) {
-    console.error('DOCX image extraction failed:', error);
+    console.error('PDF image extraction failed:', error);
     return { photos: [] };
   }
 };
@@ -124,6 +166,7 @@ const processExtractedPhotos = async (photos: ExtractedPhoto[]): Promise<PhotoEx
   console.log(`Processing ${photos.length} extracted photos...`);
   
   if (photos.length === 0) {
+    console.log('No photos found to process');
     return { photos: [] };
   }
   
@@ -162,6 +205,79 @@ const processExtractedPhotos = async (photos: ExtractedPhoto[]): Promise<PhotoEx
     photos,
     profilePhoto
   };
+};
+
+// Extract images from DOCX using mammoth
+export const extractImagesFromDOCX = async (file: File): Promise<PhotoExtractionResult> => {
+  try {
+    console.log('Extracting images from DOCX...');
+    const arrayBuffer = await file.arrayBuffer();
+    const photos: ExtractedPhoto[] = [];
+    
+    // Configure mammoth to extract images with better options
+    const options = {
+      convertImage: mammoth.images.imgElement(async (image: any) => {
+        console.log('Found image in DOCX:', {
+          contentType: image.contentType,
+          altText: image.altText || 'No alt text'
+        });
+        
+        try {
+          const imageBuffer = await image.read();
+          const imageBlob = new Blob([imageBuffer], { type: image.contentType });
+          
+          console.log(`DOCX image size: ${imageBlob.size} bytes, type: ${image.contentType}`);
+          
+          // Process images with reasonable size constraints
+          if (imageBlob.size > 1024 && imageBlob.size < 10 * 1024 * 1024) {
+            const url = URL.createObjectURL(imageBlob);
+            
+            // Check if it's a valid image format
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            const isValidImage = validTypes.includes(image.contentType.toLowerCase()) || 
+                               image.contentType.startsWith('image/');
+            
+            if (isValidImage) {
+              photos.push({
+                blob: imageBlob,
+                url,
+                type: 'other',
+                confidence: 0.6
+              });
+              
+              console.log(`Successfully extracted DOCX image: ${imageBlob.size} bytes`);
+            } else {
+              console.warn(`Skipping non-image content: ${image.contentType}`);
+              URL.revokeObjectURL(url);
+            }
+          } else {
+            console.warn(`Image size out of bounds: ${imageBlob.size} bytes`);
+          }
+          
+          return { src: '' }; // We don't need the HTML img element
+        } catch (error) {
+          console.error('Failed to process DOCX image:', error);
+          return { src: '' };
+        }
+      }),
+      // Include more image types
+      includeEmbeddedStyleMap: false,
+      includeDefaultStyleMap: false
+    };
+    
+    console.log('Processing DOCX with mammoth...');
+    const result = await mammoth.convertToHtml({ arrayBuffer }, options);
+    
+    if (result.messages && result.messages.length > 0) {
+      console.log('Mammoth processing messages:', result.messages);
+    }
+    
+    console.log(`DOCX processing complete. Found ${photos.length} images.`);
+    return await processExtractedPhotos(photos);
+  } catch (error) {
+    console.error('DOCX image extraction failed:', error);
+    return { photos: [] };
+  }
 };
 
 // Optimize photo for web display
