@@ -55,13 +55,24 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       page-break-inside: avoid;
     }
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
       text-decoration: none !important;
       page-break-inside: avoid;
       break-inside: avoid;
+    }
+    
+    /* Comprehensive underline removal for email and phone */
+    a, a:link, a:visited, a:hover, a:active,
+    .contact, .contact-item, .contact-grid,
+    span[href], span[data-email], span[data-phone],
+    *[href^="mailto:"], *[href^="tel:"],
+    span:contains("@"), span:contains("+") {
+      text-decoration: none !important;
+      border-bottom: none !important;
+      outline: none !important;
     }
     
     /* Page break rules for printer-friendly output */
@@ -645,6 +656,17 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       break-inside: avoid;
     }
     
+    /* Comprehensive underline removal for email and phone */
+    a, a:link, a:visited, a:hover, a:active,
+    .contact, .contact-item, .contact-grid,
+    span[href], span[data-email], span[data-phone],
+    *[href^="mailto:"], *[href^="tel:"],
+    span:contains("@"), span:contains("+") {
+      text-decoration: none !important;
+      border-bottom: none !important;
+      outline: none !important;
+    }
+    
     /* Page break rules for printer-friendly output */
     h1, h2, h3, h4, h5, h6 {
       page-break-after: avoid;
@@ -833,13 +855,24 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin: 0.25in;
     }
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
       text-decoration: none !important;
       page-break-inside: avoid;
       break-inside: avoid;
+    }
+    
+    /* Comprehensive underline removal for email and phone */
+    a, a:link, a:visited, a:hover, a:active,
+    .contact, .contact-item, .contact-grid,
+    span[href], span[data-email], span[data-phone],
+    *[href^="mailto:"], *[href^="tel:"],
+    span:contains("@"), span:contains("+") {
+      text-decoration: none !important;
+      border-bottom: none !important;
+      outline: none !important;
     }
     
     /* Page break rules for printer-friendly output */
