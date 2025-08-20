@@ -95,21 +95,19 @@ serve(async (req) => {
 
     console.log("Found payment record:", paymentRecord.id);
 
-    // Update payment status
-    const { error: updateError } = await supabaseClient
-      .from("payments")
-      .update({
-        status: "completed",
+    // Update payment status using secure function
+    const { data: updateResult, error: updateError } = await supabaseClient
+      .rpc("update_payment_processing", {
+        payment_id: paymentRecord.id,
+        new_status: "completed",
         razorpay_payment_id: razorpay_payment_id,
         razorpay_signature: razorpay_signature,
-        razorpay_response: paymentData,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", paymentRecord.id);
+        razorpay_response: paymentData
+      });
 
-    if (updateError) {
+    if (updateError || !updateResult) {
       console.error("Payment update error:", updateError);
-      throw new Error(`Failed to update payment: ${updateError.message}`);
+      throw new Error(`Failed to update payment: ${updateError?.message || 'Update function returned false'}`);
     }
 
     console.log("Payment verification completed successfully");

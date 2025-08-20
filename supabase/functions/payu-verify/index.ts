@@ -69,31 +69,41 @@ serve(async (req) => {
       throw new Error('Invalid hash verification');
     }
 
-    // Update payment status in database
-    const paymentStatus = status === 'success' ? 'completed' : 'failed';
-    const { data: payment, error } = await supabase
+    // Find the payment record first
+    const { data: payment, error: findError } = await supabase
       .from('payments')
-      .update({
-        status: paymentStatus,
-        payu_response: {
-          status,
-          payuMoneyId,
-          error_Message,
-          amount,
-          email,
-          firstname,
-          productinfo,
-          timestamp: new Date().toISOString()
-        },
-        updated_at: new Date().toISOString()
-      })
-      .eq('payu_txnid', txnid)
-      .select()
+      .select('*')
+      .eq('razorpay_order_id', txnid) // Assuming txnid maps to razorpay_order_id
       .single();
 
-    if (error) {
+    if (findError || !payment) {
+      console.error('Payment record not found:', findError);
+      throw new Error('Payment record not found');
+    }
+
+    // Update payment status using secure function
+    const paymentStatus = status === 'success' ? 'completed' : 'failed';
+    const payuResponseData = {
+      status,
+      payuMoneyId,
+      error_Message,
+      amount,
+      email,
+      firstname,
+      productinfo,
+      timestamp: new Date().toISOString()
+    };
+
+    const { data: updateResult, error } = await supabase
+      .rpc("update_payment_processing", {
+        payment_id: payment.id,
+        new_status: paymentStatus,
+        razorpay_response: payuResponseData // Store PayU response in razorpay_response field for compatibility
+      });
+
+    if (error || !updateResult) {
       console.error('Error updating payment:', error);
-      throw new Error('Failed to update payment status');
+      throw new Error(`Failed to update payment status: ${error?.message || 'Update function returned false'}`);
     }
 
     console.log('Payment verified and updated:', { 
