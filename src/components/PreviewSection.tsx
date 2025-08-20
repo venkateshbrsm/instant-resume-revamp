@@ -615,9 +615,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Scrollable Template Preview */}
-                      <ScrollArea className="h-[600px] w-full">
-                        <div ref={resumeContentRef} className="w-full pr-4">
+                      {/* Scrollable Template Preview - Printer Friendly */}
+                      <ScrollArea className="h-[600px] w-full overflow-auto">
+                        <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
+                             style={{ minHeight: '297mm' }}>
                           {selectedTemplate.id === 'modern' && (
                             <ModernTemplatePreview 
                               enhancedContent={enhancedContent}
