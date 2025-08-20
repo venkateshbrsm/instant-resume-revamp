@@ -10,7 +10,7 @@ import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCir
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { TemplateSelector } from "./TemplateSelector";
 import { ModernTemplatePreview } from "./templates/ModernTemplatePreview";
 import { ClassicTemplatePreview } from "./templates/ClassicTemplatePreview";
@@ -649,6 +649,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             />
                           )}
                         </div>
+                        <ScrollBar orientation="horizontal" />
                       </ScrollArea>
                     </div>
                   </div>
