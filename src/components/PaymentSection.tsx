@@ -24,7 +24,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   const [lastPaymentAttempt, setLastPaymentAttempt] = useState<number>(0);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-  const [discountedPrice, setDiscountedPrice] = useState(1);
+  const [discountedPrice, setDiscountedPrice] = useState(299);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -167,7 +167,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
-    setDiscountedPrice(1);
+    setDiscountedPrice(299);
     setCouponCode("");
     toast({
       title: "Coupon Removed",
@@ -326,12 +326,12 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             <div className="space-y-4">
               <div className="p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
                 <h4 className="font-semibold mb-2 text-sm sm:text-base">Order Summary</h4>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs sm:text-sm">AI Resume Enhancement</span>
-                     <span className={`font-semibold text-sm sm:text-base ${appliedCoupon ? 'line-through text-muted-foreground' : ''}`}>
-                       ₹1
-                     </span>
-                </div>
+                 <div className="flex justify-between items-center mb-2">
+                   <span className="text-xs sm:text-sm">AI Resume Enhancement</span>
+                      <span className={`font-semibold text-sm sm:text-base ${appliedCoupon ? 'line-through text-muted-foreground' : ''}`}>
+                        ₹299
+                      </span>
+                 </div>
                 {appliedCoupon && (
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs sm:text-sm text-green-600">After {appliedCoupon} discount</span>
