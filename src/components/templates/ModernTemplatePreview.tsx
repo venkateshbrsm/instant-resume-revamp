@@ -236,68 +236,93 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                          <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid">
                            <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
                            <div className="text-xs opacity-80 leading-relaxed space-y-1">
-                             {(() => {
-                                 // Generate responsibilities directly from achievements content
-                                 const generateResponsibilitiesFromAchievements = (achievements, title, company) => {
-                                   const responsibilities = [];
-                                   
-                                   if (achievements && achievements.length > 0) {
-                                     // Convert achievements to responsibilities by extracting core duties
-                                     achievements.forEach((achievement, index) => {
-                                       if (index < 3) { // Limit to first 3 achievements
-                                         let responsibility = achievement;
-                                         
-                                         // Convert achievement language to responsibility language
-                                         responsibility = responsibility
-                                           .replace(/^(Responsible for|Led|Managed|Achieved|Performed|Conducted|Established|Spearheaded|Coordinated|Oversaw|Administered)\s+/i, '')
-                                           .replace(/^(reviewing|leading|managing|achieving|performing|conducting|establishing|spearheading|coordinating|overseeing|administering)\s+/i, '')
-                                           .replace(/\.$/, '')
-                                           .trim();
-                                         
-                                         // Vary the prefixes for different positions
-                                         const prefixes = ['Monitoring', 'Overseeing', 'Coordinating', 'Leading', 'Facilitating'];
-                                         const prefix = prefixes[index % prefixes.length];
-                                         
-                                         // Only add prefix if the sentence doesn't already start with an action word
-                                         if (!responsibility.match(/^(Monitoring|Overseeing|Coordinating|Leading|Facilitating|Daily|Regular|Ongoing|Primary)/i)) {
-                                           responsibility = `${prefix} ${responsibility.toLowerCase()}`;
-                                         }
-                                         
-                                         // Ensure it starts with capital letter
-                                         responsibility = responsibility.charAt(0).toUpperCase() + responsibility.slice(1);
-                                         
-                                         responsibilities.push(responsibility);
-                                       }
-                                     });
-                                     
-                                     // If still no responsibilities, create from title and company
-                                     if (responsibilities.length === 0) {
-                                       responsibilities.push(`Directing ${title.toLowerCase()} functions at ${company}`);
-                                       responsibilities.push('Supporting organizational objectives and operational excellence');
-                                     }
-                                   } else {
-                                     // Fallback if no achievements
-                                     responsibilities.push(`Managing ${title.toLowerCase()} responsibilities at ${company}`);
-                                     responsibilities.push('Supporting daily operational requirements and team objectives');
-                                   }
-                                   
-                                   return responsibilities;
-                                 };
-                                 
-                                 const responsibilities = generateResponsibilitiesFromAchievements(
-                                   exp.achievements, 
-                                   exp.title || 'Professional', 
-                                   exp.company || 'organization'
-                                 );
-                               
-                               return responsibilities.map((responsibility, idx) => (
-                                 <p key={idx} className="flex items-start">
-                                   <span className="inline-block w-1 h-1 rounded-full mr-2 mt-1.5 flex-shrink-0" 
-                                         style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                   {responsibility}
-                                 </p>
-                               ));
-                             })()}
+                              {(() => {
+                                // Extract core responsibilities from work experience content
+                                const extractCoreResponsibilities = (achievements, title, company) => {
+                                  const responsibilities = [];
+                                  
+                                  if (achievements && achievements.length > 0) {
+                                    // Analyze each achievement to extract core building blocks
+                                    achievements.forEach((achievement) => {
+                                      // Extract key responsibility patterns
+                                      const patterns = [
+                                        // Direct responsibility extraction
+                                        /(?:responsible for|managed|led|oversaw|supervised|coordinated|handled|executed|implemented|developed|maintained|operated|administered)\s+([^.]+)/gi,
+                                        // Process and system responsibilities  
+                                        /(?:streamlined|optimized|improved|enhanced|established|created|built|designed|configured|monitored)\s+([^.]+)/gi,
+                                        // Team and stakeholder responsibilities
+                                        /(?:collaborated with|worked with|partnered with|supported|assisted|trained|mentored|guided)\s+([^.]+)/gi,
+                                        // Analysis and reporting responsibilities
+                                        /(?:analyzed|reviewed|assessed|evaluated|tracked|reported|documented|presented)\s+([^.]+)/gi
+                                      ];
+                                      
+                                      patterns.forEach(pattern => {
+                                        const matches = achievement.matchAll(pattern);
+                                        for (const match of matches) {
+                                          if (match[1] && responsibilities.length < 4) {
+                                            let responsibility = match[1].trim()
+                                              .replace(/^(the|a|an)\s+/i, '')
+                                              .replace(/\s+(to|for|in|of|with|from|by|through|via|using|while|during|across|within)\s+.+$/i, '');
+                                            
+                                            if (responsibility.length > 15) {
+                                              // Add forward-thinking action verbs for modern roles
+                                              const actionVerbs = ['Driving', 'Transforming', 'Optimizing', 'Innovating', 'Strategizing'];
+                                              const verb = actionVerbs[responsibilities.length % actionVerbs.length];
+                                              responsibility = `${verb} ${responsibility.toLowerCase()}`;
+                                              responsibilities.push(responsibility.charAt(0).toUpperCase() + responsibility.slice(1));
+                                            }
+                                          }
+                                        }
+                                      });
+                                    });
+                                    
+                                    // If no specific responsibilities found, extract from role context
+                                    if (responsibilities.length === 0) {
+                                      // Extract role-specific building blocks from title and achievements context
+                                      const roleKeywords = achievements.join(' ').toLowerCase();
+                                      
+                                      if (roleKeywords.includes('strategy') || roleKeywords.includes('strategic')) {
+                                        responsibilities.push('Driving strategic planning and execution');
+                                      }
+                                      if (roleKeywords.includes('technology') || roleKeywords.includes('digital')) {
+                                        responsibilities.push('Transforming digital capabilities and processes');
+                                      }
+                                      if (roleKeywords.includes('team') || roleKeywords.includes('leadership')) {
+                                        responsibilities.push('Optimizing team performance and development');
+                                      }
+                                      if (roleKeywords.includes('innovation') || roleKeywords.includes('growth')) {
+                                        responsibilities.push('Innovating solutions for business growth');
+                                      }
+                                      
+                                      // Ensure at least 2 responsibilities
+                                      if (responsibilities.length < 2) {
+                                        responsibilities.push(`Driving ${title.toLowerCase()} innovation and excellence`);
+                                        responsibilities.push('Strategizing organizational advancement initiatives');
+                                      }
+                                    }
+                                  } else {
+                                    // Fallback based on job title
+                                    responsibilities.push(`Transforming ${title.toLowerCase()} operations`);
+                                    responsibilities.push('Innovating strategic business solutions');
+                                  }
+                                  
+                                  return responsibilities.slice(0, 4); // Limit to 4 core responsibilities
+                                };
+                                
+                                const responsibilities = extractCoreResponsibilities(
+                                  exp.achievements, 
+                                  exp.title || 'Modern Professional', 
+                                  exp.company || 'organization'
+                                );
+                                
+                                return responsibilities.map((responsibility, idx) => (
+                                  <div key={idx} className="flex items-start gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                                         style={{ backgroundColor: selectedColorTheme.accent }}></div>
+                                    <span className="text-sm leading-relaxed">{responsibility}</span>
+                                  </div>
+                                ));
+                              })()}
                            </div>
                          </div>
                       </div>
