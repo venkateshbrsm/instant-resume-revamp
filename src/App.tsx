@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useRouteTracking } from "@/hooks/useRouteTracking";
+import { useWhatsAppDetection } from "@/hooks/useWhatsAppDetection";
 import { SecurityMonitor } from "./components/SecurityMonitor";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import Index from "./pages/Index";
@@ -25,6 +27,38 @@ const RouteTracker = () => {
   return null;
 };
 
+const WhatsAppBadgeHider = () => {
+  const isWhatsApp = useWhatsAppDetection();
+  
+  useEffect(() => {
+    if (isWhatsApp) {
+      const style = document.createElement('style');
+      style.id = 'whatsapp-badge-hider';
+      style.textContent = `
+        [data-lovable-badge],
+        .lovable-badge,
+        iframe[src*="lovable"],
+        div[class*="lovable"],
+        a[href*="lovable.dev/edit"],
+        a[href*="lovable"] {
+          display: none !important;
+          visibility: hidden !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        const existingStyle = document.getElementById('whatsapp-badge-hider');
+        if (existingStyle) {
+          document.head.removeChild(existingStyle);
+        }
+      };
+    }
+  }, [isWhatsApp]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -32,6 +66,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <RouteTracker />
+        <WhatsAppBadgeHider />
         <SecurityMonitor />
         <Routes>
           <Route path="/" element={<Index />} />
