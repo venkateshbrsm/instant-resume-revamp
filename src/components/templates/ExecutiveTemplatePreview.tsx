@@ -13,6 +13,45 @@ interface TemplatePreviewProps {
   };
 }
 
+// AI-powered content generation based on achievements
+const generateExecutiveContext = (achievements: string[]): string => {
+  if (!achievements || achievements.length === 0) {
+    return "Demonstrated exceptional leadership capabilities by orchestrating strategic initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence and sustainable growth trajectories.";
+  }
+
+  // Extract key themes from achievements
+  const keyThemes = [];
+  const achievementText = achievements.join(" ").toLowerCase();
+  
+  if (achievementText.includes("revenue") || achievementText.includes("sales") || achievementText.includes("growth") || achievementText.includes("profit")) {
+    keyThemes.push("revenue growth and market expansion");
+  }
+  if (achievementText.includes("team") || achievementText.includes("leadership") || achievementText.includes("manage")) {
+    keyThemes.push("team leadership and organizational development");
+  }
+  if (achievementText.includes("cost") || achievementText.includes("efficiency") || achievementText.includes("process")) {
+    keyThemes.push("operational excellence and cost optimization");
+  }
+  if (achievementText.includes("digital") || achievementText.includes("technology") || achievementText.includes("innovation")) {
+    keyThemes.push("digital transformation and innovation");
+  }
+  if (achievementText.includes("strategy") || achievementText.includes("strategic") || achievementText.includes("vision")) {
+    keyThemes.push("strategic planning and execution");
+  }
+
+  // Generate dynamic content based on identified themes
+  let context = "Visionary executive leader with proven expertise in ";
+  
+  if (keyThemes.length > 0) {
+    context += keyThemes.slice(0, 3).join(", ");
+    context += ". Successfully delivered transformational results by leveraging data-driven insights, fostering cross-functional collaboration, and implementing scalable solutions that drive sustainable competitive advantages across diverse business environments.";
+  } else {
+    context += "strategic leadership, organizational transformation, and performance optimization. Consistently delivers exceptional results through innovative problem-solving, stakeholder alignment, and the cultivation of high-performance teams that exceed organizational objectives.";
+  }
+
+  return context;
+};
+
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
@@ -188,13 +227,13 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                               ))}
                             </div>
                             
-                            {/* Executive Context */}
-                            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
-                              <p className="text-xs leading-relaxed text-gray-600">
-                                Demonstrated exceptional leadership capabilities by orchestrating multi-million dollar initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence, stakeholder alignment, and sustainable growth trajectories across diverse business units and market conditions.
-                              </p>
-                            </div>
+            {/* Executive Context - AI Generated */}
+            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
+              <p className="text-xs leading-relaxed text-gray-600">
+                {generateExecutiveContext(exp.achievements)}
+              </p>
+            </div>
                           </div>
                         )}
                       </div>
