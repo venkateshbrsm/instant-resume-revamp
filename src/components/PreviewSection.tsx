@@ -17,7 +17,6 @@ import { ClassicTemplatePreview } from "./templates/ClassicTemplatePreview";
 import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
 import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
-import { PaginatedPreview } from "./PaginatedPreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
 import { downloadSmartPdf } from "@/lib/smartPdfGenerator";
@@ -631,13 +630,48 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Paginated Template Preview - A4 Pages */}
-                      <PaginatedPreview 
-                        enhancedContent={enhancedContent}
-                        selectedTemplate={selectedTemplate}
-                        selectedColorTheme={selectedColorTheme}
-                        resumeContentRef={resumeContentRef}
-                      />
+                      {/* Scrollable Template Preview - Printer Friendly */}
+                      <div className="relative">
+                        <p className="text-sm text-muted-foreground mb-2 text-center">
+                          📄 Scroll to view full resume • Use mouse wheel or drag scrollbars
+                        </p>
+                        <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
+                          <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
+                               style={{ minHeight: '297mm' }}>
+                          {selectedTemplate.id === 'modern' && (
+                            <ModernTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'classic' && (
+                            <ClassicTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'creative' && (
+                            <CreativeTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'executive' && (
+                            <ExecutiveTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'minimalist' && (
+                            <MinimalistTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          </div>
+                          <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                      </div>
                     </div>
                   </div>
               ) : (
