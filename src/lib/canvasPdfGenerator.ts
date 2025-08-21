@@ -360,6 +360,11 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.paddingLeft = '0';
       htmlEl.style.marginLeft = '0';
       htmlEl.style.textIndent = '0';
+      htmlEl.style.verticalAlign = 'baseline';
+      htmlEl.style.lineHeight = 'normal';
+      htmlEl.style.alignItems = 'flex-start';
+      htmlEl.style.display = 'flex';
+      htmlEl.style.flexDirection = 'row';
     }
   });
   
