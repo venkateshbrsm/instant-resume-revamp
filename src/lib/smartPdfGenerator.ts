@@ -240,21 +240,40 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       overflow-wrap: break-word !important;
     }
     
-    /* Bulletproof text containers */
-    p, div, li {
+    /* Bulletproof text containers - aggressive protection */
+    p, div, li, span, strong, em, b, i, small, code, pre {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 10 !important;
-      widows: 10 !important;
+      orphans: 100 !important;
+      widows: 100 !important;
       min-height: 1.2em !important;
+      display: block !important;
     }
     
-    /* Prevent line breaking within important text elements */
-    .text-content, .content-text, [class*="text"] {
+    /* Force inline elements to stay together */
+    span, strong, em, b, i, small, code {
+      display: inline-block !important;
+      white-space: nowrap !important;
+      word-break: keep-all !important;
+    }
+    
+    /* Prevent line breaking within ANY text elements */
+    .text-content, .content-text, [class*="text"], 
+    .skill-name, .progress-text, .badge-text,
+    h1, h2, h3, h4, h5, h6, p, li, span, div {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 4 !important;
-      widows: 4 !important;
+      orphans: 100 !important;
+      widows: 100 !important;
+      word-break: keep-all !important;
+    }
+    
+    /* Ultra-aggressive text line protection */
+    * {
+      orphans: 100 !important;
+      widows: 100 !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
     }
     
     /* List protection */
