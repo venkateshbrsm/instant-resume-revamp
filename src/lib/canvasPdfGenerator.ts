@@ -347,6 +347,22 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
   element.style.maxWidth = 'none';
   element.style.minHeight = 'auto';
   
+  // Fix bullet point and list alignment issues
+  const listElements = element.querySelectorAll('ul, ol, li');
+  listElements.forEach((listEl) => {
+    const htmlEl = listEl as HTMLElement;
+    htmlEl.style.pageBreakInside = 'avoid';
+    htmlEl.style.breakInside = 'avoid';
+    htmlEl.style.display = 'block';
+    
+    if (listEl.tagName === 'LI') {
+      htmlEl.style.listStylePosition = 'inside';
+      htmlEl.style.paddingLeft = '0';
+      htmlEl.style.marginLeft = '0';
+      htmlEl.style.textIndent = '0';
+    }
+  });
+  
   // Add mobile-specific optimizations with print layout
   if (window.innerWidth < 768) {
     // Apply print layout styles for mobile
