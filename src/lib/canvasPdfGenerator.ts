@@ -384,6 +384,29 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.top = '0.05em';
     }
   });
+
+  // Fix tick marks with circles alignment to match executive template style
+  const tickElements = element.querySelectorAll('div[class*="rounded-full"], span[class*="rounded-full"]');
+  tickElements.forEach((tickEl) => {
+    const htmlEl = tickEl as HTMLElement;
+    // Check if this element contains a checkmark
+    if (htmlEl.textContent?.includes('✓')) {
+      // Ensure consistent alignment regardless of parent container (li vs div)
+      htmlEl.style.marginTop = '0.125rem'; // mt-0.5 equivalent 
+      htmlEl.style.flexShrink = '0';
+      htmlEl.style.position = 'relative';
+      htmlEl.style.alignSelf = 'flex-start';
+      htmlEl.style.top = '0';
+      
+      // Match executive template positioning - adjust parent container
+      const parentContainer = htmlEl.closest('li, div[class*="flex items-start"]');
+      if (parentContainer) {
+        const parentEl = parentContainer as HTMLElement;
+        parentEl.style.alignItems = 'flex-start';
+        parentEl.style.gap = '0.75rem'; // gap-3 equivalent
+      }
+    }
+  });
   
   // Add mobile-specific optimizations with print layout
   if (window.innerWidth < 768) {
