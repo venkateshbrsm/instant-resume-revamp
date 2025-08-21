@@ -28,29 +28,43 @@ export async function generateSmartPdf(
   try {
     const marginArray = Array.isArray(margin) ? margin : [margin, margin, margin, margin];
     
-    // Configure html2pdf with enhanced settings for perfect text preservation
+    // Configure html2pdf with maximum quality settings for ultra-high resolution
     const opt = {
       margin: marginArray,
       filename: options.filename || 'enhanced-resume.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'png', quality: 1.0 }, // PNG for lossless quality
       html2canvas: { 
-        scale: 3, // Higher scale for better text quality
+        scale: 5, // Maximum scale for ultra-high text quality
+        dpi: 300, // High DPI for print quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         letterRendering: true,
+        imageTimeout: 30000,
+        removeContainer: true,
+        foreignObjectRendering: false, // Better text rendering
+        ignoreElements: (element) => {
+          return element.tagName === 'SCRIPT' || element.tagStyle?.display === 'none';
+        },
         height: element.scrollHeight,
         width: element.scrollWidth,
         windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
+        windowHeight: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: false, // Don't compress to maintain quality
-        putOnlyUsedFonts: true
+        compress: false, // Never compress for maximum quality
+        putOnlyUsedFonts: true,
+        precision: 16, // Maximum precision
+        userUnit: 1.0,
+        hotfixes: ["px_scaling"]
       },
       pagebreak: { 
         mode: ['avoid-all', 'css', 'legacy'],
