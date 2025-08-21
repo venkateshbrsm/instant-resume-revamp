@@ -109,20 +109,21 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
           )}
 
           {/* Professional Certifications */}
-          <div className="page-break-avoid section">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Award className="w-4 h-4" />
+          {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+            <div className="page-break-avoid section">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <Award className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Certifications</h3>
               </div>
-              <h3 className="font-semibold text-sm tracking-wide uppercase">Certifications</h3>
+              <div className="space-y-2 text-xs opacity-90">
+                {enhancedContent.certifications.map((certification: string, index: number) => (
+                  <div key={index} className="font-medium page-break-avoid">• {certification}</div>
+                ))}
+              </div>
             </div>
-            <div className="space-y-2 text-xs opacity-90">
-              <div className="font-medium page-break-avoid">• Project Management Professional (PMP)</div>
-              <div className="font-medium page-break-avoid">• Certified Scrum Master (CSM)</div>
-              <div className="font-medium page-break-avoid">• AWS Solutions Architect</div>
-              <div className="font-medium page-break-avoid">• Google Analytics Certified</div>
-            </div>
-          </div>
+          )}
 
           {/* Education */}
           {enhancedContent.education && enhancedContent.education.length > 0 && (
