@@ -358,17 +358,19 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       // Position bullets outside for side-by-side layout with smaller size
       htmlEl.style.listStylePosition = 'outside';
       htmlEl.style.display = 'list-item';
-      htmlEl.style.paddingLeft = '12px';
-      htmlEl.style.marginLeft = '8px';
+      htmlEl.style.paddingLeft = '16px';
+      htmlEl.style.marginLeft = '0';
       htmlEl.style.textIndent = '0';
-      htmlEl.style.lineHeight = '1.5';
-      // Center-align bullets with text content
-      htmlEl.style.verticalAlign = 'baseline';
-      // Make bullets smaller and center them with the text
+      htmlEl.style.lineHeight = '1.6';
+      htmlEl.style.position = 'relative';
+      // Make bullets smaller and align them properly with text baseline
       const listStyle = `li::marker { 
         font-size: 0.5em !important; 
-        line-height: 1.5 !important;
-        vertical-align: middle !important;
+        line-height: 1.6 !important;
+        content: '•' !important;
+        vertical-align: baseline !important;
+        position: relative !important;
+        top: 0.2em !important;
       }`;
       if (!document.querySelector('style[data-small-bullets]')) {
         const style = document.createElement('style');
