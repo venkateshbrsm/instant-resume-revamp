@@ -28,32 +28,35 @@ export async function generateSmartPdf(
   try {
     const marginArray = Array.isArray(margin) ? margin : [margin, margin, margin, margin];
     
-    // Configure html2pdf with optimized settings for text preservation
+    // Configure html2pdf with enhanced settings for perfect text preservation
     const opt = {
       margin: marginArray,
       filename: options.filename || 'enhanced-resume.pdf',
-      image: { type: 'jpeg', quality: 0.95 },
+      image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
-        scale: 2,
+        scale: 3, // Higher scale for better text quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         letterRendering: true,
         height: element.scrollHeight,
-        width: element.scrollWidth
+        width: element.scrollWidth,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: true
+        compress: false, // Don't compress to maintain quality
+        putOnlyUsedFonts: true
       },
       pagebreak: { 
         mode: ['avoid-all', 'css', 'legacy'],
         before: '.page-break-before',
-        after: '.page-break-after',
-        avoid: '.page-break-avoid'
+        after: '.page-break-after', 
+        avoid: '.page-break-avoid, .keep-together, .no-break, p, .text-content, .section-content, .experience-item, .education-item, .skill-item, ul, ol, li, .card-content'
       }
     };
 
@@ -194,6 +197,37 @@ function prepareElementForPdf(element: HTMLElement): () => void {
         orphans: 2 !important;
         widows: 2 !important;
       }
+    }
+    
+    /* Enhanced text protection - prevent any mid-text breaks */
+    p, span, div, li, td, th, h1, h2, h3, h4, h5, h6 {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 4 !important;
+      widows: 4 !important;
+      word-break: keep-all !important;
+      overflow-wrap: break-word !important;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -moz-hyphens: none !important;
+    }
+    
+    /* Stronger text flow protection */
+    .text-content, 
+    .content-text, 
+    [class*="text"],
+    .job-description,
+    .achievement,
+    .summary,
+    .description {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      display: block !important;
+      margin-bottom: 4mm !important;
+      padding: 1mm 0 !important;
+      orphans: 5 !important;
+      widows: 5 !important;
+      word-break: keep-all !important;
     }
     
     /* Content-specific page break avoidance with margins */
