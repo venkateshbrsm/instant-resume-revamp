@@ -108,17 +108,6 @@ export async function generatePdfFromElement(
       const imgData = canvas.toDataURL('image/jpeg', quality);
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
-      
-      // Add top and bottom border lines for single page
-      pdf.setDrawColor(0, 0, 0); // Black color
-      pdf.setLineWidth(0.2); // Thin line
-      
-      // Top border line
-      pdf.line(margin, yOffset - 2, margin + finalWidth, yOffset - 2);
-      
-      // Bottom border line
-      const bottomY = yOffset + finalHeight + 2;
-      pdf.line(margin, bottomY, margin + finalWidth, bottomY);
     } else {
       // Enhanced multi-page generation with intelligent content-aware page breaks
       const printerMargin = 15; // Increased margin for safer content placement
@@ -197,17 +186,6 @@ export async function generatePdfFromElement(
           // Add extra margin for first page only
           const pageTopMargin = pageIndex === 0 ? margin : margin + 2;
           pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
-          
-          // Add top and bottom border lines for each page
-          pdf.setDrawColor(0, 0, 0); // Black color
-          pdf.setLineWidth(0.2); // Thin line
-          
-          // Top border line
-          pdf.line(margin, pageTopMargin - 2, margin + finalWidth, pageTopMargin - 2);
-          
-          // Bottom border line
-          const bottomY = pageTopMargin + maxAllowedHeight + 2;
-          pdf.line(margin, bottomY, margin + finalWidth, bottomY);
         }
         
         // Move to next section - use the actual section height to avoid gaps
