@@ -265,24 +265,33 @@ export default function PaymentSuccess() {
           console.log('No session storage data found, using payment ID fallback');
         }
 
-        const pdfUrl = `https://goorszhscvxywfigydfp.supabase.co/functions/v1/generate-pdf-resume`;
-        
-        const response = await fetch(pdfUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody)
+        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+          body: requestBody
         });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'PDF generation failed');
+        
+        if (error) {
+          throw new Error(error.message || 'PDF generation failed');
+        }
+        
+        if (!data) {
+          throw new Error('PDF generation failed: No data returned');
         }
 
-        // Get the PDF as binary data
-        const arrayBuffer = await response.arrayBuffer();
+        // Convert the returned data to blob
+        let arrayBuffer: ArrayBuffer;
+        if (data instanceof ArrayBuffer) {
+          arrayBuffer = data;
+        } else if (typeof data === 'string') {
+          // Handle base64 data
+          const binaryString = atob(data);
+          arrayBuffer = new ArrayBuffer(binaryString.length);
+          const uint8Array = new Uint8Array(arrayBuffer);
+          for (let i = 0; i < binaryString.length; i++) {
+            uint8Array[i] = binaryString.charCodeAt(i);
+          }
+        } else {
+          throw new Error('Unexpected data format from PDF generation');
+        }
         const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
         const filename = `Enhanced_Resume_${new Date().getTime()}.pdf`;
         
@@ -306,21 +315,33 @@ export default function PaymentSuccess() {
       // For DOCX, use the existing download method
       const functionName = 'download-enhanced-resume';
       
-      const response = await fetch(`https://goorszhscvxywfigydfp.supabase.co/functions/v1/${functionName}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvb3JzemhzY3Z4eXdmaWd5ZGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MjI5NzgsImV4cCI6MjA2Nzk5ODk3OH0.RVgMvTUS_16YAjsZreolaAoqfKVy4DdrjwWsjOOjaSI`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ paymentId })
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { paymentId }
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Download failed');
+      
+      if (error) {
+        throw new Error(error.message || 'Download failed');
+      }
+      
+      if (!data) {
+        throw new Error('Download failed: No data returned');
       }
 
-      const arrayBuffer = await response.arrayBuffer();
+      // Convert the returned data to arrayBuffer
+      let arrayBuffer: ArrayBuffer;
+      if (data instanceof ArrayBuffer) {
+        arrayBuffer = data;
+      } else if (typeof data === 'string') {
+        // Handle base64 data
+        const binaryString = atob(data);
+        arrayBuffer = new ArrayBuffer(binaryString.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < binaryString.length; i++) {
+          uint8Array[i] = binaryString.charCodeAt(i);
+        }
+      } else {
+        throw new Error('Unexpected data format from download');
+      }
       const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       
       const blob = new Blob([arrayBuffer], { type: mimeType });
