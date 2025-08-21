@@ -13,55 +13,98 @@ interface TemplatePreviewProps {
   };
 }
 
-// Generate completely unique leadership insights based on specific achievement content
-const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
+// Generate leadership insights with rewording to avoid repetition
+const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = "", experienceIndex: number = 0): string => {
   if (!achievements || achievements.length === 0) {
-    return "Strategic decision-making under pressure while balancing multiple stakeholder interests and resource constraints.";
+    const fallbacks = [
+      "Strategic decision-making under pressure while balancing multiple stakeholder interests and resource constraints.",
+      "Executive leadership involves navigating complex organizational dynamics while maintaining strategic focus and stakeholder alignment.",
+      "Effective management requires balancing competing priorities while fostering team development and organizational growth."
+    ];
+    return fallbacks[experienceIndex % fallbacks.length];
   }
 
-  // Analyze the specific achievements to create unique insights
   const achievementText = achievements.join(" ").toLowerCase();
   
-  // Create a unique insight based on the actual content
+  // Revenue/Sales insights with variations
   if (achievementText.includes('revenue') || achievementText.includes('sales') || achievementText.includes('profit')) {
     if (achievementText.includes('team')) {
-      return "Balancing revenue targets with team development requires understanding individual motivations while maintaining collective accountability for business outcomes.";
+      const variations = [
+        "Balancing revenue targets with team development requires understanding individual motivations while maintaining collective accountability for business outcomes.",
+        "Achieving financial goals through people leadership involves aligning team objectives with business performance while fostering professional growth.",
+        "Revenue success through team management demands balancing performance expectations with individual development and motivation strategies."
+      ];
+      return variations[experienceIndex % variations.length];
     } else {
-      return "Revenue growth depends on identifying market inefficiencies and executing solutions faster than competitors can respond.";
+      const variations = [
+        "Revenue growth depends on identifying market inefficiencies and executing solutions faster than competitors can respond.",
+        "Financial performance improvement requires strategic market analysis and rapid implementation of competitive advantages.",
+        "Driving profitable growth involves recognizing market opportunities and deploying resources more effectively than industry peers."
+      ];
+      return variations[experienceIndex % variations.length];
     }
   }
   
+  // Team/People insights with variations
   if (achievementText.includes('team') || achievementText.includes('people') || achievementText.includes('staff')) {
     if (achievementText.includes('process') || achievementText.includes('efficiency')) {
-      return "High-performing teams emerge when individuals understand how their work connects to broader organizational objectives and customer value.";
+      const variations = [
+        "High-performing teams emerge when individuals understand how their work connects to broader organizational objectives and customer value.",
+        "Operational excellence through people requires clear communication of how individual contributions impact organizational success and customer outcomes.",
+        "Team effectiveness increases when members grasp the relationship between their roles and the organization's strategic goals and market position."
+      ];
+      return variations[experienceIndex % variations.length];
     } else {
-      return "Effective delegation requires matching tasks to individual strengths while providing clear success metrics and decision-making authority.";
+      const variations = [
+        "Effective delegation requires matching tasks to individual strengths while providing clear success metrics and decision-making authority.",
+        "Successful people leadership involves aligning responsibilities with team member capabilities while establishing transparent performance standards.",
+        "Strategic delegation means pairing assignments with individual competencies while defining clear accountability measures and autonomy levels."
+      ];
+      return variations[experienceIndex % variations.length];
     }
   }
   
+  // Process/Efficiency insights with variations
   if (achievementText.includes('process') || achievementText.includes('efficiency') || achievementText.includes('optimization')) {
-    return "Sustainable process improvements come from frontline insights rather than top-down mandates, requiring leaders to listen before directing.";
+    const variations = [
+      "Sustainable process improvements come from frontline insights rather than top-down mandates, requiring leaders to listen before directing.",
+      "Lasting operational enhancements emerge from ground-level observations rather than executive directives, demanding active listening before implementation.",
+      "Effective process optimization stems from employee-driven insights rather than management assumptions, necessitating consultation before action."
+    ];
+    return variations[experienceIndex % variations.length];
   }
   
+  // Innovation insights with variations
   if (achievementText.includes('launched') || achievementText.includes('created') || achievementText.includes('developed')) {
-    return "Innovation success depends on rapid experimentation cycles and the willingness to pivot based on early customer feedback rather than initial assumptions.";
+    const variations = [
+      "Innovation success depends on rapid experimentation cycles and the willingness to pivot based on early customer feedback rather than initial assumptions.",
+      "Creative breakthroughs require iterative testing approaches and flexibility to adjust direction based on market response rather than original hypotheses.",
+      "Successful innovation relies on quick prototype cycles and readiness to modify strategies based on user input rather than predetermined concepts."
+    ];
+    return variations[experienceIndex % variations.length];
   }
   
+  // Cost/Budget insights with variations
   if (achievementText.includes('cost') || achievementText.includes('budget') || achievementText.includes('savings')) {
-    return "Cost management without sacrificing quality requires deep understanding of value chains and the courage to eliminate sacred cows that no longer serve customers.";
+    const variations = [
+      "Cost management without sacrificing quality requires deep understanding of value chains and the courage to eliminate sacred cows that no longer serve customers.",
+      "Financial stewardship while maintaining standards demands comprehensive value analysis and willingness to discontinue traditional practices that lack customer benefit.",
+      "Budget optimization without quality compromise involves thorough value stream evaluation and boldness to remove established processes that don't add customer value."
+    ];
+    return variations[experienceIndex % variations.length];
   }
   
-  // Unique fallbacks based on role context
+  // General fallbacks with variations
   const roleInsights = [
     "Complex organizations require leaders who can synthesize conflicting information into clear strategic direction while maintaining team morale during uncertainty.",
     "Market dynamics shift faster than planning cycles, demanding leaders who can adjust tactics while maintaining strategic consistency and stakeholder confidence.",
     "Cross-functional success depends on building trust through small commitments before attempting larger collaborative initiatives that require organizational buy-in.",
-    "Stakeholder alignment emerges from understanding individual priorities and finding intersection points that serve collective interests without compromising core principles."
+    "Stakeholder alignment emerges from understanding individual priorities and finding intersection points that serve collective interests without compromising core principles.",
+    "Leadership effectiveness involves translating ambiguous market signals into actionable strategies while preserving organizational culture and employee engagement.",
+    "Executive success requires balancing short-term performance pressures with long-term strategic investments while maintaining transparent communication with all stakeholders."
   ];
   
-  // Use achievement text length to pick different insights consistently
-  const index = achievementText.length % roleInsights.length;
-  return roleInsights[index];
+  return roleInsights[experienceIndex % roleInsights.length];
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
@@ -243,7 +286,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
               <h5 className="font-semibold text-gray-900 mb-2 text-sm">Leadership Learnings & Development Insights:</h5>
               <p className="text-xs leading-relaxed text-gray-600">
-                {generateExecutiveContext(exp.achievements, exp.title, exp.company)}
+                {generateExecutiveContext(exp.achievements, exp.title, exp.company, index)}
               </p>
             </div>
                           </div>
