@@ -395,39 +395,38 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     }
   });
 
-  // Fix tick marks with circles alignment - preserve template flexbox layout
+  // Fix tick marks with circles alignment for PDF generation
   const tickElements = element.querySelectorAll('div[class*="rounded-full"], span[class*="rounded-full"]');
   tickElements.forEach((tickEl) => {
     const htmlEl = tickEl as HTMLElement;
     // Check if this element contains a checkmark
     if (htmlEl.textContent?.includes('✓')) {
-      // Preserve the original template styling (mt-0.5, flex-shrink-0)
-      htmlEl.style.display = 'flex';
-      htmlEl.style.alignItems = 'center';
-      htmlEl.style.justifyContent = 'center';
+      // Force inline-block for better PDF alignment
+      htmlEl.style.display = 'inline-block';
+      htmlEl.style.verticalAlign = 'top';
+      htmlEl.style.marginTop = '0.125rem'; // mt-0.5 equivalent for text baseline alignment
+      htmlEl.style.marginRight = '0.75rem'; // gap-3 equivalent
       htmlEl.style.flexShrink = '0';
       htmlEl.style.position = 'relative';
       
-      // Ensure parent container maintains proper flexbox alignment
+      // Force parent container to use inline layout for PDF consistency
       const parentContainer = htmlEl.closest('li, div');
       if (parentContainer) {
         const parentEl = parentContainer as HTMLElement;
-        const parentClasses = parentEl.className;
         
-        // Only adjust if it's a flex container with achievements/tick marks
-        if (parentClasses.includes('flex') && parentClasses.includes('items-start')) {
-          parentEl.style.display = 'flex';
-          parentEl.style.alignItems = 'flex-start';
-          parentEl.style.gap = '0.75rem'; // gap-3 equivalent
-          
-          // Ensure text content aligns properly with tick mark
-          const textElement = parentEl.querySelector('p, span:not([class*="rounded-full"])');
-          if (textElement) {
-            const textEl = textElement as HTMLElement;
-            textEl.style.lineHeight = '1.5';
-            textEl.style.marginTop = '0';
-            textEl.style.paddingTop = '0.125rem'; // Align with tick mark mt-0.5
-          }
+        // Convert flex to inline-block for PDF generation
+        parentEl.style.display = 'block';
+        parentEl.style.lineHeight = '1.5';
+        
+        // Ensure text content flows inline with tick mark
+        const textElement = parentEl.querySelector('p, span:not([class*="rounded-full"])');
+        if (textElement) {
+          const textEl = textElement as HTMLElement;
+          textEl.style.display = 'inline';
+          textEl.style.verticalAlign = 'top';
+          textEl.style.lineHeight = '1.5';
+          textEl.style.marginTop = '0';
+          textEl.style.paddingTop = '0';
         }
       }
     }
