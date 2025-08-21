@@ -96,34 +96,64 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                        <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
                        <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
                          {(() => {
-                           const title = exp.title?.toLowerCase() || '';
-                           let responsibilities = [];
+                           // Generate responsibilities based on actual achievements and experience content
+                           const generateResponsibilitiesFromAchievements = (achievements, title, company) => {
+                             const responsibilities = [];
+                             
+                             if (achievements && achievements.length > 0) {
+                               // Extract key themes from achievements
+                               const achievementText = achievements.join(' ').toLowerCase();
+                               
+                               // Categorize based on achievement content
+                               if (achievementText.includes('team') || achievementText.includes('lead') || achievementText.includes('manage')) {
+                                 responsibilities.push(`Team leadership and management of ${title.toLowerCase()} operations at ${company}`);
+                               }
+                               
+                               if (achievementText.includes('risk') || achievementText.includes('control') || achievementText.includes('compliance')) {
+                                 responsibilities.push('Risk assessment, control implementation and regulatory compliance oversight');
+                               }
+                               
+                               if (achievementText.includes('process') || achievementText.includes('operational') || achievementText.includes('workflow')) {
+                                 responsibilities.push('Process optimization and operational efficiency improvement initiatives');
+                               }
+                               
+                               if (achievementText.includes('client') || achievementText.includes('customer') || achievementText.includes('stakeholder')) {
+                                 responsibilities.push('Client relationship management and stakeholder engagement activities');
+                               }
+                               
+                               if (achievementText.includes('audit') || achievementText.includes('review') || achievementText.includes('assessment')) {
+                                 responsibilities.push('Audit coordination, review processes and assessment activities');
+                               }
+                               
+                               if (achievementText.includes('data') || achievementText.includes('report') || achievementText.includes('analysis')) {
+                                 responsibilities.push('Data analysis, reporting and business intelligence support');
+                               }
+                               
+                               if (achievementText.includes('quality') || achievementText.includes('standard') || achievementText.includes('control')) {
+                                 responsibilities.push('Quality assurance and standard maintenance across operations');
+                               }
+                               
+                               // If no specific themes found, create general responsibilities
+                               if (responsibilities.length === 0) {
+                                 responsibilities.push(`Primary operational duties in ${title} role at ${company}`);
+                                 responsibilities.push('Cross-functional collaboration and project support activities');
+                                 responsibilities.push('Performance monitoring and continuous improvement initiatives');
+                               }
+                             } else {
+                               // Fallback if no achievements
+                               responsibilities.push(`Core operational responsibilities in ${title} position`);
+                               responsibilities.push(`Supporting organizational objectives at ${company}`);
+                             }
+                             
+                             // Limit to 3-4 responsibilities for readability
+                             return responsibilities.slice(0, 4);
+                           };
                            
-                           if (title.includes('vice president') || title.includes('avp')) {
-                             responsibilities = [
-                               `Executive oversight and strategic planning for ${exp.company}`,
-                               'Senior leadership and organizational development',
-                               'Risk management and compliance supervision'
-                             ];
-                           } else if (title.includes('manager') || title.includes('lead')) {
-                             responsibilities = [
-                               `Operational leadership and team management in ${exp.title} role`,
-                               'Process improvement and efficiency optimization',
-                               'Performance evaluation and development planning'
-                             ];
-                           } else if (title.includes('analyst') || title.includes('specialist')) {
-                             responsibilities = [
-                               `Technical analysis and research for ${exp.company}`,
-                               'Data interpretation and insight generation',
-                               'Compliance monitoring and audit support'
-                             ];
-                           } else {
-                             responsibilities = [
-                               `Core operational functions in ${exp.title} position`,
-                               `Team collaboration and ${exp.company} objectives support`,
-                               'Quality control and process adherence'
-                             ];
-                           }
+                           const responsibilities = generateResponsibilitiesFromAchievements(
+                             exp.achievements, 
+                             exp.title || 'Professional', 
+                             exp.company || 'organization'
+                           );
                            
                            return responsibilities.map((responsibility, idx) => (
                              <p key={idx} className="flex items-start">
