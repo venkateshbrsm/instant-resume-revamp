@@ -188,13 +188,15 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                               ))}
                             </div>
                             
-                            {/* Executive Context */}
-                            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
-                              <p className="text-xs leading-relaxed text-gray-600">
-                                Demonstrated exceptional leadership capabilities by orchestrating multi-million dollar initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence, stakeholder alignment, and sustainable growth trajectories across diverse business units and market conditions.
-                              </p>
-                            </div>
+                            {/* Dynamic Executive Context based on role */}
+                            {exp.description && (
+                              <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+                                <h5 className="font-semibold text-gray-900 mb-2 text-sm">Key Leadership Focus:</h5>
+                                <p className="text-xs leading-relaxed text-gray-600">
+                                  {exp.description}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
