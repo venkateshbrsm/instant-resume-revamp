@@ -6,6 +6,26 @@ export interface SmartPdfOptions {
   format?: string;
   orientation?: 'portrait' | 'landscape';
   quality?: number;
+  dynamicScale?: boolean;
+  minScale?: number;
+  maxScale?: number;
+  scaleStrategy?: 'conservative' | 'balanced' | 'quality';
+}
+
+interface ContentAnalysis {
+  textDensity: number;
+  elementCount: number;
+  averageLineHeight: number;
+  contentHeight: number;
+  contentWidth: number;
+  hasComplexLayouts: boolean;
+}
+
+interface ScaleTestResult {
+  scale: number;
+  hasTextSplitting: boolean;
+  quality: number;
+  success: boolean;
 }
 
 /**
@@ -21,7 +41,11 @@ export async function generateSmartPdf(
     margin = 10,
     format = 'a4',
     orientation = 'portrait',
-    quality = 0.98
+    quality = 0.98,
+    dynamicScale = true,
+    minScale = 0.2,
+    maxScale = 0.8,
+    scaleStrategy = 'balanced'
   } = options;
 
   // Prepare element for better PDF generation
@@ -30,6 +54,20 @@ export async function generateSmartPdf(
   try {
     // Wait for any layout changes to settle
     await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Calculate optimal scale dynamically if enabled
+    let optimalScale = 0.355; // fallback scale
+    if (dynamicScale) {
+      console.log('🎯 Starting dynamic scale calculation...');
+      optimalScale = await calculateOptimalScale(element, {
+        minScale,
+        maxScale,
+        scaleStrategy,
+        format,
+        orientation
+      });
+      console.log(`📐 Calculated optimal scale: ${optimalScale}`);
+    }
 
     // Configure html2pdf with proper page break handling
     const opt = {
@@ -43,14 +81,14 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.355, // Scale set to 0.355 to prevent any splitting
+        scale: optimalScale,
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 300, // Very small width to absolutely prevent cutoff
-        height: 400, // Much smaller height for ultra-safe margins
-        windowWidth: 300,
-        windowHeight: 400,
+        width: Math.round(210 / optimalScale), // A4 width scaled
+        height: Math.round(297 / optimalScale), // A4 height scaled
+        windowWidth: Math.round(210 / optimalScale),
+        windowHeight: Math.round(297 / optimalScale),
       },
       jsPDF: { 
         unit: 'mm', 
@@ -79,6 +117,215 @@ export async function generateSmartPdf(
     console.error('Error generating smart PDF:', error);
     throw new Error('Failed to generate PDF with smart page breaks');
   }
+}
+
+/**
+ * Analyzes content to determine optimal scaling parameters
+ */
+async function analyzeContent(element: HTMLElement): Promise<ContentAnalysis> {
+  // Get computed styles and dimensions
+  const computedStyle = window.getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
+  
+  // Count different types of elements
+  const textElements = element.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, li');
+  const complexElements = element.querySelectorAll('table, .grid, .flex, .progress-bar, canvas, svg');
+  
+  // Calculate text density
+  const totalText = Array.from(textElements)
+    .map(el => el.textContent?.trim() || '')
+    .join(' ');
+  
+  const textDensity = totalText.length / Math.max(rect.width * rect.height, 1);
+  
+  // Calculate average line height
+  const lineHeights = Array.from(textElements)
+    .map(el => parseFloat(window.getComputedStyle(el).lineHeight) || 16);
+  const averageLineHeight = lineHeights.reduce((sum, height) => sum + height, 0) / lineHeights.length || 16;
+  
+  return {
+    textDensity,
+    elementCount: textElements.length,
+    averageLineHeight,
+    contentHeight: rect.height,
+    contentWidth: rect.width,
+    hasComplexLayouts: complexElements.length > 0
+  };
+}
+
+/**
+ * Calculates base scale based on content analysis and strategy
+ */
+function calculateBaseScale(
+  analysis: ContentAnalysis,
+  strategy: 'conservative' | 'balanced' | 'quality',
+  minScale: number,
+  maxScale: number
+): number {
+  let baseScale: number;
+  
+  switch (strategy) {
+    case 'conservative':
+      // Prioritize avoiding text splitting over quality
+      baseScale = Math.max(0.2, minScale + (analysis.textDensity * 0.1));
+      break;
+      
+    case 'quality':
+      // Prioritize visual quality, accept some risk of splitting
+      baseScale = Math.min(0.7, maxScale - (analysis.textDensity * 0.2));
+      break;
+      
+    case 'balanced':
+    default:
+      // Balance between quality and text integrity
+      const densityFactor = Math.min(analysis.textDensity * 0.3, 0.3);
+      const complexityFactor = analysis.hasComplexLayouts ? 0.05 : 0;
+      baseScale = 0.5 - densityFactor - complexityFactor;
+      break;
+  }
+  
+  return Math.max(minScale, Math.min(maxScale, baseScale));
+}
+
+/**
+ * Tests a specific scale by simulating PDF generation
+ */
+async function testScale(
+  element: HTMLElement,
+  scale: number,
+  pageHeight: number = 297 // A4 height in mm
+): Promise<ScaleTestResult> {
+  try {
+    // Create a temporary clone for testing
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    clone.style.top = '0';
+    clone.style.width = `${210 / scale}px`; // A4 width scaled
+    clone.style.visibility = 'hidden';
+    document.body.appendChild(clone);
+    
+    // Wait for layout
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    const rect = clone.getBoundingClientRect();
+    const scaledHeight = rect.height * scale;
+    const pages = Math.ceil(scaledHeight / pageHeight);
+    
+    // Check for potential text splitting at page boundaries
+    let hasTextSplitting = false;
+    const pageBreakPoints = [];
+    
+    for (let i = 1; i < pages; i++) {
+      const breakPoint = (i * pageHeight) / scale;
+      pageBreakPoints.push(breakPoint);
+    }
+    
+    // Analyze text elements near page break points
+    const textElements = clone.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, li');
+    
+    for (const textEl of textElements) {
+      const textRect = textEl.getBoundingClientRect();
+      const relativeTop = textRect.top - rect.top;
+      const relativeBottom = textRect.bottom - rect.top;
+      
+      for (const breakPoint of pageBreakPoints) {
+        // Check if text element spans across a page break
+        if (relativeTop < breakPoint && relativeBottom > breakPoint) {
+          // Additional check: is this a substantial text element?
+          const textHeight = relativeBottom - relativeTop;
+          if (textHeight > 10) { // Minimum height threshold
+            hasTextSplitting = true;
+            break;
+          }
+        }
+      }
+      
+      if (hasTextSplitting) break;
+    }
+    
+    // Calculate quality score (higher scale = better quality)
+    const quality = Math.min(100, scale * 125);
+    
+    document.body.removeChild(clone);
+    
+    return {
+      scale,
+      hasTextSplitting,
+      quality,
+      success: !hasTextSplitting
+    };
+    
+  } catch (error) {
+    console.warn(`Error testing scale ${scale}:`, error);
+    return {
+      scale,
+      hasTextSplitting: true,
+      quality: 0,
+      success: false
+    };
+  }
+}
+
+/**
+ * Calculates optimal scale using iterative testing
+ */
+async function calculateOptimalScale(
+  element: HTMLElement,
+  options: {
+    minScale: number;
+    maxScale: number;
+    scaleStrategy: 'conservative' | 'balanced' | 'quality';
+    format: string;
+    orientation: string;
+  }
+): Promise<number> {
+  const { minScale, maxScale, scaleStrategy } = options;
+  
+  console.log('🔍 Analyzing content for optimal scale...');
+  
+  // Step 1: Analyze content
+  const analysis = await analyzeContent(element);
+  console.log('📊 Content analysis:', {
+    textDensity: analysis.textDensity.toFixed(4),
+    elementCount: analysis.elementCount,
+    hasComplexLayouts: analysis.hasComplexLayouts
+  });
+  
+  // Step 2: Calculate base scale
+  let currentScale = calculateBaseScale(analysis, scaleStrategy, minScale, maxScale);
+  console.log(`🎯 Base scale calculated: ${currentScale.toFixed(3)}`);
+  
+  // Step 3: Test scale and adjust if needed
+  const maxIterations = 5;
+  let iteration = 0;
+  
+  while (iteration < maxIterations) {
+    console.log(`🔄 Testing scale: ${currentScale.toFixed(3)} (iteration ${iteration + 1})`);
+    
+    const testResult = await testScale(element, currentScale);
+    
+    if (testResult.success) {
+      console.log(`✅ Scale ${currentScale.toFixed(3)} passed test - no text splitting detected`);
+      return currentScale;
+    }
+    
+    console.log(`⚠️ Scale ${currentScale.toFixed(3)} failed - text splitting detected, reducing scale`);
+    
+    // Reduce scale by 10% and try again
+    currentScale = Math.max(minScale, currentScale * 0.9);
+    
+    // If we've hit minimum scale, stop
+    if (currentScale <= minScale) {
+      console.log(`🛡️ Reached minimum scale: ${minScale}`);
+      return minScale;
+    }
+    
+    iteration++;
+  }
+  
+  console.log(`⏰ Max iterations reached, using scale: ${currentScale.toFixed(3)}`);
+  return currentScale;
 }
 
 /**
