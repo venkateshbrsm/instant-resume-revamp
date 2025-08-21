@@ -263,6 +263,17 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       break-inside: avoid !important;
     }
     
+    /* Checkbox alignment with text */
+    input[type="checkbox"],
+    [role="checkbox"],
+    .checkbox,
+    button[role="checkbox"] {
+      vertical-align: baseline !important;
+      margin-top: 0.1em !important;
+      margin-right: 0.3em !important;
+      display: inline-block !important;
+    }
+    
     /* Remove underlines from email and phone in PDFs */
     .no-underline,
     .no-underline *,
