@@ -20,120 +20,98 @@ const generateExecutiveContext = (achievements: string[]): string => {
   }
 
   const achievementText = achievements.join(" ");
-  
-  // Extract specific metrics and numbers
-  const metrics = {
-    percentages: achievementText.match(/\d+%/g) || [],
-    monetary: achievementText.match(/\$[\d,]+[MBK]?|\d+[MBK]\s*(?:revenue|sales|profit|budget|cost)/gi) || [],
-    teamSize: achievementText.match(/\d+\s*(?:team|people|employees|staff|members)/gi) || [],
-    timeframes: achievementText.match(/\d+\s*(?:months?|years?|quarters?)/gi) || [],
-    growth: achievementText.match(/(?:increased?|grew|improved|boosted|enhanced|expanded)[\s\w]*?(?:by\s+)?\d+%?/gi) || []
-  };
-
-  // Extract specific leadership actions and outcomes
-  const actions = {
-    strategic: achievementText.match(/(?:launched|developed|implemented|created|established|built|designed|initiated)[\s\w]*?(?:strategy|program|initiative|system|process|framework)/gi) || [],
-    transformation: achievementText.match(/(?:transformed|restructured|reorganized|optimized|streamlined|modernized|digitized)[\s\w]*?(?:operations|processes|team|department|organization)/gi) || [],
-    leadership: achievementText.match(/(?:led|managed|directed|supervised|guided|mentored|coached)[\s\w]*?(?:team|department|division|project|initiative)/gi) || [],
-    results: achievementText.match(/(?:achieved|delivered|exceeded|surpassed|generated|secured|obtained)[\s\w]*?(?:targets|goals|results|outcomes|objectives)/gi) || []
-  };
-
-  // Extract industry/company context
-  const context = {
-    industry: achievementText.match(/(?:technology|healthcare|finance|retail|manufacturing|consulting|media|energy|automotive|pharmaceutical|aerospace|telecommunications)/gi) || [],
-    companyType: achievementText.match(/(?:startup|enterprise|fortune\s*\d+|multinational|global|public|private|b2b|b2c)/gi) || [],
-    markets: achievementText.match(/(?:international|global|domestic|regional|emerging|mature|competitive)/gi) || []
-  };
-
-  // Extract leadership qualities demonstrated
-  const qualities = [];
   const lowerText = achievementText.toLowerCase();
   
-  if (lowerText.includes("innovation") || lowerText.includes("creative") || lowerText.includes("pioneered")) {
-    qualities.push("innovative thinking");
-  }
-  if (metrics.percentages.length > 0 || lowerText.includes("data-driven") || lowerText.includes("analytics")) {
-    qualities.push("data-driven decision making");
-  }
-  if (actions.transformation.length > 0 || lowerText.includes("change") || lowerText.includes("transformation")) {
-    qualities.push("transformational leadership");
-  }
-  if (metrics.teamSize.length > 0 || actions.leadership.length > 0) {
-    qualities.push("people leadership");
-  }
-  if (lowerText.includes("collaboration") || lowerText.includes("cross-functional") || lowerText.includes("stakeholder")) {
-    qualities.push("collaborative execution");
-  }
-  if (actions.strategic.length > 0 || lowerText.includes("vision") || lowerText.includes("strategic")) {
-    qualities.push("strategic vision");
-  }
+  // Extract concrete metrics and quantifiable outcomes
+  const metrics = {
+    percentages: achievementText.match(/\d+(?:\.\d+)?%/g) || [],
+    monetary: achievementText.match(/(?:\$|USD|€|£)?\s*\d+(?:,\d{3})*(?:\.\d+)?[MBK]?\b|\d+[MBK]?\s*(?:million|billion|thousand|revenue|sales|profit|budget|cost|savings)/gi) || [],
+    teamSize: achievementText.match(/(?:team of\s+)?\d+\s*(?:team|people|employees|staff|members|person team)/gi) || [],
+    numbers: achievementText.match(/\d+(?:,\d{3})*\s*(?:projects|clients|customers|locations|stores|offices|departments|initiatives|programs)/gi) || []
+  };
 
-  // Build unique narrative based on extracted elements
-  let narrative = "";
-  
-  // Start with leadership style based on qualities
-  if (qualities.includes("transformational leadership") && qualities.includes("innovative thinking")) {
-    narrative += "Transformational innovator who ";
-  } else if (qualities.includes("data-driven decision making") && qualities.includes("strategic vision")) {
-    narrative += "Strategic architect with analytical expertise who ";
-  } else if (qualities.includes("people leadership") && qualities.includes("collaborative execution")) {
-    narrative += "Collaborative leader and team builder who ";
-  } else {
-    narrative += "Executive leader who ";
-  }
+  // Extract actual achievement phrases with context
+  const concreteAchievements = [];
+  const achievementPatterns = [
+    /(?:increased|grew|improved|boosted|enhanced|expanded|raised)\s+[^.]*?(?:\d+%|\$\d+|by\s+\d+)/gi,
+    /(?:reduced|decreased|cut|lowered|minimized)\s+[^.]*?(?:\d+%|\$\d+|by\s+\d+)/gi,
+    /(?:launched|created|developed|built|established|implemented)\s+[^.]*?(?:resulting|leading|generating|achieving)/gi,
+    /(?:managed|directed|led|oversaw)\s+[^.]*?(?:team|project|department|initiative|budget)/gi
+  ];
 
-  // Add specific accomplishments with metrics
-  const accomplishments = [];
-  
-  if (metrics.growth.length > 0) {
-    const growthExample = metrics.growth[0].replace(/increased?|improved|boosted|enhanced/i, "drove");
-    accomplishments.push(growthExample.toLowerCase());
-  }
-  
-  if (metrics.monetary.length > 0 && metrics.percentages.length > 0) {
-    accomplishments.push(`delivered ${metrics.monetary[0]} in value while achieving ${metrics.percentages[0]} performance improvements`);
-  } else if (metrics.monetary.length > 0) {
-    accomplishments.push(`generated ${metrics.monetary[0]} in measurable business value`);
-  } else if (metrics.percentages.length > 0) {
-    accomplishments.push(`achieved ${metrics.percentages[0]} improvement in key performance indicators`);
-  }
+  achievementPatterns.forEach(pattern => {
+    const matches = achievementText.match(pattern) || [];
+    concreteAchievements.push(...matches.slice(0, 1));
+  });
 
-  if (actions.strategic.length > 0) {
-    const strategicAction = actions.strategic[0].replace(/launched|developed|implemented/i, "orchestrated");
-    accomplishments.push(strategicAction.toLowerCase() + " that transformed organizational capabilities");
-  }
+  // Determine unique leadership approach based on actual content
+  const getLeadershipStyle = () => {
+    const styleIndicators = [
+      { keywords: ["transformation", "restructur", "change management", "turnaround"], style: "Transformation catalyst" },
+      { keywords: ["innovation", "digital", "technology", "ai", "automation"], style: "Innovation architect" },
+      { keywords: ["revenue", "profit", "sales", "market share", "growth"], style: "Growth strategist" },
+      { keywords: ["team", "culture", "people", "talent", "leadership development"], style: "Organizational builder" },
+      { keywords: ["efficiency", "process", "optimization", "lean", "operations"], style: "Operational excellence driver" },
+      { keywords: ["strategic", "vision", "planning", "roadmap", "direction"], style: "Strategic visionary" }
+    ];
 
-  if (metrics.teamSize.length > 0) {
-    accomplishments.push(`successfully scaled and led ${metrics.teamSize[0]} to exceed operational targets`);
-  }
+    for (const indicator of styleIndicators) {
+      if (indicator.keywords.some(keyword => lowerText.includes(keyword))) {
+        return indicator.style;
+      }
+    }
+    return "Executive leader";
+  };
 
-  // Add accomplishments to narrative
-  if (accomplishments.length > 0) {
-    narrative += accomplishments.slice(0, 2).join(", and ");
-  } else {
-    narrative += "consistently delivered exceptional results through strategic planning and execution";
-  }
+  // Build narrative from actual achievements
+  let narrative = `${getLeadershipStyle()} who `;
 
-  // Add industry/context-specific insights
-  if (context.industry.length > 0 || context.companyType.length > 0) {
-    const industryContext = context.industry[0] || context.companyType[0];
-    narrative += `. Specialized expertise in ${industryContext.toLowerCase()} environments`;
+  // Use concrete achievements first
+  if (concreteAchievements.length > 0) {
+    const primaryAchievement = concreteAchievements[0]
+      .replace(/\s+/g, ' ')
+      .toLowerCase()
+      .replace(/^(increased|improved|grew|boosted|enhanced|expanded|raised|reduced|decreased|cut|lowered|minimized|launched|created|developed|built|established|implemented|managed|directed|led|oversaw)/, 'delivered');
     
-    if (context.markets.length > 0) {
-      narrative += ` with proven success in ${context.markets[0].toLowerCase()} markets`;
+    narrative += primaryAchievement.trim();
+    
+    // Add quantified impact if available
+    if (metrics.monetary.length > 0) {
+      narrative += `, generating ${metrics.monetary[0]} in measurable business impact`;
+    } else if (metrics.percentages.length > 0) {
+      narrative += `, achieving ${metrics.percentages[0]} performance enhancement`;
     }
-    narrative += ", leveraging deep sector knowledge to navigate complex challenges and capitalize on emerging opportunities.";
   } else {
-    // Add leadership approach based on demonstrated qualities
-    if (qualities.includes("collaborative execution")) {
-      narrative += ". Builds high-performance cultures through cross-functional collaboration and stakeholder alignment, ensuring sustainable competitive advantages.";
-    } else if (qualities.includes("data-driven decision making")) {
-      narrative += ". Leverages advanced analytics and data insights to drive evidence-based strategies that deliver measurable business impact.";
+    // Create unique fallbacks based on detected patterns
+    if (metrics.monetary.length > 0 && metrics.percentages.length > 0) {
+      narrative += `orchestrated initiatives generating ${metrics.monetary[0]} while delivering ${metrics.percentages[0]} operational improvements`;
+    } else if (metrics.numbers.length > 0) {
+      narrative += `successfully scaled operations across ${metrics.numbers[0]} while maintaining excellence standards`;
+    } else if (lowerText.includes("process") || lowerText.includes("system")) {
+      narrative += "architected robust operational frameworks that enhanced organizational capability and scalability";
+    } else if (lowerText.includes("market") || lowerText.includes("customer")) {
+      narrative += "pioneered market-driven strategies that strengthened competitive positioning and customer value delivery";
     } else {
-      narrative += ". Combines strategic acumen with operational excellence to drive sustainable growth and organizational transformation.";
+      narrative += "orchestrated strategic initiatives that transformed organizational performance and market positioning";
     }
   }
 
+  // Add contextual closing based on content themes
+  const getContextualClosing = () => {
+    if (lowerText.includes("data") || lowerText.includes("analytics") || lowerText.includes("metrics")) {
+      return ". Leverages analytical rigor and data-driven insights to optimize decision-making processes and ensure sustainable competitive advantages.";
+    } else if (lowerText.includes("stakeholder") || lowerText.includes("collaboration") || lowerText.includes("partnership")) {
+      return ". Builds strategic partnerships and cross-functional alignment to accelerate organizational objectives and stakeholder value creation.";
+    } else if (lowerText.includes("culture") || lowerText.includes("development") || lowerText.includes("talent")) {
+      return ". Cultivates high-performance organizational cultures that attract top talent and foster innovation-driven growth trajectories.";
+    } else if (lowerText.includes("technology") || lowerText.includes("digital") || lowerText.includes("innovation")) {
+      return ". Integrates cutting-edge technological solutions with strategic business objectives to drive digital transformation and operational modernization.";
+    } else {
+      return ". Combines strategic foresight with operational discipline to navigate complex business challenges and capitalize on emerging market opportunities.";
+    }
+  };
+
+  narrative += getContextualClosing();
   return narrative;
 };
 
