@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Palette, Brush, Sparkles, User } from "lucide-react";
+import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -190,130 +191,14 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
                                  Core Responsibilities:
                                </h5>
-                               <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
-                                   {(() => {
-                                     // Extract everyday operational responsibilities that support achievements
-                                     const extractCoreResponsibilities = (achievements, title, company) => {
-                                       const responsibilities = [];
-                                       
-                                       // Define role-based everyday responsibilities that enable achievements
-                                       const roleBasedResponsibilities = {
-                                         // Management roles
-                                         manager: [
-                                           'Conducting regular team meetings and one-on-ones',
-                                           'Reviewing and approving daily operational decisions',
-                                           'Monitoring team performance and workload distribution',
-                                           'Coordinating cross-departmental communications'
-                                         ],
-                                         director: [
-                                           'Participating in strategic planning sessions',
-                                           'Reviewing departmental budgets and resource allocation',
-                                           'Conducting stakeholder meetings and status updates',
-                                           'Overseeing compliance with company policies'
-                                         ],
-                                         lead: [
-                                           'Facilitating daily standup meetings and team coordination',
-                                           'Reviewing work quality and providing technical guidance',
-                                           'Mentoring junior team members on best practices',
-                                           'Collaborating with other teams on project requirements'
-                                         ],
-                                         // Technical roles
-                                         developer: [
-                                           'Writing and reviewing code according to standards',
-                                           'Participating in code reviews and technical discussions',
-                                           'Troubleshooting and debugging production issues',
-                                           'Maintaining technical documentation and specifications'
-                                         ],
-                                         engineer: [
-                                           'Designing and testing system components',
-                                           'Participating in architecture review meetings',
-                                           'Monitoring system performance and reliability',
-                                           'Collaborating on technical solution design'
-                                         ],
-                                         analyst: [
-                                           'Gathering and validating data from multiple sources',
-                                           'Preparing regular reports and performance dashboards',
-                                           'Conducting research and market analysis',
-                                           'Presenting findings to stakeholders and management'
-                                         ],
-                                         // Sales and business roles
-                                         sales: [
-                                           'Conducting client calls and product demonstrations',
-                                           'Maintaining CRM records and pipeline updates',
-                                           'Following up on leads and proposal submissions',
-                                           'Attending industry events and networking sessions'
-                                         ],
-                                         consultant: [
-                                           'Conducting client interviews and requirement gathering',
-                                           'Preparing project proposals and documentation',
-                                           'Facilitating workshops and training sessions',
-                                           'Monitoring project progress and deliverable quality'
-                                         ],
-                                         // Operations roles
-                                         coordinator: [
-                                           'Scheduling meetings and coordinating team calendars',
-                                           'Tracking project milestones and deadline adherence',
-                                           'Maintaining process documentation and workflows',
-                                           'Communicating updates across different departments'
-                                         ],
-                                         specialist: [
-                                           'Performing specialized tasks within area of expertise',
-                                           'Maintaining up-to-date knowledge of industry standards',
-                                           'Providing technical support and guidance to colleagues',
-                                           'Documenting processes and best practices'
-                                         ]
-                                       };
-                                       
-                                       // Match job title to responsibility category
-                                       const titleLower = (title || '').toLowerCase();
-                                       let matchedCategory = 'specialist'; // Default
-                                       
-                                       for (const [category, _] of Object.entries(roleBasedResponsibilities)) {
-                                         if (titleLower.includes(category)) {
-                                           matchedCategory = category;
-                                           break;
-                                         }
-                                       }
-                                       
-                                       // Get base responsibilities for the role
-                                       let baseResponsibilities = [...roleBasedResponsibilities[matchedCategory]];
-                                       
-                                       // Customize based on achievements context if available
-                                       if (achievements && achievements.length > 0) {
-                                         const achievementsText = achievements.join(' ').toLowerCase();
-                                         
-                                         // Add context-specific everyday tasks
-                                         if (achievementsText.includes('budget') || achievementsText.includes('cost')) {
-                                           baseResponsibilities[1] = 'Reviewing daily budget reports and expense tracking';
-                                         }
-                                         if (achievementsText.includes('client') || achievementsText.includes('customer')) {
-                                           baseResponsibilities[0] = 'Maintaining regular client communication and updates';
-                                         }
-                                         if (achievementsText.includes('team') || achievementsText.includes('staff')) {
-                                           baseResponsibilities[2] = 'Supporting team members with daily tasks and questions';
-                                         }
-                                         if (achievementsText.includes('process') || achievementsText.includes('system')) {
-                                           baseResponsibilities[3] = 'Monitoring and maintaining operational processes';
-                                         }
-                                       }
-                                       
-                                       return baseResponsibilities.slice(0, 4);
-                                     };
-                                    
-                                    const responsibilities = extractCoreResponsibilities(
-                                      exp.achievements, 
-                                      exp.title || 'Creative Professional', 
-                                      exp.company || 'organization'
-                                    );
-                                    
-                                    return responsibilities.map((responsibility, idx) => (
-                                      <p key={idx} className="flex items-start">
-                                        <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
-                                              style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                        {responsibility}
-                                      </p>
-                                    ));
-                                  })()}
+                                <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
+                                  {extractCoreResponsibilities(exp.achievements, exp.title || 'Creative Professional', 'creative', 4).map((responsibility, idx) => (
+                                    <p key={idx} className="flex items-start">
+                                      <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                            style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                      {responsibility}
+                                    </p>
+                                  ))}
                                </div>
                              </div>
                           </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { User, Mail, Phone, MapPin, Award, BookOpen, Globe, Briefcase, Star } from "lucide-react";
+import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -235,130 +236,14 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                          {/* Job-specific Core Responsibilities */}
                          <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid print:break-inside-avoid">
                            <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
-                           <div className="text-xs opacity-80 leading-relaxed space-y-1">
-                               {(() => {
-                                 // Extract everyday operational responsibilities that support achievements
-                                 const extractCoreResponsibilities = (achievements, title, company) => {
-                                   const responsibilities = [];
-                                   
-                                   // Define role-based everyday responsibilities that enable achievements
-                                   const roleBasedResponsibilities = {
-                                     // Management roles
-                                     manager: [
-                                       'Conducting regular team meetings and one-on-ones',
-                                       'Reviewing and approving daily operational decisions',
-                                       'Monitoring team performance and workload distribution',
-                                       'Coordinating cross-departmental communications'
-                                     ],
-                                     director: [
-                                       'Participating in strategic planning sessions',
-                                       'Reviewing departmental budgets and resource allocation',
-                                       'Conducting stakeholder meetings and status updates',
-                                       'Overseeing compliance with company policies'
-                                     ],
-                                     lead: [
-                                       'Facilitating daily standup meetings and team coordination',
-                                       'Reviewing work quality and providing technical guidance',
-                                       'Mentoring junior team members on best practices',
-                                       'Collaborating with other teams on project requirements'
-                                     ],
-                                     // Technical roles
-                                     developer: [
-                                       'Writing and reviewing code according to standards',
-                                       'Participating in code reviews and technical discussions',
-                                       'Troubleshooting and debugging production issues',
-                                       'Maintaining technical documentation and specifications'
-                                     ],
-                                     engineer: [
-                                       'Designing and testing system components',
-                                       'Participating in architecture review meetings',
-                                       'Monitoring system performance and reliability',
-                                       'Collaborating on technical solution design'
-                                     ],
-                                     analyst: [
-                                       'Gathering and validating data from multiple sources',
-                                       'Preparing regular reports and performance dashboards',
-                                       'Conducting research and market analysis',
-                                       'Presenting findings to stakeholders and management'
-                                     ],
-                                     // Sales and business roles
-                                     sales: [
-                                       'Conducting client calls and product demonstrations',
-                                       'Maintaining CRM records and pipeline updates',
-                                       'Following up on leads and proposal submissions',
-                                       'Attending industry events and networking sessions'
-                                     ],
-                                     consultant: [
-                                       'Conducting client interviews and requirement gathering',
-                                       'Preparing project proposals and documentation',
-                                       'Facilitating workshops and training sessions',
-                                       'Monitoring project progress and deliverable quality'
-                                     ],
-                                     // Operations roles
-                                     coordinator: [
-                                       'Scheduling meetings and coordinating team calendars',
-                                       'Tracking project milestones and deadline adherence',
-                                       'Maintaining process documentation and workflows',
-                                       'Communicating updates across different departments'
-                                     ],
-                                     specialist: [
-                                       'Performing specialized tasks within area of expertise',
-                                       'Maintaining up-to-date knowledge of industry standards',
-                                       'Providing technical support and guidance to colleagues',
-                                       'Documenting processes and best practices'
-                                     ]
-                                   };
-                                   
-                                   // Match job title to responsibility category
-                                   const titleLower = (title || '').toLowerCase();
-                                   let matchedCategory = 'specialist'; // Default
-                                   
-                                   for (const [category, _] of Object.entries(roleBasedResponsibilities)) {
-                                     if (titleLower.includes(category)) {
-                                       matchedCategory = category;
-                                       break;
-                                     }
-                                   }
-                                   
-                                   // Get base responsibilities for the role
-                                   let baseResponsibilities = [...roleBasedResponsibilities[matchedCategory]];
-                                   
-                                   // Customize based on achievements context if available
-                                   if (achievements && achievements.length > 0) {
-                                     const achievementsText = achievements.join(' ').toLowerCase();
-                                     
-                                     // Add context-specific everyday tasks
-                                     if (achievementsText.includes('budget') || achievementsText.includes('cost')) {
-                                       baseResponsibilities[1] = 'Reviewing daily budget reports and expense tracking';
-                                     }
-                                     if (achievementsText.includes('client') || achievementsText.includes('customer')) {
-                                       baseResponsibilities[0] = 'Maintaining regular client communication and updates';
-                                     }
-                                     if (achievementsText.includes('team') || achievementsText.includes('staff')) {
-                                       baseResponsibilities[2] = 'Supporting team members with daily tasks and questions';
-                                     }
-                                     if (achievementsText.includes('process') || achievementsText.includes('system')) {
-                                       baseResponsibilities[3] = 'Monitoring and maintaining operational processes';
-                                     }
-                                   }
-                                   
-                                   return baseResponsibilities.slice(0, 4);
-                                 };
-                                
-                                const responsibilities = extractCoreResponsibilities(
-                                  exp.achievements, 
-                                  exp.title || 'Modern Professional', 
-                                  exp.company || 'organization'
-                                );
-                                
-                                return responsibilities.map((responsibility, idx) => (
-                                  <div key={idx} className="flex items-start gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
-                                         style={{ backgroundColor: selectedColorTheme.accent }}></div>
-                                    <span className="text-sm leading-relaxed">{responsibility}</span>
-                                  </div>
-                                ));
-                              })()}
+                            <div className="text-xs opacity-80 leading-relaxed space-y-1">
+                              {extractCoreResponsibilities(exp.achievements, exp.title || 'Modern Professional', 'modern', 4).map((responsibility, idx) => (
+                                <div key={idx} className="flex items-start gap-3">
+                                  <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                                       style={{ backgroundColor: selectedColorTheme.accent }}></div>
+                                  <span className="text-sm leading-relaxed">{responsibility}</span>
+                                </div>
+                              ))}
                            </div>
                          </div>
                       </div>
