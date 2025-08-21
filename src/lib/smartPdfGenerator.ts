@@ -1,5 +1,4 @@
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import html2pdf from 'html2pdf.js';
 
 export interface SmartPdfOptions {
   filename?: string;
@@ -10,15 +9,14 @@ export interface SmartPdfOptions {
 }
 
 /**
- * Generates PDF using html2canvas + jsPDF with intelligent page splitting
- * This approach captures content as images and splits at natural boundaries
+ * Generates PDF using html2pdf.js with proper text flow and page breaks
+ * This approach respects CSS page-break rules and maintains text integrity
  */
 export async function generateSmartPdf(
   element: HTMLElement,
   options: SmartPdfOptions = {}
 ): Promise<Blob> {
   const {
-    filename = 'enhanced-resume.pdf',
     margin = [10, 10, 10, 10],
     format = 'a4',
     orientation = 'portrait'
@@ -28,82 +26,42 @@ export async function generateSmartPdf(
   const cleanup = prepareElementForPdf(element);
   
   try {
-    // A4 dimensions in mm
-    const a4Width = 210;
-    const a4Height = 297;
     const marginArray = Array.isArray(margin) ? margin : [margin, margin, margin, margin];
     
-    // Calculate content area
-    const contentWidth = a4Width - marginArray[1] - marginArray[3];
-    const contentHeight = a4Height - marginArray[0] - marginArray[2];
-    
-    // Create PDF
-    const pdf = new jsPDF({
-      orientation,
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    // Capture the entire element as canvas
-    const canvas = await html2canvas(element, {
-      scale: 2, // High quality
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      width: element.scrollWidth,
-      height: element.scrollHeight
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = contentWidth;
-    const imgHeight = (canvas.height * contentWidth) / canvas.width;
-    
-    // Calculate how many pages we need
-    const totalPages = Math.ceil(imgHeight / contentHeight);
-    
-    // Add pages and content
-    for (let i = 0; i < totalPages; i++) {
-      if (i > 0) {
-        pdf.addPage();
+    // Configure html2pdf with optimized settings for text preservation
+    const opt = {
+      margin: marginArray,
+      filename: options.filename || 'enhanced-resume.pdf',
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        letterRendering: true,
+        height: element.scrollHeight,
+        width: element.scrollWidth
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: orientation,
+        compress: true
+      },
+      pagebreak: { 
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: '.page-break-before',
+        after: '.page-break-after',
+        avoid: '.page-break-avoid'
       }
-      
-      // Calculate the portion of the image for this page
-      const sourceY = i * contentHeight * (canvas.width / contentWidth);
-      const sourceHeight = Math.min(contentHeight * (canvas.width / contentWidth), canvas.height - sourceY);
-      
-      // Create a temporary canvas for this page's content
-      const pageCanvas = document.createElement('canvas');
-      const pageCtx = pageCanvas.getContext('2d');
-      
-      pageCanvas.width = canvas.width;
-      pageCanvas.height = sourceHeight;
-      
-      // Draw the portion of the original image
-      pageCtx!.drawImage(
-        canvas,
-        0, sourceY, canvas.width, sourceHeight,
-        0, 0, canvas.width, sourceHeight
-      );
-      
-      const pageImgData = pageCanvas.toDataURL('image/png');
-      const pageImgHeight = (sourceHeight * contentWidth) / canvas.width;
-      
-      // Add image to PDF page
-      pdf.addImage(
-        pageImgData,
-        'PNG',
-        marginArray[3], // left margin
-        marginArray[0], // top margin
-        imgWidth,
-        pageImgHeight
-      );
-    }
+    };
 
-    cleanup();
+    // Generate PDF and return as blob
+    const pdf = await html2pdf().set(opt).from(element).outputPdf('blob');
     
-    // Return as blob
-    const pdfBlob = pdf.output('blob');
-    return pdfBlob;
+    cleanup();
+    return pdf;
     
   } catch (error) {
     cleanup();
