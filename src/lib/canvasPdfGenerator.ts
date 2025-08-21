@@ -355,62 +355,32 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     htmlEl.style.breakInside = 'avoid';
     
     if (listEl.tagName === 'LI') {
-      // Check if this list item is in the key achievement section
-      const isKeyAchievement = htmlEl.closest('[data-section="achievements"]') || 
-                              htmlEl.closest('section')?.textContent?.toLowerCase().includes('key achievement') ||
-                              htmlEl.closest('div')?.textContent?.toLowerCase().includes('key achievement');
-      
-      if (isKeyAchievement) {
-        // Add tiny bullets for key achievement section
-        htmlEl.style.listStyleType = 'disc';
-        htmlEl.style.listStylePosition = 'outside';
-        htmlEl.style.paddingLeft = '12px';
-        htmlEl.style.marginLeft = '0';
-        htmlEl.style.display = 'list-item';
-        htmlEl.style.lineHeight = '1.6';
-        // Make bullets extra tiny for key achievements
-        const achievementListStyle = `li::marker { 
-          font-size: 0.3em !important; 
-          line-height: 1.6 !important;
-          content: '•' !important;
-          vertical-align: baseline !important;
-          position: relative !important;
-          top: 0.3em !important;
-        }`;
-        if (!document.querySelector('style[data-tiny-bullets]')) {
-          const style = document.createElement('style');
-          style.setAttribute('data-tiny-bullets', 'true');
-          style.textContent = achievementListStyle;
-          document.head.appendChild(style);
-        }
-      } else {
-        // Position bullets outside for side-by-side layout with smaller size
-        htmlEl.style.listStylePosition = 'outside';
-        htmlEl.style.display = 'list-item';
-        htmlEl.style.paddingLeft = '16px';
-        htmlEl.style.marginLeft = '0';
-        htmlEl.style.textIndent = '0';
-        htmlEl.style.lineHeight = '1.6';
-        htmlEl.style.position = 'relative';
-        // Make bullets smaller and align them properly with text baseline
-        const listStyle = `li::marker { 
-          font-size: 0.5em !important; 
-          line-height: 1.6 !important;
-          content: '•' !important;
-          vertical-align: baseline !important;
-          position: relative !important;
-          top: 0.2em !important;
-        }`;
-        if (!document.querySelector('style[data-small-bullets]')) {
-          const style = document.createElement('style');
-          style.setAttribute('data-small-bullets', 'true');
-          style.textContent = listStyle;
-          document.head.appendChild(style);
-        }
-        // Prevent orphaned bullets
-        htmlEl.style.orphans = '2';
-        htmlEl.style.widows = '2';
+      // Position bullets outside for side-by-side layout with smaller size
+      htmlEl.style.listStylePosition = 'outside';
+      htmlEl.style.display = 'list-item';
+      htmlEl.style.paddingLeft = '16px';
+      htmlEl.style.marginLeft = '0';
+      htmlEl.style.textIndent = '0';
+      htmlEl.style.lineHeight = '1.6';
+      htmlEl.style.position = 'relative';
+      // Make bullets smaller and align them properly with text baseline
+      const listStyle = `li::marker { 
+        font-size: 0.5em !important; 
+        line-height: 1.6 !important;
+        content: '•' !important;
+        vertical-align: baseline !important;
+        position: relative !important;
+        top: 0.2em !important;
+      }`;
+      if (!document.querySelector('style[data-small-bullets]')) {
+        const style = document.createElement('style');
+        style.setAttribute('data-small-bullets', 'true');
+        style.textContent = listStyle;
+        document.head.appendChild(style);
       }
+      // Prevent orphaned bullets
+      htmlEl.style.orphans = '2';
+      htmlEl.style.widows = '2';
     } else {
       htmlEl.style.display = 'block';
     }
