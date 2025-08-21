@@ -13,114 +13,43 @@ interface TemplatePreviewProps {
   };
 }
 
-// AI-powered content generation based on specific achievements
+// AI-powered content generation based on achievements
 const generateExecutiveContext = (achievements: string[]): string => {
   if (!achievements || achievements.length === 0) {
-    return "Demonstrated exceptional leadership capabilities through strategic initiatives and performance optimization, delivering measurable business impact across organizational functions.";
+    return "Demonstrated exceptional leadership capabilities by orchestrating strategic initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence and sustainable growth trajectories.";
   }
 
-  // Extract specific metrics, actions, and outcomes from achievements
-  const achievementText = achievements.join(" ");
-  const specificElements = {
-    metrics: [],
-    actions: [],
-    outcomes: [],
-    domains: []
-  };
-
-  // Extract quantifiable metrics
-  const metricPatterns = [
-    /(\d+%|\d+\.\d+%)/g, // percentages
-    /\$[\d,]+[KMB]?/g, // dollar amounts
-    /(\d+[KMB]?\+?)/g, // numbers with K/M/B
-    /(\d+x|\d+ times)/g // multipliers
-  ];
+  // Extract key themes from achievements
+  const keyThemes = [];
+  const achievementText = achievements.join(" ").toLowerCase();
   
-  metricPatterns.forEach(pattern => {
-    const matches = achievementText.match(pattern);
-    if (matches) specificElements.metrics.push(...matches.slice(0, 2));
-  });
-
-  // Extract action verbs and key accomplishments
-  const actionWords = achievementText.toLowerCase().match(/\b(led|managed|increased|reduced|improved|implemented|developed|transformed|optimized|delivered|achieved|spearheaded|orchestrated|streamlined|launched|executed|drove|established|built)\w*/g);
-  if (actionWords) {
-    specificElements.actions.push(...[...new Set(actionWords)].slice(0, 3));
+  if (achievementText.includes("revenue") || achievementText.includes("sales") || achievementText.includes("growth") || achievementText.includes("profit")) {
+    keyThemes.push("revenue growth and market expansion");
+  }
+  if (achievementText.includes("team") || achievementText.includes("leadership") || achievementText.includes("manage")) {
+    keyThemes.push("team leadership and organizational development");
+  }
+  if (achievementText.includes("cost") || achievementText.includes("efficiency") || achievementText.includes("process")) {
+    keyThemes.push("operational excellence and cost optimization");
+  }
+  if (achievementText.includes("digital") || achievementText.includes("technology") || achievementText.includes("innovation")) {
+    keyThemes.push("digital transformation and innovation");
+  }
+  if (achievementText.includes("strategy") || achievementText.includes("strategic") || achievementText.includes("vision")) {
+    keyThemes.push("strategic planning and execution");
   }
 
-  // Extract business domains and focus areas
-  const domainKeywords = ['revenue', 'cost', 'efficiency', 'team', 'process', 'customer', 'market', 'digital', 'strategy', 'quality', 'performance', 'operations', 'growth', 'innovation', 'technology', 'sales', 'product', 'service'];
-  domainKeywords.forEach(domain => {
-    if (achievementText.toLowerCase().includes(domain)) {
-      specificElements.domains.push(domain);
-    }
-  });
-
-  // Generate unique contextual narrative
-  const templates = [
-    "Visionary executive who {actions} while {outcomes}, achieving {metrics} through {domains}-focused initiatives.",
-    "Strategic leader with expertise in {domains} who {actions}, resulting in {metrics} improvements and {outcomes}.",
-    "Results-driven executive specializing in {domains} transformation, {actions} to deliver {metrics} performance gains and {outcomes}.",
-    "Dynamic leader who {actions} across {domains} functions, securing {metrics} results through {outcomes}-oriented strategies."
-  ];
-
-  const selectedTemplate = templates[Math.floor(Math.random() * templates.length)];
+  // Generate dynamic content based on identified themes
+  let context = "Visionary executive leader with proven expertise in ";
   
-  // Build context with specific details
-  let context = selectedTemplate;
-  
-  // Replace placeholders with extracted elements
-  if (specificElements.actions.length > 0) {
-    const actionPhrase = specificElements.actions.slice(0, 2).join(' and ');
-    context = context.replace('{actions}', actionPhrase);
+  if (keyThemes.length > 0) {
+    context += keyThemes.slice(0, 3).join(", ");
+    context += ". Successfully delivered transformational results by leveraging data-driven insights, fostering cross-functional collaboration, and implementing scalable solutions that drive sustainable competitive advantages across diverse business environments.";
   } else {
-    context = context.replace('{actions}', 'implemented strategic initiatives');
-  }
-
-  if (specificElements.domains.length > 0) {
-    const domainPhrase = specificElements.domains.slice(0, 2).join(' and ');
-    context = context.replace('{domains}', domainPhrase);
-  } else {
-    context = context.replace('{domains}', 'organizational');
-  }
-
-  if (specificElements.metrics.length > 0) {
-    const metricPhrase = specificElements.metrics.slice(0, 2).join(' and ');
-    context = context.replace('{metrics}', metricPhrase);
-  } else {
-    context = context.replace('{metrics}', 'significant');
-  }
-
-  // Add outcome context based on achievement themes
-  const outcomeContext = generateOutcomeContext(achievementText);
-  context = context.replace('{outcomes}', outcomeContext);
-
-  // Ensure professional executive language and proper length
-  if (context.length < 100) {
-    context += " Consistently exceeded stakeholder expectations through data-driven decision making and cross-functional collaboration.";
+    context += "strategic leadership, organizational transformation, and performance optimization. Consistently delivers exceptional results through innovative problem-solving, stakeholder alignment, and the cultivation of high-performance teams that exceed organizational objectives.";
   }
 
   return context;
-};
-
-// Generate outcome-focused context based on achievement content
-const generateOutcomeContext = (text: string): string => {
-  const lowerText = text.toLowerCase();
-  
-  if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('profit')) {
-    return 'sustainable revenue growth';
-  } else if (lowerText.includes('cost') || lowerText.includes('efficiency') || lowerText.includes('savings')) {
-    return 'operational efficiency optimization';
-  } else if (lowerText.includes('team') || lowerText.includes('leadership') || lowerText.includes('culture')) {
-    return 'high-performance team development';
-  } else if (lowerText.includes('customer') || lowerText.includes('satisfaction') || lowerText.includes('experience')) {
-    return 'enhanced customer experience delivery';
-  } else if (lowerText.includes('process') || lowerText.includes('workflow') || lowerText.includes('system')) {
-    return 'streamlined process innovation';
-  } else if (lowerText.includes('digital') || lowerText.includes('technology') || lowerText.includes('automation')) {
-    return 'digital transformation excellence';
-  } else {
-    return 'strategic business transformation';
-  }
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
