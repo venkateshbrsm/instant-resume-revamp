@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export interface SmartPdfOptions {
   filename?: string;
@@ -9,8 +10,8 @@ export interface SmartPdfOptions {
 }
 
 /**
- * Generates PDF using Puppeteer with proper text rendering and page breaks
- * This approach uses native browser PDF generation which respects text boundaries
+ * Generates PDF using html2canvas + jsPDF with intelligent page splitting
+ * This approach captures content as images and splits at natural boundaries
  */
 export async function generateSmartPdf(
   element: HTMLElement,
@@ -18,123 +19,91 @@ export async function generateSmartPdf(
 ): Promise<Blob> {
   const {
     filename = 'enhanced-resume.pdf',
-    margin = [15, 10, 15, 10],
+    margin = [10, 10, 10, 10],
     format = 'a4',
     orientation = 'portrait'
   } = options;
 
-  // Prepare element for better PDF generation
+  // Prepare element for PDF generation
   const cleanup = prepareElementForPdf(element);
   
   try {
-    // Create HTML document with the element content
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${filename}</title>
-          <style>
-            /* Import existing Tailwind and custom styles */
-            @import url("data:text/css,${encodeURIComponent(getAllStylesheets())}");
-            
-            /* PDF-specific styles for proper page breaks */
-            @media print {
-              * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-              }
-              
-              body {
-                margin: 0 !important;
-                padding: ${Array.isArray(margin) ? margin.map(m => m + 'mm').join(' ') : margin + 'mm'} !important;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-                font-size: 11pt !important;
-                line-height: 1.4 !important;
-                color: #000 !important;
-                background: #fff !important;
-              }
-              
-              /* Prevent text splitting */
-              .section,
-              .experience-item,
-              .education-item,
-              .skill-section,
-              .achievement,
-              .job-description,
-              p,
-              li {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                orphans: 3 !important;
-                widows: 3 !important;
-              }
-              
-              /* Section spacing */
-              .section {
-                margin-bottom: 15pt !important;
-              }
-              
-              /* Headings */
-              h1, h2, h3, h4, h5, h6 {
-                page-break-after: avoid !important;
-                break-after: avoid !important;
-                margin-bottom: 8pt !important;
-                margin-top: 12pt !important;
-              }
-              
-              /* Lists */
-              ul, ol {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                margin: 8pt 0 !important;
-              }
-              
-              /* No underlines for links */
-              a {
-                text-decoration: none !important;
-                color: inherit !important;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${element.outerHTML}
-        </body>
-      </html>
-    `;
-
-    // Launch Puppeteer browser
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
-    const page = await browser.newPage();
+    // A4 dimensions in mm
+    const a4Width = 210;
+    const a4Height = 297;
+    const marginArray = Array.isArray(margin) ? margin : [margin, margin, margin, margin];
     
-    // Set content and wait for rendering
-    await page.setContent(htmlContent, { 
-      waitUntil: 'networkidle0'
+    // Calculate content area
+    const contentWidth = a4Width - marginArray[1] - marginArray[3];
+    const contentHeight = a4Height - marginArray[0] - marginArray[2];
+    
+    // Create PDF
+    const pdf = new jsPDF({
+      orientation,
+      unit: 'mm',
+      format: 'a4'
     });
 
-    // Generate PDF with proper page breaks
-    const pdfBuffer = await page.pdf({
-      format: format as any,
-      landscape: orientation === 'landscape',
-      margin: {
-        top: Array.isArray(margin) ? margin[0] + 'mm' : margin + 'mm',
-        right: Array.isArray(margin) ? margin[1] + 'mm' : margin + 'mm',
-        bottom: Array.isArray(margin) ? margin[2] + 'mm' : margin + 'mm',
-        left: Array.isArray(margin) ? margin[3] + 'mm' : margin + 'mm'
-      },
-      printBackground: true,
-      preferCSSPageSize: false
+    // Capture the entire element as canvas
+    const canvas = await html2canvas(element, {
+      scale: 2, // High quality
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: element.scrollWidth,
+      height: element.scrollHeight
     });
 
-    await browser.close();
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = contentWidth;
+    const imgHeight = (canvas.height * contentWidth) / canvas.width;
+    
+    // Calculate how many pages we need
+    const totalPages = Math.ceil(imgHeight / contentHeight);
+    
+    // Add pages and content
+    for (let i = 0; i < totalPages; i++) {
+      if (i > 0) {
+        pdf.addPage();
+      }
+      
+      // Calculate the portion of the image for this page
+      const sourceY = i * contentHeight * (canvas.width / contentWidth);
+      const sourceHeight = Math.min(contentHeight * (canvas.width / contentWidth), canvas.height - sourceY);
+      
+      // Create a temporary canvas for this page's content
+      const pageCanvas = document.createElement('canvas');
+      const pageCtx = pageCanvas.getContext('2d');
+      
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sourceHeight;
+      
+      // Draw the portion of the original image
+      pageCtx!.drawImage(
+        canvas,
+        0, sourceY, canvas.width, sourceHeight,
+        0, 0, canvas.width, sourceHeight
+      );
+      
+      const pageImgData = pageCanvas.toDataURL('image/png');
+      const pageImgHeight = (sourceHeight * contentWidth) / canvas.width;
+      
+      // Add image to PDF page
+      pdf.addImage(
+        pageImgData,
+        'PNG',
+        marginArray[3], // left margin
+        marginArray[0], // top margin
+        imgWidth,
+        pageImgHeight
+      );
+    }
+
     cleanup();
     
-    return new Blob([pdfBuffer], { type: 'application/pdf' });
+    // Return as blob
+    const pdfBlob = pdf.output('blob');
+    return pdfBlob;
     
   } catch (error) {
     cleanup();
