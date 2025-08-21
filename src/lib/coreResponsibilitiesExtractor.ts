@@ -356,8 +356,198 @@ const roleTypeMapping = {
   brand: 'creative'
 };
 
-// Global tracking to ensure unique responsibilities across all experiences
-let usedResponsibilities: Set<string> = new Set();
+// Create a robust system to track and generate truly unique responsibilities
+class ResponsibilityGenerator {
+  private static instance: ResponsibilityGenerator;
+  private usedResponsibilities: Set<string> = new Set();
+  private experienceResponsibilities: Map<number, string[]> = new Map();
+
+  static getInstance(): ResponsibilityGenerator {
+    if (!ResponsibilityGenerator.instance) {
+      ResponsibilityGenerator.instance = new ResponsibilityGenerator();
+    }
+    return ResponsibilityGenerator.instance;
+  }
+
+  reset(): void {
+    this.usedResponsibilities.clear();
+    this.experienceResponsibilities.clear();
+  }
+
+  generateUniqueResponsibilities(
+    achievements: string[] | undefined,
+    title: string,
+    templateType: 'classic' | 'modern' | 'minimalist' | 'creative',
+    experienceIndex: number,
+    maxResponsibilities: number
+  ): string[] {
+    // Reset on first experience
+    if (experienceIndex === 0) {
+      this.reset();
+    }
+
+    // Check if we already generated for this experience
+    if (this.experienceResponsibilities.has(experienceIndex)) {
+      return this.experienceResponsibilities.get(experienceIndex)!;
+    }
+
+    const variant = responsibilityVariants[templateType];
+    if (!variant) return [];
+
+    // Determine role type
+    const titleLower = (title || '').toLowerCase();
+    let roleType: keyof ResponsibilityVariant = 'operations';
+    
+    for (const [keyword, type] of Object.entries(roleTypeMapping)) {
+      if (titleLower.includes(keyword)) {
+        roleType = type as keyof ResponsibilityVariant;
+        break;
+      }
+    }
+
+    // Generate completely unique responsibilities
+    const uniqueResponsibilities = this.createUniqueResponsibilities(
+      variant,
+      roleType,
+      title,
+      experienceIndex,
+      maxResponsibilities,
+      achievements
+    );
+
+    // Store and mark as used
+    this.experienceResponsibilities.set(experienceIndex, uniqueResponsibilities);
+    uniqueResponsibilities.forEach(resp => this.usedResponsibilities.add(resp));
+
+    return uniqueResponsibilities;
+  }
+
+  private createUniqueResponsibilities(
+    variant: ResponsibilityVariant,
+    roleType: keyof ResponsibilityVariant,
+    title: string,
+    experienceIndex: number,
+    maxResponsibilities: number,
+    achievements?: string[]
+  ): string[] {
+    const allCategories = Object.keys(variant) as Array<keyof ResponsibilityVariant>;
+    const baseResponsibilities: string[] = [];
+
+    // Strategy 1: Create base responsibilities with role-specific focus
+    const primaryResponsibilities = this.generateRoleSpecificResponsibilities(
+      variant,
+      roleType,
+      experienceIndex,
+      Math.min(2, maxResponsibilities)
+    );
+    baseResponsibilities.push(...primaryResponsibilities);
+
+    // Strategy 2: Mix in cross-functional responsibilities
+    if (baseResponsibilities.length < maxResponsibilities) {
+      const crossFunctionalResponsibilities = this.generateCrossFunctionalResponsibilities(
+        variant,
+        allCategories,
+        roleType,
+        experienceIndex,
+        maxResponsibilities - baseResponsibilities.length
+      );
+      baseResponsibilities.push(...crossFunctionalResponsibilities);
+    }
+
+    // Strategy 3: Generate completely new responsibilities if still needed
+    if (baseResponsibilities.length < maxResponsibilities) {
+      const newResponsibilities = this.generateNewResponsibilities(
+        title,
+        experienceIndex,
+        maxResponsibilities - baseResponsibilities.length,
+        achievements
+      );
+      baseResponsibilities.push(...newResponsibilities);
+    }
+
+    return baseResponsibilities.slice(0, maxResponsibilities);
+  }
+
+  private generateRoleSpecificResponsibilities(
+    variant: ResponsibilityVariant,
+    roleType: keyof ResponsibilityVariant,
+    experienceIndex: number,
+    count: number
+  ): string[] {
+    const roleVariants = variant[roleType];
+    const responsibilities: string[] = [];
+    
+    // Use different variant sets for each experience
+    const variantIndex = experienceIndex % roleVariants.length;
+    const selectedVariant = roleVariants[variantIndex];
+    
+    let attempts = 0;
+    for (let i = 0; i < selectedVariant.length && responsibilities.length < count && attempts < 20; i++, attempts++) {
+      const responsibility = selectedVariant[i];
+      if (!this.usedResponsibilities.has(responsibility)) {
+        responsibilities.push(responsibility);
+      }
+    }
+
+    return responsibilities;
+  }
+
+  private generateCrossFunctionalResponsibilities(
+    variant: ResponsibilityVariant,
+    allCategories: Array<keyof ResponsibilityVariant>,
+    primaryRoleType: keyof ResponsibilityVariant,
+    experienceIndex: number,
+    count: number
+  ): string[] {
+    const responsibilities: string[] = [];
+    const otherCategories = allCategories.filter(cat => cat !== primaryRoleType);
+    
+    for (let i = 0; i < count && responsibilities.length < count; i++) {
+      const categoryIndex = (experienceIndex + i) % otherCategories.length;
+      const category = otherCategories[categoryIndex];
+      const categoryVariants = variant[category];
+      
+      const variantIndex = (experienceIndex + i) % categoryVariants.length;
+      const selectedVariant = categoryVariants[variantIndex];
+      
+      for (const responsibility of selectedVariant) {
+        if (!this.usedResponsibilities.has(responsibility) && responsibilities.length < count) {
+          responsibilities.push(responsibility);
+          break;
+        }
+      }
+    }
+
+    return responsibilities;
+  }
+
+  private generateNewResponsibilities(
+    title: string,
+    experienceIndex: number,
+    count: number,
+    achievements?: string[]
+  ): string[] {
+    const actionWords = ['Developing', 'Implementing', 'Optimizing', 'Streamlining', 'Enhancing', 'Coordinating', 'Establishing', 'Maintaining'];
+    const domains = ['operational processes', 'strategic initiatives', 'team collaboration', 'quality standards', 'performance metrics', 'stakeholder relations', 'project deliverables', 'workflow efficiency'];
+    const contexts = ['across departments', 'within the organization', 'for optimal results', 'to meet objectives', 'ensuring compliance', 'driving innovation', 'maximizing efficiency', 'supporting growth'];
+
+    const responsibilities: string[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      const actionIndex = (experienceIndex * 3 + i) % actionWords.length;
+      const domainIndex = (experienceIndex * 5 + i) % domains.length;
+      const contextIndex = (experienceIndex * 7 + i) % contexts.length;
+      
+      const responsibility = `${actionWords[actionIndex]} ${domains[domainIndex]} ${contexts[contextIndex]}`;
+      
+      if (!this.usedResponsibilities.has(responsibility)) {
+        responsibilities.push(responsibility);
+      }
+    }
+
+    return responsibilities;
+  }
+}
 
 export function extractCoreResponsibilities(
   achievements: string[] | undefined, 
@@ -366,121 +556,12 @@ export function extractCoreResponsibilities(
   experienceIndex: number = 0,
   maxResponsibilities: number = 4
 ): string[] {
-  const variant = responsibilityVariants[templateType];
-  if (!variant) return [];
-  
-  // Reset if this is the first experience (index 0)
-  if (experienceIndex === 0) {
-    usedResponsibilities = new Set();
-  }
-  
-  // Determine role type based on job title
-  const titleLower = (title || '').toLowerCase();
-  let roleType: keyof ResponsibilityVariant = 'operations'; // Default
-  
-  for (const [keyword, type] of Object.entries(roleTypeMapping)) {
-    if (titleLower.includes(keyword)) {
-      roleType = type as keyof ResponsibilityVariant;
-      break;
-    }
-  }
-  
-  // Get all categories for mixing
-  const allCategories = Object.keys(variant) as Array<keyof ResponsibilityVariant>;
-  
-  // Create completely unique responsibilities by mixing from all categories
-  let uniqueResponsibilities: string[] = [];
-  
-  // Collect all available responsibilities from all categories and variants
-  const allAvailableResponsibilities: string[] = [];
-  
-  allCategories.forEach(category => {
-    const categoryVariants = variant[category];
-    categoryVariants.forEach(variantArray => {
-      variantArray.forEach(responsibility => {
-        if (!usedResponsibilities.has(responsibility)) {
-          allAvailableResponsibilities.push(responsibility);
-        }
-      });
-    });
-  });
-  
-  // If we don't have enough unused responsibilities, mix used ones with modifications
-  if (allAvailableResponsibilities.length < maxResponsibilities) {
-    // Add some responsibilities with modifications to create uniqueness
-    const primaryRoleVariants = variant[roleType];
-    primaryRoleVariants.forEach(variantArray => {
-      variantArray.forEach(responsibility => {
-        // Modify used responsibilities to create new unique ones
-        const modifiedResponsibility = modifyResponsibilityForUniqueness(responsibility, experienceIndex);
-        if (!usedResponsibilities.has(modifiedResponsibility)) {
-          allAvailableResponsibilities.push(modifiedResponsibility);
-        }
-      });
-    });
-  }
-  
-  // Create a unique seed combining multiple factors
-  const titleHash = titleLower.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const seed = experienceIndex * 13 + titleHash * 7 + templateType.length;
-  
-  // Shuffle and select responsibilities
-  const shuffled = [...allAvailableResponsibilities];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = (seed + i) % shuffled.length;
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  
-  // Select unique responsibilities
-  uniqueResponsibilities = shuffled.slice(0, maxResponsibilities);
-  
-  // Customize based on achievements context if available
-  if (achievements && achievements.length > 0) {
-    const achievementsText = achievements.join(' ').toLowerCase();
-    
-    uniqueResponsibilities = uniqueResponsibilities.map((responsibility, idx) => {
-      let customized = responsibility;
-      
-      if (achievementsText.includes('budget') || achievementsText.includes('cost')) {
-        const budgetTerms = ['financial', 'budget', 'cost-effective', 'economic'];
-        const term = budgetTerms[experienceIndex % budgetTerms.length];
-        customized = customized.replace(/operational|strategic|regular|daily/, term);
-      }
-      
-      if (achievementsText.includes('client') || achievementsText.includes('customer')) {
-        const clientTerms = ['client-focused', 'customer-centric', 'stakeholder-oriented', 'relationship-driven'];
-        const term = clientTerms[experienceIndex % clientTerms.length];
-        customized = customized.replace(/performance|resource|work|team/, term);
-      }
-      
-      if (achievementsText.includes('team') || achievementsText.includes('staff')) {
-        const teamTerms = ['collaborative', 'team-oriented', 'leadership-focused', 'mentorship-driven'];
-        const term = teamTerms[experienceIndex % teamTerms.length];
-        customized = customized.replace(/system|milestones|quality|process/, term);
-      }
-      
-      return customized;
-    });
-  }
-  
-  // Mark these responsibilities as used
-  uniqueResponsibilities.forEach(resp => usedResponsibilities.add(resp));
-  
-  return uniqueResponsibilities;
-}
-
-// Helper function to modify responsibilities for uniqueness
-function modifyResponsibilityForUniqueness(responsibility: string, experienceIndex: number): string {
-  const prefixes = ['Overseeing', 'Coordinating', 'Managing', 'Facilitating', 'Leading', 'Directing'];
-  const contexts = ['cross-functional', 'strategic', 'operational', 'innovative', 'data-driven', 'customer-focused'];
-  
-  const prefix = prefixes[experienceIndex % prefixes.length];
-  const context = contexts[experienceIndex % contexts.length];
-  
-  // Replace common action words with unique variants
-  let modified = responsibility
-    .replace(/^(Managing|Leading|Coordinating|Overseeing)/, prefix)
-    .replace(/team|strategic|operational|daily/, context);
-  
-  return modified;
+  const generator = ResponsibilityGenerator.getInstance();
+  return generator.generateUniqueResponsibilities(
+    achievements,
+    title,
+    templateType,
+    experienceIndex,
+    maxResponsibilities
+  );
 }
