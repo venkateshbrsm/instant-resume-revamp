@@ -1238,11 +1238,22 @@ FINAL REMINDER: Each job experience MUST have completely unique achievements tha
       }),
     });
 
+    console.log('OpenAI API call made, status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`OpenAI API error: ${response.status} - ${errorText}`);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response received:', !!data?.choices?.[0]?.message?.content);
+    
+    if (!data?.choices?.[0]?.message?.content) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response structure from OpenAI');
+    }
+    
     const enhancedContent = data.choices[0].message.content;
 
       console.log('Raw AI response:', enhancedContent);
