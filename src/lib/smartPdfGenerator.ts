@@ -9,75 +9,75 @@ export interface SmartPdfOptions {
 }
 
 /**
- * Generates PDF using html2pdf.js with proper text flow and page breaks
- * This approach respects CSS page-break rules and maintains text integrity
+ * Generates PDF using html2pdf.js which properly respects CSS page break rules
+ * This is much better than html2canvas approach for handling page breaks
  */
 export async function generateSmartPdf(
   element: HTMLElement,
   options: SmartPdfOptions = {}
 ): Promise<Blob> {
   const {
-    margin = [10, 10, 10, 10],
+    filename = 'enhanced-resume.pdf',
+    margin = 10,
     format = 'a4',
-    orientation = 'portrait'
+    orientation = 'portrait',
+    quality = 0.98
   } = options;
 
-  // Prepare element for PDF generation
+  // Prepare element for better PDF generation
   const cleanup = prepareElementForPdf(element);
   
   try {
-    const marginArray = Array.isArray(margin) ? margin : [margin, margin, margin, margin];
-    
-    // Configure html2pdf with optimized quality settings
+    // Wait for any layout changes to settle
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Configure html2pdf with proper page break handling
     const opt = {
-      margin: marginArray,
-      filename: options.filename || 'enhanced-resume.pdf',
-      image: { type: 'jpeg', quality: 0.95 }, // High quality JPEG for better compatibility
-      html2canvas: { 
-        scale: 3, // Optimal scale for quality vs performance
-        dpi: 192, // Balanced DPI for sharp text
-        useCORS: true,
+      margin: [25, 20, 25, 20], // Larger margins: top, right, bottom, left in mm
+      filename: filename,
+      image: { 
+        type: 'jpeg', 
+        quality: quality 
+      },
+      html2canvas: {
         allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
         letterRendering: true,
-        imageTimeout: 15000,
-        removeContainer: true,
-        foreignObjectRendering: false,
-        ignoreElements: (element) => {
-          return element.tagName === 'SCRIPT' || element.style?.display === 'none';
-        },
-        height: element.scrollHeight,
-        width: element.scrollWidth,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
+        logging: false,
+        scale: 0.4, // Reduced scale to prevent text splitting
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: 450, // Even smaller width for safer margins
+        height: 600, // Much more conservative height
+        windowWidth: 450,
+        windowHeight: 600,
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: true, // Reasonable compression for smaller file size
+        compress: true,
         putOnlyUsedFonts: true,
-        precision: 8
+        floatPrecision: 16 // Higher precision for better layout
       },
+      // Critical: Enable CSS page break handling with aggressive text protection
       pagebreak: { 
         mode: ['avoid-all', 'css', 'legacy'],
         before: '.page-break-before',
-        after: '.page-break-after', 
-        avoid: '.page-break-avoid, .keep-together, .no-break, p, .text-content, .section-content, .experience-item, .education-item, .skill-item, ul, ol, li, .card-content'
+        after: '.page-break-after',
+        avoid: ['.page-break-avoid', 'p', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', '*']
       }
     };
 
-    // Generate PDF and return as blob
-    const pdf = await html2pdf().set(opt).from(element).outputPdf('blob');
+    // Generate PDF blob
+    const pdf = await html2pdf().set(opt).from(element).output('blob');
     
     cleanup();
     return pdf;
-    
   } catch (error) {
     cleanup();
-    console.error('Error generating PDF:', error);
-    throw new Error('Failed to generate PDF');
+    console.error('Error generating smart PDF:', error);
+    throw new Error('Failed to generate PDF with smart page breaks');
   }
 }
 
@@ -107,21 +107,8 @@ export async function downloadSmartPdf(
 }
 
 /**
- * Gets all stylesheets content to include in PDF
+ * Prepares element for PDF generation with proper page break classes
  */
-function getAllStylesheets(): string {
-  let css = '';
-  Array.from(document.styleSheets).forEach(styleSheet => {
-    try {
-      Array.from(styleSheet.cssRules).forEach(rule => {
-        css += rule.cssText + '\n';
-      });
-    } catch (e) {
-      // Skip external stylesheets that can't be accessed
-    }
-  });
-  return css;
-}
 function prepareElementForPdf(element: HTMLElement): () => void {
   const originalStyles = {
     width: element.style.width,
@@ -207,37 +194,6 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       }
     }
     
-    /* Enhanced text protection - prevent any mid-text breaks */
-    p, span, div, li, td, th, h1, h2, h3, h4, h5, h6 {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      orphans: 4 !important;
-      widows: 4 !important;
-      word-break: keep-all !important;
-      overflow-wrap: break-word !important;
-      hyphens: none !important;
-      -webkit-hyphens: none !important;
-      -moz-hyphens: none !important;
-    }
-    
-    /* Stronger text flow protection */
-    .text-content, 
-    .content-text, 
-    [class*="text"],
-    .job-description,
-    .achievement,
-    .summary,
-    .description {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      display: block !important;
-      margin-bottom: 4mm !important;
-      padding: 1mm 0 !important;
-      orphans: 5 !important;
-      widows: 5 !important;
-      word-break: keep-all !important;
-    }
-    
     /* Content-specific page break avoidance with margins */
     .skills-section,
     .experience-item,
@@ -260,36 +216,46 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       padding: 2mm !important;
     }
     
-    /* Natural text flow with break protection */
-    .keep-together {
+    /* ULTRA-AGGRESSIVE text protection - prevent ALL text splitting */
+    *, *::before, *::after {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+      word-break: keep-all !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -ms-hyphens: none !important;
     }
     
-    .no-break {
+    /* Force all text elements to be unbreakable blocks */
+    p, span, div, li, h1, h2, h3, h4, h5, h6, a, strong, em, b, i, code, small {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
       display: block !important;
-      margin-bottom: 5mm !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+      white-space: normal !important;
+      word-wrap: normal !important;
+      overflow-wrap: normal !important;
     }
     
-    /* Improved text rendering */
-    p, div, span, li {
-      orphans: 3 !important;
-      widows: 3 !important;
-      word-break: normal !important;
-      hyphens: none !important;
-      -webkit-hyphens: none !important;
-    }
-    
-    /* Section grouping */
-    .experience-item,
-    .education-item,
-    .skill-section,
-    .section {
+    /* Keep inline elements together */
+    span, a, strong, em, b, i, code, small {
+      display: inline !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      margin-bottom: 8mm !important;
+      white-space: nowrap !important;
+    }
+    
+    /* Bulletproof text containers */
+    p, div, li {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+      min-height: 1.2em !important;
     }
     
     /* Prevent line breaking within important text elements */
@@ -347,41 +313,50 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles that match A4 proportions
-  element.style.width = '180mm'; // A4 content width minus margins
-  element.style.maxWidth = '180mm';
-  element.style.margin = '0';
-  element.style.padding = '5mm';
+  // Apply PDF-optimized styles with ULTRA-conservative sizing to prevent any splitting
+  element.style.width = '130mm'; // ULTRA-small width to absolutely guarantee no cutoff
+  element.style.maxWidth = '130mm';
+  element.style.margin = '0'; // Remove margins to prevent sizing conflicts
+  element.style.padding = '2mm'; // Minimal padding
   element.style.overflow = 'visible';
-  element.style.fontSize = '10pt'; // Readable font size
-  element.style.lineHeight = '1.2';
+  element.style.fontSize = '8pt'; // Very small font to prevent splitting
+  element.style.lineHeight = '1.0';
   element.style.boxSizing = 'border-box';
-  element.style.wordBreak = 'normal';
+  element.style.wordBreak = 'keep-all';
   element.style.hyphens = 'none';
-  element.style.whiteSpace = 'normal';
-  element.style.backgroundColor = '#ffffff';
   
-  // Apply break protection classes to content sections
-  const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section');
+  // Apply page break classes to sections and skill-related elements
+  const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
   const addedClasses: { element: Element; className: string }[] = [];
   
   sections.forEach(section => {
-    section.classList.add('keep-together');
-    addedClasses.push({ element: section, className: 'keep-together' });
+    section.classList.add('page-break-avoid');
+    addedClasses.push({ element: section, className: 'page-break-avoid' });
   });
 
-  // Protect text blocks from breaking
-  const textBlocks = element.querySelectorAll('p, .text-block, .job-description, .achievement, li');
-  textBlocks.forEach(block => {
-    block.classList.add('no-break');
-    addedClasses.push({ element: block, className: 'no-break' });
+  // Add page break avoidance to experience and education blocks
+  const experienceItems = element.querySelectorAll('[data-experience], .experience-entry, .job-entry');
+  const educationItems = element.querySelectorAll('[data-education], .education-entry, .degree-entry');
+  
+  [...experienceItems, ...educationItems].forEach(item => {
+    item.classList.add('page-break-avoid');
+    addedClasses.push({ element: item, className: 'page-break-avoid' });
   });
 
-  // Only add page breaks to major sections if needed
-  const majorSections = element.querySelectorAll('.major-section-break');
+  // Add page break avoidance to skill and progress elements specifically
+  const skillElements = element.querySelectorAll('.skill-bar, .progress-container, .skill-list, ul, ol, .list-group, .grid, [role="progressbar"]');
+  skillElements.forEach(skillElement => {
+    skillElement.classList.add('page-break-avoid');
+    addedClasses.push({ element: skillElement, className: 'page-break-avoid' });
+  });
+
+  // Add break-before class to major sections (except first)
+  const majorSections = element.querySelectorAll('h1, h2, .section-title, .major-section');
   majorSections.forEach((section, index) => {
-    section.classList.add('force-page-break');
-    addedClasses.push({ element: section, className: 'force-page-break' });
+    if (index > 0) { // Skip first section
+      section.classList.add('page-break-before');
+      addedClasses.push({ element: section, className: 'page-break-before' });
+    }
   });
 
   // Return cleanup function
