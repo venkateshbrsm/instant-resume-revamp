@@ -287,14 +287,14 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles with much more conservative sizing
-  element.style.width = '160mm'; // Much smaller width to prevent cutoff
-  element.style.maxWidth = '160mm';
+  // Apply PDF-optimized styles with ultra-conservative sizing
+  element.style.width = '140mm'; // Ultra-small width to guarantee no cutoff
+  element.style.maxWidth = '140mm';
   element.style.margin = '0'; // Remove margins to prevent sizing conflicts
-  element.style.padding = '5mm'; // Minimal padding
+  element.style.padding = '3mm'; // Even smaller padding
   element.style.overflow = 'visible';
-  element.style.fontSize = '10pt'; // Smaller font to fit better
-  element.style.lineHeight = '1.2';
+  element.style.fontSize = '9pt'; // Even smaller font
+  element.style.lineHeight = '1.1';
   element.style.boxSizing = 'border-box';
   
   // Apply page break classes to sections and skill-related elements
