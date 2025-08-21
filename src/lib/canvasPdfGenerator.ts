@@ -368,16 +368,20 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
   const formElements = element.querySelectorAll('input[type="checkbox"], input[type="radio"], [role="checkbox"], [role="radio"]');
   formElements.forEach((formEl) => {
     const htmlEl = formEl as HTMLElement;
-    htmlEl.style.verticalAlign = 'baseline';
+    htmlEl.style.verticalAlign = 'middle';
     htmlEl.style.position = 'relative';
-    htmlEl.style.top = '0.2em';
+    htmlEl.style.top = '-0.1em';
     htmlEl.style.marginRight = '8px';
+    htmlEl.style.display = 'inline-block';
     
-    // Align form elements within list items
+    // Align form elements within list items to match bullet positioning
     const parentLi = htmlEl.closest('li');
     if (parentLi) {
       htmlEl.style.marginTop = '0';
       htmlEl.style.marginBottom = '0';
+      htmlEl.style.lineHeight = '1.6';
+      htmlEl.style.verticalAlign = 'baseline';
+      htmlEl.style.top = '0.05em';
     }
   });
   
