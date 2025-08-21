@@ -188,13 +188,37 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                               ))}
                             </div>
                             
-                            {/* Executive Context */}
-                            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
-                              <p className="text-xs leading-relaxed text-gray-600">
-                                Demonstrated exceptional leadership capabilities by orchestrating multi-million dollar initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence, stakeholder alignment, and sustainable growth trajectories across diverse business units and market conditions.
-                              </p>
-                            </div>
+                            {/* Executive Leadership & Strategic Vision - Extracted from achievements */}
+                            {(() => {
+                              const leadershipAchievements = exp.achievements.filter((achievement: string) => 
+                                achievement.toLowerCase().includes('lead') || 
+                                achievement.toLowerCase().includes('manage') || 
+                                achievement.toLowerCase().includes('direct') || 
+                                achievement.toLowerCase().includes('strategic') || 
+                                achievement.toLowerCase().includes('vision') || 
+                                achievement.toLowerCase().includes('transform') || 
+                                achievement.toLowerCase().includes('initiative') || 
+                                achievement.toLowerCase().includes('team') ||
+                                achievement.toLowerCase().includes('department') ||
+                                achievement.toLowerCase().includes('organization')
+                              );
+                              
+                              if (leadershipAchievements.length > 0) {
+                                return (
+                                  <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+                                    <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
+                                    <div className="text-xs leading-relaxed text-gray-600 space-y-2">
+                                      {leadershipAchievements.slice(0, 3).map((achievement: string, idx: number) => (
+                                        <p key={idx} className="border-l-2 pl-2" style={{ borderColor: selectedColorTheme.accent + '40' }}>
+                                          {achievement}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
                       </div>
