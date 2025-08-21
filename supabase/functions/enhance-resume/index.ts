@@ -1226,16 +1226,15 @@ FINAL REMINDER: Each job experience MUST have completely unique achievements tha
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-2025-08-07',
+        max_completion_tokens: 2000,
         messages: [
           { 
             role: 'system', 
             content: 'You are a professional resume enhancement expert. You MUST only use actual information from the provided resume. DO NOT invent or create fake data, metrics, achievements, or companies. Always return valid JSON format.' 
           },
           { role: 'user', content: enhancementPrompt }
-        ],
-        temperature: 0.3, // Lower temperature for more consistent, factual output
-        max_tokens: 2000
+        ]
       }),
     });
 
