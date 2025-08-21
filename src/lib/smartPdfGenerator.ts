@@ -48,9 +48,9 @@ export async function generateSmartPdf(
         scrollX: 0,
         scrollY: 0,
         width: 500, // Much smaller width for safe margins
-        height: 650, // Further reduced height for better margins
+        height: 725, // Increased height as requested
         windowWidth: 500,
-        windowHeight: 650,
+        windowHeight: 725,
       },
       jsPDF: { 
         unit: 'mm', 
