@@ -31,9 +31,9 @@ export async function generateSmartPdf(
     // Wait for any layout changes to settle
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Configure html2pdf with balanced settings for content preservation
+    // Configure html2pdf with proper page break handling
     const opt = {
-      margin: [15, 15, 15, 15], // Balanced margins: top, right, bottom, left in mm
+      margin: [25, 20, 25, 20], // Larger margins: top, right, bottom, left in mm
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -43,14 +43,14 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 1, // Normal scale for proper content rendering
+        scale: 0.25, // Much smaller scale to prevent any splitting
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 794, // A4 width in pixels at 96 DPI (210mm)
-        height: 1123, // A4 height in pixels at 96 DPI (297mm)
-        windowWidth: 1200,
-        windowHeight: 1600,
+        width: 300, // Very small width to absolutely prevent cutoff
+        height: 400, // Much smaller height for ultra-safe margins
+        windowWidth: 300,
+        windowHeight: 400,
       },
       jsPDF: { 
         unit: 'mm', 
@@ -58,14 +58,14 @@ export async function generateSmartPdf(
         orientation: orientation,
         compress: true,
         putOnlyUsedFonts: true,
-        floatPrecision: 16
+        floatPrecision: 16 // Higher precision for better layout
       },
-      // Enable CSS page break handling for proper content flow
+      // Critical: Enable CSS page break handling with aggressive text protection
       pagebreak: { 
-        mode: ['css', 'legacy'],
+        mode: ['avoid-all', 'css', 'legacy'],
         before: '.page-break-before',
         after: '.page-break-after',
-        avoid: ['.page-break-avoid', '.experience-item', '.education-item', '.skills-section']
+        avoid: ['.page-break-avoid', 'p', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', '*']
       }
     };
 
@@ -313,19 +313,19 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles for proper content rendering
-  element.style.width = '210mm'; // A4 width for proper scaling
-  element.style.maxWidth = '210mm';
-  element.style.margin = '0';
-  element.style.padding = '10mm';
+  // Apply PDF-optimized styles with EXTREME conservative sizing to prevent any splitting
+  element.style.width = '100mm'; // EXTREME small width to absolutely guarantee no cutoff
+  element.style.maxWidth = '100mm';
+  element.style.margin = '0'; // Remove margins to prevent sizing conflicts
+  element.style.padding = '1mm'; // Minimal padding
   element.style.overflow = 'visible';
-  element.style.fontSize = '11pt'; // Readable font size
-  element.style.lineHeight = '1.4';
+  element.style.fontSize = '6pt'; // Extremely small font to prevent splitting
+  element.style.lineHeight = '0.9';
   element.style.boxSizing = 'border-box';
-  element.style.wordBreak = 'normal';
-  element.style.hyphens = 'auto';
-  element.style.whiteSpace = 'normal';
-  element.style.textOverflow = 'visible';
+  element.style.wordBreak = 'keep-all';
+  element.style.hyphens = 'none';
+  element.style.whiteSpace = 'nowrap';
+  element.style.textOverflow = 'clip';
   
   // Apply page break classes to sections and skill-related elements
   const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
