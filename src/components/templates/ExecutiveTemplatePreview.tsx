@@ -13,98 +13,63 @@ interface TemplatePreviewProps {
   };
 }
 
-// Generate leadership insights with rewording to avoid repetition
-const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = "", experienceIndex: number = 0): string => {
+// Create unique insights by extracting specific details from each achievement
+const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
   if (!achievements || achievements.length === 0) {
-    const fallbacks = [
-      "Strategic decision-making under pressure while balancing multiple stakeholder interests and resource constraints.",
-      "Executive leadership involves navigating complex organizational dynamics while maintaining strategic focus and stakeholder alignment.",
-      "Effective management requires balancing competing priorities while fostering team development and organizational growth."
-    ];
-    return fallbacks[experienceIndex % fallbacks.length];
+    return "Leadership requires adapting communication styles to different audiences while maintaining consistent strategic direction.";
   }
 
-  const achievementText = achievements.join(" ").toLowerCase();
+  // Extract specific numbers, actions, and outcomes from achievements
+  const extractSpecifics = () => {
+    const allText = achievements.join(" ");
+    
+    // Find specific numbers/percentages
+    const numbers = allText.match(/\d+(?:\.\d+)?%?/g) || [];
+    const actions = allText.match(/\b(increased|decreased|reduced|improved|managed|led|created|developed|launched|implemented|optimized|streamlined|grew|expanded|built|established|designed|achieved|delivered|generated|exceeded|secured|obtained)\b/gi) || [];
+    const objects = allText.match(/\b(team|teams|department|division|budget|revenue|profit|sales|cost|process|system|program|project|initiative|strategy|operations|efficiency|customers|clients|employees|staff|people)\b/gi) || [];
+    
+    return { numbers, actions, objects };
+  };
+
+  const specifics = extractSpecifics();
   
-  // Revenue/Sales insights with variations
-  if (achievementText.includes('revenue') || achievementText.includes('sales') || achievementText.includes('profit')) {
-    if (achievementText.includes('team')) {
-      const variations = [
-        "Balancing revenue targets with team development requires understanding individual motivations while maintaining collective accountability for business outcomes.",
-        "Achieving financial goals through people leadership involves aligning team objectives with business performance while fostering professional growth.",
-        "Revenue success through team management demands balancing performance expectations with individual development and motivation strategies."
-      ];
-      return variations[experienceIndex % variations.length];
-    } else {
-      const variations = [
-        "Revenue growth depends on identifying market inefficiencies and executing solutions faster than competitors can respond.",
-        "Financial performance improvement requires strategic market analysis and rapid implementation of competitive advantages.",
-        "Driving profitable growth involves recognizing market opportunities and deploying resources more effectively than industry peers."
-      ];
-      return variations[experienceIndex % variations.length];
+  // Build insight using actual extracted elements
+  if (specifics.numbers.length > 0 && specifics.actions.length > 0) {
+    const number = specifics.numbers[0];
+    const action = specifics.actions[0].toLowerCase();
+    const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
+    
+    return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} by ${number} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
+  }
+  
+  if (specifics.actions.length > 1 && specifics.objects.length > 1) {
+    const action1 = specifics.actions[0].toLowerCase();
+    const action2 = specifics.actions[1].toLowerCase();
+    const object1 = specifics.objects[0]?.toLowerCase() || "operations";
+    const object2 = specifics.objects[1]?.toLowerCase() || "performance";
+    
+    return `Successfully ${action1} ${object1} while simultaneously ${action2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
+  }
+  
+  // Use the first achievement directly but extract the core insight
+  const firstAchievement = achievements[0];
+  if (firstAchievement && firstAchievement.length > 30) {
+    // Find the key verb-object combination
+    const words = firstAchievement.toLowerCase().split(' ');
+    const keyVerbs = ['increased', 'decreased', 'improved', 'managed', 'led', 'created', 'developed', 'launched', 'achieved', 'delivered'];
+    const verbIndex = words.findIndex(word => keyVerbs.some(verb => word.includes(verb)));
+    
+    if (verbIndex !== -1 && verbIndex < words.length - 2) {
+      const context = words.slice(verbIndex, verbIndex + 4).join(' ');
+      return `The experience of ${context} highlighted the critical importance of stakeholder buy-in and clear success metrics in driving sustainable organizational change.`;
     }
   }
   
-  // Team/People insights with variations
-  if (achievementText.includes('team') || achievementText.includes('people') || achievementText.includes('staff')) {
-    if (achievementText.includes('process') || achievementText.includes('efficiency')) {
-      const variations = [
-        "High-performing teams emerge when individuals understand how their work connects to broader organizational objectives and customer value.",
-        "Operational excellence through people requires clear communication of how individual contributions impact organizational success and customer outcomes.",
-        "Team effectiveness increases when members grasp the relationship between their roles and the organization's strategic goals and market position."
-      ];
-      return variations[experienceIndex % variations.length];
-    } else {
-      const variations = [
-        "Effective delegation requires matching tasks to individual strengths while providing clear success metrics and decision-making authority.",
-        "Successful people leadership involves aligning responsibilities with team member capabilities while establishing transparent performance standards.",
-        "Strategic delegation means pairing assignments with individual competencies while defining clear accountability measures and autonomy levels."
-      ];
-      return variations[experienceIndex % variations.length];
-    }
-  }
+  // Last resort - use role and company info
+  const roleSpecific = roleTitle ? `${roleTitle.toLowerCase()} role` : "leadership position";
+  const companySpecific = company && company !== "N/A" ? `at ${company}` : "in this organization";
   
-  // Process/Efficiency insights with variations
-  if (achievementText.includes('process') || achievementText.includes('efficiency') || achievementText.includes('optimization')) {
-    const variations = [
-      "Sustainable process improvements come from frontline insights rather than top-down mandates, requiring leaders to listen before directing.",
-      "Lasting operational enhancements emerge from ground-level observations rather than executive directives, demanding active listening before implementation.",
-      "Effective process optimization stems from employee-driven insights rather than management assumptions, necessitating consultation before action."
-    ];
-    return variations[experienceIndex % variations.length];
-  }
-  
-  // Innovation insights with variations
-  if (achievementText.includes('launched') || achievementText.includes('created') || achievementText.includes('developed')) {
-    const variations = [
-      "Innovation success depends on rapid experimentation cycles and the willingness to pivot based on early customer feedback rather than initial assumptions.",
-      "Creative breakthroughs require iterative testing approaches and flexibility to adjust direction based on market response rather than original hypotheses.",
-      "Successful innovation relies on quick prototype cycles and readiness to modify strategies based on user input rather than predetermined concepts."
-    ];
-    return variations[experienceIndex % variations.length];
-  }
-  
-  // Cost/Budget insights with variations
-  if (achievementText.includes('cost') || achievementText.includes('budget') || achievementText.includes('savings')) {
-    const variations = [
-      "Cost management without sacrificing quality requires deep understanding of value chains and the courage to eliminate sacred cows that no longer serve customers.",
-      "Financial stewardship while maintaining standards demands comprehensive value analysis and willingness to discontinue traditional practices that lack customer benefit.",
-      "Budget optimization without quality compromise involves thorough value stream evaluation and boldness to remove established processes that don't add customer value."
-    ];
-    return variations[experienceIndex % variations.length];
-  }
-  
-  // General fallbacks with variations
-  const roleInsights = [
-    "Complex organizations require leaders who can synthesize conflicting information into clear strategic direction while maintaining team morale during uncertainty.",
-    "Market dynamics shift faster than planning cycles, demanding leaders who can adjust tactics while maintaining strategic consistency and stakeholder confidence.",
-    "Cross-functional success depends on building trust through small commitments before attempting larger collaborative initiatives that require organizational buy-in.",
-    "Stakeholder alignment emerges from understanding individual priorities and finding intersection points that serve collective interests without compromising core principles.",
-    "Leadership effectiveness involves translating ambiguous market signals into actionable strategies while preserving organizational culture and employee engagement.",
-    "Executive success requires balancing short-term performance pressures with long-term strategic investments while maintaining transparent communication with all stakeholders."
-  ];
-  
-  return roleInsights[experienceIndex % roleInsights.length];
+  return `This ${roleSpecific} ${companySpecific} demonstrated that sustainable results emerge from aligning individual capabilities with organizational needs while maintaining flexibility in execution methods.`;
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
@@ -286,7 +251,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
               <h5 className="font-semibold text-gray-900 mb-2 text-sm">Leadership Learnings & Development Insights:</h5>
               <p className="text-xs leading-relaxed text-gray-600">
-                {generateExecutiveContext(exp.achievements, exp.title, exp.company, index)}
+                {generateExecutiveContext(exp.achievements, exp.title, exp.company)}
               </p>
             </div>
                           </div>
