@@ -153,7 +153,9 @@ function prepareElementForPdf(element: HTMLElement): () => void {
     /* Media Print Styles for PDF Generation */
     @media print {
       body {
-        margin: 2cm !important;
+        margin: 0 2cm !important;
+        padding: 0 !important;
+        border: none !important;
         font-size: 11pt !important;
         line-height: 1.3 !important;
         color: black !important;
