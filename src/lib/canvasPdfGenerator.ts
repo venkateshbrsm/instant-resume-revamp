@@ -117,10 +117,10 @@ export async function generatePdfFromElement(
       const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
       
-      // Enhanced text buffer - larger buffer to prevent content cutting
-      const textBuffer = scale * 20; // Increased to 20mm in pixels for better content preservation
-      const minSectionHeight = pixelsPerPage * 0.8; // Increased minimum section height
-      const maxSectionHeight = pixelsPerPage - (scale * 5); // Leave 5mm at bottom for safety
+      // Enhanced text buffer - much larger buffer to prevent text splitting
+      const textBuffer = scale * 35; // Increased to 35mm in pixels for better text preservation
+      const minSectionHeight = pixelsPerPage * 0.7; // Minimum section height
+      const maxSectionHeight = pixelsPerPage - (scale * 10); // Leave 10mm at bottom for safety
       
       // Try to detect content boundaries for smarter page breaks
       const contentSections = detectContentSections(canvas, scale);
