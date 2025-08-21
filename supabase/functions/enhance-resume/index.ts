@@ -1147,28 +1147,19 @@ CRITICAL INSTRUCTIONS:
 3. DO NOT invent companies, achievements, or metrics not mentioned
 4. DO NOT create fake numbers, percentages, or project counts
 5. ${profilePhotoUrl ? 'Include the provided profile photo URL in the response' : 'Do not include any profile photo information'}
-6. If a detail is missing, leave it out or use a generic placeholder
-7. Use the ACTUAL name, education, experience, and skills from the resume
-8. IMPORTANT: Each job experience should have UNIQUE and SPECIFIC responsibilities - DO NOT repeat the same text across different positions
-9. Extract DIFFERENT achievements and responsibilities for each distinct role mentioned in the resume
+5. If a detail is missing, leave it out or use a generic placeholder
+6. Use the ACTUAL name, education, experience, and skills from the resume
 
 Based STRICTLY on the actual resume content above, create a JSON response with:
 - name: Extract from the resume or use "${candidateName}"
 - title: Based on actual job titles mentioned in resume
 - contact: Use ONLY actual contact information from the resume
 - summary: Write based on ACTUAL experience mentioned in resume
-- experience: Use ONLY actual companies and roles from the resume - ensure each role has DISTINCT responsibilities
+- experience: Use ONLY actual companies and roles from the resume
 - skills: Use ONLY skills actually mentioned in the resume  
 - education: Use ONLY actual institutions and degrees from the resume
 
-EXPERIENCE SECTION REQUIREMENTS:
-- Each job position must have UNIQUE achievements and responsibilities
-- Look for specific tasks, projects, and accomplishments mentioned for each role
-- If multiple positions are listed, extract different responsibilities for each one
-- Do NOT copy-paste the same achievements across different jobs
-- Focus on role-specific duties and accomplishments mentioned in the original resume
-
-If the resume mentions specific projects, companies, or achievements, use those. If not, write generic descriptions without fake metrics but ensure variety between roles.
+If the resume mentions specific projects, companies, or achievements, use those. If not, write generic descriptions without fake metrics.
 
 DO NOT INCLUDE:
 - Fake project counts (like "50+ projects")
@@ -1180,7 +1171,6 @@ DO NOT INCLUDE:
 - Certifications not stated in the resume
 - Placeholder contact information (email/phone/location) if not in original resume
 - Any fictional or assumed data
-- REPEATED TEXT across different job positions
 
 Return ONLY this JSON format:
 {
@@ -1193,13 +1183,13 @@ Return ONLY this JSON format:
   "summary": "Summary based on actual experience without fake metrics",
   "experience": [
     {
-      "title": "specific job title from resume",
+      "title": "actual job title from resume",
       "company": "actual company name from resume", 
       "duration": "actual dates from resume",
       "achievements": [
-        "specific responsibility unique to this role",
-        "specific achievement unique to this position", 
-        "distinct task mentioned for this job"
+        "actual responsibility from resume",
+        "actual achievement from resume",
+        "generic but realistic task description"
       ]
     }
   ],
@@ -1213,7 +1203,7 @@ Return ONLY this JSON format:
   ]
 }
 
-REMEMBER: Use ONLY information from the actual resume provided. Ensure each job experience has UNIQUE content - no repetitive text across positions.`;
+REMEMBER: Use ONLY information from the actual resume provided. Do not invent data.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
