@@ -215,7 +215,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
               {/* Skills as Creative Badges */}
               {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                 <div 
-                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg"
+                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none"
                   style={{ 
                     background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
                     pageBreakInside: 'avoid',
@@ -239,7 +239,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       <Badge 
                         key={index}
                         variant="outline"
-                        className="px-2 py-1 rounded-full border-2 font-medium text-xs leading-tight break-words hyphens-auto max-w-[140px] min-h-fit print:px-2 print:py-0.5 print:text-xs print:max-w-[120px]"
+                        className="px-3 py-2 rounded-full border-2 font-medium text-xs leading-relaxed break-words hyphens-auto min-h-fit print:px-2 print:py-1 print:text-xs"
                         style={{ 
                           borderColor: selectedColorTheme.accent,
                           color: selectedColorTheme.primary,
@@ -248,7 +248,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                           overflowWrap: 'break-word'
                         }}
                       >
-                        <span className="block text-center">{skill}</span>
+                        <span className="block text-center whitespace-normal">{skill}</span>
                       </Badge>
                     ))}
                   </div>
