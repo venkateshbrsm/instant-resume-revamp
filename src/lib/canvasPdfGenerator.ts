@@ -109,6 +109,12 @@ export async function generatePdfFromElement(
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
       
+      // Add top and bottom borders
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, margin, pdfWidth - margin, margin); // Top border
+      pdf.line(margin, pdfHeight - margin, pdfWidth - margin, pdfHeight - margin); // Bottom border
+      
       // Add page number at bottom right
       pdf.setFontSize(10);
       pdf.setTextColor(100, 100, 100);
@@ -191,6 +197,12 @@ export async function generatePdfFromElement(
           // Add extra margin for first page only
           const pageTopMargin = pageIndex === 0 ? margin : margin + 2;
           pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
+          
+          // Add top and bottom borders to each page
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.5);
+          pdf.line(margin, margin, pdfWidth - margin, margin); // Top border
+          pdf.line(margin, pdfHeight - margin, pdfWidth - margin, pdfHeight - margin); // Bottom border
           
           // Add page number at bottom right of each page
           pdf.setFontSize(10);
@@ -401,14 +413,22 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     const htmlEl = tickEl as HTMLElement;
     // Check if this element contains a checkmark
     if (htmlEl.textContent?.includes('✓')) {
-      // Use inline-block for reliable PDF alignment
-      htmlEl.style.display = 'inline-block';
+      // Make tick marks and circles smaller for PDF
+      htmlEl.style.width = '12px';
+      htmlEl.style.height = '12px';
+      htmlEl.style.minWidth = '12px';
+      htmlEl.style.minHeight = '12px';
+      htmlEl.style.fontSize = '8px';
+      htmlEl.style.display = 'inline-flex';
+      htmlEl.style.alignItems = 'center';
+      htmlEl.style.justifyContent = 'center';
       htmlEl.style.verticalAlign = 'middle';
-      htmlEl.style.marginRight = '12px';
+      htmlEl.style.marginRight = '8px';
       htmlEl.style.marginTop = '0';
       htmlEl.style.marginBottom = '0';
       htmlEl.style.position = 'relative';
       htmlEl.style.top = '0';
+      htmlEl.style.flexShrink = '0';
       
       // Fix parent container to use inline layout for PDF
       const parentContainer = htmlEl.closest('li, div');
