@@ -43,7 +43,7 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.2, // Ultra-conservative scale for preventing text cutoff
+        scale: 0.27, // Ultra-conservative scale for preventing text cutoff
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
