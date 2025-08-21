@@ -1167,6 +1167,8 @@ DO NOT INCLUDE:
 - Fictional companies or achievements
 - Revenue numbers not in original resume
 - Team size numbers not mentioned
+- Languages not explicitly mentioned in the original resume
+- Certifications not stated in the resume
 
 Return ONLY this JSON format:
 {
