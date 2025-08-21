@@ -240,23 +240,13 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       overflow-wrap: break-word !important;
     }
     
-    /* Bulletproof text containers - force content to stay together */
-    p, div, li, span, h1, h2, h3, h4, h5, h6, .skill-badge, .badge {
+    /* Bulletproof text containers */
+    p, div, li {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
       orphans: 10 !important;
       widows: 10 !important;
       min-height: 1.2em !important;
-      display: block !important;
-      overflow: visible !important;
-    }
-    
-    /* Force inline elements to stay on same page */
-    span, .badge, .skill-badge, .skill-item {
-      display: inline-block !important;
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      white-space: nowrap !important;
     }
     
     /* Prevent line breaking within important text elements */
