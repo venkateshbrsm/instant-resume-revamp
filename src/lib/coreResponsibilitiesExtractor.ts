@@ -377,24 +377,57 @@ export function extractCoreResponsibilities(
     }
   }
   
-  // Get different variant based on experience index to ensure uniqueness
+  // Get all responsibility categories to create unique combinations
+  const allCategories = Object.keys(variant) as Array<keyof ResponsibilityVariant>;
   const roleVariants = variant[roleType];
-  const variantIndex = experienceIndex % roleVariants.length;
-  let baseResponsibilities = [...roleVariants[variantIndex]];
+  
+  // Create a unique seed for this experience to ensure consistency but uniqueness
+  const seed = experienceIndex * 7 + titleLower.length;
+  
+  // Mix responsibilities from primary role type and other types for uniqueness
+  let baseResponsibilities: string[] = [];
+  
+  // Get primary responsibilities from the main role type
+  const primaryVariantIndex = experienceIndex % roleVariants.length;
+  const primaryResponsibilities = [...roleVariants[primaryVariantIndex]];
+  
+  // Add 2-3 primary responsibilities
+  baseResponsibilities.push(...primaryResponsibilities.slice(0, Math.min(3, maxResponsibilities)));
+  
+  // If we need more responsibilities, mix in from other categories for uniqueness
+  if (baseResponsibilities.length < maxResponsibilities) {
+    const secondaryCategories = allCategories.filter(cat => cat !== roleType);
+    const secondaryCategoryIndex = seed % secondaryCategories.length;
+    const secondaryCategory = secondaryCategories[secondaryCategoryIndex];
+    const secondaryVariants = variant[secondaryCategory];
+    const secondaryVariantIndex = (seed + 1) % secondaryVariants.length;
+    const secondaryResponsibilities = secondaryVariants[secondaryVariantIndex];
+    
+    // Add 1-2 secondary responsibilities to create unique mix
+    const remainingSlots = maxResponsibilities - baseResponsibilities.length;
+    baseResponsibilities.push(...secondaryResponsibilities.slice(0, remainingSlots));
+  }
   
   // Customize based on achievements context if available
   if (achievements && achievements.length > 0) {
     const achievementsText = achievements.join(' ').toLowerCase();
     
-    // Add context-specific customizations
+    // Add context-specific customizations with more variety
     if (achievementsText.includes('budget') || achievementsText.includes('cost')) {
-      baseResponsibilities[0] = baseResponsibilities[0].replace(/regular|team|strategic/, 'budget-focused');
+      const budgetFocused = experienceIndex % 2 === 0 ? 'budget-focused' : 'cost-optimized';
+      baseResponsibilities[0] = baseResponsibilities[0].replace(/regular|team|strategic|daily/, budgetFocused);
     }
     if (achievementsText.includes('client') || achievementsText.includes('customer')) {
-      baseResponsibilities[1] = baseResponsibilities[1].replace(/operational|resource|work/, 'client-focused');
+      const clientFocused = experienceIndex % 2 === 0 ? 'client-focused' : 'customer-centric';
+      if (baseResponsibilities[1]) {
+        baseResponsibilities[1] = baseResponsibilities[1].replace(/operational|resource|work|performance/, clientFocused);
+      }
     }
     if (achievementsText.includes('team') || achievementsText.includes('staff')) {
-      baseResponsibilities[2] = baseResponsibilities[2].replace(/performance|milestones|system/, 'team-oriented');
+      const teamFocused = experienceIndex % 2 === 0 ? 'team-oriented' : 'collaborative';
+      if (baseResponsibilities[2]) {
+        baseResponsibilities[2] = baseResponsibilities[2].replace(/performance|milestones|system|quality/, teamFocused);
+      }
     }
   }
   
