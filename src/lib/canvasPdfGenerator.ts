@@ -60,9 +60,9 @@ export async function generatePdfFromElement(
     // Clean up element styles
     cleanup();
 
-    // PDF dimensions (Custom size)
-    const pdfWidth = 500;
-    const pdfHeight = 720;
+    // PDF dimensions (A4 size in mm)
+    const pdfWidth = 210;
+    const pdfHeight = 297;
     const margin = 12; // Professional margins
     const availableWidth = pdfWidth - (margin * 2);
     const availableHeight = pdfHeight - (margin * 2);

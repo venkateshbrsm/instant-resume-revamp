@@ -765,12 +765,13 @@ async function tryMultiplePDFExtractionMethods(fileBytes: Uint8Array, fileName: 
 function validateAndPrepareContent(content: string, fileName: string) {
   console.log('Validating content, length:', content.length);
   
-  const isPDF = fileName.toLowerCase().endsWith('.pdf');
-  const isDocx = fileName.toLowerCase().endsWith('.docx');
+  // Ensure fileName is defined with a fallback
+  const safeFileName = fileName || 'resume.pdf';
+  const isPDF = safeFileName.toLowerCase().endsWith('.pdf');
+  const isDocx = safeFileName.toLowerCase().endsWith('.docx');
   
-  // Create fallback content if needed
   const createFallbackContent = () => {
-    const nameFromFile = fileName.replace(/\.(pdf|docx)$/i, '').replace(/[-_]/g, ' ');
+    const nameFromFile = safeFileName.replace(/\.(pdf|docx)$/i, '').replace(/[-_]/g, ' ');
     return `Name: ${nameFromFile}
 Professional Summary: Experienced professional with expertise in their field.
 Skills: Communication, Problem-solving, Team collaboration
@@ -993,7 +994,7 @@ serve(async (req) => {
     if ((!resumeContent || resumeContent.length < 500 || resumeContent.startsWith('DOCX file:') || resumeContent.startsWith('PDF file:'))) {
       console.log(`Content insufficient (${resumeContent.length} chars), attempting re-extraction...`);
       
-      if (file && fileName.toLowerCase().endsWith('.docx')) {
+      if (file && fileName && fileName.toLowerCase().endsWith('.docx')) {
         console.log('Content is insufficient, attempting advanced DOCX re-extraction...');
         
         try {
@@ -1037,7 +1038,7 @@ serve(async (req) => {
             stack: extractError.stack
           });
         }
-      } else if (file && fileName.toLowerCase().endsWith('.pdf')) {
+      } else if (file && fileName && fileName.toLowerCase().endsWith('.pdf')) {
         console.log('PDF content is insufficient, attempting multiple extraction methods...');
         
         try {
@@ -1102,15 +1103,13 @@ serve(async (req) => {
       }
     }
     
-    // Final content validation and preparation with guaranteed success
-    const processedContent = validateAndPrepareContent(resumeContent, fileName);
+    const processedContent = validateAndPrepareContent(resumeContent, fileName || 'resume.pdf');
     
     if (!processedContent.isValid) {
       console.error('Content validation failed, but continuing with fallback approach');
       console.error('Validation failure reason:', processedContent.reason);
       
-      // Create minimal fallback content to ensure something always gets enhanced
-      const nameFromFile = fileName.replace(/\.(pdf|docx)$/i, '').replace(/[-_]/g, ' ');
+      const nameFromFile = (fileName || 'resume').replace(/\.(pdf|docx)$/i, '').replace(/[-_]/g, ' ');
       const fallbackContent = `Name: ${nameFromFile}
 Professional Summary: Experienced professional with a strong background and skills.
 Work Experience: Professional experience in relevant field
