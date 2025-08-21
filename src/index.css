@@ -336,34 +336,76 @@
     page-break-inside: avoid !important;
   }
   
-  /* Comprehensive text protection */
-  p, div, span, ul, ol, li, td, th {
-    orphans: 3 !important;
-    widows: 3 !important;
-  }
-  
-  /* Prevent text splitting in common elements */
-  .text-sm, .text-base, .text-lg, .font-medium, .font-semibold {
+  /* Aggressive text protection - prevent all text splitting */
+  p, div, span, ul, ol, li, td, th, h1, h2, h3, h4, h5, h6 {
+    orphans: 5 !important;
+    widows: 5 !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
   
-  /* Protect content blocks */
-  .mb-2, .mb-3, .mb-4, .space-y-2 > *, .space-y-3 > *, .space-y-4 > * {
+  /* Prevent text splitting in all text elements */
+  .text-xs, .text-sm, .text-base, .text-lg, .text-xl, .text-2xl, .text-3xl {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    orphans: 5 !important;
+    widows: 5 !important;
+  }
+  
+  /* Protect all font weight variants */
+  .font-light, .font-normal, .font-medium, .font-semibold, .font-bold {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    orphans: 5 !important;
+    widows: 5 !important;
+  }
+  
+  /* Protect all margin and spacing elements */
+  .mb-1, .mb-2, .mb-3, .mb-4, .mb-6, .mt-1, .mt-2, .mt-3, .mt-4, .mt-6,
+  .space-y-1 > *, .space-y-2 > *, .space-y-3 > *, .space-y-4 > *, .space-y-6 > * {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    orphans: 5 !important;
+    widows: 5 !important;
+  }
+  
+  /* Keep all layout elements together */
+  .flex, .grid, .block, .inline-block, .inline-flex {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
   
-  /* Keep related content together */
-  .flex, .grid {
+  /* Protect all resume-related content */
+  [class*="experience"], [class*="education"], [class*="skill"], [class*="contact"],
+  [class*="achievement"], [class*="responsibility"], [class*="impact"] {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+    orphans: 5 !important;
+    widows: 5 !important;
   }
   
-  /* Protect specific resume sections */
-  [class*="experience"], [class*="education"], [class*="skill"], [class*="contact"] {
+  /* Aggressive bullet point protection */
+  ul li, ol li, li p, li span, li div {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+    orphans: 5 !important;
+    widows: 5 !important;
+    display: block !important;
+  }
+  
+  /* Protect job entries and sections completely */
+  .job-entry, .work-experience, .education-entry, .experience-item, .education-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    orphans: 5 !important;
+    widows: 5 !important;
+    display: block !important;
+  }
+  
+  /* Universal content protection */
+  * {
+    orphans: 5 !important;
+    widows: 5 !important;
   }
   
   /* Ensure backgrounds print correctly */
