@@ -361,11 +361,28 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
                               htmlEl.closest('div')?.textContent?.toLowerCase().includes('key achievement');
       
       if (isKeyAchievement) {
-        // Remove bullets for key achievement section
-        htmlEl.style.listStyleType = 'none';
-        htmlEl.style.paddingLeft = '0';
+        // Add tiny bullets for key achievement section
+        htmlEl.style.listStyleType = 'disc';
+        htmlEl.style.listStylePosition = 'outside';
+        htmlEl.style.paddingLeft = '12px';
         htmlEl.style.marginLeft = '0';
-        htmlEl.style.display = 'block';
+        htmlEl.style.display = 'list-item';
+        htmlEl.style.lineHeight = '1.6';
+        // Make bullets extra tiny for key achievements
+        const achievementListStyle = `li::marker { 
+          font-size: 0.3em !important; 
+          line-height: 1.6 !important;
+          content: '•' !important;
+          vertical-align: baseline !important;
+          position: relative !important;
+          top: 0.3em !important;
+        }`;
+        if (!document.querySelector('style[data-tiny-bullets]')) {
+          const style = document.createElement('style');
+          style.setAttribute('data-tiny-bullets', 'true');
+          style.textContent = achievementListStyle;
+          document.head.appendChild(style);
+        }
       } else {
         // Position bullets outside for side-by-side layout with smaller size
         htmlEl.style.listStylePosition = 'outside';
