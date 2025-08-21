@@ -20,7 +20,7 @@ export async function generatePdfFromElement(
   const {
     filename = 'document.pdf',
     quality = 0.95,
-    scale = 0.2 // Ultra-conservative margins
+    scale = window.innerWidth < 768 ? 3.0 : 2.5 // Higher scale for mobile devices
   } = options;
 
   try {
