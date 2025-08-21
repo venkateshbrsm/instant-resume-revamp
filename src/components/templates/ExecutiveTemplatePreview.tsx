@@ -13,43 +13,128 @@ interface TemplatePreviewProps {
   };
 }
 
-// AI-powered content generation based on achievements
+// AI-powered content generation based on specific achievements and leadership qualities
 const generateExecutiveContext = (achievements: string[]): string => {
   if (!achievements || achievements.length === 0) {
     return "Demonstrated exceptional leadership capabilities by orchestrating strategic initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence and sustainable growth trajectories.";
   }
 
-  // Extract key themes from achievements
-  const keyThemes = [];
-  const achievementText = achievements.join(" ").toLowerCase();
+  const achievementText = achievements.join(" ");
   
-  if (achievementText.includes("revenue") || achievementText.includes("sales") || achievementText.includes("growth") || achievementText.includes("profit")) {
-    keyThemes.push("revenue growth and market expansion");
+  // Extract specific metrics and numbers
+  const metrics = {
+    percentages: achievementText.match(/\d+%/g) || [],
+    monetary: achievementText.match(/\$[\d,]+[MBK]?|\d+[MBK]\s*(?:revenue|sales|profit|budget|cost)/gi) || [],
+    teamSize: achievementText.match(/\d+\s*(?:team|people|employees|staff|members)/gi) || [],
+    timeframes: achievementText.match(/\d+\s*(?:months?|years?|quarters?)/gi) || [],
+    growth: achievementText.match(/(?:increased?|grew|improved|boosted|enhanced|expanded)[\s\w]*?(?:by\s+)?\d+%?/gi) || []
+  };
+
+  // Extract specific leadership actions and outcomes
+  const actions = {
+    strategic: achievementText.match(/(?:launched|developed|implemented|created|established|built|designed|initiated)[\s\w]*?(?:strategy|program|initiative|system|process|framework)/gi) || [],
+    transformation: achievementText.match(/(?:transformed|restructured|reorganized|optimized|streamlined|modernized|digitized)[\s\w]*?(?:operations|processes|team|department|organization)/gi) || [],
+    leadership: achievementText.match(/(?:led|managed|directed|supervised|guided|mentored|coached)[\s\w]*?(?:team|department|division|project|initiative)/gi) || [],
+    results: achievementText.match(/(?:achieved|delivered|exceeded|surpassed|generated|secured|obtained)[\s\w]*?(?:targets|goals|results|outcomes|objectives)/gi) || []
+  };
+
+  // Extract industry/company context
+  const context = {
+    industry: achievementText.match(/(?:technology|healthcare|finance|retail|manufacturing|consulting|media|energy|automotive|pharmaceutical|aerospace|telecommunications)/gi) || [],
+    companyType: achievementText.match(/(?:startup|enterprise|fortune\s*\d+|multinational|global|public|private|b2b|b2c)/gi) || [],
+    markets: achievementText.match(/(?:international|global|domestic|regional|emerging|mature|competitive)/gi) || []
+  };
+
+  // Extract leadership qualities demonstrated
+  const qualities = [];
+  const lowerText = achievementText.toLowerCase();
+  
+  if (lowerText.includes("innovation") || lowerText.includes("creative") || lowerText.includes("pioneered")) {
+    qualities.push("innovative thinking");
   }
-  if (achievementText.includes("team") || achievementText.includes("leadership") || achievementText.includes("manage")) {
-    keyThemes.push("team leadership and organizational development");
+  if (metrics.percentages.length > 0 || lowerText.includes("data-driven") || lowerText.includes("analytics")) {
+    qualities.push("data-driven decision making");
   }
-  if (achievementText.includes("cost") || achievementText.includes("efficiency") || achievementText.includes("process")) {
-    keyThemes.push("operational excellence and cost optimization");
+  if (actions.transformation.length > 0 || lowerText.includes("change") || lowerText.includes("transformation")) {
+    qualities.push("transformational leadership");
   }
-  if (achievementText.includes("digital") || achievementText.includes("technology") || achievementText.includes("innovation")) {
-    keyThemes.push("digital transformation and innovation");
+  if (metrics.teamSize.length > 0 || actions.leadership.length > 0) {
+    qualities.push("people leadership");
   }
-  if (achievementText.includes("strategy") || achievementText.includes("strategic") || achievementText.includes("vision")) {
-    keyThemes.push("strategic planning and execution");
+  if (lowerText.includes("collaboration") || lowerText.includes("cross-functional") || lowerText.includes("stakeholder")) {
+    qualities.push("collaborative execution");
+  }
+  if (actions.strategic.length > 0 || lowerText.includes("vision") || lowerText.includes("strategic")) {
+    qualities.push("strategic vision");
   }
 
-  // Generate dynamic content based on identified themes
-  let context = "Visionary executive leader with proven expertise in ";
+  // Build unique narrative based on extracted elements
+  let narrative = "";
   
-  if (keyThemes.length > 0) {
-    context += keyThemes.slice(0, 3).join(", ");
-    context += ". Successfully delivered transformational results by leveraging data-driven insights, fostering cross-functional collaboration, and implementing scalable solutions that drive sustainable competitive advantages across diverse business environments.";
+  // Start with leadership style based on qualities
+  if (qualities.includes("transformational leadership") && qualities.includes("innovative thinking")) {
+    narrative += "Transformational innovator who ";
+  } else if (qualities.includes("data-driven decision making") && qualities.includes("strategic vision")) {
+    narrative += "Strategic architect with analytical expertise who ";
+  } else if (qualities.includes("people leadership") && qualities.includes("collaborative execution")) {
+    narrative += "Collaborative leader and team builder who ";
   } else {
-    context += "strategic leadership, organizational transformation, and performance optimization. Consistently delivers exceptional results through innovative problem-solving, stakeholder alignment, and the cultivation of high-performance teams that exceed organizational objectives.";
+    narrative += "Executive leader who ";
   }
 
-  return context;
+  // Add specific accomplishments with metrics
+  const accomplishments = [];
+  
+  if (metrics.growth.length > 0) {
+    const growthExample = metrics.growth[0].replace(/increased?|improved|boosted|enhanced/i, "drove");
+    accomplishments.push(growthExample.toLowerCase());
+  }
+  
+  if (metrics.monetary.length > 0 && metrics.percentages.length > 0) {
+    accomplishments.push(`delivered ${metrics.monetary[0]} in value while achieving ${metrics.percentages[0]} performance improvements`);
+  } else if (metrics.monetary.length > 0) {
+    accomplishments.push(`generated ${metrics.monetary[0]} in measurable business value`);
+  } else if (metrics.percentages.length > 0) {
+    accomplishments.push(`achieved ${metrics.percentages[0]} improvement in key performance indicators`);
+  }
+
+  if (actions.strategic.length > 0) {
+    const strategicAction = actions.strategic[0].replace(/launched|developed|implemented/i, "orchestrated");
+    accomplishments.push(strategicAction.toLowerCase() + " that transformed organizational capabilities");
+  }
+
+  if (metrics.teamSize.length > 0) {
+    accomplishments.push(`successfully scaled and led ${metrics.teamSize[0]} to exceed operational targets`);
+  }
+
+  // Add accomplishments to narrative
+  if (accomplishments.length > 0) {
+    narrative += accomplishments.slice(0, 2).join(", and ");
+  } else {
+    narrative += "consistently delivered exceptional results through strategic planning and execution";
+  }
+
+  // Add industry/context-specific insights
+  if (context.industry.length > 0 || context.companyType.length > 0) {
+    const industryContext = context.industry[0] || context.companyType[0];
+    narrative += `. Specialized expertise in ${industryContext.toLowerCase()} environments`;
+    
+    if (context.markets.length > 0) {
+      narrative += ` with proven success in ${context.markets[0].toLowerCase()} markets`;
+    }
+    narrative += ", leveraging deep sector knowledge to navigate complex challenges and capitalize on emerging opportunities.";
+  } else {
+    // Add leadership approach based on demonstrated qualities
+    if (qualities.includes("collaborative execution")) {
+      narrative += ". Builds high-performance cultures through cross-functional collaboration and stakeholder alignment, ensuring sustainable competitive advantages.";
+    } else if (qualities.includes("data-driven decision making")) {
+      narrative += ". Leverages advanced analytics and data insights to drive evidence-based strategies that deliver measurable business impact.";
+    } else {
+      narrative += ". Combines strategic acumen with operational excellence to drive sustainable growth and organizational transformation.";
+    }
+  }
+
+  return narrative;
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
