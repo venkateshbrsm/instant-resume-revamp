@@ -43,14 +43,14 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.7, // Further reduced scale for better margin handling
+        scale: 0.6, // Even smaller scale to ensure no cutoff
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 700, // Smaller width to ensure content fits within margins
-        height: 990, // Adjusted height to maintain aspect ratio
-        windowWidth: 700,
-        windowHeight: 990,
+        width: 600, // Match the smaller content width
+        height: 850, // Proportionally adjusted
+        windowWidth: 600,
+        windowHeight: 850,
       },
       jsPDF: { 
         unit: 'mm', 
@@ -287,14 +287,14 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles with better margins
-  element.style.width = '190mm'; // Reduced width to account for margins
-  element.style.maxWidth = '190mm';
-  element.style.margin = '10mm auto'; // Center with margins
-  element.style.padding = '15mm'; // Internal padding for content
+  // Apply PDF-optimized styles with much more conservative sizing
+  element.style.width = '160mm'; // Much smaller width to prevent cutoff
+  element.style.maxWidth = '160mm';
+  element.style.margin = '0'; // Remove margins to prevent sizing conflicts
+  element.style.padding = '5mm'; // Minimal padding
   element.style.overflow = 'visible';
-  element.style.fontSize = '11pt'; // Slightly smaller font for better fitting
-  element.style.lineHeight = '1.3';
+  element.style.fontSize = '10pt'; // Smaller font to fit better
+  element.style.lineHeight = '1.2';
   element.style.boxSizing = 'border-box';
   
   // Apply page break classes to sections and skill-related elements
