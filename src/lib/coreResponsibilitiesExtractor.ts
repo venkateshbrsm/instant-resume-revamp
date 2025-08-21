@@ -356,6 +356,9 @@ const roleTypeMapping = {
   brand: 'creative'
 };
 
+// Global tracking to ensure unique responsibilities across all experiences
+let usedResponsibilities: Set<string> = new Set();
+
 export function extractCoreResponsibilities(
   achievements: string[] | undefined, 
   title: string, 
@@ -365,6 +368,11 @@ export function extractCoreResponsibilities(
 ): string[] {
   const variant = responsibilityVariants[templateType];
   if (!variant) return [];
+  
+  // Reset if this is the first experience (index 0)
+  if (experienceIndex === 0) {
+    usedResponsibilities = new Set();
+  }
   
   // Determine role type based on job title
   const titleLower = (title || '').toLowerCase();
@@ -377,59 +385,102 @@ export function extractCoreResponsibilities(
     }
   }
   
-  // Get all responsibility categories to create unique combinations
+  // Get all categories for mixing
   const allCategories = Object.keys(variant) as Array<keyof ResponsibilityVariant>;
-  const roleVariants = variant[roleType];
   
-  // Create a unique seed for this experience to ensure consistency but uniqueness
-  const seed = experienceIndex * 7 + titleLower.length;
+  // Create completely unique responsibilities by mixing from all categories
+  let uniqueResponsibilities: string[] = [];
   
-  // Mix responsibilities from primary role type and other types for uniqueness
-  let baseResponsibilities: string[] = [];
+  // Collect all available responsibilities from all categories and variants
+  const allAvailableResponsibilities: string[] = [];
   
-  // Get primary responsibilities from the main role type
-  const primaryVariantIndex = experienceIndex % roleVariants.length;
-  const primaryResponsibilities = [...roleVariants[primaryVariantIndex]];
+  allCategories.forEach(category => {
+    const categoryVariants = variant[category];
+    categoryVariants.forEach(variantArray => {
+      variantArray.forEach(responsibility => {
+        if (!usedResponsibilities.has(responsibility)) {
+          allAvailableResponsibilities.push(responsibility);
+        }
+      });
+    });
+  });
   
-  // Add 2-3 primary responsibilities
-  baseResponsibilities.push(...primaryResponsibilities.slice(0, Math.min(3, maxResponsibilities)));
-  
-  // If we need more responsibilities, mix in from other categories for uniqueness
-  if (baseResponsibilities.length < maxResponsibilities) {
-    const secondaryCategories = allCategories.filter(cat => cat !== roleType);
-    const secondaryCategoryIndex = seed % secondaryCategories.length;
-    const secondaryCategory = secondaryCategories[secondaryCategoryIndex];
-    const secondaryVariants = variant[secondaryCategory];
-    const secondaryVariantIndex = (seed + 1) % secondaryVariants.length;
-    const secondaryResponsibilities = secondaryVariants[secondaryVariantIndex];
-    
-    // Add 1-2 secondary responsibilities to create unique mix
-    const remainingSlots = maxResponsibilities - baseResponsibilities.length;
-    baseResponsibilities.push(...secondaryResponsibilities.slice(0, remainingSlots));
+  // If we don't have enough unused responsibilities, mix used ones with modifications
+  if (allAvailableResponsibilities.length < maxResponsibilities) {
+    // Add some responsibilities with modifications to create uniqueness
+    const primaryRoleVariants = variant[roleType];
+    primaryRoleVariants.forEach(variantArray => {
+      variantArray.forEach(responsibility => {
+        // Modify used responsibilities to create new unique ones
+        const modifiedResponsibility = modifyResponsibilityForUniqueness(responsibility, experienceIndex);
+        if (!usedResponsibilities.has(modifiedResponsibility)) {
+          allAvailableResponsibilities.push(modifiedResponsibility);
+        }
+      });
+    });
   }
+  
+  // Create a unique seed combining multiple factors
+  const titleHash = titleLower.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const seed = experienceIndex * 13 + titleHash * 7 + templateType.length;
+  
+  // Shuffle and select responsibilities
+  const shuffled = [...allAvailableResponsibilities];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = (seed + i) % shuffled.length;
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  // Select unique responsibilities
+  uniqueResponsibilities = shuffled.slice(0, maxResponsibilities);
   
   // Customize based on achievements context if available
   if (achievements && achievements.length > 0) {
     const achievementsText = achievements.join(' ').toLowerCase();
     
-    // Add context-specific customizations with more variety
-    if (achievementsText.includes('budget') || achievementsText.includes('cost')) {
-      const budgetFocused = experienceIndex % 2 === 0 ? 'budget-focused' : 'cost-optimized';
-      baseResponsibilities[0] = baseResponsibilities[0].replace(/regular|team|strategic|daily/, budgetFocused);
-    }
-    if (achievementsText.includes('client') || achievementsText.includes('customer')) {
-      const clientFocused = experienceIndex % 2 === 0 ? 'client-focused' : 'customer-centric';
-      if (baseResponsibilities[1]) {
-        baseResponsibilities[1] = baseResponsibilities[1].replace(/operational|resource|work|performance/, clientFocused);
+    uniqueResponsibilities = uniqueResponsibilities.map((responsibility, idx) => {
+      let customized = responsibility;
+      
+      if (achievementsText.includes('budget') || achievementsText.includes('cost')) {
+        const budgetTerms = ['financial', 'budget', 'cost-effective', 'economic'];
+        const term = budgetTerms[experienceIndex % budgetTerms.length];
+        customized = customized.replace(/operational|strategic|regular|daily/, term);
       }
-    }
-    if (achievementsText.includes('team') || achievementsText.includes('staff')) {
-      const teamFocused = experienceIndex % 2 === 0 ? 'team-oriented' : 'collaborative';
-      if (baseResponsibilities[2]) {
-        baseResponsibilities[2] = baseResponsibilities[2].replace(/performance|milestones|system|quality/, teamFocused);
+      
+      if (achievementsText.includes('client') || achievementsText.includes('customer')) {
+        const clientTerms = ['client-focused', 'customer-centric', 'stakeholder-oriented', 'relationship-driven'];
+        const term = clientTerms[experienceIndex % clientTerms.length];
+        customized = customized.replace(/performance|resource|work|team/, term);
       }
-    }
+      
+      if (achievementsText.includes('team') || achievementsText.includes('staff')) {
+        const teamTerms = ['collaborative', 'team-oriented', 'leadership-focused', 'mentorship-driven'];
+        const term = teamTerms[experienceIndex % teamTerms.length];
+        customized = customized.replace(/system|milestones|quality|process/, term);
+      }
+      
+      return customized;
+    });
   }
   
-  return baseResponsibilities.slice(0, maxResponsibilities);
+  // Mark these responsibilities as used
+  uniqueResponsibilities.forEach(resp => usedResponsibilities.add(resp));
+  
+  return uniqueResponsibilities;
+}
+
+// Helper function to modify responsibilities for uniqueness
+function modifyResponsibilityForUniqueness(responsibility: string, experienceIndex: number): string {
+  const prefixes = ['Overseeing', 'Coordinating', 'Managing', 'Facilitating', 'Leading', 'Directing'];
+  const contexts = ['cross-functional', 'strategic', 'operational', 'innovative', 'data-driven', 'customer-focused'];
+  
+  const prefix = prefixes[experienceIndex % prefixes.length];
+  const context = contexts[experienceIndex % contexts.length];
+  
+  // Replace common action words with unique variants
+  let modified = responsibility
+    .replace(/^(Managing|Leading|Coordinating|Overseeing)/, prefix)
+    .replace(/team|strategic|operational|daily/, context);
+  
+  return modified;
 }

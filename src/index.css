@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Print and page break styles */
+@media print {
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .experience-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
+  
+  .skill-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .education-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Prevent orphan lines */
+  p, li {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Avoid breaking inside these elements */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}
+
 /* AI Resume Makeover Design System - Professional & Modern */
 
 @layer base {
