@@ -353,18 +353,22 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     const htmlEl = listEl as HTMLElement;
     htmlEl.style.pageBreakInside = 'avoid';
     htmlEl.style.breakInside = 'avoid';
-    htmlEl.style.display = 'block';
     
     if (listEl.tagName === 'LI') {
+      // Use list-style-position inside to keep bullets with text
       htmlEl.style.listStylePosition = 'inside';
+      htmlEl.style.display = 'list-item';
       htmlEl.style.paddingLeft = '0';
-      htmlEl.style.marginLeft = '0';
+      htmlEl.style.marginLeft = '16px';
       htmlEl.style.textIndent = '0';
+      htmlEl.style.lineHeight = '1.5';
+      // Ensure bullets align with text baseline
       htmlEl.style.verticalAlign = 'baseline';
-      htmlEl.style.lineHeight = 'normal';
-      htmlEl.style.alignItems = 'flex-start';
-      htmlEl.style.display = 'flex';
-      htmlEl.style.flexDirection = 'row';
+      // Prevent orphaned bullets
+      htmlEl.style.orphans = '2';
+      htmlEl.style.widows = '2';
+    } else {
+      htmlEl.style.display = 'block';
     }
   });
   
