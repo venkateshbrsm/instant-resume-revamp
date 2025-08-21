@@ -43,14 +43,14 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.6, // Even smaller scale to ensure no cutoff
+        scale: 0.5, // Very conservative scale
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 600, // Match the smaller content width
-        height: 850, // Proportionally adjusted
-        windowWidth: 600,
-        windowHeight: 850,
+        width: 500, // Much smaller width for safe margins
+        height: 700, // Adjusted proportionally
+        windowWidth: 500,
+        windowHeight: 700,
       },
       jsPDF: { 
         unit: 'mm', 
