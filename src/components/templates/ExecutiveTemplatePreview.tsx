@@ -13,77 +13,6 @@ interface TemplatePreviewProps {
   };
 }
 
-// Create unique insights by extracting specific details from each achievement
-const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
-  if (!achievements || achievements.length === 0) {
-    return "Leadership requires adapting communication styles to different audiences while maintaining consistent strategic direction.";
-  }
-
-  // Extract specific numbers, actions, and outcomes from achievements
-  const extractSpecifics = () => {
-    const allText = achievements.join(" ");
-    
-    // Find specific numbers/percentages
-    const numbers = allText.match(/\d+(?:\.\d+)?%?/g) || [];
-    const actions = allText.match(/\b(increased|decreased|reduced|improved|managed|led|created|developed|launched|implemented|optimized|streamlined|grew|expanded|built|established|designed|achieved|delivered|generated|exceeded|secured|obtained)\b/gi) || [];
-    const objects = allText.match(/\b(team|teams|department|division|budget|revenue|profit|sales|cost|process|system|program|project|initiative|strategy|operations|efficiency|customers|clients|employees|staff|people)\b/gi) || [];
-    
-    return { numbers, actions, objects };
-  };
-
-  const specifics = extractSpecifics();
-  
-  // Build insight using actual extracted elements
-  if (specifics.numbers.length > 0 && specifics.actions.length > 0) {
-    const number = specifics.numbers[0];
-    const action = specifics.actions[0].toLowerCase();
-    const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
-    
-    // Determine if it's a percentage or count
-    const isPercentage = number.includes('%');
-    const verb = action === 'led' ? 'leading' : action === 'managed' ? 'managing' : `${action}ing`;
-    const preposition = isPercentage ? 'by' : context.includes('team') || context.includes('people') ? 'a team of' : 'with';
-    
-    if (isPercentage) {
-      return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} ${preposition} ${number} required systematic analysis of market conditions and implementation of data-driven strategies that addressed both immediate and long-term organizational needs.`;
-    } else {
-      return `${verb.charAt(0).toUpperCase() + verb.slice(1)} ${preposition} ${number} ${context} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
-    }
-  }
-  
-  if (specifics.actions.length > 1 && specifics.objects.length > 1) {
-    const action1 = specifics.actions[0].toLowerCase();
-    const action2 = specifics.actions[1].toLowerCase();
-    const object1 = specifics.objects[0]?.toLowerCase() || "operations";
-    const object2 = specifics.objects[1]?.toLowerCase() || "performance";
-    
-    const verb1 = action1 === 'led' ? 'leading' : action1 === 'managed' ? 'managing' : `${action1}ing`;
-    const verb2 = action2 === 'led' ? 'leading' : action2 === 'managed' ? 'managing' : `${action2}ing`;
-    
-    return `Successfully ${verb1} ${object1} while simultaneously ${verb2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
-  }
-  
-  // Use the first achievement directly but extract the core insight
-  const firstAchievement = achievements[0];
-  if (firstAchievement && firstAchievement.length > 30) {
-    // Find the key verb-object combination
-    const words = firstAchievement.toLowerCase().split(' ');
-    const keyVerbs = ['increased', 'decreased', 'improved', 'managed', 'led', 'created', 'developed', 'launched', 'achieved', 'delivered'];
-    const verbIndex = words.findIndex(word => keyVerbs.some(verb => word.includes(verb)));
-    
-    if (verbIndex !== -1 && verbIndex < words.length - 2) {
-      const context = words.slice(verbIndex, verbIndex + 4).join(' ');
-      return `The experience of ${context} highlighted the critical importance of stakeholder buy-in and clear success metrics in driving sustainable organizational change.`;
-    }
-  }
-  
-  // Last resort - use role and company info
-  const roleSpecific = roleTitle ? `${roleTitle.toLowerCase()} role` : "leadership position";
-  const companySpecific = company && company !== "N/A" ? `at ${company}` : "in this organization";
-  
-  return `This ${roleSpecific} ${companySpecific} demonstrated that sustainable results emerge from aligning individual capabilities with organizational needs while maintaining flexibility in execution methods.`;
-};
-
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
@@ -259,13 +188,37 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                               ))}
                             </div>
                             
-            {/* Executive Context - AI Generated */}
-            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Leadership Learnings & Development Insights:</h5>
-              <p className="text-xs leading-relaxed text-gray-600">
-                {generateExecutiveContext(exp.achievements, exp.title, exp.company)}
-              </p>
-            </div>
+                            {/* Executive Leadership & Strategic Vision - Extracted from achievements */}
+                            {(() => {
+                              const leadershipAchievements = exp.achievements.filter((achievement: string) => 
+                                achievement.toLowerCase().includes('lead') || 
+                                achievement.toLowerCase().includes('manage') || 
+                                achievement.toLowerCase().includes('direct') || 
+                                achievement.toLowerCase().includes('strategic') || 
+                                achievement.toLowerCase().includes('vision') || 
+                                achievement.toLowerCase().includes('transform') || 
+                                achievement.toLowerCase().includes('initiative') || 
+                                achievement.toLowerCase().includes('team') ||
+                                achievement.toLowerCase().includes('department') ||
+                                achievement.toLowerCase().includes('organization')
+                              );
+                              
+                              if (leadershipAchievements.length > 0) {
+                                return (
+                                  <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+                                    <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
+                                    <div className="text-xs leading-relaxed text-gray-600 space-y-2">
+                                      {leadershipAchievements.slice(0, 3).map((achievement: string, idx: number) => (
+                                        <p key={idx} className="border-l-2 pl-2" style={{ borderColor: selectedColorTheme.accent + '40' }}>
+                                          {achievement}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
                       </div>
