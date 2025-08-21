@@ -13,43 +13,111 @@ interface TemplatePreviewProps {
   };
 }
 
-// AI-powered content generation based on achievements
+// AI-powered content generation based on specific achievements
 const generateExecutiveContext = (achievements: string[]): string => {
   if (!achievements || achievements.length === 0) {
     return "Demonstrated exceptional leadership capabilities by orchestrating strategic initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence and sustainable growth trajectories.";
   }
 
-  // Extract key themes from achievements
-  const keyThemes = [];
-  const achievementText = achievements.join(" ").toLowerCase();
+  const achievementText = achievements.join(" ");
   
-  if (achievementText.includes("revenue") || achievementText.includes("sales") || achievementText.includes("growth") || achievementText.includes("profit")) {
-    keyThemes.push("revenue growth and market expansion");
-  }
-  if (achievementText.includes("team") || achievementText.includes("leadership") || achievementText.includes("manage")) {
-    keyThemes.push("team leadership and organizational development");
-  }
-  if (achievementText.includes("cost") || achievementText.includes("efficiency") || achievementText.includes("process")) {
-    keyThemes.push("operational excellence and cost optimization");
-  }
-  if (achievementText.includes("digital") || achievementText.includes("technology") || achievementText.includes("innovation")) {
-    keyThemes.push("digital transformation and innovation");
-  }
-  if (achievementText.includes("strategy") || achievementText.includes("strategic") || achievementText.includes("vision")) {
-    keyThemes.push("strategic planning and execution");
-  }
+  // Extract specific metrics and numbers
+  const metrics = {
+    percentages: achievementText.match(/\d+%/g) || [],
+    dollars: achievementText.match(/\$[\d,]+[KMB]?/g) || [],
+    numbers: achievementText.match(/\b\d{1,3}(?:,\d{3})*\b/g) || [],
+    years: achievementText.match(/\b(20\d{2}|19\d{2})\b/g) || []
+  };
 
-  // Generate dynamic content based on identified themes
-  let context = "Visionary executive leader with proven expertise in ";
+  // Extract specific actions and initiatives
+  const actions = [];
+  const actionWords = ['launched', 'implemented', 'led', 'developed', 'established', 'created', 'transformed', 'optimized', 'streamlined', 'expanded', 'built', 'designed', 'executed', 'delivered', 'achieved', 'increased', 'reduced', 'improved', 'managed', 'directed', 'spearheaded'];
   
-  if (keyThemes.length > 0) {
-    context += keyThemes.slice(0, 3).join(", ");
-    context += ". Successfully delivered transformational results by leveraging data-driven insights, fostering cross-functional collaboration, and implementing scalable solutions that drive sustainable competitive advantages across diverse business environments.";
+  actionWords.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\s+([^.!?]*?)(?=[.!?]|$)`, 'gi');
+    const matches = achievementText.match(regex);
+    if (matches) {
+      actions.push(...matches.slice(0, 2)); // Limit to avoid overflow
+    }
+  });
+
+  // Extract industry/domain context
+  const domains = [];
+  const industryTerms = ['technology', 'digital', 'software', 'healthcare', 'finance', 'manufacturing', 'retail', 'consulting', 'marketing', 'sales', 'operations', 'product', 'engineering', 'data', 'analytics', 'cloud', 'AI', 'machine learning', 'automation', 'supply chain', 'customer', 'market', 'business'];
+  
+  industryTerms.forEach(term => {
+    if (achievementText.toLowerCase().includes(term)) {
+      domains.push(term);
+    }
+  });
+
+  // Extract specific outcomes and results
+  const outcomes = [];
+  const outcomePatterns = [
+    /increased.*?(?:revenue|sales|profits?|growth|efficiency|productivity).*?by.*?(\d+%|\$[\d,]+[KMB]?)/gi,
+    /reduced.*?(?:costs?|expenses?|time|waste).*?by.*?(\d+%|\$[\d,]+[KMB]?)/gi,
+    /achieved.*?(\d+%|\$[\d,]+[KMB]?|[\d,]+).*?(?:growth|increase|improvement|savings?)/gi,
+    /delivered.*?(\d+%|\$[\d,]+[KMB]?|[\d,]+).*?(?:in|of).*?(?:revenue|savings?|value|results?)/gi
+  ];
+
+  outcomePatterns.forEach(pattern => {
+    const matches = achievementText.match(pattern);
+    if (matches) {
+      outcomes.push(...matches.slice(0, 2));
+    }
+  });
+
+  // Generate truly unique narrative
+  let narrative = "";
+  
+  // Start with specific domain expertise if available
+  if (domains.length > 0) {
+    const primaryDomains = [...new Set(domains)].slice(0, 2);
+    narrative += `Specialized executive leader in ${primaryDomains.join(' and ')} sectors, `;
   } else {
-    context += "strategic leadership, organizational transformation, and performance optimization. Consistently delivers exceptional results through innovative problem-solving, stakeholder alignment, and the cultivation of high-performance teams that exceed organizational objectives.";
+    narrative += "Strategic executive leader ";
   }
 
-  return context;
+  // Add specific quantifiable achievements
+  if (outcomes.length > 0) {
+    const bestOutcome = outcomes[0].toLowerCase();
+    narrative += `who ${bestOutcome}. `;
+  } else if (metrics.percentages.length > 0 || metrics.dollars.length > 0) {
+    const topMetric = metrics.percentages[0] || metrics.dollars[0];
+    narrative += `with demonstrated success delivering ${topMetric} performance improvements. `;
+  }
+
+  // Add specific actions taken
+  if (actions.length > 0) {
+    const uniqueActions = [...new Set(actions.slice(0, 2))];
+    const actionSummary = uniqueActions.join(' and ').replace(/\b(launched|implemented|led|developed|established|created|transformed|optimized|streamlined|expanded|built|designed|executed|delivered|achieved|increased|reduced|improved|managed|directed|spearheaded)\b/gi, (match) => match.charAt(0).toUpperCase() + match.slice(1));
+    narrative += `${actionSummary}. `;
+  }
+
+  // Add context about scale and complexity
+  if (metrics.numbers.length > 0) {
+    const largestNumber = Math.max(...metrics.numbers.map(n => parseInt(n.replace(/,/g, ''))));
+    if (largestNumber > 1000000) {
+      narrative += "Operated at enterprise scale with multi-million dollar impact, ";
+    } else if (largestNumber > 100000) {
+      narrative += "Managed substantial operations with six-figure implications, ";
+    } else if (largestNumber > 1000) {
+      narrative += "Directed significant initiatives involving thousands of stakeholders, ";
+    }
+  }
+
+  // Conclude with leadership approach based on specific evidence
+  if (achievementText.toLowerCase().includes('team') && (metrics.percentages.length > 0 || outcomes.length > 0)) {
+    narrative += "demonstrating exceptional team leadership through measurable business transformation and sustainable competitive advantage creation.";
+  } else if (achievementText.toLowerCase().includes('strategic') || achievementText.toLowerCase().includes('vision')) {
+    narrative += "showcasing visionary strategic thinking that translates complex market opportunities into tangible organizational success.";
+  } else if (domains.includes('technology') || domains.includes('digital')) {
+    narrative += "leveraging cutting-edge technological innovation to drive unprecedented organizational evolution and market positioning.";
+  } else {
+    narrative += "combining analytical rigor with inspirational leadership to deliver transformational results that exceed stakeholder expectations.";
+  }
+
+  return narrative;
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
