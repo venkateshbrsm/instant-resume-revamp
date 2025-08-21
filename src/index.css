@@ -326,10 +326,42 @@
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid !important;
     page-break-after: avoid !important;
+    orphans: 3 !important;
+    widows: 3 !important;
   }
   
   /* Keep list items together */
   li {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Comprehensive text protection */
+  p, div, span, ul, ol, li, td, th {
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+  
+  /* Prevent text splitting in common elements */
+  .text-sm, .text-base, .text-lg, .font-medium, .font-semibold {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Protect content blocks */
+  .mb-2, .mb-3, .mb-4, .space-y-2 > *, .space-y-3 > *, .space-y-4 > * {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Keep related content together */
+  .flex, .grid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Protect specific resume sections */
+  [class*="experience"], [class*="education"], [class*="skill"], [class*="contact"] {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
