@@ -1200,7 +1200,8 @@ Return ONLY this JSON format:
       "institution": "actual institution from resume", 
       "year": "actual year from resume"
     }
-  ]
+  ],
+  "languages": ["ONLY include languages if explicitly mentioned in the resume"]
 }
 
 REMEMBER: Use ONLY information from the actual resume provided. Do not invent data.`;
