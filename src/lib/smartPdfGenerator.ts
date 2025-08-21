@@ -1,4 +1,4 @@
-import html2pdf from 'html2pdf.js';
+import puppeteer from 'puppeteer';
 
 export interface SmartPdfOptions {
   filename?: string;
@@ -9,8 +9,8 @@ export interface SmartPdfOptions {
 }
 
 /**
- * Generates PDF using html2pdf with intelligent page breaking
- * Prevents text splitting by using proper CSS page break controls
+ * Generates PDF using Puppeteer with proper text rendering and page breaks
+ * This approach uses native browser PDF generation which respects text boundaries
  */
 export async function generateSmartPdf(
   element: HTMLElement,
@@ -20,75 +20,121 @@ export async function generateSmartPdf(
     filename = 'enhanced-resume.pdf',
     margin = [15, 10, 15, 10],
     format = 'a4',
-    orientation = 'portrait',
-    quality = 0.95
+    orientation = 'portrait'
   } = options;
 
   // Prepare element for better PDF generation
   const cleanup = prepareElementForPdf(element);
   
   try {
-    // Wait for layout to settle
-    window.scrollTo(0, 0);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Create HTML document with the element content
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${filename}</title>
+          <style>
+            /* Import existing Tailwind and custom styles */
+            @import url("data:text/css,${encodeURIComponent(getAllStylesheets())}");
+            
+            /* PDF-specific styles for proper page breaks */
+            @media print {
+              * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+              
+              body {
+                margin: 0 !important;
+                padding: ${Array.isArray(margin) ? margin.map(m => m + 'mm').join(' ') : margin + 'mm'} !important;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                font-size: 11pt !important;
+                line-height: 1.4 !important;
+                color: #000 !important;
+                background: #fff !important;
+              }
+              
+              /* Prevent text splitting */
+              .section,
+              .experience-item,
+              .education-item,
+              .skill-section,
+              .achievement,
+              .job-description,
+              p,
+              li {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                orphans: 3 !important;
+                widows: 3 !important;
+              }
+              
+              /* Section spacing */
+              .section {
+                margin-bottom: 15pt !important;
+              }
+              
+              /* Headings */
+              h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                margin-bottom: 8pt !important;
+                margin-top: 12pt !important;
+              }
+              
+              /* Lists */
+              ul, ol {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin: 8pt 0 !important;
+              }
+              
+              /* No underlines for links */
+              a {
+                text-decoration: none !important;
+                color: inherit !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${element.outerHTML}
+        </body>
+      </html>
+    `;
 
-    const opt = {
-      margin: margin,
-      filename: filename,
-      image: { 
-        type: 'jpeg', 
-        quality: quality 
-      },
-      html2canvas: {
-        allowTaint: true,
-        letterRendering: true,
-        logging: false,
-        scale: 1.2,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        backgroundColor: '#ffffff',
-        foreignObjectRendering: true,
-        onclone: (clonedDoc) => {
-          // Apply break-aware styles to cloned document
-          const clonedElement = clonedDoc.querySelector('[data-pdf-content]') || clonedDoc.body;
-          if (clonedElement) {
-            clonedElement.style.pageBreakInside = 'avoid';
-          }
-        }
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: format, 
-        orientation: orientation,
-        compress: true
-      },
-      pagebreak: { 
-        mode: ['css', 'legacy'],
-        before: ['.page-break-before', '.major-section-break'],
-        after: ['.page-break-after'],
-        avoid: [
-          '.keep-together', 
-          '.no-break', 
-          '.experience-item', 
-          '.education-item', 
-          '.skill-section',
-          '.section',
-          'p',
-          'li',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          '.text-content',
-          '.job-description',
-          '.achievement'
-        ]
-      }
-    };
+    // Launch Puppeteer browser
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
 
-    const pdf = await html2pdf().set(opt).from(element).output('blob');
+    const page = await browser.newPage();
+    
+    // Set content and wait for rendering
+    await page.setContent(htmlContent, { 
+      waitUntil: 'networkidle0'
+    });
+
+    // Generate PDF with proper page breaks
+    const pdfBuffer = await page.pdf({
+      format: format as any,
+      landscape: orientation === 'landscape',
+      margin: {
+        top: Array.isArray(margin) ? margin[0] + 'mm' : margin + 'mm',
+        right: Array.isArray(margin) ? margin[1] + 'mm' : margin + 'mm',
+        bottom: Array.isArray(margin) ? margin[2] + 'mm' : margin + 'mm',
+        left: Array.isArray(margin) ? margin[3] + 'mm' : margin + 'mm'
+      },
+      printBackground: true,
+      preferCSSPageSize: false
+    });
+
+    await browser.close();
     cleanup();
-    return pdf;
+    
+    return new Blob([pdfBuffer], { type: 'application/pdf' });
     
   } catch (error) {
     cleanup();
@@ -123,8 +169,21 @@ export async function downloadSmartPdf(
 }
 
 /**
- * Prepares element for PDF generation with proper page break classes
+ * Gets all stylesheets content to include in PDF
  */
+function getAllStylesheets(): string {
+  let css = '';
+  Array.from(document.styleSheets).forEach(styleSheet => {
+    try {
+      Array.from(styleSheet.cssRules).forEach(rule => {
+        css += rule.cssText + '\n';
+      });
+    } catch (e) {
+      // Skip external stylesheets that can't be accessed
+    }
+  });
+  return css;
+}
 function prepareElementForPdf(element: HTMLElement): () => void {
   const originalStyles = {
     width: element.style.width,
