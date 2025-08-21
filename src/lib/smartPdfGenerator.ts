@@ -43,14 +43,14 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.4, // Reduced scale to prevent text splitting
+        scale: 0.25, // Much smaller scale to prevent any splitting
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 450, // Even smaller width for safer margins
-        height: 600, // Much more conservative height
-        windowWidth: 450,
-        windowHeight: 600,
+        width: 300, // Very small width to absolutely prevent cutoff
+        height: 400, // Much smaller height for ultra-safe margins
+        windowWidth: 300,
+        windowHeight: 400,
       },
       jsPDF: { 
         unit: 'mm', 
@@ -313,17 +313,19 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles with ULTRA-conservative sizing to prevent any splitting
-  element.style.width = '130mm'; // ULTRA-small width to absolutely guarantee no cutoff
-  element.style.maxWidth = '130mm';
+  // Apply PDF-optimized styles with EXTREME conservative sizing to prevent any splitting
+  element.style.width = '100mm'; // EXTREME small width to absolutely guarantee no cutoff
+  element.style.maxWidth = '100mm';
   element.style.margin = '0'; // Remove margins to prevent sizing conflicts
-  element.style.padding = '2mm'; // Minimal padding
+  element.style.padding = '1mm'; // Minimal padding
   element.style.overflow = 'visible';
-  element.style.fontSize = '8pt'; // Very small font to prevent splitting
-  element.style.lineHeight = '1.0';
+  element.style.fontSize = '6pt'; // Extremely small font to prevent splitting
+  element.style.lineHeight = '0.9';
   element.style.boxSizing = 'border-box';
   element.style.wordBreak = 'keep-all';
   element.style.hyphens = 'none';
+  element.style.whiteSpace = 'nowrap';
+  element.style.textOverflow = 'clip';
   
   // Apply page break classes to sections and skill-related elements
   const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
