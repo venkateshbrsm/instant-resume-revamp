@@ -13,63 +13,93 @@ interface TemplatePreviewProps {
   };
 }
 
-// Create unique insights by extracting specific details from each achievement
+// Extract leadership learnings and insights from specific achievements
 const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
   if (!achievements || achievements.length === 0) {
-    return "Leadership requires adapting communication styles to different audiences while maintaining consistent strategic direction.";
+    return "Key leadership insight: Successful executives demonstrate ability to balance strategic vision with tactical execution while maintaining stakeholder alignment and driving measurable organizational outcomes.";
   }
 
-  // Extract specific numbers, actions, and outcomes from achievements
-  const extractSpecifics = () => {
-    const allText = achievements.join(" ");
+  const achievementText = achievements.join(" ");
+  const lowerText = achievementText.toLowerCase();
+  
+  // Extract specific leadership learnings from the achievements
+  const extractLeadershipLearnings = () => {
+    const learnings = [];
     
-    // Find specific numbers/percentages
-    const numbers = allText.match(/\d+(?:\.\d+)?%?/g) || [];
-    const actions = allText.match(/\b(increased|decreased|reduced|improved|managed|led|created|developed|launched|implemented|optimized|streamlined|grew|expanded|built|established|designed|achieved|delivered|generated|exceeded|secured|obtained)\b/gi) || [];
-    const objects = allText.match(/\b(team|teams|department|division|budget|revenue|profit|sales|cost|process|system|program|project|initiative|strategy|operations|efficiency|customers|clients|employees|staff|people)\b/gi) || [];
+    // Analyze each achievement for leadership insights
+    achievements.forEach(achievement => {
+      const lower = achievement.toLowerCase();
+      
+      // Growth and scaling insights
+      if (lower.includes('increased') || lower.includes('grew') || lower.includes('expanded')) {
+        const match = achievement.match(/increased?|grew|expanded/i);
+        if (match) {
+          learnings.push(`Growth Leadership: Demonstrated ability to scale operations and drive expansion through ${achievement.toLowerCase().replace(match[0].toLowerCase(), 'strategic initiatives')}`);
+        }
+      }
+      
+      // Team and people insights
+      if (lower.includes('team') || lower.includes('people') || lower.includes('staff') || lower.includes('employees')) {
+        learnings.push(`People Leadership: Successfully built and managed teams by ${achievement.toLowerCase()}`);
+      }
+      
+      // Process and operational insights
+      if (lower.includes('process') || lower.includes('efficiency') || lower.includes('streamlined') || lower.includes('optimized')) {
+        learnings.push(`Operational Excellence: Applied systematic improvement methodology resulting in ${achievement.toLowerCase()}`);
+      }
+      
+      // Financial and business insights
+      if (lower.includes('revenue') || lower.includes('profit') || lower.includes('cost') || lower.includes('savings') || lower.includes('$')) {
+        learnings.push(`Business Acumen: Generated measurable financial impact through ${achievement.toLowerCase()}`);
+      }
+      
+      // Innovation and change insights
+      if (lower.includes('launched') || lower.includes('created') || lower.includes('developed') || lower.includes('implemented')) {
+        learnings.push(`Innovation Leadership: Drove organizational change by ${achievement.toLowerCase()}`);
+      }
+      
+      // Strategic and planning insights
+      if (lower.includes('strategic') || lower.includes('vision') || lower.includes('planning') || lower.includes('roadmap')) {
+        learnings.push(`Strategic Thinking: Applied long-term strategic approach evidenced by ${achievement.toLowerCase()}`);
+      }
+    });
     
-    return { numbers, actions, objects };
+    return learnings;
   };
 
-  const specifics = extractSpecifics();
+  // Get specific leadership learnings
+  const learnings = extractLeadershipLearnings();
   
-  // Build insight using actual extracted elements
-  if (specifics.numbers.length > 0 && specifics.actions.length > 0) {
-    const number = specifics.numbers[0];
-    const action = specifics.actions[0].toLowerCase();
-    const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
-    
-    return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} by ${number} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
-  }
-  
-  if (specifics.actions.length > 1 && specifics.objects.length > 1) {
-    const action1 = specifics.actions[0].toLowerCase();
-    const action2 = specifics.actions[1].toLowerCase();
-    const object1 = specifics.objects[0]?.toLowerCase() || "operations";
-    const object2 = specifics.objects[1]?.toLowerCase() || "performance";
-    
-    return `Successfully ${action1} ${object1} while simultaneously ${action2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
-  }
-  
-  // Use the first achievement directly but extract the core insight
-  const firstAchievement = achievements[0];
-  if (firstAchievement && firstAchievement.length > 30) {
-    // Find the key verb-object combination
-    const words = firstAchievement.toLowerCase().split(' ');
-    const keyVerbs = ['increased', 'decreased', 'improved', 'managed', 'led', 'created', 'developed', 'launched', 'achieved', 'delivered'];
-    const verbIndex = words.findIndex(word => keyVerbs.some(verb => word.includes(verb)));
-    
-    if (verbIndex !== -1 && verbIndex < words.length - 2) {
-      const context = words.slice(verbIndex, verbIndex + 4).join(' ');
-      return `The experience of ${context} highlighted the critical importance of stakeholder buy-in and clear success metrics in driving sustainable organizational change.`;
+  // If we have specific learnings, format them
+  if (learnings.length > 0) {
+    // Take the most relevant learning or combine if multiple
+    if (learnings.length === 1) {
+      return `Key Leadership Insight: ${learnings[0]}`;
+    } else {
+      // Combine insights showing progression and multi-faceted leadership
+      const primaryLearning = learnings[0];
+      const secondaryLearning = learnings[1];
+      return `Leadership Development: ${primaryLearning} Additionally, ${secondaryLearning.toLowerCase()}. This demonstrates multi-dimensional leadership capability across both tactical execution and strategic planning.`;
     }
   }
   
-  // Last resort - use role and company info
-  const roleSpecific = roleTitle ? `${roleTitle.toLowerCase()} role` : "leadership position";
-  const companySpecific = company && company !== "N/A" ? `at ${company}` : "in this organization";
+  // Fallback: Extract key themes and present as learnings
+  const themes = [];
+  if (lowerText.includes('transformation') || lowerText.includes('change')) {
+    themes.push('change management and organizational transformation');
+  }
+  if (lowerText.includes('collaboration') || lowerText.includes('stakeholder')) {
+    themes.push('stakeholder engagement and cross-functional leadership');
+  }
+  if (lowerText.includes('data') || lowerText.includes('analytics') || lowerText.includes('metrics')) {
+    themes.push('data-driven decision making and performance measurement');
+  }
   
-  return `This ${roleSpecific} ${companySpecific} demonstrated that sustainable results emerge from aligning individual capabilities with organizational needs while maintaining flexibility in execution methods.`;
+  if (themes.length > 0) {
+    return `Leadership Insight: This role demonstrated core competencies in ${themes.slice(0, 2).join(' and ')}, showing the ability to navigate complex organizational challenges while maintaining focus on measurable outcomes.`;
+  }
+  
+  return `Leadership Learning: This experience showcased the importance of balancing immediate operational needs with long-term strategic objectives, while building consensus among diverse stakeholder groups to achieve organizational goals.`;
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
