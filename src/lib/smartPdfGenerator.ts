@@ -31,9 +31,9 @@ export async function generateSmartPdf(
     // Wait for any layout changes to settle
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Configure html2pdf with proper page break handling
+    // Configure html2pdf with conservative settings to prevent text splitting
     const opt = {
-      margin: [25, 20, 25, 20], // Larger margins: top, right, bottom, left in mm
+      margin: [15, 15, 15, 15], // Smaller margins to fit more content
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -43,29 +43,32 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 2, // Higher scale for better text quality
+        scale: 1.5, // Balanced scale for quality vs stability
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 794, // A4 width in pixels at 96 DPI
-        height: 1123, // A4 height in pixels at 96 DPI
-        windowWidth: 794,
-        windowHeight: 1123,
+        width: 210 * 3.78, // A4 width in mm * pixels per mm at 96 DPI
+        height: 297 * 3.78, // A4 height in mm * pixels per mm at 96 DPI
+        windowWidth: 210 * 3.78,
+        windowHeight: 297 * 3.78,
+        removeContainer: true,
+        imageTimeout: 15000,
+        onrendered: function() {
+          // Force layout recalculation after render
+        }
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: true,
+        compress: false, // Disable compression to avoid text issues
         putOnlyUsedFonts: true,
-        floatPrecision: 16 // Higher precision for better layout
+        floatPrecision: 2 // Lower precision for stability
       },
-      // Enable intelligent page break handling
+      // Disable automatic page breaking to prevent text splitting
       pagebreak: { 
-        mode: ['css', 'legacy'],
-        before: '.page-break-before',
-        after: '.page-break-after',
-        avoid: ['.page-break-avoid', '.skill-item', '.badge', 'h1', 'h2', 'h3']
+        mode: ['avoid-all'],
+        avoid: ['*'] // Avoid breaking anywhere
       }
     };
 
