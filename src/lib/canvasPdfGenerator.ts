@@ -121,17 +121,17 @@ export async function generatePdfFromElement(
       pdf.text('1', pdfWidth - margin - 10, pdfHeight - 8, { align: 'right' });
     } else {
       // Enhanced multi-page generation with intelligent content-aware page breaks
-      const printerMargin = 15; // Increased margin for safer content placement
+      const printerMargin = 8; // Reduced margin for better space utilization
       const effectivePageHeight = availableHeight - printerMargin;
       
       // Calculate optimal page sections with content-aware splitting
       const pixelsPerPageMm = effectivePageHeight / pixelsToMm / finalScale;
       const pixelsPerPage = pixelsPerPageMm * scale;
       
-      // Much larger text buffer to prevent any content cutting
-      const textBuffer = scale * 80; // Increased to 80mm in pixels for maximum content preservation
-      const minSectionHeight = pixelsPerPage * 0.4; // Further reduced minimum for more flexibility
-      const maxSectionHeight = pixelsPerPage - (scale * 30); // Leave 30mm at bottom for safety
+      // Reduced text buffer to allow more content per page
+      const textBuffer = scale * 20; // Reduced to 20mm in pixels for better space utilization
+      const minSectionHeight = pixelsPerPage * 0.3; // Reduced minimum for more flexibility
+      const maxSectionHeight = pixelsPerPage - (scale * 10); // Leave only 10mm at bottom
       
       // Try to detect content boundaries for smarter page breaks
       const contentSections = detectContentSections(canvas, scale);
