@@ -43,7 +43,7 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 0.25, // Much smaller scale to prevent any splitting
+        scale: 0.3, // Scale set to 0.3 to prevent any splitting
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
