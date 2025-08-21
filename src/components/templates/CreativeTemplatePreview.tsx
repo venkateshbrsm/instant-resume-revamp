@@ -239,15 +239,16 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       <Badge 
                         key={index}
                         variant="outline"
-                        className="px-2 py-1 rounded-full border-2 font-medium text-xs max-w-[120px] truncate whitespace-nowrap overflow-hidden print:px-2 print:py-0.5 print:text-xs print:max-w-[100px]"
+                        className="px-2 py-1 rounded-full border-2 font-medium text-xs leading-tight break-words hyphens-auto max-w-[140px] min-h-fit print:px-2 print:py-0.5 print:text-xs print:max-w-[120px]"
                         style={{ 
                           borderColor: selectedColorTheme.accent,
                           color: selectedColorTheme.primary,
-                          background: 'white'
+                          background: 'white',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word'
                         }}
-                        title={skill}
                       >
-                        {skill}
+                        <span className="block text-center">{skill}</span>
                       </Badge>
                     ))}
                   </div>
