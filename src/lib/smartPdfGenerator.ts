@@ -1,5 +1,4 @@
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import html2pdf from 'html2pdf.js';
 
 export interface SmartPdfOptions {
   filename?: string;
@@ -10,8 +9,8 @@ export interface SmartPdfOptions {
 }
 
 /**
- * Generates PDF using manual page splitting to prevent text from being cut off
- * This approach captures content as image and splits across pages properly
+ * Generates PDF using html2pdf with intelligent page breaking
+ * Prevents text splitting by using proper CSS page break controls
  */
 export async function generateSmartPdf(
   element: HTMLElement,
@@ -19,72 +18,82 @@ export async function generateSmartPdf(
 ): Promise<Blob> {
   const {
     filename = 'enhanced-resume.pdf',
+    margin = [15, 10, 15, 10],
+    format = 'a4',
     orientation = 'portrait',
-    quality = 0.98
+    quality = 0.95
   } = options;
 
   // Prepare element for better PDF generation
   const cleanup = prepareElementForPdf(element);
   
   try {
-    // Scroll to top and wait for layout to settle
+    // Wait for layout to settle
     window.scrollTo(0, 0);
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    // Capture the entire content as canvas
-    const canvas = await html2canvas(element, {
-      allowTaint: true,
-      logging: false,
-      scale: 2, // High quality
-      useCORS: true,
-      scrollX: 0,
-      scrollY: 0,
-      backgroundColor: '#ffffff',
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-      foreignObjectRendering: true
-    });
+    const opt = {
+      margin: margin,
+      filename: filename,
+      image: { 
+        type: 'jpeg', 
+        quality: quality 
+      },
+      html2canvas: {
+        allowTaint: true,
+        letterRendering: true,
+        logging: false,
+        scale: 1.2,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        backgroundColor: '#ffffff',
+        foreignObjectRendering: true,
+        onclone: (clonedDoc) => {
+          // Apply break-aware styles to cloned document
+          const clonedElement = clonedDoc.querySelector('[data-pdf-content]') || clonedDoc.body;
+          if (clonedElement) {
+            clonedElement.style.pageBreakInside = 'avoid';
+          }
+        }
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: format, 
+        orientation: orientation,
+        compress: true
+      },
+      pagebreak: { 
+        mode: ['css', 'legacy'],
+        before: ['.page-break-before', '.major-section-break'],
+        after: ['.page-break-after'],
+        avoid: [
+          '.keep-together', 
+          '.no-break', 
+          '.experience-item', 
+          '.education-item', 
+          '.skill-section',
+          '.section',
+          'p',
+          'li',
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          '.text-content',
+          '.job-description',
+          '.achievement'
+        ]
+      }
+    };
 
-    const imgData = canvas.toDataURL('image/jpeg', quality);
-    
-    // A4 dimensions in mm
-    const imgWidth = 190; // A4 width minus margins (210 - 20)
-    const pageHeight = 275; // A4 height minus margins (297 - 22)
-    
-    // Calculate image height proportionally
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    
-    // Create PDF document
-    const pdf = new jsPDF({
-      orientation: orientation,
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    let position = 0;
-    
-    // Add first page
-    pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-    
-    // Add subsequent pages if content overflows
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-    
+    const pdf = await html2pdf().set(opt).from(element).output('blob');
     cleanup();
-    
-    // Return as blob
-    return pdf.output('blob');
+    return pdf;
     
   } catch (error) {
     cleanup();
-    console.error('Error generating smart PDF:', error);
-    throw new Error('Failed to generate PDF with manual page breaks');
+    console.error('Error generating PDF:', error);
+    throw new Error('Failed to generate PDF');
   }
 }
 
