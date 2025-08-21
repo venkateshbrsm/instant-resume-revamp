@@ -9,8 +9,8 @@ export interface SmartPdfOptions {
 }
 
 /**
- * Generates PDF using html2pdf.js which properly respects CSS page break rules
- * This is much better than html2canvas approach for handling page breaks
+ * Generates PDF using a smart approach that prevents text splitting across pages
+ * Uses content-aware page breaking to keep related content together
  */
 export async function generateSmartPdf(
   element: HTMLElement,
@@ -29,50 +29,65 @@ export async function generateSmartPdf(
   
   try {
     // Wait for any layout changes to settle
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    // Configure html2pdf with A4-optimized settings to prevent text splitting
+    // Use a completely different approach - render with browser print styles
     const opt = {
-      margin: [15, 10, 15, 10], // Conservative margins: top, right, bottom, left in mm
+      margin: [10, 8, 10, 8], // Minimal margins to maximize content area
       filename: filename,
       image: { 
         type: 'jpeg', 
-        quality: quality 
+        quality: 0.95 
       },
       html2canvas: {
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 2, // Higher scale for better text rendering
+        scale: 1.5, // Good balance of quality and performance
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 794, // A4 width in pixels at 96 DPI (210mm)
-        height: 1123, // A4 height in pixels at 96 DPI (297mm)
-        windowWidth: 794,
-        windowHeight: 1123,
+        // Use browser's natural page dimensions
+        width: element.offsetWidth || 794,
+        height: element.scrollHeight,
         backgroundColor: '#ffffff',
-        removeContainer: true,
-        foreignObjectRendering: false, // Disable to prevent text splitting
+        removeContainer: false,
+        foreignObjectRendering: true, // Enable for better text rendering
+        onclone: (clonedDoc) => {
+          // Ensure cloned document has proper styles
+          const clonedElement = clonedDoc.querySelector('[data-pdf-content]') || clonedDoc.body;
+          if (clonedElement) {
+            clonedElement.style.pageBreakInside = 'avoid';
+            clonedElement.style.breakInside = 'avoid';
+          }
+        }
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: false, // Disable compression to preserve layout
-        putOnlyUsedFonts: true,
-        floatPrecision: 2
+        compress: true,
+        putOnlyUsedFonts: true
       },
-      // Simplified page break handling - let content flow naturally
+      // Enhanced pagebreak configuration
       pagebreak: { 
-        mode: ['avoid-all'],
-        before: '.force-page-break',
-        after: '.force-page-break-after',
-        avoid: ['.keep-together', '.no-break']
+        mode: ['css', 'legacy'],
+        before: ['.page-break-before', '.force-page-break'],
+        after: ['.page-break-after', '.force-page-break-after'],
+        avoid: [
+          '.keep-together', 
+          '.no-break', 
+          '.experience-item', 
+          '.education-item', 
+          '.skill-section',
+          'li',
+          'p',
+          '.section'
+        ]
       }
     };
 
-    // Generate PDF blob
+    // Generate PDF blob with enhanced settings
     const pdf = await html2pdf().set(opt).from(element).output('blob');
     
     cleanup();
