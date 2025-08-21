@@ -1153,7 +1153,7 @@ CRITICAL INSTRUCTIONS:
 Based STRICTLY on the actual resume content above, create a JSON response with:
 - name: Extract from the resume or use "${candidateName}"
 - title: Based on actual job titles mentioned in resume
-- contact: Use realistic placeholders (email/phone/location)
+- contact: Use ONLY actual contact information from the resume
 - summary: Write based on ACTUAL experience mentioned in resume
 - experience: Use ONLY actual companies and roles from the resume
 - skills: Use ONLY skills actually mentioned in the resume  
@@ -1169,14 +1169,16 @@ DO NOT INCLUDE:
 - Team size numbers not mentioned
 - Languages not explicitly mentioned in the original resume
 - Certifications not stated in the resume
+- Placeholder contact information (email/phone/location) if not in original resume
+- Any fictional or assumed data
 
 Return ONLY this JSON format:
 {
   "name": "actual name from resume",
   "title": "actual or inferred job title",
-  "email": "professional.email@example.com",
-  "phone": "+91 XXXXX XXXXX", 
-  "location": "City, India",
+  "email": actual email from resume or null,
+  "phone": actual phone from resume or null, 
+  "location": actual location from resume or null,
   "profilePhoto": ${profilePhotoUrl ? '"' + profilePhotoUrl + '"' : 'null'},
   "summary": "Summary based on actual experience without fake metrics",
   "experience": [
