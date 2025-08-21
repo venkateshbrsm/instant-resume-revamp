@@ -108,6 +108,11 @@ export async function generatePdfFromElement(
       const imgData = canvas.toDataURL('image/jpeg', quality);
       const yOffset = margin + Math.max(0, (availableHeight - finalHeight) / 2);
       pdf.addImage(imgData, 'JPEG', margin, yOffset, finalWidth, finalHeight);
+      
+      // Add page number at bottom right
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('1', pdfWidth - margin - 10, pdfHeight - 8, { align: 'right' });
     } else {
       // Enhanced multi-page generation with intelligent content-aware page breaks
       const printerMargin = 15; // Increased margin for safer content placement
@@ -186,6 +191,11 @@ export async function generatePdfFromElement(
           // Add extra margin for first page only
           const pageTopMargin = pageIndex === 0 ? margin : margin + 2;
           pdf.addImage(pageImgData, 'JPEG', margin, pageTopMargin, finalWidth, maxAllowedHeight);
+          
+          // Add page number at bottom right of each page
+          pdf.setFontSize(10);
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(String(pageIndex + 1), pdfWidth - margin - 10, pdfHeight - 8, { align: 'right' });
         }
         
         // Move to next section - use the actual section height to avoid gaps
