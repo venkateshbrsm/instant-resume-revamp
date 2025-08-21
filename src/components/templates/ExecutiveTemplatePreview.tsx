@@ -39,15 +39,7 @@ const generateExecutiveContext = (achievements: string[], roleTitle: string = ""
     const action = specifics.actions[0].toLowerCase();
     const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
     
-    // Create grammatically correct sentences based on context
-    let sentence = "";
-    if (number.includes('%')) {
-      sentence = `The process of ${action === 'led' ? 'leading' : action.endsWith('ed') ? action.slice(0, -2) + 'ing' : action + 'ing'} ${context} by ${number}`;
-    } else {
-      sentence = `${action === 'led' ? 'Leading' : action.charAt(0).toUpperCase() + action.slice(1)} ${context} of ${number}`;
-    }
-    
-    return `${sentence} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
+    return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} by ${number} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
   }
   
   if (specifics.actions.length > 1 && specifics.objects.length > 1) {

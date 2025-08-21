@@ -34,16 +34,9 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
     const photoExtractionPromise = extractPhotosFromFile(file);
 
     if (fileType === 'pdf') {
-      try {
-        // For PDFs, extract text and keep original file for visual preview
-        text = await extractTextFromPDF(file);
-        pdfUrl = URL.createObjectURL(file);
-      } catch (pdfError) {
-        console.error('PDF extraction failed, trying alternative method:', pdfError);
-        // Try fallback PDF extraction using PDF.js
-        text = await extractTextFromPDFFallback(file);
-        pdfUrl = URL.createObjectURL(file);
-      }
+      // For PDFs, extract text and keep original file for visual preview
+      text = await extractTextFromPDF(file);
+      pdfUrl = URL.createObjectURL(file);
     } else if (fileType === 'docx') {
       // For DOCX, extract text and convert to PDF for visual preview
       text = await extractTextFromWord(file);
@@ -204,8 +197,23 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
   } catch (error) {
     console.error('PDF processing failed:', error);
     
-    // Instead of returning fake content, throw an error so the user knows extraction failed
-    throw new Error(`Unable to extract text from PDF: ${error.message}. Please try converting your PDF to DOCX format or ensure the PDF is not password-protected.`);
+    return `📄 PDF Resume: ${file.name}
+
+File Details:
+- Size: ${(file.size / 1024).toFixed(1)} KB
+- Type: ${file.type}
+- Uploaded: ${new Date().toLocaleString()}
+
+❌ PDF Processing Error
+
+Unable to process this PDF file with Adobe PDF Services.
+
+💡 Try instead:
+• Save as .docx format from your word processor
+• Use a different PDF file
+• Ensure the file isn't corrupted or password-protected
+
+The resume enhancement will still attempt to process the document.`;
   }
 };
 
@@ -408,40 +416,6 @@ export const formatResumeText = (text: string, fileName: string): string => {
 
   // Return content as-is to preserve original formatting
   return text;
-};
-
-// Fallback PDF extraction using PDF.js when Adobe services fail
-const extractTextFromPDFFallback = async (file: File): Promise<string> => {
-  console.log('Using PDF.js fallback extraction for:', file.name);
-  
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    
-    let fullText = '';
-    
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const content = await page.getTextContent();
-      
-      const strings = content.items.map((item: any) => {
-        return 'str' in item ? item.str : '';
-      });
-      
-      fullText += strings.join(' ') + '\n';
-    }
-    
-    if (fullText.trim().length < 50) {
-      throw new Error('PDF appears to contain mostly images or unreadable text');
-    }
-    
-    console.log('PDF.js fallback extraction successful, length:', fullText.length);
-    return fullText.trim();
-    
-  } catch (error) {
-    console.error('PDF.js fallback extraction failed:', error);
-    throw new Error(`Unable to extract text from PDF: ${error.message}. This PDF may contain images instead of text, or may be password-protected. Please try converting to DOCX format.`);
-  }
 };
 
 export const getFileType = (file: File): 'docx' | 'pdf' | 'txt' => {
