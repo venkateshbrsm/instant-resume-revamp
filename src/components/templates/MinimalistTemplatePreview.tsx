@@ -65,7 +65,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           
           <div className="space-y-8">
             {enhancedContent.experience.map((exp: any, index: number) => (
-              <div key={index} className="space-y-4">
+              <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
                   <div>
                     <h3 className="text-lg font-medium text-foreground">{exp.title}</h3>
@@ -89,7 +89,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                     ))}
                     
                      {/* Job-specific Core Responsibilities */}
-                     <div className="mt-4 p-3 rounded border" style={{ 
+                     <div className="mt-4 p-3 rounded border print:break-inside-avoid" style={{ 
                        backgroundColor: `${selectedColorTheme.primary}03`,
                        borderColor: `${selectedColorTheme.primary}15`
                      }}>

@@ -193,7 +193,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             
             <div className="space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-2 pl-6 relative page-break-avoid experience-item" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-2 pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div 
                     className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
                     style={{ backgroundColor: selectedColorTheme.primary }}
@@ -233,7 +233,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         </ul>
                         
                          {/* Job-specific Core Responsibilities */}
-                         <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid">
+                         <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid print:break-inside-avoid">
                            <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
                            <div className="text-xs opacity-80 leading-relaxed space-y-1">
                               {(() => {

@@ -76,7 +76,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </h2>
             <div className="space-y-8">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-4 pl-6 page-break-avoid experience-item" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-4 pl-6 page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
@@ -101,7 +101,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                       </ul>
                       
                        {/* Job-specific Core Responsibilities */}
-                       <div className="mt-4 p-4 rounded-lg border page-break-avoid" style={{ 
+                       <div className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid" style={{ 
                          backgroundColor: `${selectedColorTheme.primary}05`,
                          borderColor: `${selectedColorTheme.primary}20`
                        }}>

@@ -127,9 +127,9 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   
                   <div className="space-y-8 print:space-y-6">
                     {enhancedContent.experience.map((exp: any, index: number) => (
-                      <div 
-                        key={index} 
-                        className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg"
+                       <div 
+                         key={index} 
+                         className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg print:break-inside-avoid print:mb-6"
                         style={{ 
                           background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
                           borderColor: selectedColorTheme.accent,
