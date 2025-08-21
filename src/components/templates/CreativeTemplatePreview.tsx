@@ -166,7 +166,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                             {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
-                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 
+                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid overflow-hidden" 
                                 style={{ pageBreakInside: 'avoid' }}
                               >
                                 <div 
@@ -175,7 +175,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                 >
                                   <span className="text-white text-xs font-bold">✓</span>
                                 </div>
-                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium">{achievement}</p>
+                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1">{achievement}</p>
                               </div>
                             ))}
                             
