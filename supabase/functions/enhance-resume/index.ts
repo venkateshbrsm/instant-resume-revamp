@@ -1147,34 +1147,19 @@ CRITICAL INSTRUCTIONS:
 3. DO NOT invent companies, achievements, or metrics not mentioned
 4. DO NOT create fake numbers, percentages, or project counts
 5. ${profilePhotoUrl ? 'Include the provided profile photo URL in the response' : 'Do not include any profile photo information'}
-6. If a detail is missing, leave it out or use a generic placeholder
-7. Use the ACTUAL name, education, experience, and skills from the resume
-
-**UNIQUE EXPERIENCE REQUIREMENT:**
-EACH JOB EXPERIENCE MUST HAVE UNIQUE, ROLE-SPECIFIC RESPONSIBILITIES:
-- For each position, analyze the SPECIFIC job title and company context
-- Create DISTINCT achievements and responsibilities for each role
-- DO NOT copy-paste the same generic responsibilities across different positions
-- Tailor the core responsibilities to match the actual job function:
-  * Risk roles → focus on risk assessment, compliance, control frameworks
-  * Operations roles → focus on process management, efficiency, operational controls
-  * Quality roles → focus on quality assurance, process improvement, standards
-  * Management roles → focus on team leadership, strategic planning, stakeholder management
-  * Technical roles → focus on system implementation, technical expertise, project delivery
+5. If a detail is missing, leave it out or use a generic placeholder
+6. Use the ACTUAL name, education, experience, and skills from the resume
 
 Based STRICTLY on the actual resume content above, create a JSON response with:
 - name: Extract from the resume or use "${candidateName}"
 - title: Based on actual job titles mentioned in resume
 - contact: Use ONLY actual contact information from the resume
 - summary: Write based on ACTUAL experience mentioned in resume
-- experience: Use ONLY actual companies and roles from the resume (with UNIQUE responsibilities per role)
+- experience: Use ONLY actual companies and roles from the resume
 - skills: Use ONLY skills actually mentioned in the resume  
 - education: Use ONLY actual institutions and degrees from the resume
 
-For EACH job experience, ensure the achievements array contains:
-1. Role-specific core responsibility (unique to that job function)
-2. Company/industry-specific achievement (tailored to that organization)
-3. Skills-based accomplishment (relevant to that particular role)
+If the resume mentions specific projects, companies, or achievements, use those. If not, write generic descriptions without fake metrics.
 
 DO NOT INCLUDE:
 - Fake project counts (like "50+ projects")
@@ -1186,7 +1171,6 @@ DO NOT INCLUDE:
 - Certifications not stated in the resume
 - Placeholder contact information (email/phone/location) if not in original resume
 - Any fictional or assumed data
-- IDENTICAL responsibilities copied across different positions
 
 Return ONLY this JSON format:
 {
@@ -1203,9 +1187,9 @@ Return ONLY this JSON format:
       "company": "actual company name from resume", 
       "duration": "actual dates from resume",
       "achievements": [
-        "UNIQUE responsibility specific to this role and company",
-        "DISTINCT achievement tailored to this position's function",
-        "ROLE-SPECIFIC task relevant to this job title only"
+        "actual responsibility from resume",
+        "actual achievement from resume",
+        "generic but realistic task description"
       ]
     }
   ],
@@ -1219,7 +1203,7 @@ Return ONLY this JSON format:
   ]
 }
 
-REMEMBER: Each position MUST have unique, role-specific content. Use ONLY information from the actual resume provided. Do not invent data.`;
+REMEMBER: Use ONLY information from the actual resume provided. Do not invent data.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
