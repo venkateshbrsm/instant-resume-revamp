@@ -364,6 +364,23 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     }
   });
   
+  // Fix checkbox and radio button alignment with text and list items
+  const formElements = element.querySelectorAll('input[type="checkbox"], input[type="radio"], [role="checkbox"], [role="radio"]');
+  formElements.forEach((formEl) => {
+    const htmlEl = formEl as HTMLElement;
+    htmlEl.style.verticalAlign = 'baseline';
+    htmlEl.style.position = 'relative';
+    htmlEl.style.top = '0.2em';
+    htmlEl.style.marginRight = '8px';
+    
+    // Align form elements within list items
+    const parentLi = htmlEl.closest('li');
+    if (parentLi) {
+      htmlEl.style.marginTop = '0';
+      htmlEl.style.marginBottom = '0';
+    }
+  });
+  
   // Add mobile-specific optimizations with print layout
   if (window.innerWidth < 768) {
     // Apply print layout styles for mobile
