@@ -237,54 +237,58 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                            <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
                            <div className="text-xs opacity-80 leading-relaxed space-y-1">
                              {(() => {
-                               // Generate responsibilities directly from achievements content
-                               const generateResponsibilitiesFromAchievements = (achievements, title, company) => {
-                                 const responsibilities = [];
-                                 
-                                 if (achievements && achievements.length > 0) {
-                                   // Convert achievements to responsibilities by extracting core duties
-                                   achievements.forEach((achievement, index) => {
-                                     if (index < 3) { // Limit to first 3 achievements
-                                       let responsibility = achievement;
-                                       
-                                       // Convert achievement language to responsibility language
-                                       responsibility = responsibility
-                                         .replace(/^(Responsible for|Led|Managed|Achieved|Performed|Conducted|Established|Spearheaded|Coordinated|Oversaw|Administered)/i, '')
-                                         .replace(/^(reviewing|leading|managing|achieving|performing|conducting|establishing|spearheading|coordinating|overseeing|administering)/i, '')
-                                         .replace(/\.$/, '')
-                                         .trim();
-                                       
-                                       // Add responsibility prefix if needed
-                                       if (!responsibility.match(/^(Daily|Regular|Ongoing|Core|Primary)/i)) {
-                                         responsibility = `Core ${responsibility.toLowerCase()}`;
-                                       }
-                                       
-                                       // Ensure it starts with capital letter
-                                       responsibility = responsibility.charAt(0).toUpperCase() + responsibility.slice(1);
-                                       
-                                       responsibilities.push(responsibility);
-                                     }
-                                   });
+                                 // Generate responsibilities directly from achievements content
+                                 const generateResponsibilitiesFromAchievements = (achievements, title, company) => {
+                                   const responsibilities = [];
                                    
-                                   // If still no responsibilities, create from title and company
-                                   if (responsibilities.length === 0) {
-                                     responsibilities.push(`Core ${title.toLowerCase()} functions at ${company}`);
-                                     responsibilities.push('Supporting organizational objectives and operational excellence');
+                                   if (achievements && achievements.length > 0) {
+                                     // Convert achievements to responsibilities by extracting core duties
+                                     achievements.forEach((achievement, index) => {
+                                       if (index < 3) { // Limit to first 3 achievements
+                                         let responsibility = achievement;
+                                         
+                                         // Convert achievement language to responsibility language
+                                         responsibility = responsibility
+                                           .replace(/^(Responsible for|Led|Managed|Achieved|Performed|Conducted|Established|Spearheaded|Coordinated|Oversaw|Administered)\s+/i, '')
+                                           .replace(/^(reviewing|leading|managing|achieving|performing|conducting|establishing|spearheading|coordinating|overseeing|administering)\s+/i, '')
+                                           .replace(/\.$/, '')
+                                           .trim();
+                                         
+                                         // Vary the prefixes for different positions
+                                         const prefixes = ['Monitoring', 'Overseeing', 'Coordinating', 'Leading', 'Facilitating'];
+                                         const prefix = prefixes[index % prefixes.length];
+                                         
+                                         // Only add prefix if the sentence doesn't already start with an action word
+                                         if (!responsibility.match(/^(Monitoring|Overseeing|Coordinating|Leading|Facilitating|Daily|Regular|Ongoing|Primary)/i)) {
+                                           responsibility = `${prefix} ${responsibility.toLowerCase()}`;
+                                         }
+                                         
+                                         // Ensure it starts with capital letter
+                                         responsibility = responsibility.charAt(0).toUpperCase() + responsibility.slice(1);
+                                         
+                                         responsibilities.push(responsibility);
+                                       }
+                                     });
+                                     
+                                     // If still no responsibilities, create from title and company
+                                     if (responsibilities.length === 0) {
+                                       responsibilities.push(`Directing ${title.toLowerCase()} functions at ${company}`);
+                                       responsibilities.push('Supporting organizational objectives and operational excellence');
+                                     }
+                                   } else {
+                                     // Fallback if no achievements
+                                     responsibilities.push(`Managing ${title.toLowerCase()} responsibilities at ${company}`);
+                                     responsibilities.push('Supporting daily operational requirements and team objectives');
                                    }
-                                 } else {
-                                   // Fallback if no achievements
-                                   responsibilities.push(`Primary ${title.toLowerCase()} responsibilities at ${company}`);
-                                   responsibilities.push('Supporting daily operational requirements and team objectives');
-                                 }
+                                   
+                                   return responsibilities;
+                                 };
                                  
-                                 return responsibilities;
-                               };
-                               
-                               const responsibilities = generateResponsibilitiesFromAchievements(
-                                 exp.achievements, 
-                                 exp.title || 'Professional', 
-                                 exp.company || 'organization'
-                               );
+                                 const responsibilities = generateResponsibilitiesFromAchievements(
+                                   exp.achievements, 
+                                   exp.title || 'Professional', 
+                                   exp.company || 'organization'
+                                 );
                                
                                return responsibilities.map((responsibility, idx) => (
                                  <p key={idx} className="flex items-start">

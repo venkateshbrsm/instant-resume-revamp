@@ -117,19 +117,23 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                                if (achievements && achievements.length > 0) {
                                  // Convert achievements to responsibilities by extracting core duties
                                  achievements.forEach((achievement, index) => {
-                                   if (index < 3) { // Limit to first 3 achievements to avoid overcrowding
+                                   if (index < 3) { // Limit to first 3 achievements
                                      let responsibility = achievement;
                                      
                                      // Convert achievement language to responsibility language
                                      responsibility = responsibility
-                                       .replace(/^(Responsible for|Led|Managed|Achieved|Performed|Conducted|Established|Spearheaded|Coordinated|Oversaw|Administered)/i, '')
-                                       .replace(/^(reviewing|leading|managing|achieving|performing|conducting|establishing|spearheading|coordinating|overseeing|administering)/i, '')
+                                       .replace(/^(Responsible for|Led|Managed|Achieved|Performed|Conducted|Established|Spearheaded|Coordinated|Oversaw|Administered)\s+/i, '')
+                                       .replace(/^(reviewing|leading|managing|achieving|performing|conducting|establishing|spearheading|coordinating|overseeing|administering)\s+/i, '')
                                        .replace(/\.$/, '')
                                        .trim();
                                      
-                                     // Add responsibility prefix if needed
-                                     if (!responsibility.match(/^(Daily|Regular|Ongoing|Core|Primary)/i)) {
-                                       responsibility = `Regular ${responsibility.toLowerCase()}`;
+                                     // Vary the prefixes for different positions
+                                     const prefixes = ['Managing', 'Overseeing', 'Handling', 'Executing', 'Coordinating'];
+                                     const prefix = prefixes[index % prefixes.length];
+                                     
+                                     // Only add prefix if the sentence doesn't already start with an action word
+                                     if (!responsibility.match(/^(Managing|Overseeing|Handling|Executing|Coordinating|Daily|Regular|Ongoing|Primary)/i)) {
+                                       responsibility = `${prefix} ${responsibility.toLowerCase()}`;
                                      }
                                      
                                      // Ensure it starts with capital letter
@@ -141,12 +145,12 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                                  
                                  // If still no responsibilities, create from title and company
                                  if (responsibilities.length === 0) {
-                                   responsibilities.push(`Core ${title.toLowerCase()} functions at ${company}`);
+                                   responsibilities.push(`Managing ${title.toLowerCase()} functions at ${company}`);
                                    responsibilities.push('Supporting organizational objectives and operational excellence');
                                  }
                                } else {
                                  // Fallback if no achievements
-                                 responsibilities.push(`Primary ${title.toLowerCase()} responsibilities at ${company}`);
+                                 responsibilities.push(`Executing ${title.toLowerCase()} responsibilities at ${company}`);
                                  responsibilities.push('Supporting daily operational requirements and team objectives');
                                }
                                
