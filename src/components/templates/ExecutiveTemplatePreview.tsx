@@ -13,55 +13,63 @@ interface TemplatePreviewProps {
   };
 }
 
-// Generate completely unique leadership insights based on specific achievement content
+// Create unique insights by extracting specific details from each achievement
 const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
   if (!achievements || achievements.length === 0) {
-    return "Strategic decision-making under pressure while balancing multiple stakeholder interests and resource constraints.";
+    return "Leadership requires adapting communication styles to different audiences while maintaining consistent strategic direction.";
   }
 
-  // Analyze the specific achievements to create unique insights
-  const achievementText = achievements.join(" ").toLowerCase();
+  // Extract specific numbers, actions, and outcomes from achievements
+  const extractSpecifics = () => {
+    const allText = achievements.join(" ");
+    
+    // Find specific numbers/percentages
+    const numbers = allText.match(/\d+(?:\.\d+)?%?/g) || [];
+    const actions = allText.match(/\b(increased|decreased|reduced|improved|managed|led|created|developed|launched|implemented|optimized|streamlined|grew|expanded|built|established|designed|achieved|delivered|generated|exceeded|secured|obtained)\b/gi) || [];
+    const objects = allText.match(/\b(team|teams|department|division|budget|revenue|profit|sales|cost|process|system|program|project|initiative|strategy|operations|efficiency|customers|clients|employees|staff|people)\b/gi) || [];
+    
+    return { numbers, actions, objects };
+  };
+
+  const specifics = extractSpecifics();
   
-  // Create a unique insight based on the actual content
-  if (achievementText.includes('revenue') || achievementText.includes('sales') || achievementText.includes('profit')) {
-    if (achievementText.includes('team')) {
-      return "Balancing revenue targets with team development requires understanding individual motivations while maintaining collective accountability for business outcomes.";
-    } else {
-      return "Revenue growth depends on identifying market inefficiencies and executing solutions faster than competitors can respond.";
+  // Build insight using actual extracted elements
+  if (specifics.numbers.length > 0 && specifics.actions.length > 0) {
+    const number = specifics.numbers[0];
+    const action = specifics.actions[0].toLowerCase();
+    const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
+    
+    return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} by ${number} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
+  }
+  
+  if (specifics.actions.length > 1 && specifics.objects.length > 1) {
+    const action1 = specifics.actions[0].toLowerCase();
+    const action2 = specifics.actions[1].toLowerCase();
+    const object1 = specifics.objects[0]?.toLowerCase() || "operations";
+    const object2 = specifics.objects[1]?.toLowerCase() || "performance";
+    
+    return `Successfully ${action1} ${object1} while simultaneously ${action2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
+  }
+  
+  // Use the first achievement directly but extract the core insight
+  const firstAchievement = achievements[0];
+  if (firstAchievement && firstAchievement.length > 30) {
+    // Find the key verb-object combination
+    const words = firstAchievement.toLowerCase().split(' ');
+    const keyVerbs = ['increased', 'decreased', 'improved', 'managed', 'led', 'created', 'developed', 'launched', 'achieved', 'delivered'];
+    const verbIndex = words.findIndex(word => keyVerbs.some(verb => word.includes(verb)));
+    
+    if (verbIndex !== -1 && verbIndex < words.length - 2) {
+      const context = words.slice(verbIndex, verbIndex + 4).join(' ');
+      return `The experience of ${context} highlighted the critical importance of stakeholder buy-in and clear success metrics in driving sustainable organizational change.`;
     }
   }
   
-  if (achievementText.includes('team') || achievementText.includes('people') || achievementText.includes('staff')) {
-    if (achievementText.includes('process') || achievementText.includes('efficiency')) {
-      return "High-performing teams emerge when individuals understand how their work connects to broader organizational objectives and customer value.";
-    } else {
-      return "Effective delegation requires matching tasks to individual strengths while providing clear success metrics and decision-making authority.";
-    }
-  }
+  // Last resort - use role and company info
+  const roleSpecific = roleTitle ? `${roleTitle.toLowerCase()} role` : "leadership position";
+  const companySpecific = company && company !== "N/A" ? `at ${company}` : "in this organization";
   
-  if (achievementText.includes('process') || achievementText.includes('efficiency') || achievementText.includes('optimization')) {
-    return "Sustainable process improvements come from frontline insights rather than top-down mandates, requiring leaders to listen before directing.";
-  }
-  
-  if (achievementText.includes('launched') || achievementText.includes('created') || achievementText.includes('developed')) {
-    return "Innovation success depends on rapid experimentation cycles and the willingness to pivot based on early customer feedback rather than initial assumptions.";
-  }
-  
-  if (achievementText.includes('cost') || achievementText.includes('budget') || achievementText.includes('savings')) {
-    return "Cost management without sacrificing quality requires deep understanding of value chains and the courage to eliminate sacred cows that no longer serve customers.";
-  }
-  
-  // Unique fallbacks based on role context
-  const roleInsights = [
-    "Complex organizations require leaders who can synthesize conflicting information into clear strategic direction while maintaining team morale during uncertainty.",
-    "Market dynamics shift faster than planning cycles, demanding leaders who can adjust tactics while maintaining strategic consistency and stakeholder confidence.",
-    "Cross-functional success depends on building trust through small commitments before attempting larger collaborative initiatives that require organizational buy-in.",
-    "Stakeholder alignment emerges from understanding individual priorities and finding intersection points that serve collective interests without compromising core principles."
-  ];
-  
-  // Use achievement text length to pick different insights consistently
-  const index = achievementText.length % roleInsights.length;
-  return roleInsights[index];
+  return `This ${roleSpecific} ${companySpecific} demonstrated that sustainable results emerge from aligning individual capabilities with organizational needs while maintaining flexibility in execution methods.`;
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
