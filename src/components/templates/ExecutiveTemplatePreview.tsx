@@ -39,7 +39,7 @@ const generateExecutiveContext = (achievements: string[], roleTitle: string = ""
     const action = specifics.actions[0].toLowerCase();
     const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
     
-    return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} by ${number} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
+    return `Successfully ${action} ${context} by ${number}, which required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
   }
   
   if (specifics.actions.length > 1 && specifics.objects.length > 1) {
@@ -48,7 +48,7 @@ const generateExecutiveContext = (achievements: string[], roleTitle: string = ""
     const object1 = specifics.objects[0]?.toLowerCase() || "operations";
     const object2 = specifics.objects[1]?.toLowerCase() || "performance";
     
-    return `Successfully ${action1} ${object1} while simultaneously ${action2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
+    return `Successfully ${action1} ${object1} while simultaneously ${action2} ${object2}, which demonstrates the importance of parallel execution and resource allocation in complex environments.`;
   }
   
   // Use the first achievement directly but extract the core insight
