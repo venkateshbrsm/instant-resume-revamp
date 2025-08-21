@@ -994,7 +994,7 @@ serve(async (req) => {
     if ((!resumeContent || resumeContent.length < 500 || resumeContent.startsWith('DOCX file:') || resumeContent.startsWith('PDF file:'))) {
       console.log(`Content insufficient (${resumeContent.length} chars), attempting re-extraction...`);
       
-      if (file && fileName.toLowerCase().endsWith('.docx')) {
+      if (file && fileName && fileName.toLowerCase().endsWith('.docx')) {
         console.log('Content is insufficient, attempting advanced DOCX re-extraction...');
         
         try {
@@ -1038,7 +1038,7 @@ serve(async (req) => {
             stack: extractError.stack
           });
         }
-      } else if (file && fileName.toLowerCase().endsWith('.pdf')) {
+      } else if (file && fileName && fileName.toLowerCase().endsWith('.pdf')) {
         console.log('PDF content is insufficient, attempting multiple extraction methods...');
         
         try {

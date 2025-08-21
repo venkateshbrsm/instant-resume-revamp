@@ -184,7 +184,12 @@ export function PrintPreviewSection({ file, onPurchase, onBack }: PrintPreviewSe
     
     try {
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
-        body: { text: extractedText }
+        body: { 
+          text: extractedText,
+          fileName: file.name,
+          extractedText: extractedText,
+          originalText: extractedText
+        }
       });
 
       if (error) throw error;
