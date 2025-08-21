@@ -13,95 +13,6 @@ interface TemplatePreviewProps {
   };
 }
 
-// Extract leadership learnings and insights from specific achievements
-const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
-  if (!achievements || achievements.length === 0) {
-    return "Key leadership insight: Successful executives demonstrate ability to balance strategic vision with tactical execution while maintaining stakeholder alignment and driving measurable organizational outcomes.";
-  }
-
-  const achievementText = achievements.join(" ");
-  const lowerText = achievementText.toLowerCase();
-  
-  // Extract specific leadership learnings from the achievements
-  const extractLeadershipLearnings = () => {
-    const learnings = [];
-    
-    // Analyze each achievement for leadership insights
-    achievements.forEach(achievement => {
-      const lower = achievement.toLowerCase();
-      
-      // Growth and scaling insights
-      if (lower.includes('increased') || lower.includes('grew') || lower.includes('expanded')) {
-        const match = achievement.match(/increased?|grew|expanded/i);
-        if (match) {
-          learnings.push(`Growth Leadership: Demonstrated ability to scale operations and drive expansion through ${achievement.toLowerCase().replace(match[0].toLowerCase(), 'strategic initiatives')}`);
-        }
-      }
-      
-      // Team and people insights
-      if (lower.includes('team') || lower.includes('people') || lower.includes('staff') || lower.includes('employees')) {
-        learnings.push(`People Leadership: Successfully built and managed teams by ${achievement.toLowerCase()}`);
-      }
-      
-      // Process and operational insights
-      if (lower.includes('process') || lower.includes('efficiency') || lower.includes('streamlined') || lower.includes('optimized')) {
-        learnings.push(`Operational Excellence: Applied systematic improvement methodology resulting in ${achievement.toLowerCase()}`);
-      }
-      
-      // Financial and business insights
-      if (lower.includes('revenue') || lower.includes('profit') || lower.includes('cost') || lower.includes('savings') || lower.includes('$')) {
-        learnings.push(`Business Acumen: Generated measurable financial impact through ${achievement.toLowerCase()}`);
-      }
-      
-      // Innovation and change insights
-      if (lower.includes('launched') || lower.includes('created') || lower.includes('developed') || lower.includes('implemented')) {
-        learnings.push(`Innovation Leadership: Drove organizational change by ${achievement.toLowerCase()}`);
-      }
-      
-      // Strategic and planning insights
-      if (lower.includes('strategic') || lower.includes('vision') || lower.includes('planning') || lower.includes('roadmap')) {
-        learnings.push(`Strategic Thinking: Applied long-term strategic approach evidenced by ${achievement.toLowerCase()}`);
-      }
-    });
-    
-    return learnings;
-  };
-
-  // Get specific leadership learnings
-  const learnings = extractLeadershipLearnings();
-  
-  // If we have specific learnings, format them
-  if (learnings.length > 0) {
-    // Take the most relevant learning or combine if multiple
-    if (learnings.length === 1) {
-      return `Key Leadership Insight: ${learnings[0]}`;
-    } else {
-      // Combine insights showing progression and multi-faceted leadership
-      const primaryLearning = learnings[0];
-      const secondaryLearning = learnings[1];
-      return `Leadership Development: ${primaryLearning} Additionally, ${secondaryLearning.toLowerCase()}. This demonstrates multi-dimensional leadership capability across both tactical execution and strategic planning.`;
-    }
-  }
-  
-  // Fallback: Extract key themes and present as learnings
-  const themes = [];
-  if (lowerText.includes('transformation') || lowerText.includes('change')) {
-    themes.push('change management and organizational transformation');
-  }
-  if (lowerText.includes('collaboration') || lowerText.includes('stakeholder')) {
-    themes.push('stakeholder engagement and cross-functional leadership');
-  }
-  if (lowerText.includes('data') || lowerText.includes('analytics') || lowerText.includes('metrics')) {
-    themes.push('data-driven decision making and performance measurement');
-  }
-  
-  if (themes.length > 0) {
-    return `Leadership Insight: This role demonstrated core competencies in ${themes.slice(0, 2).join(' and ')}, showing the ability to navigate complex organizational challenges while maintaining focus on measurable outcomes.`;
-  }
-  
-  return `Leadership Learning: This experience showcased the importance of balancing immediate operational needs with long-term strategic objectives, while building consensus among diverse stakeholder groups to achieve organizational goals.`;
-};
-
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
@@ -277,13 +188,13 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                               ))}
                             </div>
                             
-            {/* Executive Context - AI Generated */}
-            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Leadership Learnings & Development Insights:</h5>
-              <p className="text-xs leading-relaxed text-gray-600">
-                {generateExecutiveContext(exp.achievements, exp.title, exp.company)}
-              </p>
-            </div>
+                            {/* Executive Context */}
+                            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
+                              <p className="text-xs leading-relaxed text-gray-600">
+                                Demonstrated exceptional leadership capabilities by orchestrating multi-million dollar initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence, stakeholder alignment, and sustainable growth trajectories across diverse business units and market conditions.
+                              </p>
+                            </div>
                           </div>
                         )}
                       </div>
