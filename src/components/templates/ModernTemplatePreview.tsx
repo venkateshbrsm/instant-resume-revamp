@@ -89,29 +89,24 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             </div>
           )}
 
-          {/* Language Proficiency */}
-          <div className="page-break-avoid section">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Globe className="w-4 h-4" />
+          {/* Language Proficiency - Only show if languages exist */}
+          {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+            <div className="page-break-avoid section">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Language Proficiency</h3>
               </div>
-              <h3 className="font-semibold text-sm tracking-wide uppercase">Language Proficiency</h3>
-            </div>
-            <div className="space-y-3 text-xs opacity-90">
-              <div className="flex justify-between items-center page-break-avoid">
-                <span className="font-medium">English</span>
-                <span className="text-xs opacity-75">Native/Fluent</span>
-              </div>
-              <div className="flex justify-between items-center page-break-avoid">
-                <span className="font-medium">Spanish</span>
-                <span className="text-xs opacity-75">Professional Working</span>
-              </div>
-              <div className="flex justify-between items-center page-break-avoid">
-                <span className="font-medium">French</span>
-                <span className="text-xs opacity-75">Conversational</span>
+              <div className="space-y-3 text-xs opacity-90">
+                {enhancedContent.languages.map((language: string, index: number) => (
+                  <div key={index} className="flex justify-between items-center page-break-avoid">
+                    <span className="font-medium">{language}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Professional Certifications */}
           <div className="page-break-avoid section">
