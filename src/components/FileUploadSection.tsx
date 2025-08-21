@@ -93,24 +93,46 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     setIsProcessing(true);
     setUploadProgress(0);
 
-    // Simulate file processing with progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          setTimeout(() => {
-            setIsProcessing(false);
-            onFileProcessed(file);
-            toast({
-              title: "Resume uploaded successfully!",
-              description: "Your AI-enhanced preview is ready."
-            });
-          }, 500);
-          return 100;
-        }
-        return prev + Math.random() * 15;
+    try {
+      // Actually extract and validate the file content
+      setUploadProgress(30);
+      
+      // Import the file extractor here to avoid circular dependencies
+      const { extractContentFromFile } = await import('@/lib/fileExtractor');
+      const extractedContent = await extractContentFromFile(file);
+      
+      setUploadProgress(70);
+      
+      // Validate that we got meaningful content
+      if (!extractedContent.text || extractedContent.text.trim().length < 50) {
+        throw new Error('The file appears to be empty or contains unreadable text. Please try a different file format.');
+      }
+      
+      // Simulate final processing
+      setTimeout(() => {
+        setUploadProgress(100);
+        setTimeout(() => {
+          setIsProcessing(false);
+          onFileProcessed(file);
+          toast({
+            title: "Resume uploaded successfully!",
+            description: "Your AI-enhanced preview is ready."
+          });
+        }, 500);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('File processing error:', error);
+      setIsProcessing(false);
+      setUploadedFile(null);
+      setUploadProgress(0);
+      
+      toast({
+        title: "File processing failed",
+        description: error.message || "Unable to process the uploaded file. Please try converting to DOCX format, or ensure the file contains selectable text (not scanned images).",
+        variant: "destructive"
       });
-    }, 200);
+    }
   };
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
