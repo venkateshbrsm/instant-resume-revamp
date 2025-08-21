@@ -355,16 +355,21 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
     htmlEl.style.breakInside = 'avoid';
     
     if (listEl.tagName === 'LI') {
-      // Use list-style-position inside to keep bullets with text
-      htmlEl.style.listStylePosition = 'inside';
+      // Position bullets outside for side-by-side layout with smaller size
+      htmlEl.style.listStylePosition = 'outside';
       htmlEl.style.display = 'list-item';
-      htmlEl.style.paddingLeft = '0';
-      htmlEl.style.marginLeft = '16px';
+      htmlEl.style.paddingLeft = '12px';
+      htmlEl.style.marginLeft = '8px';
       htmlEl.style.textIndent = '0';
       htmlEl.style.lineHeight = '1.5';
-      // Align bullets with the baseline of the first line of text
-      htmlEl.style.verticalAlign = 'top';
-      htmlEl.style.textAlign = 'left';
+      // Make bullets smaller by reducing font size of marker
+      const listStyle = `li::marker { font-size: 0.5em !important; }`;
+      if (!document.querySelector('style[data-small-bullets]')) {
+        const style = document.createElement('style');
+        style.setAttribute('data-small-bullets', 'true');
+        style.textContent = listStyle;
+        document.head.appendChild(style);
+      }
       // Prevent orphaned bullets
       htmlEl.style.orphans = '2';
       htmlEl.style.widows = '2';
