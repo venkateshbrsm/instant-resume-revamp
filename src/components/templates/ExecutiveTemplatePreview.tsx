@@ -13,93 +13,55 @@ interface TemplatePreviewProps {
   };
 }
 
-// Extract leadership learnings and insights from specific achievements
+// Extract specific leadership insights from achievements without templates
 const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
   if (!achievements || achievements.length === 0) {
-    return "Key leadership insight: Successful executives demonstrate ability to balance strategic vision with tactical execution while maintaining stakeholder alignment and driving measurable organizational outcomes.";
+    return "Demonstrated ability to balance strategic vision with operational execution while maintaining stakeholder alignment and driving measurable organizational outcomes.";
   }
 
-  const achievementText = achievements.join(" ");
-  const lowerText = achievementText.toLowerCase();
-  
-  // Extract specific leadership learnings from the achievements
-  const extractLeadershipLearnings = () => {
-    const learnings = [];
-    
-    // Analyze each achievement for leadership insights
-    achievements.forEach(achievement => {
+  // Find the most concrete, specific achievement with measurable impact
+  const getBestAchievement = () => {
+    // Score achievements based on specificity and impact indicators
+    const scoredAchievements = achievements.map(achievement => {
+      let score = 0;
       const lower = achievement.toLowerCase();
       
-      // Growth and scaling insights
-      if (lower.includes('increased') || lower.includes('grew') || lower.includes('expanded')) {
-        const match = achievement.match(/increased?|grew|expanded/i);
-        if (match) {
-          learnings.push(`Growth Leadership: Demonstrated ability to scale operations and drive expansion through ${achievement.toLowerCase().replace(match[0].toLowerCase(), 'strategic initiatives')}`);
-        }
-      }
+      // Higher score for quantifiable results
+      if (lower.match(/\d+%/)) score += 10;
+      if (lower.match(/\$[\d,]+/)) score += 8;
+      if (lower.match(/\d+/)) score += 5;
       
-      // Team and people insights
-      if (lower.includes('team') || lower.includes('people') || lower.includes('staff') || lower.includes('employees')) {
-        learnings.push(`People Leadership: Successfully built and managed teams by ${achievement.toLowerCase()}`);
-      }
+      // Higher score for action words
+      if (lower.includes('increased') || lower.includes('improved') || lower.includes('reduced')) score += 6;
+      if (lower.includes('led') || lower.includes('managed') || lower.includes('directed')) score += 4;
+      if (lower.includes('developed') || lower.includes('created') || lower.includes('implemented')) score += 4;
       
-      // Process and operational insights
-      if (lower.includes('process') || lower.includes('efficiency') || lower.includes('streamlined') || lower.includes('optimized')) {
-        learnings.push(`Operational Excellence: Applied systematic improvement methodology resulting in ${achievement.toLowerCase()}`);
-      }
+      // Prefer longer, more detailed achievements
+      score += Math.min(achievement.length / 20, 5);
       
-      // Financial and business insights
-      if (lower.includes('revenue') || lower.includes('profit') || lower.includes('cost') || lower.includes('savings') || lower.includes('$')) {
-        learnings.push(`Business Acumen: Generated measurable financial impact through ${achievement.toLowerCase()}`);
-      }
-      
-      // Innovation and change insights
-      if (lower.includes('launched') || lower.includes('created') || lower.includes('developed') || lower.includes('implemented')) {
-        learnings.push(`Innovation Leadership: Drove organizational change by ${achievement.toLowerCase()}`);
-      }
-      
-      // Strategic and planning insights
-      if (lower.includes('strategic') || lower.includes('vision') || lower.includes('planning') || lower.includes('roadmap')) {
-        learnings.push(`Strategic Thinking: Applied long-term strategic approach evidenced by ${achievement.toLowerCase()}`);
-      }
+      return { achievement, score };
     });
     
-    return learnings;
+    scoredAchievements.sort((a, b) => b.score - a.score);
+    return scoredAchievements[0]?.achievement || achievements[0];
   };
 
-  // Get specific leadership learnings
-  const learnings = extractLeadershipLearnings();
+  // Extract the core leadership insight from the best achievement
+  const bestAchievement = getBestAchievement();
   
-  // If we have specific learnings, format them
-  if (learnings.length > 0) {
-    // Take the most relevant learning or combine if multiple
-    if (learnings.length === 1) {
-      return `Key Leadership Insight: ${learnings[0]}`;
-    } else {
-      // Combine insights showing progression and multi-faceted leadership
-      const primaryLearning = learnings[0];
-      const secondaryLearning = learnings[1];
-      return `Leadership Development: ${primaryLearning} Additionally, ${secondaryLearning.toLowerCase()}. This demonstrates multi-dimensional leadership capability across both tactical execution and strategic planning.`;
-    }
+  // Clean up the achievement text and present it as a leadership insight
+  let insight = bestAchievement
+    .replace(/^[Ii]\s+/, '')
+    .replace(/\./g, '')
+    .trim();
+  
+  // Add simple context without repetitive templates
+  if (insight.length > 20) {
+    return `This role demonstrated ${insight.toLowerCase()}, showcasing the ability to deliver measurable results through effective leadership and strategic execution.`;
   }
   
-  // Fallback: Extract key themes and present as learnings
-  const themes = [];
-  if (lowerText.includes('transformation') || lowerText.includes('change')) {
-    themes.push('change management and organizational transformation');
-  }
-  if (lowerText.includes('collaboration') || lowerText.includes('stakeholder')) {
-    themes.push('stakeholder engagement and cross-functional leadership');
-  }
-  if (lowerText.includes('data') || lowerText.includes('analytics') || lowerText.includes('metrics')) {
-    themes.push('data-driven decision making and performance measurement');
-  }
-  
-  if (themes.length > 0) {
-    return `Leadership Insight: This role demonstrated core competencies in ${themes.slice(0, 2).join(' and ')}, showing the ability to navigate complex organizational challenges while maintaining focus on measurable outcomes.`;
-  }
-  
-  return `Leadership Learning: This experience showcased the importance of balancing immediate operational needs with long-term strategic objectives, while building consensus among diverse stakeholder groups to achieve organizational goals.`;
+  // Very simple fallback using the raw text
+  return `Key leadership experience: ${insight.toLowerCase()}.`;
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
