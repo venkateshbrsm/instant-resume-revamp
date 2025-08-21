@@ -362,8 +362,14 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.marginLeft = '8px';
       htmlEl.style.textIndent = '0';
       htmlEl.style.lineHeight = '1.5';
-      // Make bullets smaller by reducing font size of marker
-      const listStyle = `li::marker { font-size: 0.5em !important; }`;
+      // Center-align bullets with text content
+      htmlEl.style.verticalAlign = 'baseline';
+      // Make bullets smaller and center them with the text
+      const listStyle = `li::marker { 
+        font-size: 0.5em !important; 
+        line-height: 1.5 !important;
+        vertical-align: middle !important;
+      }`;
       if (!document.querySelector('style[data-small-bullets]')) {
         const style = document.createElement('style');
         style.setAttribute('data-small-bullets', 'true');
