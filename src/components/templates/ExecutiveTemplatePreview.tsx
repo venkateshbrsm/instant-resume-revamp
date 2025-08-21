@@ -13,55 +13,61 @@ interface TemplatePreviewProps {
   };
 }
 
-// Extract specific leadership insights from achievements without templates
+// Extract actual leadership learnings and development insights from achievements
 const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
   if (!achievements || achievements.length === 0) {
-    return "Demonstrated ability to balance strategic vision with operational execution while maintaining stakeholder alignment and driving measurable organizational outcomes.";
+    return "Developed strategic thinking capabilities and learned to balance competing priorities while building stakeholder consensus for organizational change initiatives.";
   }
 
-  // Find the most concrete, specific achievement with measurable impact
-  const getBestAchievement = () => {
-    // Score achievements based on specificity and impact indicators
-    const scoredAchievements = achievements.map(achievement => {
-      let score = 0;
-      const lower = achievement.toLowerCase();
-      
-      // Higher score for quantifiable results
-      if (lower.match(/\d+%/)) score += 10;
-      if (lower.match(/\$[\d,]+/)) score += 8;
-      if (lower.match(/\d+/)) score += 5;
-      
-      // Higher score for action words
-      if (lower.includes('increased') || lower.includes('improved') || lower.includes('reduced')) score += 6;
-      if (lower.includes('led') || lower.includes('managed') || lower.includes('directed')) score += 4;
-      if (lower.includes('developed') || lower.includes('created') || lower.includes('implemented')) score += 4;
-      
-      // Prefer longer, more detailed achievements
-      score += Math.min(achievement.length / 20, 5);
-      
-      return { achievement, score };
-    });
+  const achievementText = achievements.join(" ");
+  const lowerText = achievementText.toLowerCase();
+  
+  // Analyze achievements to extract leadership development insights
+  const extractLeadershipLearnings = () => {
+    const insights = [];
     
-    scoredAchievements.sort((a, b) => b.score - a.score);
-    return scoredAchievements[0]?.achievement || achievements[0];
+    // Financial/Business outcomes → Business acumen learning
+    if (lowerText.includes('revenue') || lowerText.includes('profit') || lowerText.includes('sales') || lowerText.includes('cost') || lowerText.match(/\$|%/)) {
+      insights.push("Developed financial acumen and learned to connect operational decisions to business outcomes");
+    }
+    
+    // Team/People management → People leadership learning
+    if (lowerText.includes('team') || lowerText.includes('staff') || lowerText.includes('employees') || lowerText.includes('people') || lowerText.includes('manage')) {
+      insights.push("Cultivated people leadership skills and learned to motivate diverse teams toward common objectives");
+    }
+    
+    // Process/Operations → Systems thinking learning
+    if (lowerText.includes('process') || lowerText.includes('efficiency') || lowerText.includes('operations') || lowerText.includes('streamlined') || lowerText.includes('optimized')) {
+      insights.push("Developed systems thinking and learned to identify process improvement opportunities that scale organizational capacity");
+    }
+    
+    // Growth/Expansion → Strategic scaling learning
+    if (lowerText.includes('increased') || lowerText.includes('grew') || lowerText.includes('expanded') || lowerText.includes('growth') || lowerText.includes('scale')) {
+      insights.push("Mastered scaling methodologies and learned to maintain quality standards during periods of rapid organizational growth");
+    }
+    
+    // Innovation/Change → Change leadership learning
+    if (lowerText.includes('launched') || lowerText.includes('created') || lowerText.includes('developed') || lowerText.includes('implemented') || lowerText.includes('innovation')) {
+      insights.push("Built change leadership capabilities and learned to drive innovation while managing organizational resistance");
+    }
+    
+    // Collaboration/Stakeholder → Influence learning
+    if (lowerText.includes('collaboration') || lowerText.includes('stakeholder') || lowerText.includes('partnership') || lowerText.includes('cross-functional')) {
+      insights.push("Strengthened influence without authority and learned to build consensus across diverse stakeholder groups");
+    }
+    
+    return insights;
   };
 
-  // Extract the core leadership insight from the best achievement
-  const bestAchievement = getBestAchievement();
+  const learnings = extractLeadershipLearnings();
   
-  // Clean up the achievement text and present it as a leadership insight
-  let insight = bestAchievement
-    .replace(/^[Ii]\s+/, '')
-    .replace(/\./g, '')
-    .trim();
-  
-  // Add simple context without repetitive templates
-  if (insight.length > 20) {
-    return `This role demonstrated ${insight.toLowerCase()}, showcasing the ability to deliver measurable results through effective leadership and strategic execution.`;
+  if (learnings.length > 0) {
+    // Return the most relevant learning
+    return learnings[0] + ", demonstrating progressive leadership development through hands-on experience.";
   }
   
-  // Very simple fallback using the raw text
-  return `Key leadership experience: ${insight.toLowerCase()}.`;
+  // Generic learning if no specific patterns detected
+  return "Developed executive presence and learned to navigate complex organizational dynamics while maintaining focus on measurable results and stakeholder value creation.";
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
