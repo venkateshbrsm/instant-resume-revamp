@@ -166,7 +166,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                             {exp.achievements.map((achievement: string, achIndex: number) => (
                               <div 
                                 key={achIndex} 
-                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid overflow-hidden" 
+                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid" 
                                 style={{ pageBreakInside: 'avoid' }}
                               >
                                 <div 
@@ -175,7 +175,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                 >
                                   <span className="text-white text-xs font-bold">✓</span>
                                 </div>
-                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1">{achievement}</p>
+                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium">{achievement}</p>
                               </div>
                             ))}
                             
@@ -215,7 +215,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
               {/* Skills as Creative Badges */}
               {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                 <div 
-                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none"
+                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg"
                   style={{ 
                     background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
                     pageBreakInside: 'avoid',
@@ -239,16 +239,14 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       <Badge 
                         key={index}
                         variant="outline"
-                        className="px-3 py-2 rounded-lg border-2 font-medium text-xs leading-relaxed break-words hyphens-auto min-h-fit skill-item page-break-avoid print:px-2 print:py-1 print:text-xs"
+                        className="px-3 py-1 rounded-full border-2 font-medium print:px-2 print:py-0.5 print:text-xs"
                         style={{ 
                           borderColor: selectedColorTheme.accent,
                           color: selectedColorTheme.primary,
-                          background: 'white',
-                          wordWrap: 'break-word',
-                          overflowWrap: 'break-word'
+                          background: 'white'
                         }}
                       >
-                        <span className="block text-center whitespace-normal">{skill}</span>
+                        {skill}
                       </Badge>
                     ))}
                   </div>

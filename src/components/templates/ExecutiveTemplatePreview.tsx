@@ -174,14 +174,14 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                             </h4>
                             <div className="space-y-3">
                               {exp.achievements.map((achievement: string, achIndex: number) => (
-                                <div key={achIndex} className="flex items-start gap-3 overflow-hidden">
+                                <div key={achIndex} className="flex items-start gap-3">
                                   <div 
                                     className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
                                     style={{ backgroundColor: selectedColorTheme.accent }}
                                   >
                                     <span className="text-white text-xs">✓</span>
                                   </div>
-                                  <p className="text-sm leading-relaxed text-gray-600 font-medium break-words min-w-0 flex-1">
+                                  <p className="text-sm leading-relaxed text-gray-600 font-medium">
                                     {achievement}
                                   </p>
                                 </div>

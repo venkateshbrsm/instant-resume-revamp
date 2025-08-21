@@ -31,9 +31,9 @@ export async function generateSmartPdf(
     // Wait for any layout changes to settle
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Configure html2pdf with conservative settings to prevent text splitting
+    // Configure html2pdf with proper page break handling
     const opt = {
-      margin: [15, 15, 15, 15], // Smaller margins to fit more content
+      margin: [25, 20, 25, 20], // Larger margins: top, right, bottom, left in mm
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -43,32 +43,29 @@ export async function generateSmartPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: 1.5, // Balanced scale for quality vs stability
+        scale: 0.25, // Much smaller scale to prevent any splitting
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: 210 * 3.78, // A4 width in mm * pixels per mm at 96 DPI
-        height: 297 * 3.78, // A4 height in mm * pixels per mm at 96 DPI
-        windowWidth: 210 * 3.78,
-        windowHeight: 297 * 3.78,
-        removeContainer: true,
-        imageTimeout: 15000,
-        onrendered: function() {
-          // Force layout recalculation after render
-        }
+        width: 300, // Very small width to absolutely prevent cutoff
+        height: 400, // Much smaller height for ultra-safe margins
+        windowWidth: 300,
+        windowHeight: 400,
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: false, // Disable compression to avoid text issues
+        compress: true,
         putOnlyUsedFonts: true,
-        floatPrecision: 2 // Lower precision for stability
+        floatPrecision: 16 // Higher precision for better layout
       },
-      // Disable automatic page breaking to prevent text splitting
+      // Critical: Enable CSS page break handling with aggressive text protection
       pagebreak: { 
-        mode: ['avoid-all'],
-        avoid: ['*'] // Avoid breaking anywhere
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: '.page-break-before',
+        after: '.page-break-after',
+        avoid: ['.page-break-avoid', 'p', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', '*']
       }
     };
 
@@ -219,64 +216,54 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       padding: 2mm !important;
     }
     
-    /* Smart text protection - prevent awkward splitting */
-    .badge, .skill-item, .progress-bar {
+    /* ULTRA-AGGRESSIVE text protection - prevent ALL text splitting */
+    *, *::before, *::after {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      display: inline-block !important;
-      orphans: 2 !important;
-      widows: 2 !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+      word-break: keep-all !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      -webkit-hyphens: none !important;
+      -ms-hyphens: none !important;
     }
     
-    /* Prevent splitting of important content blocks */
-    p, li, h1, h2, h3, h4, h5, h6 {
-      orphans: 2 !important;
-      widows: 2 !important;
-      word-wrap: break-word !important;
-      overflow-wrap: break-word !important;
-      hyphens: auto !important;
-    }
-    
-    /* Keep inline elements readable */
-    span, a, strong, em, b, i, code, small {
-      word-break: break-word !important;
-      overflow-wrap: break-word !important;
-    }
-    
-    /* Bulletproof text containers - aggressive protection */
-    p, div, li, span, strong, em, b, i, small, code, pre {
+    /* Force all text elements to be unbreakable blocks */
+    p, span, div, li, h1, h2, h3, h4, h5, h6, a, strong, em, b, i, code, small {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 100 !important;
-      widows: 100 !important;
-      min-height: 1.2em !important;
       display: block !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+      white-space: normal !important;
+      word-wrap: normal !important;
+      overflow-wrap: normal !important;
     }
     
-    /* Force inline elements to stay together */
-    span, strong, em, b, i, small, code {
-      display: inline-block !important;
+    /* Keep inline elements together */
+    span, a, strong, em, b, i, code, small {
+      display: inline !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
       white-space: nowrap !important;
-      word-break: keep-all !important;
     }
     
-    /* Prevent line breaking within ANY text elements */
-    .text-content, .content-text, [class*="text"], 
-    .skill-name, .progress-text, .badge-text,
-    h1, h2, h3, h4, h5, h6, p, li, span, div {
+    /* Bulletproof text containers */
+    p, div, li {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 100 !important;
-      widows: 100 !important;
-      word-break: keep-all !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+      min-height: 1.2em !important;
     }
     
-    /* Ultra-aggressive text line protection */
-    * {
-      orphans: 100 !important;
-      widows: 100 !important;
+    /* Prevent line breaking within important text elements */
+    .text-content, .content-text, [class*="text"] {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
+      orphans: 4 !important;
+      widows: 4 !important;
     }
     
     /* List protection */
@@ -326,19 +313,19 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles for proper A4 layout
-  element.style.width = '210mm'; // A4 width
-  element.style.maxWidth = '210mm';
-  element.style.margin = '0';
-  element.style.padding = '20mm'; // Professional margins
+  // Apply PDF-optimized styles with EXTREME conservative sizing to prevent any splitting
+  element.style.width = '100mm'; // EXTREME small width to absolutely guarantee no cutoff
+  element.style.maxWidth = '100mm';
+  element.style.margin = '0'; // Remove margins to prevent sizing conflicts
+  element.style.padding = '1mm'; // Minimal padding
   element.style.overflow = 'visible';
-  element.style.fontSize = '11pt'; // Standard readable font size
-  element.style.lineHeight = '1.4';
+  element.style.fontSize = '6pt'; // Extremely small font to prevent splitting
+  element.style.lineHeight = '0.9';
   element.style.boxSizing = 'border-box';
-  element.style.wordBreak = 'break-word';
-  element.style.hyphens = 'auto';
-  element.style.whiteSpace = 'normal';
-  element.style.textOverflow = 'ellipsis';
+  element.style.wordBreak = 'keep-all';
+  element.style.hyphens = 'none';
+  element.style.whiteSpace = 'nowrap';
+  element.style.textOverflow = 'clip';
   
   // Apply page break classes to sections and skill-related elements
   const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
