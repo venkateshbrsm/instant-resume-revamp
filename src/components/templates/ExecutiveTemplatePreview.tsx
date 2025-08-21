@@ -13,140 +13,25 @@ interface TemplatePreviewProps {
   };
 }
 
-// AI-powered content generation that creates truly unique narratives for each role
+// Generate unique narrative by directly using achievement content
 const generateExecutiveContext = (achievements: string[], roleTitle: string = "", company: string = ""): string => {
   if (!achievements || achievements.length === 0) {
     return "Demonstrated exceptional leadership capabilities by orchestrating strategic initiatives, driving organizational transformation, and cultivating high-performance cultures. Consistently exceeded performance targets while maintaining operational excellence and sustainable growth trajectories.";
   }
 
-  const achievementText = achievements.join(" ");
-  const lowerText = achievementText.toLowerCase();
+  // Simply concatenate the actual achievements with minimal processing
+  const rawText = achievements.join(". ").replace(/\.\./g, ".");
   
-  // Extract the most impactful achievement directly
-  const getKeyAchievement = () => {
-    // Look for sentences with strong impact indicators
-    const sentences = achievementText.split(/[.!]/).filter(s => s.trim().length > 20);
-    const impactfulSentences = sentences.filter(sentence => {
-      const lower = sentence.toLowerCase();
-      return (lower.includes('%') && lower.match(/\d+%/)) ||
-             (lower.includes('$') || lower.includes('revenue') || lower.includes('profit')) ||
-             (lower.match(/\d+/) && (lower.includes('team') || lower.includes('people') || lower.includes('employee'))) ||
-             (lower.includes('increased') || lower.includes('improved') || lower.includes('reduced') || lower.includes('grew'));
-    });
-    
-    return impactfulSentences.length > 0 ? impactfulSentences[0].trim() : sentences[0]?.trim() || "";
-  };
+  // Only clean up basic grammar issues but keep the original content
+  const cleanText = rawText
+    .replace(/\bi\s/gi, "This executive ")
+    .replace(/\bmy\b/gi, "their")
+    .replace(/\bour\b/gi, "the organization's")
+    .replace(/\.\s*([a-z])/g, (match, letter) => `. ${letter.toUpperCase()}`)
+    .trim();
 
-  // Create role-specific context
-  const getRoleContext = () => {
-    const role = roleTitle.toLowerCase();
-    if (role.includes('ceo') || role.includes('president') || role.includes('chief executive')) {
-      return "enterprise-wide transformation and shareholder value creation";
-    } else if (role.includes('coo') || role.includes('operations')) {
-      return "operational excellence and scalable business processes";
-    } else if (role.includes('cto') || role.includes('technology')) {
-      return "technological innovation and digital infrastructure advancement";
-    } else if (role.includes('cfo') || role.includes('finance')) {
-      return "financial stewardship and strategic capital allocation";
-    } else if (role.includes('vp') || role.includes('vice president')) {
-      return "departmental leadership and cross-functional integration";
-    } else if (role.includes('director') || role.includes('head of')) {
-      return "program delivery and team performance optimization";
-    } else {
-      return "strategic execution and organizational development";
-    }
-  };
-
-  // Build unique narrative using actual achievement content
-  const keyAchievement = getKeyAchievement();
-  const roleContext = getRoleContext();
-  
-  let narrative = "";
-  
-  // Use the actual achievement as the foundation
-  if (keyAchievement && keyAchievement.length > 15) {
-    // Clean and transform the achievement into executive language
-    const transformedAchievement = keyAchievement
-      .replace(/^[Ii]\s/, 'This leader ')
-      .replace(/\bi\s/gi, 'they ')
-      .replace(/\bmy\b/gi, 'their')
-      .replace(/\bour\b/gi, 'the organization\'s')
-      .toLowerCase();
-    
-    narrative = `Accomplished executive specializing in ${roleContext} who ${transformedAchievement}`;
-    
-    // Add company-specific context if available
-    if (company && company !== "N/A" && company.length > 2) {
-      const companyInsight = lowerText.includes('startup') || lowerText.includes('growth') ? 
-        `within ${company}'s dynamic growth environment` :
-        lowerText.includes('enterprise') || lowerText.includes('fortune') ?
-        `across ${company}'s complex organizational structure` :
-        `during tenure at ${company}`;
-      
-      narrative += ` ${companyInsight}`;
-    }
-    
-  } else {
-    // Fallback using detected business themes but with role specificity
-    const businessThemes = [];
-    if (lowerText.includes('revenue') || lowerText.includes('sales') || lowerText.includes('profit')) {
-      businessThemes.push('revenue generation');
-    }
-    if (lowerText.includes('cost') || lowerText.includes('efficiency') || lowerText.includes('savings')) {
-      businessThemes.push('cost optimization');
-    }
-    if (lowerText.includes('team') || lowerText.includes('people') || lowerText.includes('staff')) {
-      businessThemes.push('talent development');
-    }
-    if (lowerText.includes('process') || lowerText.includes('system') || lowerText.includes('operation')) {
-      businessThemes.push('process innovation');
-    }
-    
-    const themes = businessThemes.length > 0 ? businessThemes.slice(0, 2).join(' and ') : roleContext;
-    narrative = `Results-driven executive with specialized expertise in ${themes}, consistently delivering measurable outcomes through strategic leadership initiatives`;
-  }
-
-  // Add unique closing based on specific content patterns
-  const getUniqueClosing = () => {
-    const closingVariations = [];
-    
-    // Generate closings based on actual content
-    if (lowerText.includes('international') || lowerText.includes('global')) {
-      closingVariations.push("This global perspective enables successful navigation of diverse market dynamics and regulatory environments.");
-    }
-    if (lowerText.includes('startup') || lowerText.includes('entrepreneur')) {
-      closingVariations.push("Entrepreneurial mindset drives rapid adaptation and innovative solution development in fast-paced business environments.");
-    }
-    if (lowerText.includes('public') || lowerText.includes('ipo') || lowerText.includes('shareholders')) {
-      closingVariations.push("Public company experience ensures rigorous governance standards and transparent stakeholder communication.");
-    }
-    if (lowerText.includes('merger') || lowerText.includes('acquisition') || lowerText.includes('integration')) {
-      closingVariations.push("M&A expertise facilitates seamless organizational integrations and synergy realization across diverse business units.");
-    }
-    if (lowerText.includes('digital') || lowerText.includes('ai') || lowerText.includes('automation')) {
-      closingVariations.push("Technology-forward approach accelerates digital transformation initiatives while maintaining human-centered leadership principles.");
-    }
-    
-    // Default variations if no specific patterns found
-    if (closingVariations.length === 0) {
-      const defaults = [
-        "Strategic acumen combined with operational discipline creates sustainable competitive advantages in complex business environments.",
-        "Cross-functional leadership expertise enables effective collaboration across diverse organizational structures and stakeholder groups.",
-        "Performance-driven approach ensures consistent achievement of ambitious targets while maintaining ethical business practices.",
-        "Change management capabilities facilitate smooth organizational transitions during periods of significant business transformation."
-      ];
-      
-      // Use a simple hash of the achievement text to pick consistently but vary by content
-      const hash = achievementText.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
-      const index = Math.abs(hash) % defaults.length;
-      closingVariations.push(defaults[index]);
-    }
-    
-    return closingVariations[0];
-  };
-
-  narrative += `. ${getUniqueClosing()}`;
-  return narrative;
+  // Add a simple prefix and return the actual achievement text
+  return cleanText.endsWith('.') ? cleanText : cleanText + '.';
 };
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
