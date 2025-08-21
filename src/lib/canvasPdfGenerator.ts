@@ -362,9 +362,9 @@ export function prepareElementForCapture(element: HTMLElement): () => void {
       htmlEl.style.marginLeft = '16px';
       htmlEl.style.textIndent = '0';
       htmlEl.style.lineHeight = '1.5';
-      // Center bullets with first line of text
-      htmlEl.style.verticalAlign = 'middle';
-      htmlEl.style.alignItems = 'center';
+      // Align bullets with the baseline of the first line of text
+      htmlEl.style.verticalAlign = 'top';
+      htmlEl.style.textAlign = 'left';
       // Prevent orphaned bullets
       htmlEl.style.orphans = '2';
       htmlEl.style.widows = '2';
