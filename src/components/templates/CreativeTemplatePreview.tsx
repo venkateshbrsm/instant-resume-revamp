@@ -192,7 +192,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                  Core Responsibilities:
                                </h5>
                                 <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
-                                  {extractCoreResponsibilities(exp.achievements, exp.title || 'Creative Professional', 'creative', 4).map((responsibility, idx) => (
+                                  {extractCoreResponsibilities(exp.achievements, exp.title || 'Creative Professional', 'creative', index, 4).map((responsibility, idx) => (
                                     <p key={idx} className="flex items-start">
                                       <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
                                             style={{ backgroundColor: selectedColorTheme.accent }}></span>

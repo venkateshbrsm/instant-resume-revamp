@@ -96,7 +96,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                      }}>
                        <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
                         <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
-                          {extractCoreResponsibilities(exp.achievements, exp.title || 'Professional', 'minimalist', 3).map((responsibility, idx) => (
+                          {extractCoreResponsibilities(exp.achievements, exp.title || 'Professional', 'minimalist', index, 3).map((responsibility, idx) => (
                             <p key={idx} className="flex items-start text-xs text-muted-foreground">
                               <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
                                     style={{ backgroundColor: selectedColorTheme.primary }}></span>

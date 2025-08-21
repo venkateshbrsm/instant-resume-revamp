@@ -110,7 +110,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                            Core Responsibilities:
                          </h5>
                           <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
-                            {extractCoreResponsibilities(exp.achievements, exp.title || 'Professional', 'classic', 4).map((responsibility, idx) => (
+                            {extractCoreResponsibilities(exp.achievements, exp.title || 'Professional', 'classic', index, 4).map((responsibility, idx) => (
                               <p key={idx} className="flex items-start">
                                 <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
                                       style={{ backgroundColor: selectedColorTheme.accent }}></span>

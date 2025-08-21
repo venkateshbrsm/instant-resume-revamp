@@ -237,7 +237,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                          <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid print:break-inside-avoid">
                            <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
                             <div className="text-xs opacity-80 leading-relaxed space-y-1">
-                              {extractCoreResponsibilities(exp.achievements, exp.title || 'Modern Professional', 'modern', 4).map((responsibility, idx) => (
+                              {extractCoreResponsibilities(exp.achievements, exp.title || 'Modern Professional', 'modern', index, 4).map((responsibility, idx) => (
                                 <div key={idx} className="flex items-start gap-3">
                                   <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
                                        style={{ backgroundColor: selectedColorTheme.accent }}></div>
