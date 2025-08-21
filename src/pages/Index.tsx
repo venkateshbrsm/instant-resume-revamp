@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { FileUploadSection } from "@/components/FileUploadSection";
-import { PreviewSection } from "@/components/PreviewSection";
+import { PrintPreviewSection } from "@/components/PrintPreviewSection";
 import { PaymentSection } from "@/components/PaymentSection";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -176,7 +176,7 @@ const Index = () => {
         );
       case "preview":
         return uploadedFile ? (
-          <PreviewSection
+          <PrintPreviewSection
             file={uploadedFile}
             onPurchase={handlePurchase}
             onBack={handleBackToUpload}
