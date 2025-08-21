@@ -33,7 +33,7 @@ export async function generateSmartPdf(
 
     // Configure html2pdf with proper page break handling
     const opt = {
-      margin: [25, 20, 25, 20], // Larger margins: top, right, bottom, left in mm
+      margin: [0, 20, 0, 20], // No top/bottom margins, keep left/right margins in mm
       filename: filename,
       image: { 
         type: 'jpeg', 
