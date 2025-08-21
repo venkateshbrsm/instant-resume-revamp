@@ -178,22 +178,59 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                               </div>
                             ))}
                             
-                            {/* Additional Professional Context */}
-                            <div 
-                              className="mt-4 p-4 rounded-lg print:p-3 print:rounded-md print:break-inside-avoid"
-                              style={{ 
-                                background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
-                                pageBreakInside: 'avoid',
-                                breakInside: 'avoid'
-                              }}
-                            >
-                              <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
-                                Core Responsibilities & Strategic Impact:
-                              </h5>
-                              <p className="text-xs leading-relaxed text-muted-foreground print:text-xs">
-                                Spearheaded cross-functional collaboration initiatives, driving operational excellence through strategic process optimization and team leadership. Consistently delivered measurable results by implementing data-driven solutions, mentoring high-performing teams, and maintaining rigorous quality standards while adapting to dynamic business environments and stakeholder requirements.
-                              </p>
-                            </div>
+                             {/* Job-specific Core Responsibilities */}
+                             <div 
+                               className="mt-4 p-4 rounded-lg print:p-3 print:rounded-md print:break-inside-avoid"
+                               style={{ 
+                                 background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                                 pageBreakInside: 'avoid',
+                                 breakInside: 'avoid'
+                               }}
+                             >
+                               <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
+                                 Core Responsibilities:
+                               </h5>
+                               <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
+                                 {(() => {
+                                   const title = exp.title?.toLowerCase() || '';
+                                   let responsibilities = [];
+                                   
+                                   if (title.includes('vice president') || title.includes('avp')) {
+                                     responsibilities = [
+                                       `Strategic leadership and governance oversight at ${exp.company}`,
+                                       'Executive decision-making and cross-departmental coordination',
+                                       'Risk assessment and regulatory compliance management'
+                                     ];
+                                   } else if (title.includes('manager') || title.includes('lead')) {
+                                     responsibilities = [
+                                       `Team leadership and operational excellence in ${exp.title} capacity`,
+                                       'Performance monitoring and continuous improvement initiatives',
+                                       'Stakeholder communication and project delivery management'
+                                     ];
+                                   } else if (title.includes('analyst') || title.includes('specialist')) {
+                                     responsibilities = [
+                                       `Specialized analysis and technical expertise for ${exp.company}`,
+                                       'Research, documentation, and recommendations development',
+                                       'Process support and quality control activities'
+                                     ];
+                                   } else {
+                                     responsibilities = [
+                                       `Professional execution of ${exp.title} responsibilities`,
+                                       `Collaborative support for ${exp.company} operational goals`,
+                                       'Quality maintenance and standard adherence'
+                                     ];
+                                   }
+                                   
+                                   return responsibilities.map((responsibility, idx) => (
+                                     <p key={idx} className="flex items-start">
+                                       <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                             style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                       {responsibility}
+                                     </p>
+                                   ));
+                                 })()}
+                               </div>
+                             </div>
                           </div>
                         )}
                       </div>

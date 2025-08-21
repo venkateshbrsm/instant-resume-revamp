@@ -88,16 +88,53 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                       </p>
                     ))}
                     
-                    {/* Professional Context */}
-                    <div className="mt-4 p-3 rounded border" style={{ 
-                      backgroundColor: `${selectedColorTheme.primary}03`,
-                      borderColor: `${selectedColorTheme.primary}15`
-                    }}>
-                      <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
-                      <p className="text-xs leading-relaxed text-muted-foreground font-light">
-                        Executed comprehensive strategic initiatives while maintaining operational excellence and team productivity. Collaborated across departments to optimize workflows, implement industry best practices, and deliver consistent results that aligned with organizational objectives and stakeholder expectations.
-                      </p>
-                    </div>
+                     {/* Job-specific Core Responsibilities */}
+                     <div className="mt-4 p-3 rounded border" style={{ 
+                       backgroundColor: `${selectedColorTheme.primary}03`,
+                       borderColor: `${selectedColorTheme.primary}15`
+                     }}>
+                       <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
+                       <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
+                         {(() => {
+                           const title = exp.title?.toLowerCase() || '';
+                           let responsibilities = [];
+                           
+                           if (title.includes('vice president') || title.includes('avp')) {
+                             responsibilities = [
+                               `Executive oversight and strategic planning for ${exp.company}`,
+                               'Senior leadership and organizational development',
+                               'Risk management and compliance supervision'
+                             ];
+                           } else if (title.includes('manager') || title.includes('lead')) {
+                             responsibilities = [
+                               `Operational leadership and team management in ${exp.title} role`,
+                               'Process improvement and efficiency optimization',
+                               'Performance evaluation and development planning'
+                             ];
+                           } else if (title.includes('analyst') || title.includes('specialist')) {
+                             responsibilities = [
+                               `Technical analysis and research for ${exp.company}`,
+                               'Data interpretation and insight generation',
+                               'Compliance monitoring and audit support'
+                             ];
+                           } else {
+                             responsibilities = [
+                               `Core operational functions in ${exp.title} position`,
+                               `Team collaboration and ${exp.company} objectives support`,
+                               'Quality control and process adherence'
+                             ];
+                           }
+                           
+                           return responsibilities.map((responsibility, idx) => (
+                             <p key={idx} className="flex items-start">
+                               <span className="inline-block w-1 h-1 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                     style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                               {responsibility}
+                             </p>
+                           ));
+                         })()}
+                       </div>
+                     </div>
                   </div>
                 )}
               </div>

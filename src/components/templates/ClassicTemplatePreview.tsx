@@ -100,18 +100,58 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                         ))}
                       </ul>
                       
-                      {/* Additional Professional Context */}
-                      <div className="mt-4 p-4 rounded-lg border page-break-avoid" style={{ 
-                        backgroundColor: `${selectedColorTheme.primary}05`,
-                        borderColor: `${selectedColorTheme.primary}20`
-                      }}>
-                        <h5 className="text-sm font-semibold mb-2 text-foreground">
-                          Core Responsibilities & Strategic Impact:
-                        </h5>
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                          Demonstrated excellence in strategic planning, cross-functional leadership, and operational optimization. Consistently delivered measurable business outcomes through innovative problem-solving, stakeholder management, and team development initiatives. Maintained high performance standards while fostering collaborative environments and driving organizational growth.
-                        </p>
-                      </div>
+                       {/* Job-specific Core Responsibilities */}
+                       <div className="mt-4 p-4 rounded-lg border page-break-avoid" style={{ 
+                         backgroundColor: `${selectedColorTheme.primary}05`,
+                         borderColor: `${selectedColorTheme.primary}20`
+                       }}>
+                         <h5 className="text-sm font-semibold mb-2 text-foreground">
+                           Core Responsibilities:
+                         </h5>
+                         <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
+                           {(() => {
+                             const title = exp.title?.toLowerCase() || '';
+                             const company = exp.company?.toLowerCase() || '';
+                             
+                             let responsibilities = [];
+                             
+                             // Banking/Finance specific responsibilities
+                             if (title.includes('vice president') || title.includes('avp')) {
+                               responsibilities = [
+                                 `Strategic oversight and risk management for ${exp.company || 'the organization'}`,
+                                 'Leadership of cross-functional teams and stakeholder engagement',
+                                 'Regulatory compliance monitoring and reporting to senior management'
+                               ];
+                             } else if (title.includes('manager') || title.includes('lead')) {
+                               responsibilities = [
+                                 `Operational management and team supervision in ${exp.title} capacity`,
+                                 'Process optimization and quality assurance initiatives',
+                                 'Client relationship management and service delivery oversight'
+                               ];
+                             } else if (title.includes('analyst') || title.includes('specialist')) {
+                               responsibilities = [
+                                 `Detailed analysis and research support for ${exp.company || 'business operations'}`,
+                                 'Data compilation and reporting for decision-making processes',
+                                 'Support for compliance and audit activities'
+                               ];
+                             } else {
+                               responsibilities = [
+                                 `Execution of core operational functions in ${exp.title} role`,
+                                 `Collaboration with internal teams to support ${exp.company || 'organizational'} objectives`,
+                                 'Maintenance of quality standards and process adherence'
+                               ];
+                             }
+                             
+                             return responsibilities.map((responsibility, idx) => (
+                               <p key={idx} className="flex items-start">
+                                 <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                       style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                 {responsibility}
+                               </p>
+                             ));
+                           })()}
+                         </div>
+                       </div>
                     </div>
                   )}
                 </div>
