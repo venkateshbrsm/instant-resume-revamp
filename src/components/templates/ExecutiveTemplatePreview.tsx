@@ -39,16 +39,7 @@ const generateExecutiveContext = (achievements: string[], roleTitle: string = ""
     const action = specifics.actions[0].toLowerCase();
     const context = specifics.objects[0]?.toLowerCase() || "organizational outcomes";
     
-    // Determine if it's a percentage or count
-    const isPercentage = number.includes('%');
-    const verb = action === 'led' ? 'leading' : action === 'managed' ? 'managing' : `${action}ing`;
-    const preposition = isPercentage ? 'by' : context.includes('team') || context.includes('people') ? 'a team of' : 'with';
-    
-    if (isPercentage) {
-      return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} ${preposition} ${number} required systematic analysis of market conditions and implementation of data-driven strategies that addressed both immediate and long-term organizational needs.`;
-    } else {
-      return `${verb.charAt(0).toUpperCase() + verb.slice(1)} ${preposition} ${number} ${context} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
-    }
+    return `${action.charAt(0).toUpperCase() + action.slice(1)} ${context} by ${number} required identifying root cause factors and implementing solutions that addressed systemic rather than symptomatic issues.`;
   }
   
   if (specifics.actions.length > 1 && specifics.objects.length > 1) {
@@ -57,10 +48,7 @@ const generateExecutiveContext = (achievements: string[], roleTitle: string = ""
     const object1 = specifics.objects[0]?.toLowerCase() || "operations";
     const object2 = specifics.objects[1]?.toLowerCase() || "performance";
     
-    const verb1 = action1 === 'led' ? 'leading' : action1 === 'managed' ? 'managing' : `${action1}ing`;
-    const verb2 = action2 === 'led' ? 'leading' : action2 === 'managed' ? 'managing' : `${action2}ing`;
-    
-    return `Successfully ${verb1} ${object1} while simultaneously ${verb2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
+    return `Successfully ${action1} ${object1} while simultaneously ${action2} ${object2} demonstrates the importance of parallel execution and resource allocation in complex environments.`;
   }
   
   // Use the first achievement directly but extract the core insight
