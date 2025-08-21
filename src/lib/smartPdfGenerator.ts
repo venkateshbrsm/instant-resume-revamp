@@ -28,43 +28,37 @@ export async function generateSmartPdf(
   try {
     const marginArray = Array.isArray(margin) ? margin : [margin, margin, margin, margin];
     
-    // Configure html2pdf with maximum quality settings for ultra-high resolution
+    // Configure html2pdf with optimized quality settings
     const opt = {
       margin: marginArray,
       filename: options.filename || 'enhanced-resume.pdf',
-      image: { type: 'png', quality: 1.0 }, // PNG for lossless quality
+      image: { type: 'jpeg', quality: 0.95 }, // High quality JPEG for better compatibility
       html2canvas: { 
-        scale: 5, // Maximum scale for ultra-high text quality
-        dpi: 300, // High DPI for print quality
+        scale: 3, // Optimal scale for quality vs performance
+        dpi: 192, // Balanced DPI for sharp text
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         letterRendering: true,
-        imageTimeout: 30000,
+        imageTimeout: 15000,
         removeContainer: true,
-        foreignObjectRendering: false, // Better text rendering
+        foreignObjectRendering: false,
         ignoreElements: (element) => {
-          return element.tagName === 'SCRIPT' || element.tagStyle?.display === 'none';
+          return element.tagName === 'SCRIPT' || element.style?.display === 'none';
         },
         height: element.scrollHeight,
         width: element.scrollWidth,
         windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        x: 0,
-        y: 0
+        windowHeight: element.scrollHeight
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: orientation,
-        compress: false, // Never compress for maximum quality
+        compress: true, // Reasonable compression for smaller file size
         putOnlyUsedFonts: true,
-        precision: 16, // Maximum precision
-        userUnit: 1.0,
-        hotfixes: ["px_scaling"]
+        precision: 8
       },
       pagebreak: { 
         mode: ['avoid-all', 'css', 'legacy'],
