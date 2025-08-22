@@ -338,44 +338,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     try {
       toast({
-        title: "Generating ATS-Readable Resume",
-        description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
+        title: "Generating Smart PDF",
+        description: "Optimizing layout and preventing text splitting near page breaks...",
       });
 
-      // Use server-side text-based PDF generation for ATS compatibility
-      const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
-        body: {
-          enhancedContent,
-          templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.id,
-          fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
-        }
+      // Use smart PDF generator with dynamic scaling to prevent text splitting
+      await downloadSmartPdf(resumeContentRef.current, {
+        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+        dynamicScale: true,
+        scaleStrategy: 'balanced',
+        quality: 0.98,
+        margin: [15, 15, 15, 15] // Top, right, bottom, left margins
       });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to generate ATS-readable PDF');
-      }
-
-      // Create download link
-      const blob = new Blob([data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
       toast({
-        title: "ATS-Readable PDF Downloaded",
-        description: "Your resume is optimized for Applicant Tracking Systems with selectable text!",
+        title: "Smart PDF Downloaded",
+        description: "Resume optimized with intelligent page breaks and scaling!",
       });
     } catch (error) {
-      console.error('Error generating ATS-readable PDF:', error);
+      console.error('Error generating smart PDF:', error);
       toast({
         title: "Download Failed",
-        description: "Failed to generate ATS-readable PDF. Please try again.",
+        description: "Failed to generate PDF. Please try again.",
         variant: "destructive"
       });
     } finally {
