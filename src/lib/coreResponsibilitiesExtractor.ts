@@ -16,19 +16,22 @@ export function extractCoreResponsibilities(
     return [];
   }
 
-  const responsibilities: string[] = [];
+  const uniqueResponsibilities = new Set<string>();
   
   for (const achievement of achievements) {
-    if (responsibilities.length >= maxResponsibilities) break;
+    if (uniqueResponsibilities.size >= maxResponsibilities) break;
     
     // Generate everyday activities that would lead to this achievement
     const dailyActivities = generateDailyActivitiesFromAchievement(achievement, title);
-    responsibilities.push(...dailyActivities);
+    
+    // Add only unique activities
+    for (const activity of dailyActivities) {
+      if (uniqueResponsibilities.size >= maxResponsibilities) break;
+      uniqueResponsibilities.add(activity);
+    }
   }
 
-  // Remove duplicates and return only the requested amount
-  const uniqueResponsibilities = Array.from(new Set(responsibilities));
-  return uniqueResponsibilities.slice(0, maxResponsibilities);
+  return Array.from(uniqueResponsibilities).slice(0, maxResponsibilities);
 }
 
 /**
@@ -43,48 +46,64 @@ function generateDailyActivitiesFromAchievement(achievement: string, title: stri
   if (lowerAchievement.includes('sales') || lowerAchievement.includes('revenue') || lowerAchievement.includes('profit')) {
     activities.push('Conducting daily sales pipeline reviews and client outreach');
     activities.push('Analyzing market trends and competitor activity');
+    activities.push('Preparing weekly sales forecasts and performance reports');
+    activities.push('Negotiating contracts and pricing strategies with prospects');
   }
   
   // Team/Management achievements
   if (lowerAchievement.includes('team') || lowerAchievement.includes('manage') || lowerAchievement.includes('staff')) {
     activities.push('Facilitating weekly team meetings and performance reviews');
     activities.push('Providing coaching and mentorship to team members');
+    activities.push('Managing team schedules and workload distribution');
+    activities.push('Conducting recruitment interviews and talent assessments');
   }
   
   // Process/Efficiency achievements
   if (lowerAchievement.includes('process') || lowerAchievement.includes('efficiency') || lowerAchievement.includes('streamline')) {
     activities.push('Reviewing and optimizing operational workflows');
     activities.push('Documenting standard operating procedures');
+    activities.push('Identifying bottlenecks and implementing process improvements');
+    activities.push('Training staff on new procedures and best practices');
   }
   
   // Customer/Client achievements
   if (lowerAchievement.includes('customer') || lowerAchievement.includes('client') || lowerAchievement.includes('satisfaction')) {
     activities.push('Maintaining regular client communication and relationship building');
     activities.push('Monitoring customer feedback and service quality metrics');
+    activities.push('Resolving escalated customer issues and complaints');
+    activities.push('Conducting customer surveys and satisfaction assessments');
   }
   
   // Technology/System achievements
   if (lowerAchievement.includes('system') || lowerAchievement.includes('technology') || lowerAchievement.includes('software')) {
     activities.push('Overseeing daily system maintenance and performance monitoring');
     activities.push('Coordinating with technical teams on implementation progress');
+    activities.push('Reviewing system logs and troubleshooting technical issues');
+    activities.push('Managing software updates and security patches');
   }
   
   // Project achievements
   if (lowerAchievement.includes('project') || lowerAchievement.includes('initiative') || lowerAchievement.includes('launch')) {
     activities.push('Tracking project milestones and deliverable completion');
     activities.push('Coordinating cross-functional team collaboration');
+    activities.push('Managing project budgets and resource allocation');
+    activities.push('Conducting risk assessments and mitigation planning');
   }
   
   // Quality/Compliance achievements
   if (lowerAchievement.includes('quality') || lowerAchievement.includes('compliance') || lowerAchievement.includes('standard')) {
     activities.push('Conducting regular quality assurance checks and audits');
     activities.push('Ensuring adherence to regulatory and company standards');
+    activities.push('Developing quality control procedures and testing protocols');
+    activities.push('Training teams on compliance requirements and policies');
   }
   
   // Budget/Cost achievements
   if (lowerAchievement.includes('budget') || lowerAchievement.includes('cost') || lowerAchievement.includes('saving')) {
     activities.push('Monitoring daily expenditures and budget allocations');
     activities.push('Reviewing vendor contracts and cost optimization opportunities');
+    activities.push('Preparing monthly financial reports and variance analysis');
+    activities.push('Negotiating supplier agreements and procurement strategies');
   }
   
   // If no specific patterns matched, generate role-based activities
