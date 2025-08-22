@@ -328,7 +328,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleTestDownload = async () => {
+    console.log('=== Test Download Debug ===');
+    console.log('resumeContentRef.current:', resumeContentRef.current);
+    console.log('enhancedContent:', enhancedContent);
+    console.log('selectedTemplate:', selectedTemplate);
+    console.log('selectedColorTheme:', selectedColorTheme);
+    console.log('downloadFormat:', downloadFormat);
+    
     if (!resumeContentRef.current || !enhancedContent) {
+      console.error('Missing required elements:', {
+        hasResumeRef: !!resumeContentRef.current,
+        hasEnhancedContent: !!enhancedContent
+      });
+      
       toast({
         title: "Preview Not Ready",
         description: "Please wait for the enhanced resume to load completely.",
@@ -345,11 +357,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleDownloadPdf = async () => {
+    console.log('=== PDF Download Debug ===');
     setIsGeneratingPdf(true);
     
     try {
       // Use smart PDF generator for executive template to prevent text splitting
       if (selectedTemplate.id === 'executive') {
+        console.log('Using smart PDF generator for executive template');
         toast({
           title: "Generating Executive Resume PDF",
           description: "Using smart scaling to prevent text splitting at page borders...",
@@ -368,6 +382,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           description: "Your executive resume PDF has been optimized to prevent text splitting!",
         });
       } else {
+        console.log('Using server-side PDF generation for template:', selectedTemplate.id);
         toast({
           title: "Generating ATS-Readable Resume",
           description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
@@ -383,7 +398,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           }
         });
 
+        console.log('Server PDF generation response:', { data, error });
+
         if (error) {
+          console.error('Server PDF generation error:', error);
           throw new Error(error.message || 'Failed to generate ATS-readable PDF');
         }
 
@@ -407,7 +425,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.error('Error generating PDF:', error);
       toast({
         title: "Download Failed",
-        description: "Failed to generate PDF. Please try again.",
+        description: `Failed to generate PDF: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -416,7 +434,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleDownloadDocx = async () => {
+    console.log('=== DOCX Download Debug ===');
+    
     if (!enhancedContent) {
+      console.error('No enhanced content available for DOCX generation');
       toast({
         title: "Preview Not Ready",
         description: "Please wait for the enhanced resume to load completely.",
@@ -428,6 +449,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsGeneratingPdf(true);
     
     try {
+      console.log('Calling download-enhanced-resume function with:', {
+        enhancedContent: !!enhancedContent,
+        themeId: selectedColorTheme.id,
+        templateId: selectedTemplate.id
+      });
+
       toast({
         title: "Generating DOCX Resume",
         description: "Creating editable Word document - perfect for ATS systems...",
@@ -438,16 +465,27 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         body: {
           paymentId: 'preview', // Special case for preview downloads
           enhancedContent,
-          themeId: selectedColorTheme.id
+          themeId: selectedColorTheme.id,
+          templateId: selectedTemplate.id
         }
       });
 
+      console.log('DOCX generation response:', { data, error });
+
       if (error) {
+        console.error('DOCX generation error:', error);
         throw new Error(error.message || 'Failed to generate DOCX');
       }
 
+      if (!data) {
+        console.error('No data received from DOCX generation');
+        throw new Error('No data received from server');
+      }
+
       // Create download link for DOCX
-      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const blob = new Blob([data], { 
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -458,20 +496,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       URL.revokeObjectURL(url);
 
       toast({
-        title: "DOCX Downloaded",
-        description: "Editable Word document downloaded - 100% ATS compatible!",
+        title: "DOCX Downloaded Successfully",
+        description: "Your editable Word document is ready - perfect for ATS systems!",
       });
     } catch (error) {
       console.error('Error generating DOCX:', error);
       toast({
-        title: "Download Failed", 
-        description: "Failed to generate DOCX. Please try again.",
+        title: "Download Failed",
+        description: `Failed to generate DOCX: ${error.message}`,
         variant: "destructive"
       });
     } finally {
       setIsGeneratingPdf(false);
     }
   };
+
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
