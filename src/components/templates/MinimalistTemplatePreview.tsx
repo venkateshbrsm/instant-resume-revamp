@@ -11,9 +11,11 @@ interface TemplatePreviewProps {
     secondary: string;
     accent: string;
   };
+  isEditing?: boolean;
+  onFieldChange?: (path: string, value: string) => void;
 }
 
-export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme, isEditing = false, onFieldChange }: TemplatePreviewProps) {
   return (
     <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
       {/* Minimalist Header */}

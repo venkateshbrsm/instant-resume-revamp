@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
+import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X, Edit3, Save, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
@@ -48,6 +48,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editableContent, setEditableContent] = useState<any>(null);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -119,6 +121,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       enhanceResume();
     }
   }, [extractedText]);
+
+  // Initialize editable content when enhanced content is available
+  useEffect(() => {
+    if (enhancedContent && !editableContent) {
+      setEditableContent(JSON.parse(JSON.stringify(enhancedContent)));
+    }
+  }, [enhancedContent]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -344,7 +353,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
       // Use smart PDF generator with conservative scaling to prevent text splitting
       await downloadSmartPdf(resumeContentRef.current, {
-        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+        filename: `Enhanced_Resume_${getCurrentContent().name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
         dynamicScale: true,
         scaleStrategy: 'conservative',
         minScale: 0.25,
@@ -391,7 +400,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
         body: {
           paymentId: 'preview', // Special case for preview downloads
-          enhancedContent,
+          enhancedContent: getCurrentContent(),
           themeId: selectedColorTheme.id
         }
       });
@@ -405,7 +414,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.docx`;
+      a.download = `Enhanced_Resume_${getCurrentContent().name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -559,6 +568,52 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   };
 
+  const handleEditModeToggle = () => {
+    if (isEditMode) {
+      // Save changes when exiting edit mode
+      setEnhancedContent(JSON.parse(JSON.stringify(editableContent)));
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const handleCancelEdit = () => {
+    // Reset to original enhanced content
+    setEditableContent(JSON.parse(JSON.stringify(enhancedContent)));
+    setIsEditMode(false);
+  };
+
+  const updateEditableField = (path: string, value: string) => {
+    setEditableContent((prev: any) => {
+      const newContent = JSON.parse(JSON.stringify(prev));
+      const pathArray = path.split('.');
+      let current = newContent;
+      
+      for (let i = 0; i < pathArray.length - 1; i++) {
+        const key = pathArray[i];
+        if (key.includes('[') && key.includes(']')) {
+          const [arrayKey, indexStr] = key.split('[');
+          const index = parseInt(indexStr.replace(']', ''));
+          current = current[arrayKey][index];
+        } else {
+          current = current[key];
+        }
+      }
+      
+      const finalKey = pathArray[pathArray.length - 1];
+      if (finalKey.includes('[') && finalKey.includes(']')) {
+        const [arrayKey, indexStr] = finalKey.split('[');
+        const index = parseInt(indexStr.replace(']', ''));
+        current[arrayKey][index] = value;
+      } else {
+        current[finalKey] = value;
+      }
+      
+      return newContent;
+    });
+  };
+
+  const getCurrentContent = () => isEditMode ? editableContent : enhancedContent;
+
   return (
     <div className="min-h-screen bg-gradient-hero px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-x-hidden">
       <div className="w-full max-w-7xl mx-auto">
@@ -610,6 +665,47 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
                    >
                   
+                      {/* Edit Mode Controls */}
+                      <div className="flex items-center justify-between mb-4 p-3 bg-background/50 rounded-lg border">
+                        <div className="flex items-center gap-2">
+                          <Edit3 className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium">
+                            {isEditMode ? "Edit Mode Active" : "Preview Mode"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isEditMode ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={handleEditModeToggle}
+                                className="bg-primary text-primary-foreground"
+                              >
+                                <Save className="w-4 h-4 mr-1" />
+                                Save Changes
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleEditModeToggle}
+                            >
+                              <Edit3 className="w-4 h-4 mr-1" />
+                              Edit Resume
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Template and Color Selector */}
                       <TemplateSelector
                         selectedTemplate={selectedTemplate}
@@ -681,36 +777,46 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           </Dialog>
                         </div>
                         <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
-                          <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
-                               style={{ minHeight: '297mm' }}>
+                           <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
+                                style={{ minHeight: '297mm' }}>
                           {selectedTemplate.id === 'modern' && (
                             <ModernTemplatePreview 
-                              enhancedContent={enhancedContent}
+                              enhancedContent={getCurrentContent()}
                               selectedColorTheme={selectedColorTheme}
+                              isEditing={isEditMode}
+                              onFieldChange={updateEditableField}
                             />
                           )}
                           {selectedTemplate.id === 'classic' && (
                             <ClassicTemplatePreview 
-                              enhancedContent={enhancedContent}
+                              enhancedContent={getCurrentContent()}
                               selectedColorTheme={selectedColorTheme}
+                              isEditing={isEditMode}
+                              onFieldChange={updateEditableField}
                             />
                           )}
                           {selectedTemplate.id === 'creative' && (
                             <CreativeTemplatePreview 
-                              enhancedContent={enhancedContent}
+                              enhancedContent={getCurrentContent()}
                               selectedColorTheme={selectedColorTheme}
+                              isEditing={isEditMode}
+                              onFieldChange={updateEditableField}
                             />
                           )}
                           {selectedTemplate.id === 'executive' && (
                             <ExecutiveTemplatePreview 
-                              enhancedContent={enhancedContent}
+                              enhancedContent={getCurrentContent()}
                               selectedColorTheme={selectedColorTheme}
+                              isEditing={isEditMode}
+                              onFieldChange={updateEditableField}
                             />
                           )}
                           {selectedTemplate.id === 'minimalist' && (
                             <MinimalistTemplatePreview 
-                              enhancedContent={enhancedContent}
+                              enhancedContent={getCurrentContent()}
                               selectedColorTheme={selectedColorTheme}
+                              isEditing={isEditMode}
+                              onFieldChange={updateEditableField}
                             />
                           )}
                           </div>

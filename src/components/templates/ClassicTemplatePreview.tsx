@@ -12,9 +12,11 @@ interface TemplatePreviewProps {
     secondary: string;
     accent: string;
   };
+  isEditing?: boolean;
+  onFieldChange?: (path: string, value: string) => void;
 }
 
-export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme, isEditing = false, onFieldChange }: TemplatePreviewProps) {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
       {/* Classic Header - Centered */}

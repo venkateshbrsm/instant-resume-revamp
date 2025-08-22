@@ -12,9 +12,11 @@ interface TemplatePreviewProps {
     secondary: string;
     accent: string;
   };
+  isEditing?: boolean;
+  onFieldChange?: (path: string, value: string) => void;
 }
 
-export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme, isEditing = false, onFieldChange }: TemplatePreviewProps) {
   // Debug logging to check for N/A values
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (

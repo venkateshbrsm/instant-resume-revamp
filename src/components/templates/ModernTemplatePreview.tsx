@@ -2,6 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { User, Mail, Phone, MapPin, Award, BookOpen, Globe, Briefcase, Star } from "lucide-react";
 import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
+import { EditableText } from "@/components/ui/editable-text";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -12,9 +13,11 @@ interface TemplatePreviewProps {
     secondary: string;
     accent: string;
   };
+  isEditing?: boolean;
+  onFieldChange?: (path: string, value: string) => void;
 }
 
-export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+export function ModernTemplatePreview({ enhancedContent, selectedColorTheme, isEditing = false, onFieldChange }: TemplatePreviewProps) {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
       {/* Left Sidebar */}
@@ -50,16 +53,33 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             <div className="space-y-3 text-sm opacity-90">
               <div className="flex items-center gap-2">
                 <Mail className="w-3 h-3" />
-                <span className="break-all text-xs no-underline">{enhancedContent.email}</span>
+                <EditableText
+                  value={enhancedContent.email}
+                  onChange={(value) => onFieldChange?.('email', value)}
+                  isEditing={isEditing}
+                  fieldType="email"
+                  className="break-all text-xs no-underline bg-transparent border-none text-white"
+                />
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3 h-3" />
-                <span className="text-xs no-underline">{enhancedContent.phone}</span>
+                <EditableText
+                  value={enhancedContent.phone}
+                  onChange={(value) => onFieldChange?.('phone', value)}
+                  isEditing={isEditing}
+                  fieldType="phone"
+                  className="text-xs no-underline bg-transparent border-none text-white"
+                />
               </div>
               {enhancedContent.location && (
                 <div className="flex items-center gap-2">
                   <MapPin className="w-3 h-3" />
-                  <span className="text-xs">{enhancedContent.location}</span>
+                  <EditableText
+                    value={enhancedContent.location}
+                    onChange={(value) => onFieldChange?.('location', value)}
+                    isEditing={isEditing}
+                    className="text-xs bg-transparent border-none text-white"
+                  />
                 </div>
               )}
             </div>
@@ -156,10 +176,20 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            {enhancedContent.name}
+            <EditableText
+              value={enhancedContent.name}
+              onChange={(value) => onFieldChange?.('name', value)}
+              isEditing={isEditing}
+              className="text-3xl font-bold text-foreground"
+            />
           </h1>
           <p className="text-lg text-muted-foreground mb-4">
-            {enhancedContent.title}
+            <EditableText
+              value={enhancedContent.title}
+              onChange={(value) => onFieldChange?.('title', value)}
+              isEditing={isEditing}
+              className="text-lg text-muted-foreground"
+            />
           </p>
         </div>
 
@@ -174,9 +204,15 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             </div>
             About & Professional Summary
           </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {enhancedContent.summary}
-          </p>
+          <div className="text-sm text-muted-foreground leading-relaxed">
+            <EditableText
+              value={enhancedContent.summary}
+              onChange={(value) => onFieldChange?.('summary', value)}
+              isEditing={isEditing}
+              multiline
+              className="text-sm text-muted-foreground leading-relaxed"
+            />
+          </div>
         </div>
 
         {/* Work Experience */}
