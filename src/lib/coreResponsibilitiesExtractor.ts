@@ -147,11 +147,21 @@ function generateDailyActivitiesFromAchievement(achievement: string, title: stri
   if (activities.length === 0) {
     const keyTerms = extractKeyBusinessTerms(achievement);
     if (keyTerms.length > 0) {
-      activities.push(`Managing daily operations related to ${keyTerms[0]} to support achievement outcomes`);
-      activities.push(`Monitoring ${keyTerms[0]} performance metrics and reporting on progress`);
+      activities.push(`Managing daily operations related to ${keyTerms[0]} initiatives and objectives`);
+      activities.push(`Monitoring ${keyTerms[0]} performance metrics and progress indicators`);
     } else {
-      // Fallback based on achievement content
-      activities.push(`Executing daily tasks directly supporting: "${achievement.substring(0, 50)}..."`);
+      // Generate role-appropriate activities based on title
+      const lowerTitle = title.toLowerCase();
+      if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
+        activities.push('Overseeing daily departmental operations and team coordination');
+        activities.push('Reviewing performance metrics and providing strategic guidance');
+      } else if (lowerTitle.includes('analyst') || lowerTitle.includes('specialist')) {
+        activities.push('Conducting daily data analysis and performance monitoring');
+        activities.push('Preparing detailed reports and recommendations for management');
+      } else {
+        activities.push('Executing core operational responsibilities and deliverables');
+        activities.push('Collaborating with team members on daily objectives and tasks');
+      }
     }
   }
   
