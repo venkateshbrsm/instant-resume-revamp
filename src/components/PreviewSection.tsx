@@ -342,20 +342,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         description: "Optimizing layout and preventing text splitting near page breaks...",
       });
 
-      // Use advanced PDF generator with comprehensive text splitting prevention
-      const { downloadAdvancedPdf } = await import("@/lib/advancedPdfGenerator");
-      
-      // Detect template type from the component data
-      const templateType = selectedTemplate?.id?.toLowerCase() || 'modern';
-      
-      await downloadAdvancedPdf(resumeContentRef.current, {
+      // Use smart PDF generator with conservative scaling to prevent text splitting
+      await downloadSmartPdf(resumeContentRef.current, {
         filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
-        templateType: templateType as any,
         dynamicScale: true,
-        contentAwareOptimization: true,
-        fallbackRecovery: true,
         scaleStrategy: 'conservative',
-        quality: 0.98
+        minScale: 0.25,
+        maxScale: 0.5,
+        quality: 0.95,
+        margin: [20, 20, 20, 20] // Larger margins to prevent edge cutoff
       });
 
       toast({
@@ -685,7 +680,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </DialogContent>
                           </Dialog>
                         </div>
-                        <ScrollArea className="h-[700px] w-full border rounded-lg shadow-inner">
+                        <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
                           <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
                                style={{ minHeight: '297mm' }}>
                           {selectedTemplate.id === 'modern' && (
