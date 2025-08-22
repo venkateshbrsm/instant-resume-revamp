@@ -225,7 +225,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
                               <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
                               <p className="text-xs leading-relaxed text-gray-600">
-                                {extractLeadershipLearnings(exp.achievements, exp.title, exp.company)}
+                                {extractLeadershipLearnings(exp.achievements, exp.title, exp.company, index)}
                               </p>
                             </div>
                           </div>

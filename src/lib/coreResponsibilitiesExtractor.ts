@@ -394,19 +394,28 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+// Global tracker for used leadership learnings across all work experiences
+const globalUsedLeadershipLearnings = new Set<string>();
+
 /**
  * Extracts leadership learnings from work experience achievements
+ * Ensures each work experience gets unique leadership insights
  */
 export function extractLeadershipLearnings(
   achievements: string[] | undefined,
   title: string,
-  company: string
+  company: string,
+  experienceIndex: number = 0
 ): string {
+  // Reset global tracker on first experience
+  if (experienceIndex === 0) {
+    globalUsedLeadershipLearnings.clear();
+  }
   if (!achievements || achievements.length === 0) {
     return 'Developed foundational leadership skills through hands-on experience managing daily operations and team coordination.';
   }
 
-  const learnings: string[] = [];
+  const allLearnings: string[] = [];
   const lowerTitle = title.toLowerCase();
   
   // Analyze achievements to extract leadership insights
@@ -417,9 +426,13 @@ export function extractLeadershipLearnings(
     if (lowerAchievement.includes('team') || lowerAchievement.includes('staff') || lowerAchievement.includes('managed')) {
       const teamSize = achievement.match(/(\d+)[-\s]*(member|person|people|staff|employee)/);
       if (teamSize) {
-        learnings.push(`Learned to effectively manage ${teamSize[1]} team members through clear communication and performance accountability`);
+        allLearnings.push(`Learned to effectively manage ${teamSize[1]} team members through clear communication and performance accountability`);
+        allLearnings.push(`Developed team-building skills by coordinating ${teamSize[1]} staff members across multiple projects and deadlines`);
+        allLearnings.push(`Enhanced delegation capabilities while overseeing ${teamSize[1]} direct reports and maintaining productivity standards`);
       } else {
-        learnings.push('Developed team leadership skills through direct staff management and performance coaching');
+        allLearnings.push('Developed team leadership skills through direct staff management and performance coaching');
+        allLearnings.push('Strengthened interpersonal leadership through team conflict resolution and motivation techniques');
+        allLearnings.push('Enhanced team dynamics understanding through collaborative goal-setting and progress tracking');
       }
     }
     
@@ -427,9 +440,13 @@ export function extractLeadershipLearnings(
     if (lowerAchievement.includes('improved') || lowerAchievement.includes('increased') || lowerAchievement.includes('streamlined')) {
       const metrics = achievement.match(/(\d+(?:\.\d+)?)%/);
       if (metrics) {
-        learnings.push(`Mastered process optimization by achieving ${metrics[0]} improvement through systematic analysis and implementation`);
+        allLearnings.push(`Mastered process optimization by achieving ${metrics[0]} improvement through systematic analysis and implementation`);
+        allLearnings.push(`Developed analytical leadership skills by driving ${metrics[0]} performance enhancement through data-driven decisions`);
+        allLearnings.push(`Cultivated continuous improvement mindset while delivering ${metrics[0]} operational enhancement`);
       } else {
-        learnings.push('Gained expertise in operational improvement through methodical process analysis and team engagement');
+        allLearnings.push('Gained expertise in operational improvement through methodical process analysis and team engagement');
+        allLearnings.push('Developed change leadership capabilities by implementing efficiency initiatives across departments');
+        allLearnings.push('Enhanced problem-solving leadership through root cause analysis and solution implementation');
       }
     }
     
@@ -437,44 +454,101 @@ export function extractLeadershipLearnings(
     if (lowerAchievement.includes('reduced') || lowerAchievement.includes('cost') || lowerAchievement.includes('budget')) {
       const amount = achievement.match(/\$[\d,.]+(k|m|million|thousand)?/);
       if (amount) {
-        learnings.push(`Developed financial leadership acumen by managing ${amount[0]} cost reduction through strategic vendor negotiations and process efficiency`);
+        allLearnings.push(`Developed financial leadership acumen by managing ${amount[0]} cost reduction through strategic vendor negotiations and process efficiency`);
+        allLearnings.push(`Enhanced fiscal responsibility by achieving ${amount[0]} savings through innovative cost management strategies`);
+        allLearnings.push(`Strengthened budget leadership skills while delivering ${amount[0]} in cost optimization initiatives`);
       } else {
-        learnings.push('Strengthened financial management capabilities through budget oversight and cost optimization initiatives');
+        allLearnings.push('Strengthened financial management capabilities through budget oversight and cost optimization initiatives');
+        allLearnings.push('Developed resource allocation leadership by balancing operational needs with budget constraints');
+        allLearnings.push('Enhanced financial decision-making through cost-benefit analysis and strategic spending priorities');
       }
     }
     
     // Innovation and implementation learnings
     if (lowerAchievement.includes('implemented') || lowerAchievement.includes('launched') || lowerAchievement.includes('established')) {
-      learnings.push('Enhanced change management leadership by successfully driving organizational adoption of new systems and processes');
+      allLearnings.push('Enhanced change management leadership by successfully driving organizational adoption of new systems and processes');
+      allLearnings.push('Developed implementation leadership through systematic rollout planning and stakeholder engagement');
+      allLearnings.push('Cultivated innovation leadership by spearheading new initiative development and execution');
     }
     
     // Customer/client learnings
     if (lowerAchievement.includes('customer') || lowerAchievement.includes('client') || lowerAchievement.includes('satisfaction')) {
-      learnings.push('Developed customer-centric leadership approach by aligning team operations with client success metrics and feedback');
+      allLearnings.push('Developed customer-centric leadership approach by aligning team operations with client success metrics and feedback');
+      allLearnings.push('Enhanced service leadership capabilities through customer relationship management and satisfaction improvement');
+      allLearnings.push('Strengthened client-focused leadership by implementing feedback systems and service quality standards');
     }
     
     // Revenue/sales learnings
     if (lowerAchievement.includes('revenue') || lowerAchievement.includes('sales') || lowerAchievement.includes('growth')) {
-      learnings.push('Cultivated strategic business leadership through revenue growth initiatives and market expansion efforts');
+      allLearnings.push('Cultivated strategic business leadership through revenue growth initiatives and market expansion efforts');
+      allLearnings.push('Developed sales leadership capabilities by implementing growth strategies and performance tracking systems');
+      allLearnings.push('Enhanced business development leadership through market analysis and competitive positioning');
     }
   });
   
-  // If no specific learnings found, generate role-appropriate insights
-  if (learnings.length === 0) {
+  // Add role-appropriate learnings if none found
+  if (allLearnings.length === 0) {
     if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
-      learnings.push('Strengthened executive decision-making capabilities through daily operational leadership and stakeholder management');
+      allLearnings.push('Strengthened executive decision-making capabilities through daily operational leadership and stakeholder management');
+      allLearnings.push('Developed strategic leadership skills through departmental planning and cross-functional coordination');
+      allLearnings.push('Enhanced organizational leadership through policy implementation and team development initiatives');
     } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
-      learnings.push('Developed influential leadership skills by mentoring team members and driving project outcomes');
+      allLearnings.push('Developed influential leadership skills by mentoring team members and driving project outcomes');
+      allLearnings.push('Enhanced technical leadership capabilities through project guidance and knowledge transfer');
+      allLearnings.push('Strengthened collaborative leadership through cross-team coordination and stakeholder communication');
     } else {
-      learnings.push('Built collaborative leadership foundation through cross-functional teamwork and process contribution');
+      allLearnings.push('Built collaborative leadership foundation through cross-functional teamwork and process contribution');
+      allLearnings.push('Developed professional leadership skills through project participation and team support');
+      allLearnings.push('Enhanced communication leadership through effective collaboration and knowledge sharing');
     }
   }
   
-  // Combine learnings and add company context
-  const primaryLearning = learnings[0];
-  const additionalContext = learnings.length > 1 ? 
-    ` Additionally, gained valuable insights in organizational dynamics and stakeholder management during tenure at ${company}.` :
-    ` This experience at ${company} provided essential leadership development in fast-paced operational environments.`;
+  // Select a unique learning that hasn't been used before
+  let selectedLearning = '';
+  for (const learning of allLearnings) {
+    if (!globalUsedLeadershipLearnings.has(learning)) {
+      selectedLearning = learning;
+      globalUsedLeadershipLearnings.add(learning);
+      break;
+    }
+  }
   
-  return primaryLearning + additionalContext;
+  // If all learnings have been used, generate experience-specific learning
+  if (!selectedLearning) {
+    selectedLearning = generateExperienceSpecificLearning(title, experienceIndex, company);
+  }
+  
+  // Add company-specific context
+  const contextVariations = [
+    `This experience at ${company} provided essential leadership development in dynamic business environments.`,
+    `During tenure at ${company}, gained valuable insights in organizational leadership and stakeholder management.`,
+    `The role at ${company} offered significant leadership growth opportunities in fast-paced operational settings.`,
+    `Leadership experience at ${company} enhanced capabilities in team coordination and strategic execution.`
+  ];
+  
+  const additionalContext = contextVariations[experienceIndex % contextVariations.length];
+  
+  return selectedLearning + ' ' + additionalContext;
+}
+
+/**
+ * Generates experience-specific leadership learning when all others are used
+ */
+function generateExperienceSpecificLearning(title: string, experienceIndex: number, company: string): string {
+  const lowerTitle = title.toLowerCase();
+  const learningVariations = [
+    'Developed adaptive leadership skills through diverse operational challenges and team dynamics',
+    'Enhanced situational leadership capabilities by managing varying project complexities and stakeholder needs',
+    'Cultivated resilient leadership approach through problem-solving and decision-making under pressure',
+    'Strengthened collaborative leadership through cross-departmental initiatives and relationship building',
+    'Advanced communication leadership skills through stakeholder engagement and team coordination',
+    'Refined strategic thinking capabilities through project planning and resource optimization'
+  ];
+  
+  const baseIndex = experienceIndex * 2;
+  if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
+    return learningVariations[baseIndex % learningVariations.length];
+  } else {
+    return learningVariations[(baseIndex + 1) % learningVariations.length];
+  }
 }
