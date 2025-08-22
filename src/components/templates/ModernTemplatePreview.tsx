@@ -16,10 +16,10 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px] text-xs sm:text-sm">
       {/* Left Sidebar */}
       <div 
-        className="w-64 p-6 text-white"
+        className="w-1/3 sm:w-64 p-3 sm:p-6 text-white"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
@@ -152,13 +152,13 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-3 sm:p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-2">
             {enhancedContent.name}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className="text-sm sm:text-lg text-muted-foreground mb-4">
             {enhancedContent.title}
           </p>
         </div>

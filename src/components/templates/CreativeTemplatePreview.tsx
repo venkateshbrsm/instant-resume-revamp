@@ -19,7 +19,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
-      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white text-xs sm:text-sm"
       style={{
         pageBreakInside: 'avoid',
         breakInside: 'avoid'
@@ -31,7 +31,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
         <div 
-          className="h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
+          className="h-32 sm:h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.accent} 70%, ${selectedColorTheme.secondary} 100%)`,
             pageBreakInside: 'avoid'
@@ -58,8 +58,8 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 )}
               </div>
               <div>
-                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
-                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+                <h1 className="text-2xl sm:text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
+                <p className="text-sm sm:text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
               </div>
             </div>
             
@@ -77,7 +77,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-6 print:p-4">
+      <div className="p-3 sm:p-6 print:p-4">
         {/* Main Content in Single Column for Print */}
         <div className="print:space-y-6">
           

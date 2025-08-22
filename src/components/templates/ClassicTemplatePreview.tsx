@@ -16,7 +16,7 @@ interface TemplatePreviewProps {
 
 export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 text-xs sm:text-sm">
       {/* Classic Header - Centered */}
       <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
         {/* Profile Photo - Only show if photo exists */}
@@ -31,10 +31,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </div>
           </div>
         )}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
+        <h1 className="text-xl sm:text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
           {enhancedContent.name}
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+        <p className="text-sm sm:text-lg md:text-xl text-muted-foreground mb-4 font-medium">
           {enhancedContent.title}
         </p>
         <div className="text-sm text-muted-foreground space-x-4">
@@ -46,7 +46,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         </div>
       </div>
 
-      <div className="p-6 space-y-6 print:p-4 print:space-y-4">
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 print:p-4 print:space-y-4">
         {/* Professional Summary */}
         <div className="page-break-avoid section">
           <h2 
