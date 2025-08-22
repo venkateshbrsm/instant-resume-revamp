@@ -465,46 +465,38 @@ function prepareElementForPdf(element: HTMLElement): () => void {
       padding: 2mm !important;
     }
     
-    /* ULTRA-AGGRESSIVE text protection - prevent ALL text splitting */
-    *, *::before, *::after {
+    /* Resume-specific section protection */
+    .experience-item,
+    .education-item,
+    .skill-category,
+    .contact-section,
+    .summary-section,
+    [data-section="experience"] > div,
+    [data-section="education"] > div,
+    [data-section="skills"] > div {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      orphans: 10 !important;
-      widows: 10 !important;
-      word-break: keep-all !important;
-      overflow-wrap: normal !important;
-      hyphens: none !important;
-      -webkit-hyphens: none !important;
-      -ms-hyphens: none !important;
+      margin-bottom: 8mm !important;
+      padding: 2mm 0 !important;
     }
     
-    /* Force all text elements to be unbreakable blocks */
-    p, span, div, li, h1, h2, h3, h4, h5, h6, a, strong, em, b, i, code, small {
+    /* Text protection - prevent splitting within logical groups */
+    p, .job-title, .company-name, .degree-title, .skill-name {
+      orphans: 3 !important;
+      widows: 3 !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      display: block !important;
-      orphans: 10 !important;
-      widows: 10 !important;
-      white-space: normal !important;
-      word-wrap: normal !important;
-      overflow-wrap: normal !important;
     }
     
-    /* Keep inline elements together */
-    span, a, strong, em, b, i, code, small {
-      display: inline !important;
+    /* Keep skill progress bars and lists together */
+    .skill-item,
+    .progress-container,
+    .skill-bar,
+    ul li,
+    ol li {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      white-space: nowrap !important;
-    }
-    
-    /* Bulletproof text containers */
-    p, div, li {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      orphans: 10 !important;
-      widows: 10 !important;
-      min-height: 1.2em !important;
+      margin-bottom: 2mm !important;
     }
     
     /* Prevent line breaking within important text elements */
@@ -562,19 +554,18 @@ function prepareElementForPdf(element: HTMLElement): () => void {
   `;
   document.head.appendChild(style);
 
-  // Apply PDF-optimized styles with EXTREME conservative sizing to prevent any splitting
-  element.style.width = '100mm'; // EXTREME small width to absolutely guarantee no cutoff
-  element.style.maxWidth = '100mm';
-  element.style.margin = '0'; // Remove margins to prevent sizing conflicts
-  element.style.padding = '1mm'; // Minimal padding
+  // Apply PDF-optimized styles for resume layout
+  element.style.width = '210mm'; // A4 width
+  element.style.maxWidth = '210mm';
+  element.style.margin = '10mm auto'; // Standard margins
+  element.style.padding = '5mm';
   element.style.overflow = 'visible';
-  element.style.fontSize = '6pt'; // Extremely small font to prevent splitting
-  element.style.lineHeight = '0.9';
+  element.style.fontSize = '12pt'; // Readable font size
+  element.style.lineHeight = '1.4';
   element.style.boxSizing = 'border-box';
-  element.style.wordBreak = 'keep-all';
-  element.style.hyphens = 'none';
-  element.style.whiteSpace = 'nowrap';
-  element.style.textOverflow = 'clip';
+  element.style.wordBreak = 'normal';
+  element.style.hyphens = 'auto';
+  element.style.pageBreakInside = 'avoid';
   
   // Apply page break classes to sections and skill-related elements
   const sections = element.querySelectorAll('.section, .experience-item, .education-item, [data-section], .skills-section, .skill-item, .progress-bar, [class*="skill"], [class*="progress"]');
