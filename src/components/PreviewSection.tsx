@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
@@ -46,6 +47,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>(getDefaultTemplate());
   const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -632,9 +634,66 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                       {/* Scrollable Template Preview - Printer Friendly */}
                       <div className="relative">
-                        <p className="text-sm text-muted-foreground mb-2 text-center">
-                          📄 Scroll to view full resume • Use mouse wheel or drag scrollbars
-                        </p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-muted-foreground text-center flex-1">
+                            📄 Scroll to view full resume • Use mouse wheel or drag scrollbars
+                          </p>
+                          <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="ml-2">
+                                <Maximize2 className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
+                              <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold">Resume Preview - Fullscreen</h2>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => setIsFullscreen(false)}
+                                >
+                                  <Minimize2 className="w-4 h-4 mr-2" />
+                                  Exit Fullscreen
+                                </Button>
+                              </div>
+                              <ScrollArea className="h-full w-full border rounded-lg">
+                                <div className="resume-preview w-[210mm] mx-auto p-4 bg-white" style={{ minHeight: '297mm' }}>
+                                  {selectedTemplate.id === 'modern' && (
+                                    <ModernTemplatePreview 
+                                      enhancedContent={enhancedContent}
+                                      selectedColorTheme={selectedColorTheme}
+                                    />
+                                  )}
+                                  {selectedTemplate.id === 'classic' && (
+                                    <ClassicTemplatePreview 
+                                      enhancedContent={enhancedContent}
+                                      selectedColorTheme={selectedColorTheme}
+                                    />
+                                  )}
+                                  {selectedTemplate.id === 'creative' && (
+                                    <CreativeTemplatePreview 
+                                      enhancedContent={enhancedContent}
+                                      selectedColorTheme={selectedColorTheme}
+                                    />
+                                  )}
+                                  {selectedTemplate.id === 'executive' && (
+                                    <ExecutiveTemplatePreview 
+                                      enhancedContent={enhancedContent}
+                                      selectedColorTheme={selectedColorTheme}
+                                    />
+                                  )}
+                                  {selectedTemplate.id === 'minimalist' && (
+                                    <MinimalistTemplatePreview 
+                                      enhancedContent={enhancedContent}
+                                      selectedColorTheme={selectedColorTheme}
+                                    />
+                                  )}
+                                </div>
+                                <ScrollBar orientation="horizontal" />
+                              </ScrollArea>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                         <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
                           <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
                                style={{ minHeight: '297mm' }}>
