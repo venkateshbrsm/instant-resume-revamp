@@ -16,21 +16,21 @@ interface TemplatePreviewProps {
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full text-[10px] sm:text-sm">
+    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
       {/* Print Layout - Single Column for PDF */}
       <div className="flex print:block">
         {/* Left Sidebar - Dark Background */}
         <div 
-          className="w-1/3 p-2 sm:p-6 text-white print:p-4 print:w-full print:mb-6 page-break-avoid"
+          className="w-1/3 p-6 text-white print:p-4 print:w-full print:mb-6 page-break-avoid"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
           }}
         >
           {/* Profile Section */}
-          <div className="mb-4 sm:mb-8 page-break-avoid">
+          <div className="mb-8 page-break-avoid">
             {/* Profile Photo - Only show if photo exists */}
-             {enhancedContent.photo && (
-               <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden mb-2 sm:mb-4 mx-auto">
+            {enhancedContent.photo && (
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm overflow-hidden mb-4 mx-auto">
                 <img 
                   src={enhancedContent.photo} 
                   alt={enhancedContent.name}
@@ -38,8 +38,8 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                 />
               </div>
             )}
-            <h1 className="text-sm sm:text-2xl font-bold mb-1 sm:mb-2 text-center">{enhancedContent.name}</h1>
-            <p className="text-xs sm:text-lg opacity-95 font-medium text-center mb-2 sm:mb-4">{enhancedContent.title}</p>
+            <h1 className="text-2xl font-bold mb-2 text-center">{enhancedContent.name}</h1>
+            <p className="text-lg opacity-95 font-medium text-center mb-4">{enhancedContent.title}</p>
             
             <div className="space-y-2 text-sm opacity-90">
               <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
 
           {/* Core Competencies in Sidebar */}
           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-            <div className="mb-4 sm:mb-8 page-break-avoid skills-section">
+            <div className="mb-8 page-break-avoid skills-section">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Core Competencies
@@ -113,9 +113,9 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
         </div>
 
         {/* Right Main Content - Light Background */}
-        <div className="w-2/3 p-2 sm:p-6 bg-gray-50 print:p-4 print:w-full print:bg-white">
+        <div className="w-2/3 p-6 bg-gray-50 print:p-4 print:w-full print:bg-white">
           {/* Executive Summary */}
-          <div className="mb-4 sm:mb-8 page-break-avoid section print:mb-6">
+          <div className="mb-8 page-break-avoid section print:mb-6">
             <div className="flex items-center gap-3 mb-4">
               <div 
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
