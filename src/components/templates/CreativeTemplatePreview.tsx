@@ -19,7 +19,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
-      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white text-xs sm:text-sm"
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white text-[10px] sm:text-sm"
       style={{
         pageBreakInside: 'avoid',
         breakInside: 'avoid'
@@ -31,7 +31,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
         <div 
-          className="h-32 sm:h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
+          className="h-24 sm:h-40 flex items-center justify-center text-white relative print:h-32 print:break-inside-avoid"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.accent} 70%, ${selectedColorTheme.secondary} 100%)`,
             pageBreakInside: 'avoid'
@@ -77,7 +77,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-3 sm:p-6 print:p-4">
+      <div className="p-2 sm:p-6 print:p-4">
         {/* Main Content in Single Column for Print */}
         <div className="print:space-y-6">
           

@@ -15,9 +15,9 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-3 sm:p-6 md:p-8 space-y-6 sm:space-y-8 print:p-4 print:space-y-6 text-xs sm:text-sm">
+    <div className="bg-white max-w-4xl mx-auto p-2 sm:p-6 md:p-8 space-y-3 sm:space-y-8 print:p-4 print:space-y-6 text-[10px] sm:text-sm">
       {/* Minimalist Header */}
-      <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+      <div className="text-left space-y-2 sm:space-y-3 border-b pb-3 sm:pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
         <div className="flex items-start gap-6">
           {/* Profile Photo - Only show if photo exists */}
           {enhancedContent.photo && (
