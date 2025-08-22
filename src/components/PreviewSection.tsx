@@ -23,7 +23,6 @@ import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfG
 import { downloadSmartPdf } from "@/lib/smartPdfGenerator";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { usePageBreaks } from "@/hooks/usePageBreaks";
 
 interface PreviewSectionProps {
   file: File;
@@ -50,11 +49,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
-  const resumeContentRef = useRef<HTMLDivElement>(null);
-  
-  // Calculate page breaks for visual indicators
-  const pageBreaks = usePageBreaks(resumeContentRef);
-  
+  const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -691,57 +686,38 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                           </Dialog>
                         </div>
                         <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
-                          <div className="relative">
-                            <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
-                                 style={{ minHeight: '297mm' }}>
-                            {selectedTemplate.id === 'modern' && (
-                              <ModernTemplatePreview 
-                                enhancedContent={enhancedContent}
-                                selectedColorTheme={selectedColorTheme}
-                              />
-                            )}
-                            {selectedTemplate.id === 'classic' && (
-                              <ClassicTemplatePreview 
-                                enhancedContent={enhancedContent}
-                                selectedColorTheme={selectedColorTheme}
-                              />
-                            )}
-                            {selectedTemplate.id === 'creative' && (
-                              <CreativeTemplatePreview 
-                                enhancedContent={enhancedContent}
-                                selectedColorTheme={selectedColorTheme}
-                              />
-                            )}
-                            {selectedTemplate.id === 'executive' && (
-                              <ExecutiveTemplatePreview 
-                                enhancedContent={enhancedContent}
-                                selectedColorTheme={selectedColorTheme}
-                              />
-                            )}
-                            {selectedTemplate.id === 'minimalist' && (
-                              <MinimalistTemplatePreview 
-                                enhancedContent={enhancedContent}
-                                selectedColorTheme={selectedColorTheme}
-                              />
-                            )}
-                            </div>
-                            
-                            {/* Page break indicators */}
-                            {pageBreaks.map((pageBreak) => (
-                              <div
-                                key={pageBreak.pageNumber}
-                                className="absolute left-0 right-0 flex items-center justify-center"
-                                style={{ top: `${pageBreak.top}px` }}
-                              >
-                                <div className="flex items-center w-full max-w-[210mm] mx-auto px-4">
-                                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-                                  <div className="px-3 py-1 bg-background/80 backdrop-blur-sm text-xs text-muted-foreground border rounded-full mx-2">
-                                    Page {pageBreak.pageNumber} ends here
-                                  </div>
-                                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-                                </div>
-                              </div>
-                            ))}
+                          <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
+                               style={{ minHeight: '297mm' }}>
+                          {selectedTemplate.id === 'modern' && (
+                            <ModernTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'classic' && (
+                            <ClassicTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'creative' && (
+                            <CreativeTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'executive' && (
+                            <ExecutiveTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
+                          {selectedTemplate.id === 'minimalist' && (
+                            <MinimalistTemplatePreview 
+                              enhancedContent={enhancedContent}
+                              selectedColorTheme={selectedColorTheme}
+                            />
+                          )}
                           </div>
                           <ScrollBar orientation="horizontal" />
                         </ScrollArea>
