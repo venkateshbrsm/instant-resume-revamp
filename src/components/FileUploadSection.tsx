@@ -4,22 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { TemplateSelector } from "./TemplateSelector";
-import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 
 interface FileUploadSectionProps {
   onFileProcessed: (file: File) => void;
   onBack: () => void;
-  onPurchase?: () => void;
 }
 
-export function FileUploadSection({ onFileProcessed, onBack, onPurchase }: FileUploadSectionProps) {
+export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>(getDefaultTemplate());
-  const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const { toast } = useToast();
 
   const isValidFile = (file: File): boolean => {
@@ -223,19 +218,6 @@ export function FileUploadSection({ onFileProcessed, onBack, onPurchase }: FileU
             )}
           </CardContent>
         </Card>
-
-        {uploadedFile && (
-          <div className="mt-6">
-            <TemplateSelector
-              selectedTemplate={selectedTemplate}
-              selectedColorTheme={selectedColorTheme}
-              onTemplateChange={setSelectedTemplate}
-              onColorThemeChange={setSelectedColorTheme}
-              file={uploadedFile}
-              onPurchase={onPurchase}
-            />
-          </div>
-        )}
 
         <div className="flex justify-center mt-6 px-4">
           <Button variant="ghost" onClick={onBack} className="w-full sm:w-auto">
