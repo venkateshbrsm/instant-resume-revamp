@@ -337,66 +337,45 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsGeneratingPdf(true);
     
     try {
-      // Use smart PDF generator for executive template to prevent text splitting
-      if (selectedTemplate.id === 'executive') {
-        toast({
-          title: "Generating Executive Resume PDF",
-          description: "Using smart scaling to prevent text splitting at page borders...",
-        });
+      toast({
+        title: "Generating ATS-Readable Resume",
+        description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
+      });
 
-        await downloadSmartPdf(resumeContentRef.current, {
-          filename: `Executive_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
-          scaleStrategy: 'quality', // Use quality strategy for executive template
-          dynamicScale: true,
-          format: 'a4',
-          margin: 0.5
-        });
-
-        toast({
-          title: "Executive PDF Downloaded",
-          description: "Your executive resume PDF has been optimized to prevent text splitting!",
-        });
-      } else {
-        toast({
-          title: "Generating ATS-Readable Resume",
-          description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
-        });
-
-        // Use server-side text-based PDF generation for other templates
-        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
-          body: {
-            enhancedContent,
-            templateId: selectedTemplate.id,
-            themeId: selectedColorTheme.id,
-            fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
-          }
-        });
-
-        if (error) {
-          throw new Error(error.message || 'Failed to generate ATS-readable PDF');
+      // Use server-side text-based PDF generation for ATS compatibility
+      const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+        body: {
+          enhancedContent,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
         }
+      });
 
-        // Create download link
-        const blob = new Blob([data], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toast({
-          title: "ATS-Readable PDF Downloaded",
-          description: "Your resume is optimized for Applicant Tracking Systems with selectable text!",
-        });
+      if (error) {
+        throw new Error(error.message || 'Failed to generate ATS-readable PDF');
       }
+
+      // Create download link
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "ATS-Readable PDF Downloaded",
+        description: "Your resume is optimized for Applicant Tracking Systems with selectable text!",
+      });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error generating ATS-readable PDF:', error);
       toast({
         title: "Download Failed",
-        description: "Failed to generate PDF. Please try again.",
+        description: "Failed to generate ATS-readable PDF. Please try again.",
         variant: "destructive"
       });
     } finally {
