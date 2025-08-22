@@ -342,15 +342,20 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         description: "Optimizing layout and preventing text splitting near page breaks...",
       });
 
-      // Use smart PDF generator with conservative scaling to prevent text splitting
-      await downloadSmartPdf(resumeContentRef.current, {
+      // Use advanced PDF generator with comprehensive text splitting prevention
+      const { downloadAdvancedPdf } = await import("@/lib/advancedPdfGenerator");
+      
+      // Detect template type from the component data
+      const templateType = selectedTemplate?.id?.toLowerCase() || 'modern';
+      
+      await downloadAdvancedPdf(resumeContentRef.current, {
         filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+        templateType: templateType as any,
         dynamicScale: true,
+        contentAwareOptimization: true,
+        fallbackRecovery: true,
         scaleStrategy: 'conservative',
-        minScale: 0.25,
-        maxScale: 0.5,
-        quality: 0.95,
-        margin: [20, 20, 20, 20] // Larger margins to prevent edge cutoff
+        quality: 0.98
       });
 
       toast({
