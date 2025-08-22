@@ -45,8 +45,8 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
           </div>
           
           <div className="relative z-10 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mr-4 overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center justify-center mb-4 gap-4 sm:gap-0">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center sm:mr-4 overflow-hidden">
                 {enhancedContent.photo ? (
                   <img 
                     src={enhancedContent.photo} 
@@ -57,9 +57,9 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   <Palette className="w-8 h-8 text-white" />
                 )}
               </div>
-              <div>
-                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
-                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+              <div className="text-center sm:text-left">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
+                <p className="text-lg sm:text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
               </div>
             </div>
             
@@ -77,7 +77,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
         </div>
       </div>
 
-      <div className="p-6 print:p-4">
+      <div className="p-4 sm:p-6 print:p-4">
         {/* Main Content in Single Column for Print */}
         <div className="print:space-y-6">
           
@@ -104,10 +104,10 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             </div>
           </div>
 
-          {/* Grid Layout for Large Screens, Single Column for Print */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4 print:grid-cols-1">
+          {/* Responsive Grid Layout */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 print:gap-4 print:grid-cols-1">
             {/* Main Content - Experience */}
-            <div className="lg:col-span-2 space-y-6 print:space-y-4 print:col-span-1">
+            <div className="xl:col-span-2 space-y-4 sm:space-y-6 print:space-y-4 print:col-span-1">
               {/* Creative Experience with Enhanced Achievements */}
               {enhancedContent.experience && enhancedContent.experience.length > 0 && (
                 <div 
@@ -211,7 +211,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             </div>
 
             {/* Creative Sidebar */}
-            <div className="space-y-5 print:space-y-4 print:col-span-1">
+            <div className="space-y-4 sm:space-y-5 print:space-y-4 print:col-span-1">
               {/* Skills as Creative Badges */}
               {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                 <div 

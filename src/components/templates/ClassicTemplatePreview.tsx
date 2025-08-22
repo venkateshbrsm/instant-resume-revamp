@@ -31,22 +31,22 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </div>
           </div>
         )}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
           {enhancedContent.name}
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-4 font-medium">
           {enhancedContent.title}
         </p>
-        <div className="text-sm text-muted-foreground space-x-4">
+        <div className="text-sm text-muted-foreground flex flex-col sm:flex-row sm:space-x-4 gap-1 sm:gap-0">
           <span className="no-underline">{enhancedContent.email}</span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span className="no-underline">{enhancedContent.phone}</span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span>{enhancedContent.location}</span>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 print:p-4 print:space-y-4">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 print:p-4 print:space-y-4">
         {/* Professional Summary */}
         <div className="page-break-avoid section">
           <h2 
