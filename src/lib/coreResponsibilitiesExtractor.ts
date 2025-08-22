@@ -1,8 +1,8 @@
 // Core responsibilities extraction utility to avoid code duplication across templates
 
 /**
- * Extracts core responsibilities directly from resume achievements/content
- * Only uses information that is actually stated in the resume
+ * Extracts core everyday responsibilities that would lead to the achievements stated in the resume
+ * Generates the underlying daily activities that collectively make the achievements happen
  */
 export function extractCoreResponsibilities(
   achievements: string[] | undefined,
@@ -16,73 +16,93 @@ export function extractCoreResponsibilities(
     return [];
   }
 
-  // Extract responsibilities directly from achievements
   const responsibilities: string[] = [];
   
   for (const achievement of achievements) {
     if (responsibilities.length >= maxResponsibilities) break;
     
-    // Clean and format the achievement as a responsibility
-    const cleanedAchievement = achievement
-      .trim()
-      .replace(/^\d+\.\s*/, '') // Remove numbering
-      .replace(/^[-•]\s*/, '') // Remove bullet points
-      .replace(/\.$/, ''); // Remove trailing period
-    
-    // Only add if it's substantial content (more than just a few words)
-    if (cleanedAchievement.length > 20 && !isVagueStatement(cleanedAchievement)) {
-      // Format as a responsibility statement
-      const responsibility = formatAsResponsibility(cleanedAchievement);
-      responsibilities.push(responsibility);
+    // Generate everyday activities that would lead to this achievement
+    const dailyActivities = generateDailyActivitiesFromAchievement(achievement, title);
+    responsibilities.push(...dailyActivities);
+  }
+
+  // Remove duplicates and return only the requested amount
+  const uniqueResponsibilities = Array.from(new Set(responsibilities));
+  return uniqueResponsibilities.slice(0, maxResponsibilities);
+}
+
+/**
+ * Generates everyday activities that would logically lead to a specific achievement
+ */
+function generateDailyActivitiesFromAchievement(achievement: string, title: string): string[] {
+  const activities: string[] = [];
+  const lowerAchievement = achievement.toLowerCase();
+  const lowerTitle = title.toLowerCase();
+  
+  // Financial/Revenue achievements
+  if (lowerAchievement.includes('sales') || lowerAchievement.includes('revenue') || lowerAchievement.includes('profit')) {
+    activities.push('Conducting daily sales pipeline reviews and client outreach');
+    activities.push('Analyzing market trends and competitor activity');
+  }
+  
+  // Team/Management achievements
+  if (lowerAchievement.includes('team') || lowerAchievement.includes('manage') || lowerAchievement.includes('staff')) {
+    activities.push('Facilitating weekly team meetings and performance reviews');
+    activities.push('Providing coaching and mentorship to team members');
+  }
+  
+  // Process/Efficiency achievements
+  if (lowerAchievement.includes('process') || lowerAchievement.includes('efficiency') || lowerAchievement.includes('streamline')) {
+    activities.push('Reviewing and optimizing operational workflows');
+    activities.push('Documenting standard operating procedures');
+  }
+  
+  // Customer/Client achievements
+  if (lowerAchievement.includes('customer') || lowerAchievement.includes('client') || lowerAchievement.includes('satisfaction')) {
+    activities.push('Maintaining regular client communication and relationship building');
+    activities.push('Monitoring customer feedback and service quality metrics');
+  }
+  
+  // Technology/System achievements
+  if (lowerAchievement.includes('system') || lowerAchievement.includes('technology') || lowerAchievement.includes('software')) {
+    activities.push('Overseeing daily system maintenance and performance monitoring');
+    activities.push('Coordinating with technical teams on implementation progress');
+  }
+  
+  // Project achievements
+  if (lowerAchievement.includes('project') || lowerAchievement.includes('initiative') || lowerAchievement.includes('launch')) {
+    activities.push('Tracking project milestones and deliverable completion');
+    activities.push('Coordinating cross-functional team collaboration');
+  }
+  
+  // Quality/Compliance achievements
+  if (lowerAchievement.includes('quality') || lowerAchievement.includes('compliance') || lowerAchievement.includes('standard')) {
+    activities.push('Conducting regular quality assurance checks and audits');
+    activities.push('Ensuring adherence to regulatory and company standards');
+  }
+  
+  // Budget/Cost achievements
+  if (lowerAchievement.includes('budget') || lowerAchievement.includes('cost') || lowerAchievement.includes('saving')) {
+    activities.push('Monitoring daily expenditures and budget allocations');
+    activities.push('Reviewing vendor contracts and cost optimization opportunities');
+  }
+  
+  // If no specific patterns matched, generate role-based activities
+  if (activities.length === 0) {
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
+      activities.push('Overseeing daily operational activities and team coordination');
+      activities.push('Making strategic decisions and resource allocation');
+    } else if (lowerTitle.includes('analyst') || lowerTitle.includes('specialist')) {
+      activities.push('Conducting daily data analysis and reporting');
+      activities.push('Researching industry trends and best practices');
+    } else if (lowerTitle.includes('developer') || lowerTitle.includes('engineer')) {
+      activities.push('Writing and reviewing code according to project requirements');
+      activities.push('Participating in technical discussions and problem-solving');
+    } else {
+      activities.push('Managing day-to-day operational responsibilities');
+      activities.push('Collaborating with stakeholders on ongoing initiatives');
     }
   }
-
-  return responsibilities.slice(0, maxResponsibilities);
-}
-
-/**
- * Checks if a statement is too vague or generic
- */
-function isVagueStatement(text: string): boolean {
-  const vaguePatterns = [
-    /^(worked on|helped with|assisted in|participated in|involved in)/i,
-    /^(responsible for|in charge of|handled|managed|dealt with)$/i,
-    /^(various|multiple|different|several)\s+\w+$/i
-  ];
   
-  return vaguePatterns.some(pattern => pattern.test(text.trim()));
-}
-
-/**
- * Formats an achievement as a responsibility statement
- */
-function formatAsResponsibility(achievement: string): string {
-  // Ensure it starts with a present-tense action verb
-  const startsWithPastTense = /^(implemented|developed|created|managed|led|coordinated|established|built|designed|executed|delivered|achieved|increased|decreased|improved|optimized|streamlined|automated)/i;
-  
-  if (startsWithPastTense.test(achievement)) {
-    // Convert past tense to present tense action
-    return achievement
-      .replace(/^implemented/i, 'Implementing')
-      .replace(/^developed/i, 'Developing')
-      .replace(/^created/i, 'Creating')
-      .replace(/^managed/i, 'Managing')
-      .replace(/^led/i, 'Leading')
-      .replace(/^coordinated/i, 'Coordinating')
-      .replace(/^established/i, 'Establishing')
-      .replace(/^built/i, 'Building')
-      .replace(/^designed/i, 'Designing')
-      .replace(/^executed/i, 'Executing')
-      .replace(/^delivered/i, 'Delivering')
-      .replace(/^achieved/i, 'Achieving')
-      .replace(/^increased/i, 'Increasing')
-      .replace(/^decreased/i, 'Decreasing')
-      .replace(/^improved/i, 'Improving')
-      .replace(/^optimized/i, 'Optimizing')
-      .replace(/^streamlined/i, 'Streamlining')
-      .replace(/^automated/i, 'Automating');
-  }
-  
-  // Ensure proper capitalization
-  return achievement.charAt(0).toUpperCase() + achievement.slice(1);
+  return activities;
 }
