@@ -591,21 +591,12 @@ function selectBestBackendContent(results: any[], fileName: string): string {
       console.log(`Email bonus: +50 (found ${emailCount} emails)`);
     }
     
-    // Phone number patterns - improved to avoid date ranges
-    const phonePattern = /(\+[\d\s\-\(\)]{10,}|[\d\s\-\(\)]{10,})/g;
-    const phoneMatches = (content.match(phonePattern) || [])
-      .filter(match => {
-        // Remove date ranges like "1997 - 2001"
-        const cleanMatch = match.trim();
-        const isDateRange = /^\d{4}\s*-\s*\d{4}$/.test(cleanMatch);
-        const isYear = /^\d{4}$/.test(cleanMatch);
-        return !isDateRange && !isYear && cleanMatch.length >= 10;
-      });
-    const phoneCount = phoneMatches.length;
+    // Phone number patterns
+    const phonePattern = /(\+?[\d\s\-\(\)]{10,})/g;
+    const phoneCount = (content.match(phonePattern) || []).length;
     if (phoneCount > 0) {
       score += 30;
       console.log(`Phone bonus: +30 (found ${phoneCount} phones)`);
-      console.log('Detected phone numbers:', phoneMatches);
     }
     
     // Years (dates in resume)
@@ -1137,22 +1128,6 @@ Education: Professional qualifications and education background`;
     
     console.log('Final resume content length:', resumeContent.length);
     console.log('Using resume content (first 500 chars):', resumeContent.substring(0, 500));
-    
-    // Debug phone number extraction from final content
-    const debugPhonePattern = /(\+[\d\s\-\(\)]{10,}|[\d\s\-\(\)]{10,})/g;
-    const debugPhoneMatches = (resumeContent.match(debugPhonePattern) || [])
-      .filter(match => {
-        const cleanMatch = match.trim();
-        const isDateRange = /^\d{4}\s*-\s*\d{4}$/.test(cleanMatch);
-        const isYear = /^\d{4}$/.test(cleanMatch);
-        return !isDateRange && !isYear && cleanMatch.length >= 10;
-      });
-    console.log('DEBUG: Phone numbers found in final content:', debugPhoneMatches);
-    
-    // Also check for specific patterns that might cause duplication
-    const phoneLinePattern = /phone[:\s]*([+\d\s\-\(\)]+)/gi;
-    const phoneLineMatches = resumeContent.match(phoneLinePattern) || [];
-    console.log('DEBUG: Phone line patterns found:', phoneLineMatches);
 
     // Extract name from filename for better personalization
     const nameMatch = fileName.match(/RESUME[-_\s]*(.+)/i);
