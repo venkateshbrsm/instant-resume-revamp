@@ -17,11 +17,11 @@ interface TemplatePreviewProps {
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
-      {/* Responsive Layout - Stack on mobile, side-by-side on desktop */}
-      <div className="flex flex-col lg:flex-row print:block">
+      {/* Print Layout - Single Column for PDF */}
+      <div className="flex print:block">
         {/* Left Sidebar - Dark Background */}
         <div 
-          className="w-full lg:w-1/3 p-4 sm:p-6 text-white print:p-4 print:w-full print:mb-6 page-break-avoid"
+          className="w-1/3 p-6 text-white print:p-4 print:w-full print:mb-6 page-break-avoid"
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
           }}
@@ -38,8 +38,8 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                 />
               </div>
             )}
-            <h1 className="text-xl sm:text-2xl font-bold mb-2 text-center">{enhancedContent.name}</h1>
-            <p className="text-base sm:text-lg opacity-95 font-medium text-center mb-4">{enhancedContent.title}</p>
+            <h1 className="text-2xl font-bold mb-2 text-center">{enhancedContent.name}</h1>
+            <p className="text-lg opacity-95 font-medium text-center mb-4">{enhancedContent.title}</p>
             
             <div className="space-y-2 text-sm opacity-90">
               <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
         </div>
 
         {/* Right Main Content - Light Background */}
-        <div className="w-full lg:w-2/3 p-4 sm:p-6 bg-gray-50 print:p-4 print:w-full print:bg-white">
+        <div className="w-2/3 p-6 bg-gray-50 print:p-4 print:w-full print:bg-white">
           {/* Executive Summary */}
           <div className="mb-8 page-break-avoid section print:mb-6">
             <div className="flex items-center gap-3 mb-4">

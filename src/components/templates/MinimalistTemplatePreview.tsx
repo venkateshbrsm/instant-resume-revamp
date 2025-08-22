@@ -15,13 +15,13 @@ interface TemplatePreviewProps {
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white max-w-4xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 print:p-4 print:space-y-6">
+    <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
       {/* Minimalist Header */}
       <div className="text-left space-y-3 border-b pb-6 print:pb-4" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+        <div className="flex items-start gap-6">
           {/* Profile Photo - Only show if photo exists */}
           {enhancedContent.photo && (
-            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border mx-auto sm:mx-0" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+            <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -30,15 +30,15 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </div>
           )}
           
-          <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
+          <div className="flex-1">
+            <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground font-light">
+            <p className="text-xl text-muted-foreground font-light">
               {enhancedContent.title}
             </p>
             
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 lg:gap-8 text-sm text-muted-foreground font-light pt-2">
+            <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
               <span className="break-all no-underline">{enhancedContent.email}</span>
               <span className="no-underline">{enhancedContent.phone}</span>
               <span>{enhancedContent.location}</span>
