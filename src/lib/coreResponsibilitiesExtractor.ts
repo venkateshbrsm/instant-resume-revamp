@@ -150,17 +150,20 @@ function generateDailyActivitiesFromAchievement(achievement: string, title: stri
       activities.push(`Managing daily operations related to ${keyTerms[0]} initiatives and objectives`);
       activities.push(`Monitoring ${keyTerms[0]} performance metrics and progress indicators`);
     } else {
-      // Generate role-appropriate activities based on title
+      // Generate granular, tactical activities based on title
       const lowerTitle = title.toLowerCase();
       if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
-        activities.push('Overseeing daily departmental operations and team coordination');
-        activities.push('Reviewing performance metrics and providing strategic guidance');
+        activities.push('Conducting daily team check-ins and task assignment reviews');
+        activities.push('Responding to escalated issues and providing immediate solutions');
       } else if (lowerTitle.includes('analyst') || lowerTitle.includes('specialist')) {
-        activities.push('Conducting daily data analysis and performance monitoring');
-        activities.push('Preparing detailed reports and recommendations for management');
+        activities.push('Processing daily data inputs and running analysis reports');
+        activities.push('Updating spreadsheets and databases with current information');
+      } else if (lowerTitle.includes('coordinator')) {
+        activities.push('Scheduling daily meetings and tracking project deliverables');
+        activities.push('Following up with team members on task completion status');
       } else {
-        activities.push('Executing core operational responsibilities and deliverables');
-        activities.push('Collaborating with team members on daily objectives and tasks');
+        activities.push('Completing assigned daily tasks and meeting deadlines');
+        activities.push('Participating in team meetings and updating progress status');
       }
     }
   }
