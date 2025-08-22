@@ -12,11 +12,9 @@ interface TemplatePreviewProps {
     secondary: string;
     accent: string;
   };
-  isEditing?: boolean;
-  onFieldChange?: (path: string, value: string) => void;
 }
 
-export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme, isEditing = false, onFieldChange }: TemplatePreviewProps) {
+export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
     <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
       {/* Print Layout - Single Column for PDF */}
