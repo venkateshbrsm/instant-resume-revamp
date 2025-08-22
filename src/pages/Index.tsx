@@ -176,13 +176,11 @@ const Index = () => {
         );
       case "preview":
         return uploadedFile ? (
-          <div className="hidden">
-            <PreviewSection
-              file={uploadedFile}
-              onPurchase={handlePurchase}
-              onBack={handleBackToUpload}
-            />
-          </div>
+          <PreviewSection
+            file={uploadedFile}
+            onPurchase={handlePurchase}
+            onBack={handleBackToUpload}
+          />
         ) : (
           <HeroSection onGetStarted={handleGetStarted} />
         );
