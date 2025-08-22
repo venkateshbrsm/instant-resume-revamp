@@ -8,8 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
@@ -50,7 +48,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [downloadFormat, setDownloadFormat] = useState<'pdf' | 'docx'>('pdf');
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -328,19 +325,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleTestDownload = async () => {
-    console.log('=== Test Download Debug ===');
-    console.log('resumeContentRef.current:', resumeContentRef.current);
-    console.log('enhancedContent:', enhancedContent);
-    console.log('selectedTemplate:', selectedTemplate);
-    console.log('selectedColorTheme:', selectedColorTheme);
-    console.log('downloadFormat:', downloadFormat);
-    
     if (!resumeContentRef.current || !enhancedContent) {
-      console.error('Missing required elements:', {
-        hasResumeRef: !!resumeContentRef.current,
-        hasEnhancedContent: !!enhancedContent
-      });
-      
       toast({
         title: "Preview Not Ready",
         description: "Please wait for the enhanced resume to load completely.",
@@ -349,42 +334,69 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       return;
     }
 
-    if (downloadFormat === 'docx') {
-      await handleDownloadDocx();
-    } else {
-      await handleDownloadPdf();
-    }
-  };
-
-  const handleDownloadPdf = async () => {
-    console.log('=== PDF Download Debug ===');
     setIsGeneratingPdf(true);
     
     try {
-      console.log('Using client-side PDF generation for all templates');
-      toast({
-        title: "Generating PDF Resume",
-        description: "Creating high-quality PDF from your enhanced resume...",
-      });
+      // Use smart PDF generator for executive template to prevent text splitting
+      if (selectedTemplate.id === 'executive') {
+        toast({
+          title: "Generating Executive Resume PDF",
+          description: "Using smart scaling to prevent text splitting at page borders...",
+        });
 
-      // Use client-side PDF generation for all templates in test mode
-      await downloadSmartPdf(resumeContentRef.current!, {
-        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
-        scaleStrategy: selectedTemplate.id === 'executive' ? 'quality' : 'balanced',
-        dynamicScale: true,
-        format: 'a4',
-        margin: 0.5
-      });
+        await downloadSmartPdf(resumeContentRef.current, {
+          filename: `Executive_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+          scaleStrategy: 'quality', // Use quality strategy for executive template
+          dynamicScale: true,
+          format: 'a4',
+          margin: 0.5
+        });
 
-      toast({
-        title: "PDF Downloaded Successfully",
-        description: "Your enhanced resume PDF has been downloaded!",
-      });
+        toast({
+          title: "Executive PDF Downloaded",
+          description: "Your executive resume PDF has been optimized to prevent text splitting!",
+        });
+      } else {
+        toast({
+          title: "Generating ATS-Readable Resume",
+          description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
+        });
+
+        // Use server-side text-based PDF generation for other templates
+        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
+          body: {
+            enhancedContent,
+            templateId: selectedTemplate.id,
+            themeId: selectedColorTheme.id,
+            fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
+          }
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Failed to generate ATS-readable PDF');
+        }
+
+        // Create download link
+        const blob = new Blob([data], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "ATS-Readable PDF Downloaded",
+          description: "Your resume is optimized for Applicant Tracking Systems with selectable text!",
+        });
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
         title: "Download Failed",
-        description: `Failed to generate PDF: ${error.message}`,
+        description: "Failed to generate PDF. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -393,10 +405,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleDownloadDocx = async () => {
-    console.log('=== DOCX Download Debug ===');
-    
     if (!enhancedContent) {
-      console.error('No enhanced content available for DOCX generation');
       toast({
         title: "Preview Not Ready",
         description: "Please wait for the enhanced resume to load completely.",
@@ -408,12 +417,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsGeneratingPdf(true);
     
     try {
-      console.log('Calling download-enhanced-resume function with:', {
-        enhancedContent: !!enhancedContent,
-        themeId: selectedColorTheme.id,
-        templateId: selectedTemplate.id
-      });
-
       toast({
         title: "Generating DOCX Resume",
         description: "Creating editable Word document - perfect for ATS systems...",
@@ -424,27 +427,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         body: {
           paymentId: 'preview', // Special case for preview downloads
           enhancedContent,
-          themeId: selectedColorTheme.id,
-          templateId: selectedTemplate.id
+          themeId: selectedColorTheme.id
         }
       });
 
-      console.log('DOCX generation response:', { data, error });
-
       if (error) {
-        console.error('DOCX generation error:', error);
         throw new Error(error.message || 'Failed to generate DOCX');
       }
 
-      if (!data) {
-        console.error('No data received from DOCX generation');
-        throw new Error('No data received from server');
-      }
-
       // Create download link for DOCX
-      const blob = new Blob([data], { 
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-      });
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -455,21 +447,20 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       URL.revokeObjectURL(url);
 
       toast({
-        title: "DOCX Downloaded Successfully",
-        description: "Your editable Word document is ready - perfect for ATS systems!",
+        title: "DOCX Downloaded",
+        description: "Editable Word document downloaded - 100% ATS compatible!",
       });
     } catch (error) {
       console.error('Error generating DOCX:', error);
       toast({
-        title: "Download Failed",
-        description: `Failed to generate DOCX: ${error.message}`,
+        title: "Download Failed", 
+        description: "Failed to generate DOCX. Please try again.",
         variant: "destructive"
       });
     } finally {
       setIsGeneratingPdf(false);
     }
   };
-
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
@@ -819,53 +810,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             </div>
             
             <div className="space-y-3 mb-6">
-              {/* Format Selection */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Choose Download Format:</Label>
-                <RadioGroup
-                  value={downloadFormat}
-                  onValueChange={(value: 'pdf' | 'docx') => setDownloadFormat(value)}
-                  className="flex space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="pdf" id="pdf" />
-                    <Label htmlFor="pdf" className="text-sm cursor-pointer">PDF</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="docx" id="docx" />
-                    <Label htmlFor="docx" className="text-sm cursor-pointer">DOCX</Label>
-                  </div>
-                </RadioGroup>
-                <p className="text-xs text-muted-foreground">
-                  {downloadFormat === 'pdf' 
-                    ? 'PDF format - Professional and print-ready' 
-                    : 'DOCX format - Editable Word document for ATS systems'
-                  }
-                </p>
-              </div>
-              
-              {/* Test Download Button */}
-              {enhancedContent && (
-                <Button 
-                  variant="outline" 
-                  onClick={handleTestDownload}
-                  className="w-full"
-                  disabled={isGeneratingPdf}
-                >
-                  {isGeneratingPdf ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating {downloadFormat.toUpperCase()}...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Test Download {downloadFormat.toUpperCase()}
-                    </>
-                  )}
-                </Button>
-              )}
-              
               <Button 
                 variant="success" 
                 size="xl" 
@@ -879,6 +823,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
+              
               <p className="text-xs text-muted-foreground">
                 {enhancedContent 
                   ? 'Secure payment • Download the enhanced version immediately' 
@@ -890,15 +835,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             <div className="text-left space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>Professional PDF & DOCX formats</span>
+                <span>Professional PDF format</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>ATS-optimized content</span>
+                <span>ATS-optimized format</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>Editable Word document option</span>
+                <span>ATS-friendly formatting</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
