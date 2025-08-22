@@ -166,8 +166,8 @@ function calculateBaseScale(
   
   switch (strategy) {
     case 'conservative':
-      // Ultra-conservative: Prioritize avoiding text splitting over quality
-      baseScale = Math.max(0.15, minScale + (analysis.textDensity * 0.05));
+      // Prioritize avoiding text splitting over quality
+      baseScale = Math.max(0.2, minScale + (analysis.textDensity * 0.1));
       break;
       
     case 'quality':
