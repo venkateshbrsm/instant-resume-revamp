@@ -293,39 +293,39 @@ function generateExperienceSpecificActivities(title: string, experienceIndex: nu
   if (experienceIndex === 0) {
     // Most recent experience - more responsibility but still realistic
     if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
-      activities.push('Approving team requests and handling escalations');
-      activities.push('Reviewing monthly department reports and metrics');
-      activities.push('Conducting staff meetings and performance check-ins');
+      activities.push('Processing daily team requests and approving time-off submissions');
+      activities.push('Reviewing individual task assignments and updating project schedules');
+      activities.push('Conducting brief daily stand-ups and addressing immediate issues');
     } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
-      activities.push('Mentoring junior staff and reviewing their work');
-      activities.push('Leading project meetings and status updates');
-      activities.push('Making technical decisions and recommendations');
+      activities.push('Reviewing junior staff work and providing detailed feedback');
+      activities.push('Updating project status reports and attending coordination meetings');
+      activities.push('Making technical decisions on daily implementation challenges');
     } else {
-      activities.push('Taking on additional project responsibilities');
-      activities.push('Training new team members on processes');
-      activities.push('Representing the team in cross-departmental meetings');
+      activities.push('Taking on additional daily tasks and supporting team objectives');
+      activities.push('Training new team members on specific procedures and tools');
+      activities.push('Attending departmental meetings and sharing project updates');
     }
   } else if (experienceIndex === 1) {
     // Second experience - solid contributor level
     if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
-      activities.push('Managing daily team operations and workflow');
-      activities.push('Handling budget tracking and expense approvals');
-      activities.push('Coordinating with other department managers');
+      activities.push('Managing daily team schedules and task assignments');
+      activities.push('Tracking daily expenses and processing purchase approvals');
+      activities.push('Attending weekly manager meetings and sharing team updates');
     } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
-      activities.push('Overseeing specific project components');
-      activities.push('Reviewing and quality-checking team deliverables');
-      activities.push('Participating in planning and resource allocation');
+      activities.push('Managing specific project tasks and tracking daily progress');
+      activities.push('Quality-checking team deliverables before client submission');
+      activities.push('Participating in daily planning sessions and resource discussions');
     } else {
-      activities.push('Managing assigned projects from start to finish');
-      activities.push('Collaborating with multiple departments on initiatives');
-      activities.push('Contributing to process improvements and suggestions');
+      activities.push('Managing assigned project components from start to completion');
+      activities.push('Coordinating daily activities with multiple departments');
+      activities.push('Contributing daily improvement suggestions and feedback');
     }
   } else {
     // Earlier experiences - learning and contributing
     if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
-      activities.push('Learning company procedures and management systems');
-      activities.push('Building relationships with team members and peers');
-      activities.push('Focusing on immediate team needs and daily operations');
+      activities.push('Learning daily management procedures and system workflows');
+      activities.push('Building working relationships through daily team interactions');
+      activities.push('Handling immediate team requests and basic operational tasks');
     } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
       activities.push('Developing expertise in specific technical areas');
       activities.push('Supporting team goals and departmental objectives');
@@ -348,16 +348,16 @@ function generateFallbackActivities(title: string, experienceIndex: number, coun
   const fallbacks: string[] = [];
   
   const genericActivities = [
-    'Collaborating with cross-functional teams on key initiatives',
-    'Preparing detailed reports and presentations for leadership',
-    'Participating in strategic planning and decision-making processes',
-    'Maintaining industry knowledge and professional development',
-    'Managing stakeholder communications and relationship building',
-    'Overseeing project timelines and deliverable quality',
-    'Conducting regular performance assessments and feedback sessions',
-    'Implementing organizational policies and compliance measures',
-    'Facilitating knowledge transfer and documentation processes',
-    'Supporting business continuity and risk management activities'
+    'Coordinating daily team activities and cross-functional communications',
+    'Preparing weekly status reports and updating project documentation',
+    'Attending daily planning meetings and contributing to decisions',
+    'Reviewing industry updates and applying best practices to daily work',
+    'Managing daily stakeholder communications and follow-ups',
+    'Tracking daily project timelines and deliverable progress',
+    'Conducting weekly performance check-ins and providing feedback',
+    'Implementing daily policy procedures and compliance checks',
+    'Facilitating daily knowledge sharing and team coordination',
+    'Supporting daily business operations and addressing immediate needs'
   ];
   
   // Add role-specific fallbacks
