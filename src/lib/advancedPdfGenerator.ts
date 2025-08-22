@@ -56,56 +56,56 @@ interface TemplateConfig {
   specificSelectors: string[];
 }
 
-// Template-specific configurations
+// Template-specific configurations with enhanced buffer zones
 const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
   modern: {
     name: 'Modern',
-    preferredScale: 0.28,
-    minScale: 0.15,
-    maxScale: 0.35,
+    preferredScale: 0.24, // More conservative for better text protection
+    minScale: 0.12,
+    maxScale: 0.3,
     pageBreakStrategy: 'aggressive',
-    sectionPadding: 8,
-    marginStrategy: [0, 15, 0, 15],
+    sectionPadding: 12, // Increased padding for better spacing
+    marginStrategy: [8, 20, 8, 20], // Added top/bottom margins for buffer
     specificSelectors: ['.sidebar', '.main-content', '.experience-item', '.skill-item']
   },
   classic: {
     name: 'Classic',
-    preferredScale: 0.32,
-    minScale: 0.18,
-    maxScale: 0.4,
-    pageBreakStrategy: 'moderate',
-    sectionPadding: 6,
-    marginStrategy: [0, 18, 0, 18],
+    preferredScale: 0.26, // More conservative
+    minScale: 0.14,
+    maxScale: 0.32,
+    pageBreakStrategy: 'aggressive', // Changed to aggressive for better protection
+    sectionPadding: 10,
+    marginStrategy: [8, 22, 8, 22], // Enhanced margins
     specificSelectors: ['.experience-item', '.education-item', '.skills-section']
   },
   minimalist: {
     name: 'Minimalist',
-    preferredScale: 0.35,
-    minScale: 0.2,
-    maxScale: 0.45,
-    pageBreakStrategy: 'conservative',
-    sectionPadding: 4,
-    marginStrategy: [0, 20, 0, 20],
+    preferredScale: 0.28, // More conservative
+    minScale: 0.16,
+    maxScale: 0.35,
+    pageBreakStrategy: 'aggressive', // Changed to aggressive
+    sectionPadding: 8,
+    marginStrategy: [10, 25, 10, 25], // Enhanced margins
     specificSelectors: ['.space-y-8 > div', '.space-y-6 > div']
   },
   executive: {
     name: 'Executive',
-    preferredScale: 0.3,
-    minScale: 0.16,
-    maxScale: 0.38,
+    preferredScale: 0.25, // More conservative
+    minScale: 0.13,
+    maxScale: 0.31,
     pageBreakStrategy: 'aggressive',
-    sectionPadding: 10,
-    marginStrategy: [0, 16, 0, 16],
+    sectionPadding: 14, // Increased padding
+    marginStrategy: [8, 20, 8, 20], // Enhanced margins
     specificSelectors: ['.profile-section', '.experience-section', '.metrics-section']
   },
   creative: {
     name: 'Creative',
-    preferredScale: 0.26,
-    minScale: 0.14,
-    maxScale: 0.32,
+    preferredScale: 0.22, // More conservative for complex layouts
+    minScale: 0.11,
+    maxScale: 0.28,
     pageBreakStrategy: 'aggressive',
-    sectionPadding: 12,
-    marginStrategy: [0, 14, 0, 14],
+    sectionPadding: 16, // Increased padding for complex content
+    marginStrategy: [8, 18, 8, 18], // Enhanced margins
     specificSelectors: ['.creative-header', '.portfolio-section', '.skills-badges']
   }
 };
@@ -172,9 +172,17 @@ export async function generateAdvancedPdf(
       console.log(`🎯 Optimal scale determined: ${optimalScale.toFixed(3)}`);
     }
 
-    // Configure html2pdf with advanced settings
+    // Configure html2pdf with enhanced buffer zones
+    const bufferScale = Math.max(0.85, optimalScale / 1.15); // Additional buffer reduction
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    
+    // Calculate buffer zones (minimum 15mm on all sides)
+    const horizontalBuffer = Math.max(15, templateConfig.marginStrategy[1]);
+    const verticalBuffer = Math.max(10, templateConfig.marginStrategy[0]);
+    
     const opt = {
-      margin: templateConfig.marginStrategy,
+      margin: [verticalBuffer, horizontalBuffer, verticalBuffer, horizontalBuffer],
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -184,17 +192,36 @@ export async function generateAdvancedPdf(
         allowTaint: true,
         letterRendering: true,
         logging: false,
-        scale: optimalScale,
+        scale: bufferScale, // Use buffer-adjusted scale
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: Math.round(210 / optimalScale),
-        height: Math.round(297 / optimalScale),
-        windowWidth: Math.round(210 / optimalScale),
-        windowHeight: Math.round(297 / optimalScale),
+        width: Math.round((pageWidth - (horizontalBuffer * 2)) / bufferScale),
+        height: Math.round((pageHeight - (verticalBuffer * 2)) / bufferScale),
+        windowWidth: Math.round((pageWidth - (horizontalBuffer * 2)) / bufferScale),
+        windowHeight: Math.round((pageHeight - (verticalBuffer * 2)) / bufferScale),
         backgroundColor: '#ffffff',
         removeContainer: false,
-        foreignObjectRendering: true
+        foreignObjectRendering: true,
+        // Additional buffer settings
+        x: 0,
+        y: 0,
+        imageTimeout: 15000,
+        onclone: (clonedDoc: Document) => {
+          // Apply additional buffer styles to cloned document
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            * {
+              margin-bottom: 3mm !important;
+              padding-bottom: 2mm !important;
+            }
+            .section, .experience-item, .education-item, .skill-item {
+              margin-bottom: ${templateConfig.sectionPadding + 4}mm !important;
+              padding-bottom: ${templateConfig.sectionPadding / 2 + 2}mm !important;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       },
       jsPDF: { 
         unit: 'mm', 
@@ -205,7 +232,7 @@ export async function generateAdvancedPdf(
         floatPrecision: 16,
         precision: 16
       },
-      pagebreak: getTemplateSpecificPageBreakConfig(templateConfig)
+      pagebreak: getEnhancedPageBreakConfig(templateConfig)
     };
 
     console.log('📄 Generating PDF with optimized settings...');
@@ -426,7 +453,7 @@ async function testScaleAdvanced(
 }
 
 /**
- * Advanced text splitting detection with context awareness
+ * Enhanced text splitting detection with dynamic buffer zones
  */
 async function detectTextSplittingAdvanced(
   element: HTMLElement,
@@ -445,45 +472,74 @@ async function detectTextSplittingAdvanced(
     return { hasTextSplitting: false, problematicElements, violations: 0 };
   }
   
-  // Calculate page break points
+  // Enhanced page break points with buffer zones
+  const bufferZone = 15; // 15mm buffer zone around page breaks
   const pageBreakPoints = [];
+  
   for (let i = 1; i < pages; i++) {
-    pageBreakPoints.push((i * pageHeight) / (scale * 0.352778));
+    const breakPoint = (i * pageHeight) / (scale * 0.352778);
+    pageBreakPoints.push({
+      exact: breakPoint,
+      dangerZoneStart: breakPoint - (bufferZone / (scale * 0.352778)),
+      dangerZoneEnd: breakPoint + (bufferZone / (scale * 0.352778))
+    });
   }
   
-  // Test each section from our analysis
+  // Test each section with enhanced buffer detection
   for (const section of analysis.sectionBreakdowns) {
     const sectionEl = section.element;
     const sectionRect = sectionEl.getBoundingClientRect();
     const relativeTop = sectionRect.top - rect.top;
     const relativeBottom = sectionRect.bottom - rect.top;
     
-    for (const breakPoint of pageBreakPoints) {
-      // Check if section spans across page break
-      if (relativeTop < breakPoint && relativeBottom > breakPoint) {
-        const spanAmount = Math.min(relativeBottom - breakPoint, breakPoint - relativeTop);
+    for (const breakZone of pageBreakPoints) {
+      // Check for content in danger zones (more aggressive detection)
+      const inDangerZone = (
+        (relativeTop >= breakZone.dangerZoneStart && relativeTop <= breakZone.dangerZoneEnd) ||
+        (relativeBottom >= breakZone.dangerZoneStart && relativeBottom <= breakZone.dangerZoneEnd) ||
+        (relativeTop < breakZone.dangerZoneStart && relativeBottom > breakZone.dangerZoneEnd)
+      );
+      
+      if (inDangerZone) {
+        // Calculate violation severity based on proximity to page break
+        const distanceToBreak = Math.min(
+          Math.abs(relativeTop - breakZone.exact),
+          Math.abs(relativeBottom - breakZone.exact)
+        );
         
-        // Weight violation by section sensitivity and span amount
-        const violationWeight = section.breakSensitivity * (spanAmount / section.height);
+        const proximityFactor = Math.max(0, 1 - (distanceToBreak / (bufferZone / (scale * 0.352778))));
+        const violationWeight = section.breakSensitivity * proximityFactor;
         
-        if (violationWeight > 0.1) { // Threshold for meaningful violation
-          violations += Math.ceil(violationWeight * 10);
+        // More aggressive violation detection
+        if (violationWeight > 0.05) { // Lower threshold
+          violations += Math.ceil(violationWeight * 15); // Higher penalty
           problematicElements.push(sectionEl);
         }
       }
     }
   }
   
-  // Additional checks for critical elements
-  const criticalElements = element.querySelectorAll('h1, h2, h3, .job-title, .company-name, .skill-name');
+  // Enhanced checks for critical elements with larger buffer zones
+  const criticalElements = element.querySelectorAll('h1, h2, h3, .job-title, .company-name, .skill-name, p, li');
   for (const criticalEl of criticalElements) {
     const elRect = criticalEl.getBoundingClientRect();
     const relativeTop = elRect.top - rect.top;
     const relativeBottom = elRect.bottom - rect.top;
     
-    for (const breakPoint of pageBreakPoints) {
-      if (relativeTop < breakPoint && relativeBottom > breakPoint) {
-        violations += 5; // High penalty for critical element splitting
+    for (const breakZone of pageBreakPoints) {
+      // Extended danger zone for critical elements
+      const extendedBuffer = bufferZone * 1.5;
+      const extendedStart = breakZone.exact - (extendedBuffer / (scale * 0.352778));
+      const extendedEnd = breakZone.exact + (extendedBuffer / (scale * 0.352778));
+      
+      const inExtendedDangerZone = (
+        (relativeTop >= extendedStart && relativeTop <= extendedEnd) ||
+        (relativeBottom >= extendedStart && relativeBottom <= extendedEnd) ||
+        (relativeTop < extendedStart && relativeBottom > extendedEnd)
+      );
+      
+      if (inExtendedDangerZone) {
+        violations += 8; // High penalty for critical elements in danger zones
         problematicElements.push(criticalEl as HTMLElement);
       }
     }
@@ -625,41 +681,31 @@ function hasComplexStyling(element: HTMLElement): boolean {
 }
 
 /**
- * Template-specific page break configuration
+ * Enhanced page break configuration with comprehensive text protection
  */
-function getTemplateSpecificPageBreakConfig(templateConfig: TemplateConfig) {
+function getEnhancedPageBreakConfig(templateConfig: TemplateConfig) {
   const baseConfig = {
     mode: ['avoid-all', 'css', 'legacy'],
     before: '.page-break-before',
     after: '.page-break-after'
   };
   
-  switch (templateConfig.pageBreakStrategy) {
-    case 'aggressive':
-      return {
-        ...baseConfig,
-        avoid: [
-          '.page-break-avoid', '.section', '.experience-item', '.education-item', 
-          '.skill-item', '.sidebar', '.main-content', 'p', 'li', 'span', 'div', 
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', '*'
-        ]
-      };
-    case 'moderate':
-      return {
-        ...baseConfig,
-        avoid: [
-          '.page-break-avoid', '.section', '.experience-item', '.education-item',
-          'h1', 'h2', 'h3', 'p', 'li'
-        ]
-      };
-    case 'conservative':
-      return {
-        ...baseConfig,
-        avoid: ['.page-break-avoid', '.section', 'h1', 'h2']
-      };
-    default:
-      return baseConfig;
-  }
+  // All templates now use aggressive protection to prevent text cutting
+  return {
+    ...baseConfig,
+    avoid: [
+      '.page-break-avoid', '.section', '.experience-item', '.education-item', 
+      '.skill-item', '.sidebar', '.main-content', '.summary-section',
+      '.contact-section', '.skills-section', '.portfolio-section',
+      'p', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      '.job-title', '.company-name', '.skill-name', '.degree-title',
+      '.progress-container', '.skill-bar', '.badge', '.card',
+      // Template-specific selectors
+      ...templateConfig.specificSelectors,
+      // Catch-all for any remaining elements
+      '*'
+    ]
+  };
 }
 
 /**
@@ -698,49 +744,96 @@ async function prepareElementForAdvancedPdf(
     overflow: element.style.overflow
   };
 
-  // Inject advanced CSS
+  // Inject enhanced CSS with comprehensive buffer protection
   const style = document.createElement('style');
+  const bufferPadding = templateConfig.sectionPadding + 4; // Extra buffer
+  const bufferMargin = Math.max(15, templateConfig.marginStrategy[1]); // Minimum 15mm buffer
+  
   style.textContent = `
-    /* Advanced Page Break Control */
-    .page-break-avoid, .section, .experience-item, .education-item, .skill-item {
+    /* Enhanced Page Break Control with Buffer Zones */
+    .page-break-avoid, .section, .experience-item, .education-item, .skill-item,
+    .summary-section, .contact-section, .skills-section, .portfolio-section {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      margin-bottom: ${templateConfig.sectionPadding}mm !important;
-      padding-bottom: ${templateConfig.sectionPadding / 2}mm !important;
+      margin-bottom: ${bufferPadding}mm !important;
+      padding-bottom: ${bufferPadding / 2}mm !important;
+      margin-top: 4mm !important;
+      padding-top: 2mm !important;
     }
     
-    /* Template-specific optimizations */
+    /* Comprehensive text protection */
+    p, li, span, div, h1, h2, h3, h4, h5, h6,
+    .job-title, .company-name, .skill-name, .degree-title,
+    .progress-container, .skill-bar, .badge, .card {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      orphans: 4 !important;
+      widows: 4 !important;
+      margin-bottom: 3mm !important;
+    }
+    
+    /* Template-specific optimizations with enhanced buffers */
     ${templateConfig.specificSelectors.map(selector => `
       ${selector} {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-        orphans: 3 !important;
-        widows: 3 !important;
+        orphans: 4 !important;
+        widows: 4 !important;
+        margin-bottom: ${bufferPadding}mm !important;
+        padding: 2mm !important;
       }
     `).join('\n')}
     
-    /* Enhanced print styles */
+    /* Enhanced print styles with buffer protection */
     @media print {
       * {
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
         box-sizing: border-box !important;
+        max-width: 100% !important;
       }
       
       body {
-        margin: ${templateConfig.marginStrategy.join('mm ')}mm !important;
-        font-size: 11pt !important;
-        line-height: 1.2 !important;
+        margin: ${bufferMargin}mm !important;
+        padding: 5mm !important;
+        font-size: 10.5pt !important;
+        line-height: 1.25 !important;
+        background: white !important;
+        color: black !important;
       }
       
-      /* Critical element protection */
-      h1, h2, h3, .job-title, .company-name, .skill-name {
+      /* Critical element protection with enhanced buffers */
+      h1, h2, h3, h4, h5, h6 {
         page-break-after: avoid !important;
         page-break-inside: avoid !important;
         break-after: avoid !important;
         break-inside: avoid !important;
-        orphans: 3 !important;
-        widows: 3 !important;
+        orphans: 4 !important;
+        widows: 4 !important;
+        margin-top: 6mm !important;
+        margin-bottom: 4mm !important;
+        padding-bottom: 2mm !important;
+      }
+      
+      /* Prevent content from being too close to page edges */
+      .content-wrapper, .resume-content {
+        margin: 8mm 0 !important;
+        padding: 4mm !important;
+      }
+      
+      /* Enhanced orphan/widow control */
+      p, li, div {
+        orphans: 4 !important;
+        widows: 4 !important;
+        margin-bottom: 3mm !important;
+      }
+      
+      /* Skill bars and progress elements */
+      .progress-bar, .skill-bar, .progress-container {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin: 2mm 0 4mm 0 !important;
+        padding: 1mm !important;
       }
     }
   `;
