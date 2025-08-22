@@ -393,3 +393,88 @@ function shuffleArray<T>(array: T[]): T[] {
   }
   return shuffled;
 }
+
+/**
+ * Extracts leadership learnings from work experience achievements
+ */
+export function extractLeadershipLearnings(
+  achievements: string[] | undefined,
+  title: string,
+  company: string
+): string {
+  if (!achievements || achievements.length === 0) {
+    return 'Developed foundational leadership skills through hands-on experience managing daily operations and team coordination.';
+  }
+
+  const learnings: string[] = [];
+  const lowerTitle = title.toLowerCase();
+  
+  // Analyze achievements to extract leadership insights
+  achievements.forEach(achievement => {
+    const lowerAchievement = achievement.toLowerCase();
+    
+    // Team leadership learnings
+    if (lowerAchievement.includes('team') || lowerAchievement.includes('staff') || lowerAchievement.includes('managed')) {
+      const teamSize = achievement.match(/(\d+)[-\s]*(member|person|people|staff|employee)/);
+      if (teamSize) {
+        learnings.push(`Learned to effectively manage ${teamSize[1]} team members through clear communication and performance accountability`);
+      } else {
+        learnings.push('Developed team leadership skills through direct staff management and performance coaching');
+      }
+    }
+    
+    // Process improvement learnings
+    if (lowerAchievement.includes('improved') || lowerAchievement.includes('increased') || lowerAchievement.includes('streamlined')) {
+      const metrics = achievement.match(/(\d+(?:\.\d+)?)%/);
+      if (metrics) {
+        learnings.push(`Mastered process optimization by achieving ${metrics[0]} improvement through systematic analysis and implementation`);
+      } else {
+        learnings.push('Gained expertise in operational improvement through methodical process analysis and team engagement');
+      }
+    }
+    
+    // Cost management learnings
+    if (lowerAchievement.includes('reduced') || lowerAchievement.includes('cost') || lowerAchievement.includes('budget')) {
+      const amount = achievement.match(/\$[\d,.]+(k|m|million|thousand)?/);
+      if (amount) {
+        learnings.push(`Developed financial leadership acumen by managing ${amount[0]} cost reduction through strategic vendor negotiations and process efficiency`);
+      } else {
+        learnings.push('Strengthened financial management capabilities through budget oversight and cost optimization initiatives');
+      }
+    }
+    
+    // Innovation and implementation learnings
+    if (lowerAchievement.includes('implemented') || lowerAchievement.includes('launched') || lowerAchievement.includes('established')) {
+      learnings.push('Enhanced change management leadership by successfully driving organizational adoption of new systems and processes');
+    }
+    
+    // Customer/client learnings
+    if (lowerAchievement.includes('customer') || lowerAchievement.includes('client') || lowerAchievement.includes('satisfaction')) {
+      learnings.push('Developed customer-centric leadership approach by aligning team operations with client success metrics and feedback');
+    }
+    
+    // Revenue/sales learnings
+    if (lowerAchievement.includes('revenue') || lowerAchievement.includes('sales') || lowerAchievement.includes('growth')) {
+      learnings.push('Cultivated strategic business leadership through revenue growth initiatives and market expansion efforts');
+    }
+  });
+  
+  // If no specific learnings found, generate role-appropriate insights
+  if (learnings.length === 0) {
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
+      learnings.push('Strengthened executive decision-making capabilities through daily operational leadership and stakeholder management');
+    } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
+      learnings.push('Developed influential leadership skills by mentoring team members and driving project outcomes');
+    } else {
+      learnings.push('Built collaborative leadership foundation through cross-functional teamwork and process contribution');
+    }
+  }
+  
+  // Combine learnings and add company context
+  const primaryLearning = learnings[0];
+  const additionalContext = learnings.length > 1 ? 
+    ` Additionally, gained valuable insights in organizational dynamics and stakeholder management during tenure at ${company}.` :
+    ` This experience at ${company} provided essential leadership development in fast-paced operational environments.`;
+  
+  return primaryLearning + additionalContext;
+}
