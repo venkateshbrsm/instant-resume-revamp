@@ -1,8 +1,12 @@
 // Core responsibilities extraction utility to avoid code duplication across templates
 
+// Global tracker for used responsibilities across all work experiences
+const globalUsedResponsibilities = new Set<string>();
+
 /**
  * Extracts core everyday responsibilities that would lead to the achievements stated in the resume
  * Generates the underlying daily activities that collectively make the achievements happen
+ * Ensures each work experience gets unique responsibilities
  */
 export function extractCoreResponsibilities(
   achievements: string[] | undefined,
@@ -11,27 +15,44 @@ export function extractCoreResponsibilities(
   experienceIndex: number = 0,
   maxResponsibilities: number = 4
 ): string[] {
+  // Reset global tracker on first experience
+  if (experienceIndex === 0) {
+    globalUsedResponsibilities.clear();
+  }
+
   // If no achievements provided, return empty array
   if (!achievements || achievements.length === 0) {
     return [];
   }
 
-  const uniqueResponsibilities = new Set<string>();
+  const uniqueResponsibilities: string[] = [];
   
-  for (const achievement of achievements) {
-    if (uniqueResponsibilities.size >= maxResponsibilities) break;
+  // Generate a larger pool of activities specific to this experience
+  const activityPool = generateActivityPoolForExperience(achievements, title, experienceIndex);
+  
+  // Select unique activities that haven't been used in other experiences
+  for (const activity of activityPool) {
+    if (uniqueResponsibilities.length >= maxResponsibilities) break;
     
-    // Generate everyday activities that would lead to this achievement
-    const dailyActivities = generateDailyActivitiesFromAchievement(achievement, title);
-    
-    // Add only unique activities
-    for (const activity of dailyActivities) {
-      if (uniqueResponsibilities.size >= maxResponsibilities) break;
-      uniqueResponsibilities.add(activity);
+    if (!globalUsedResponsibilities.has(activity)) {
+      uniqueResponsibilities.push(activity);
+      globalUsedResponsibilities.add(activity);
     }
   }
 
-  return Array.from(uniqueResponsibilities).slice(0, maxResponsibilities);
+  // If we don't have enough unique activities, generate fallback activities
+  if (uniqueResponsibilities.length < maxResponsibilities) {
+    const fallbackActivities = generateFallbackActivities(title, experienceIndex, maxResponsibilities - uniqueResponsibilities.length);
+    for (const activity of fallbackActivities) {
+      if (uniqueResponsibilities.length >= maxResponsibilities) break;
+      if (!globalUsedResponsibilities.has(activity)) {
+        uniqueResponsibilities.push(activity);
+        globalUsedResponsibilities.add(activity);
+      }
+    }
+  }
+
+  return uniqueResponsibilities;
 }
 
 /**
@@ -124,4 +145,124 @@ function generateDailyActivitiesFromAchievement(achievement: string, title: stri
   }
   
   return activities;
+}
+
+/**
+ * Generates a pool of activities specific to a work experience
+ */
+function generateActivityPoolForExperience(achievements: string[], title: string, experienceIndex: number): string[] {
+  const allActivities: string[] = [];
+  
+  // Generate activities from all achievements
+  for (const achievement of achievements) {
+    const activities = generateDailyActivitiesFromAchievement(achievement, title);
+    allActivities.push(...activities);
+  }
+  
+  // Add experience-specific variations based on index
+  const experienceVariations = generateExperienceSpecificActivities(title, experienceIndex);
+  allActivities.push(...experienceVariations);
+  
+  // Remove duplicates and shuffle for variety
+  const uniqueActivities = Array.from(new Set(allActivities));
+  return shuffleArray(uniqueActivities);
+}
+
+/**
+ * Generates activities specific to the experience index (seniority level)
+ */
+function generateExperienceSpecificActivities(title: string, experienceIndex: number): string[] {
+  const lowerTitle = title.toLowerCase();
+  const activities: string[] = [];
+  
+  if (experienceIndex === 0) {
+    // Most recent/senior experience - strategic activities
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
+      activities.push('Developing long-term strategic plans and vision');
+      activities.push('Leading board presentations and stakeholder meetings');
+      activities.push('Mentoring senior staff and succession planning');
+    } else {
+      activities.push('Leading cross-functional initiatives and innovation projects');
+      activities.push('Serving as subject matter expert and technical advisor');
+      activities.push('Driving continuous improvement and best practice adoption');
+    }
+  } else if (experienceIndex === 1) {
+    // Second experience - operational excellence
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
+      activities.push('Implementing operational improvements and efficiency measures');
+      activities.push('Managing departmental budgets and performance metrics');
+      activities.push('Coordinating with senior leadership on strategic initiatives');
+    } else {
+      activities.push('Managing complex projects and client relationships');
+      activities.push('Training and mentoring junior team members');
+      activities.push('Analyzing performance data and recommending improvements');
+    }
+  } else {
+    // Earlier experiences - foundational activities
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
+      activities.push('Building team capabilities and establishing processes');
+      activities.push('Developing standard operating procedures and workflows');
+      activities.push('Managing day-to-day operations and team development');
+    } else {
+      activities.push('Contributing to team projects and collaborative initiatives');
+      activities.push('Learning industry best practices and developing expertise');
+      activities.push('Supporting senior staff with research and analysis');
+    }
+  }
+  
+  return activities;
+}
+
+/**
+ * Generates fallback activities when not enough unique activities are found
+ */
+function generateFallbackActivities(title: string, experienceIndex: number, count: number): string[] {
+  const lowerTitle = title.toLowerCase();
+  const fallbacks: string[] = [];
+  
+  const genericActivities = [
+    'Collaborating with cross-functional teams on key initiatives',
+    'Preparing detailed reports and presentations for leadership',
+    'Participating in strategic planning and decision-making processes',
+    'Maintaining industry knowledge and professional development',
+    'Managing stakeholder communications and relationship building',
+    'Overseeing project timelines and deliverable quality',
+    'Conducting regular performance assessments and feedback sessions',
+    'Implementing organizational policies and compliance measures',
+    'Facilitating knowledge transfer and documentation processes',
+    'Supporting business continuity and risk management activities'
+  ];
+  
+  // Add role-specific fallbacks
+  if (lowerTitle.includes('sales') || lowerTitle.includes('business development')) {
+    fallbacks.push('Managing client portfolio and relationship development');
+    fallbacks.push('Conducting market research and competitive analysis');
+  } else if (lowerTitle.includes('marketing')) {
+    fallbacks.push('Coordinating marketing campaigns and brand initiatives');
+    fallbacks.push('Analyzing campaign performance and ROI metrics');
+  } else if (lowerTitle.includes('finance') || lowerTitle.includes('accounting')) {
+    fallbacks.push('Managing financial reporting and budget oversight');
+    fallbacks.push('Conducting financial analysis and variance reporting');
+  } else if (lowerTitle.includes('hr') || lowerTitle.includes('human resources')) {
+    fallbacks.push('Managing employee relations and performance management');
+    fallbacks.push('Coordinating recruitment and talent acquisition processes');
+  }
+  
+  // Combine and filter based on experience index
+  const allFallbacks = [...fallbacks, ...genericActivities];
+  const startIndex = experienceIndex * 2; // Offset to get different activities for each experience
+  
+  return allFallbacks.slice(startIndex, startIndex + count);
+}
+
+/**
+ * Shuffles an array to provide variety
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
