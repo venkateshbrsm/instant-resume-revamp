@@ -61,96 +61,120 @@ export function extractCoreResponsibilities(
 function generateDailyActivitiesFromAchievement(achievement: string, title: string): string[] {
   const activities: string[] = [];
   const lowerAchievement = achievement.toLowerCase();
-  const lowerTitle = title.toLowerCase();
   
-  // Financial/Revenue achievements - more tactical level
-  if (lowerAchievement.includes('sales') || lowerAchievement.includes('revenue') || lowerAchievement.includes('profit')) {
-    activities.push('Making outbound calls to prospects and following up on leads');
-    activities.push('Updating CRM records and tracking sales activities');
-    activities.push('Preparing quotes and proposals for potential clients');
-    activities.push('Attending networking events and trade shows');
+  // Extract specific numbers, percentages, or metrics to make activities specific
+  const numbers = achievement.match(/\d+(\.\d+)?%?/g) || [];
+  const hasPercentage = achievement.includes('%');
+  const hasDollarAmount = achievement.includes('$') || lowerAchievement.includes('revenue') || lowerAchievement.includes('cost');
+  
+  // Analyze the specific achievement content to generate relevant activities
+  if (lowerAchievement.includes('increased') || lowerAchievement.includes('improved') || lowerAchievement.includes('boosted')) {
+    if (lowerAchievement.includes('sales') || lowerAchievement.includes('revenue')) {
+      activities.push(`Conducting daily sales calls and tracking conversion rates from ${numbers[0] || 'current'} metrics`);
+      activities.push(`Analyzing customer purchase patterns to identify upselling opportunities`);
+    } else if (lowerAchievement.includes('efficiency') || lowerAchievement.includes('productivity')) {
+      activities.push(`Monitoring daily workflow bottlenecks and timing process steps`);
+      activities.push(`Implementing small workflow adjustments based on efficiency measurements`);
+    } else if (lowerAchievement.includes('customer') || lowerAchievement.includes('satisfaction')) {
+      activities.push(`Following up with customers within 24 hours of service interactions`);
+      activities.push(`Documenting customer feedback and tracking resolution times`);
+    }
   }
   
-  // Team/Management achievements - operational level
-  if (lowerAchievement.includes('team') || lowerAchievement.includes('manage') || lowerAchievement.includes('staff')) {
-    activities.push('Conducting one-on-one meetings with direct reports');
-    activities.push('Reviewing daily task assignments and priorities');
-    activities.push('Addressing team conflicts and performance issues');
-    activities.push('Scheduling shifts and managing time-off requests');
+  if (lowerAchievement.includes('reduced') || lowerAchievement.includes('decreased') || lowerAchievement.includes('cut')) {
+    if (lowerAchievement.includes('cost') || lowerAchievement.includes('expense')) {
+      activities.push(`Reviewing daily expenses and comparing against budget targets`);
+      activities.push(`Negotiating with suppliers and tracking cost savings initiatives`);
+    } else if (lowerAchievement.includes('time') || lowerAchievement.includes('processing')) {
+      activities.push(`Timing current processes and identifying time-saving opportunities`);
+      activities.push(`Testing streamlined procedures and measuring time improvements`);
+    } else if (lowerAchievement.includes('error') || lowerAchievement.includes('defect')) {
+      activities.push(`Conducting quality checks and documenting error patterns`);
+      activities.push(`Training team members on error prevention techniques`);
+    }
   }
   
-  // Process/Efficiency achievements - hands-on activities
-  if (lowerAchievement.includes('process') || lowerAchievement.includes('efficiency') || lowerAchievement.includes('streamline')) {
-    activities.push('Timing and measuring current workflow steps');
-    activities.push('Creating process flowcharts and documentation');
-    activities.push('Testing new procedures with pilot groups');
-    activities.push('Collecting feedback from staff on process changes');
+  if (lowerAchievement.includes('implemented') || lowerAchievement.includes('launched') || lowerAchievement.includes('established')) {
+    if (lowerAchievement.includes('system') || lowerAchievement.includes('software') || lowerAchievement.includes('platform')) {
+      activities.push(`Testing system functionality and documenting user requirements`);
+      activities.push(`Training staff on new system features and troubleshooting issues`);
+    } else if (lowerAchievement.includes('process') || lowerAchievement.includes('procedure')) {
+      activities.push(`Creating step-by-step procedure documentation and training materials`);
+      activities.push(`Monitoring process adoption and collecting feedback from users`);
+    } else if (lowerAchievement.includes('program') || lowerAchievement.includes('initiative')) {
+      activities.push(`Coordinating program activities and tracking participation metrics`);
+      activities.push(`Collecting feedback from program participants and stakeholders`);
+    }
   }
   
-  // Customer/Client achievements - direct interaction
-  if (lowerAchievement.includes('customer') || lowerAchievement.includes('client') || lowerAchievement.includes('satisfaction')) {
-    activities.push('Responding to customer inquiries via phone and email');
-    activities.push('Processing customer orders and handling returns');
-    activities.push('Following up on customer complaints and resolution');
-    activities.push('Conducting customer satisfaction surveys');
+  if (lowerAchievement.includes('managed') || lowerAchievement.includes('led') || lowerAchievement.includes('supervised')) {
+    if (lowerAchievement.includes('team') || lowerAchievement.includes('staff')) {
+      const teamSize = numbers.find(n => parseInt(n) < 100) || 'team';
+      activities.push(`Conducting weekly one-on-ones with ${teamSize} team members`);
+      activities.push(`Assigning daily tasks and monitoring progress through team check-ins`);
+    } else if (lowerAchievement.includes('project')) {
+      activities.push(`Tracking project milestones and updating stakeholders on progress`);
+      activities.push(`Coordinating deliverables between team members and external partners`);
+    }
   }
   
-  // Technology/System achievements - technical work
-  if (lowerAchievement.includes('system') || lowerAchievement.includes('technology') || lowerAchievement.includes('software')) {
-    activities.push('Running daily system backups and health checks');
-    activities.push('Installing software updates and patches');
-    activities.push('Troubleshooting user technical issues');
-    activities.push('Maintaining user accounts and access permissions');
+  if (lowerAchievement.includes('developed') || lowerAchievement.includes('created') || lowerAchievement.includes('designed')) {
+    if (lowerAchievement.includes('training') || lowerAchievement.includes('program')) {
+      activities.push(`Researching training needs and developing curriculum content`);
+      activities.push(`Conducting training sessions and collecting participant feedback`);
+    } else if (lowerAchievement.includes('report') || lowerAchievement.includes('dashboard')) {
+      activities.push(`Collecting daily data inputs and validating report accuracy`);
+      activities.push(`Meeting with stakeholders to review report requirements and updates`);
+    } else if (lowerAchievement.includes('strategy') || lowerAchievement.includes('plan')) {
+      activities.push(`Researching market conditions and competitive landscape daily`);
+      activities.push(`Meeting with department heads to gather input on strategic initiatives`);
+    }
   }
   
-  // Project achievements - day-to-day project work
-  if (lowerAchievement.includes('project') || lowerAchievement.includes('initiative') || lowerAchievement.includes('launch')) {
-    activities.push('Updating project schedules and task completion status');
-    activities.push('Attending daily standup meetings and status calls');
-    activities.push('Coordinating deliverables between team members');
-    activities.push('Documenting project progress and issues');
+  // If achievement mentions specific industries, tools, or domains, make activities specific
+  if (lowerAchievement.includes('crm') || lowerAchievement.includes('salesforce')) {
+    activities.push('Updating CRM records and maintaining data accuracy daily');
+  }
+  if (lowerAchievement.includes('excel') || lowerAchievement.includes('spreadsheet')) {
+    activities.push('Building and maintaining Excel models for data analysis');
+  }
+  if (lowerAchievement.includes('social media') || lowerAchievement.includes('digital marketing')) {
+    activities.push('Creating daily social media content and monitoring engagement metrics');
   }
   
-  // Quality/Compliance achievements - hands-on quality work
-  if (lowerAchievement.includes('quality') || lowerAchievement.includes('compliance') || lowerAchievement.includes('standard')) {
-    activities.push('Performing quality inspections and testing procedures');
-    activities.push('Recording compliance metrics and audit findings');
-    activities.push('Reviewing work outputs against quality standards');
-    activities.push('Completing regulatory forms and documentation');
-  }
-  
-  // Budget/Cost achievements - practical financial tasks
-  if (lowerAchievement.includes('budget') || lowerAchievement.includes('cost') || lowerAchievement.includes('saving')) {
-    activities.push('Tracking expenses and maintaining budget spreadsheets');
-    activities.push('Comparing vendor quotes and pricing options');
-    activities.push('Processing purchase orders and expense reports');
-    activities.push('Monitoring monthly spending against budget limits');
-  }
-  
-  // If no specific patterns matched, generate role-appropriate activities
+  // If no specific patterns found, extract key nouns/verbs and create related activities
   if (activities.length === 0) {
-    if (lowerTitle.includes('assistant') || lowerTitle.includes('associate') || lowerTitle.includes('junior')) {
-      activities.push('Supporting senior staff with daily administrative tasks');
-      activities.push('Preparing reports and data entry for departmental use');
-    } else if (lowerTitle.includes('specialist') || lowerTitle.includes('analyst')) {
-      activities.push('Analyzing data sets and preparing summary reports');
-      activities.push('Researching industry trends and compiling findings');
-    } else if (lowerTitle.includes('coordinator')) {
-      activities.push('Scheduling meetings and coordinating team activities');
-      activities.push('Tracking project timelines and following up on tasks');
-    } else if (lowerTitle.includes('supervisor') || lowerTitle.includes('team lead')) {
-      activities.push('Monitoring team productivity and workflow');
-      activities.push('Handling escalated issues and problem resolution');
-    } else if (lowerTitle.includes('manager')) {
-      activities.push('Reviewing team performance and providing feedback');
-      activities.push('Coordinating between departments and stakeholders');
-    } else {
-      activities.push('Completing assigned tasks and meeting deadlines');
-      activities.push('Participating in team meetings and collaborative work');
+    // Extract key action words and objects from the achievement
+    const keyWords = extractKeyTerms(achievement);
+    if (keyWords.length > 0) {
+      activities.push(`Managing daily activities related to ${keyWords[0]} operations`);
+      activities.push(`Monitoring and reporting on ${keyWords[0]} performance metrics`);
     }
   }
   
   return activities;
+}
+
+/**
+ * Extracts key terms from achievement text to make activities more specific
+ */
+function extractKeyTerms(achievement: string): string[] {
+  const text = achievement.toLowerCase();
+  const terms: string[] = [];
+  
+  // Extract business domain terms
+  const domains = ['sales', 'marketing', 'operations', 'finance', 'hr', 'it', 'customer service', 'logistics', 'procurement', 'quality assurance'];
+  domains.forEach(domain => {
+    if (text.includes(domain)) terms.push(domain);
+  });
+  
+  // Extract specific tools/systems mentioned
+  const tools = ['excel', 'crm', 'erp', 'sql', 'tableau', 'powerbi', 'salesforce', 'sap'];
+  tools.forEach(tool => {
+    if (text.includes(tool)) terms.push(tool);
+  });
+  
+  return terms;
 }
 
 /**
