@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
@@ -48,6 +50,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState<'pdf' | 'docx'>('pdf');
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -334,6 +337,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       return;
     }
 
+    if (downloadFormat === 'docx') {
+      await handleDownloadDocx();
+    } else {
+      await handleDownloadPdf();
+    }
+  };
+
+  const handleDownloadPdf = async () => {
     setIsGeneratingPdf(true);
     
     try {
@@ -810,6 +821,53 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             </div>
             
             <div className="space-y-3 mb-6">
+              {/* Format Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Choose Download Format:</Label>
+                <RadioGroup
+                  value={downloadFormat}
+                  onValueChange={(value: 'pdf' | 'docx') => setDownloadFormat(value)}
+                  className="flex space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pdf" id="pdf" />
+                    <Label htmlFor="pdf" className="text-sm cursor-pointer">PDF</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="docx" id="docx" />
+                    <Label htmlFor="docx" className="text-sm cursor-pointer">DOCX</Label>
+                  </div>
+                </RadioGroup>
+                <p className="text-xs text-muted-foreground">
+                  {downloadFormat === 'pdf' 
+                    ? 'PDF format - Professional and print-ready' 
+                    : 'DOCX format - Editable Word document for ATS systems'
+                  }
+                </p>
+              </div>
+              
+              {/* Test Download Button */}
+              {enhancedContent && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleTestDownload}
+                  className="w-full"
+                  disabled={isGeneratingPdf}
+                >
+                  {isGeneratingPdf ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating {downloadFormat.toUpperCase()}...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Test Download {downloadFormat.toUpperCase()}
+                    </>
+                  )}
+                </Button>
+              )}
+              
               <Button 
                 variant="success" 
                 size="xl" 
@@ -823,7 +881,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
-              
               <p className="text-xs text-muted-foreground">
                 {enhancedContent 
                   ? 'Secure payment • Download the enhanced version immediately' 
@@ -835,15 +892,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             <div className="text-left space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>Professional PDF format</span>
+                <span>Professional PDF & DOCX formats</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>ATS-optimized format</span>
+                <span>ATS-optimized content</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
-                <span>ATS-friendly formatting</span>
+                <span>Editable Word document option</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-accent rounded-full" />
