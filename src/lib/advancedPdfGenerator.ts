@@ -551,36 +551,20 @@ function calculateBaseScaleAdvanced(
   const complexityFactor = analysis.hasComplexLayouts ? 0.05 : 0;
   const sectionFactor = analysis.sectionBreakdowns.length * 0.01;
   
-  // Calculate page break buffer based on content height and strategy
-  const contentPages = Math.ceil((analysis.contentHeight * baseScale * 0.352778) / 297); // A4 height in mm
-  let pageBreakBuffer = 0;
-  
-  // Add buffer based on strategy and content characteristics
   switch (strategy) {
     case 'conservative':
       baseScale = templateConfig.minScale + (baseScale - templateConfig.minScale) * 0.5;
       baseScale -= (densityFactor + complexityFactor + sectionFactor);
-      // Conservative buffer: larger buffer to prevent any splitting
-      pageBreakBuffer = contentPages > 1 ? 0.02 + (contentPages - 1) * 0.01 : 0.015;
       break;
     case 'quality':
       baseScale = templateConfig.maxScale - (baseScale - templateConfig.minScale) * 0.3;
       baseScale -= (densityFactor * 0.5 + complexityFactor * 0.5);
-      // Quality buffer: moderate buffer to maintain quality while preventing splits
-      pageBreakBuffer = contentPages > 1 ? 0.015 + (contentPages - 1) * 0.008 : 0.01;
       break;
     case 'balanced':
     default:
       baseScale -= (densityFactor + complexityFactor + sectionFactor * 0.5);
-      // Balanced buffer: smaller buffer for optimal size/quality balance
-      pageBreakBuffer = contentPages > 1 ? 0.01 + (contentPages - 1) * 0.005 : 0.008;
       break;
   }
-  
-  // Apply page break buffer
-  baseScale -= pageBreakBuffer;
-  
-  console.log(`📊 Buffer applied: ${pageBreakBuffer.toFixed(4)} (${contentPages} pages, ${strategy} strategy)`);
   
   return Math.max(templateConfig.minScale, Math.min(templateConfig.maxScale, baseScale));
 }
