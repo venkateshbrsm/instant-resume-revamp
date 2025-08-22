@@ -659,52 +659,54 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   </div>
                 </div>
               ) : enhancedContent ? (
-                 <div className="w-full border border-border/20 rounded-lg overflow-hidden">
+                  <div className="w-full border border-border/20 rounded-lg overflow-hidden">
                    <div 
                      ref={enhancedResumeRef}
                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
                    >
                   
-                      {/* Edit Mode Controls */}
-                      <div className="flex items-center justify-between mb-4 p-3 bg-background/50 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                          <Edit3 className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium">
-                            {isEditMode ? "Edit Mode Active" : "Preview Mode"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {isEditMode ? (
-                            <>
+                      {/* Edit Mode Controls - Always show when enhancedContent exists */}
+                      {enhancedContent && (
+                        <div className="flex items-center justify-between mb-4 p-3 bg-background/50 rounded-lg border">
+                          <div className="flex items-center gap-2">
+                            <Edit3 className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium">
+                              {isEditMode ? "Edit Mode Active" : "Preview Mode"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isEditMode ? (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleCancelEdit}
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={handleEditModeToggle}
+                                  className="bg-primary text-primary-foreground"
+                                >
+                                  <Save className="w-4 h-4 mr-1" />
+                                  Save Changes
+                                </Button>
+                              </>
+                            ) : (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={handleCancelEdit}
-                              >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                Cancel
-                              </Button>
-                              <Button
-                                size="sm"
                                 onClick={handleEditModeToggle}
-                                className="bg-primary text-primary-foreground"
                               >
-                                <Save className="w-4 h-4 mr-1" />
-                                Save Changes
+                                <Edit3 className="w-4 h-4 mr-1" />
+                                Edit Resume
                               </Button>
-                            </>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleEditModeToggle}
-                            >
-                              <Edit3 className="w-4 h-4 mr-1" />
-                              Edit Resume
-                            </Button>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Template and Color Selector */}
                       <TemplateSelector
