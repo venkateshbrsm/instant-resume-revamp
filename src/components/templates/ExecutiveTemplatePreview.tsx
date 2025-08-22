@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Award, TrendingUp, Users, Target, Star, User } from "lucide-react";
+import { Mail, Phone, Award, TrendingUp, Users, Target, Star, User, CheckCircle } from "lucide-react";
+import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -187,6 +188,38 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                                 </div>
                               ))}
                             </div>
+                            
+                            {/* Core Responsibilities Section */}
+                            {(() => {
+                              const coreResponsibilities = extractCoreResponsibilities(
+                                exp.achievements, 
+                                exp.title, 
+                                'creative', 
+                                index, 
+                                4
+                              );
+                              return coreResponsibilities.length > 0 && (
+                                <div className="mt-5 p-4 rounded-lg bg-blue-50 border-l-3" style={{ borderColor: selectedColorTheme.secondary }}>
+                                  <h5 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
+                                    <CheckCircle className="w-4 h-4" style={{ color: selectedColorTheme.secondary }} />
+                                    Core Daily Responsibilities
+                                  </h5>
+                                  <div className="space-y-2">
+                                    {coreResponsibilities.map((responsibility: string, respIndex: number) => (
+                                      <div key={respIndex} className="flex items-start gap-2">
+                                        <div 
+                                          className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
+                                          style={{ backgroundColor: selectedColorTheme.secondary }}
+                                        ></div>
+                                        <p className="text-xs leading-relaxed text-gray-700">
+                                          {responsibility}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                             
                             {/* Executive Context */}
                             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
