@@ -63,84 +63,90 @@ function generateDailyActivitiesFromAchievement(achievement: string, title: stri
   const lowerAchievement = achievement.toLowerCase();
   const lowerTitle = title.toLowerCase();
   
-  // Financial/Revenue achievements
+  // Financial/Revenue achievements - more tactical level
   if (lowerAchievement.includes('sales') || lowerAchievement.includes('revenue') || lowerAchievement.includes('profit')) {
-    activities.push('Conducting daily sales pipeline reviews and client outreach');
-    activities.push('Analyzing market trends and competitor activity');
-    activities.push('Preparing weekly sales forecasts and performance reports');
-    activities.push('Negotiating contracts and pricing strategies with prospects');
+    activities.push('Making outbound calls to prospects and following up on leads');
+    activities.push('Updating CRM records and tracking sales activities');
+    activities.push('Preparing quotes and proposals for potential clients');
+    activities.push('Attending networking events and trade shows');
   }
   
-  // Team/Management achievements
+  // Team/Management achievements - operational level
   if (lowerAchievement.includes('team') || lowerAchievement.includes('manage') || lowerAchievement.includes('staff')) {
-    activities.push('Facilitating weekly team meetings and performance reviews');
-    activities.push('Providing coaching and mentorship to team members');
-    activities.push('Managing team schedules and workload distribution');
-    activities.push('Conducting recruitment interviews and talent assessments');
+    activities.push('Conducting one-on-one meetings with direct reports');
+    activities.push('Reviewing daily task assignments and priorities');
+    activities.push('Addressing team conflicts and performance issues');
+    activities.push('Scheduling shifts and managing time-off requests');
   }
   
-  // Process/Efficiency achievements
+  // Process/Efficiency achievements - hands-on activities
   if (lowerAchievement.includes('process') || lowerAchievement.includes('efficiency') || lowerAchievement.includes('streamline')) {
-    activities.push('Reviewing and optimizing operational workflows');
-    activities.push('Documenting standard operating procedures');
-    activities.push('Identifying bottlenecks and implementing process improvements');
-    activities.push('Training staff on new procedures and best practices');
+    activities.push('Timing and measuring current workflow steps');
+    activities.push('Creating process flowcharts and documentation');
+    activities.push('Testing new procedures with pilot groups');
+    activities.push('Collecting feedback from staff on process changes');
   }
   
-  // Customer/Client achievements
+  // Customer/Client achievements - direct interaction
   if (lowerAchievement.includes('customer') || lowerAchievement.includes('client') || lowerAchievement.includes('satisfaction')) {
-    activities.push('Maintaining regular client communication and relationship building');
-    activities.push('Monitoring customer feedback and service quality metrics');
-    activities.push('Resolving escalated customer issues and complaints');
-    activities.push('Conducting customer surveys and satisfaction assessments');
+    activities.push('Responding to customer inquiries via phone and email');
+    activities.push('Processing customer orders and handling returns');
+    activities.push('Following up on customer complaints and resolution');
+    activities.push('Conducting customer satisfaction surveys');
   }
   
-  // Technology/System achievements
+  // Technology/System achievements - technical work
   if (lowerAchievement.includes('system') || lowerAchievement.includes('technology') || lowerAchievement.includes('software')) {
-    activities.push('Overseeing daily system maintenance and performance monitoring');
-    activities.push('Coordinating with technical teams on implementation progress');
-    activities.push('Reviewing system logs and troubleshooting technical issues');
-    activities.push('Managing software updates and security patches');
+    activities.push('Running daily system backups and health checks');
+    activities.push('Installing software updates and patches');
+    activities.push('Troubleshooting user technical issues');
+    activities.push('Maintaining user accounts and access permissions');
   }
   
-  // Project achievements
+  // Project achievements - day-to-day project work
   if (lowerAchievement.includes('project') || lowerAchievement.includes('initiative') || lowerAchievement.includes('launch')) {
-    activities.push('Tracking project milestones and deliverable completion');
-    activities.push('Coordinating cross-functional team collaboration');
-    activities.push('Managing project budgets and resource allocation');
-    activities.push('Conducting risk assessments and mitigation planning');
+    activities.push('Updating project schedules and task completion status');
+    activities.push('Attending daily standup meetings and status calls');
+    activities.push('Coordinating deliverables between team members');
+    activities.push('Documenting project progress and issues');
   }
   
-  // Quality/Compliance achievements
+  // Quality/Compliance achievements - hands-on quality work
   if (lowerAchievement.includes('quality') || lowerAchievement.includes('compliance') || lowerAchievement.includes('standard')) {
-    activities.push('Conducting regular quality assurance checks and audits');
-    activities.push('Ensuring adherence to regulatory and company standards');
-    activities.push('Developing quality control procedures and testing protocols');
-    activities.push('Training teams on compliance requirements and policies');
+    activities.push('Performing quality inspections and testing procedures');
+    activities.push('Recording compliance metrics and audit findings');
+    activities.push('Reviewing work outputs against quality standards');
+    activities.push('Completing regulatory forms and documentation');
   }
   
-  // Budget/Cost achievements
+  // Budget/Cost achievements - practical financial tasks
   if (lowerAchievement.includes('budget') || lowerAchievement.includes('cost') || lowerAchievement.includes('saving')) {
-    activities.push('Monitoring daily expenditures and budget allocations');
-    activities.push('Reviewing vendor contracts and cost optimization opportunities');
-    activities.push('Preparing monthly financial reports and variance analysis');
-    activities.push('Negotiating supplier agreements and procurement strategies');
+    activities.push('Tracking expenses and maintaining budget spreadsheets');
+    activities.push('Comparing vendor quotes and pricing options');
+    activities.push('Processing purchase orders and expense reports');
+    activities.push('Monitoring monthly spending against budget limits');
   }
   
-  // If no specific patterns matched, generate role-based activities
+  // If no specific patterns matched, generate role-appropriate activities
   if (activities.length === 0) {
-    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
-      activities.push('Overseeing daily operational activities and team coordination');
-      activities.push('Making strategic decisions and resource allocation');
-    } else if (lowerTitle.includes('analyst') || lowerTitle.includes('specialist')) {
-      activities.push('Conducting daily data analysis and reporting');
-      activities.push('Researching industry trends and best practices');
-    } else if (lowerTitle.includes('developer') || lowerTitle.includes('engineer')) {
-      activities.push('Writing and reviewing code according to project requirements');
-      activities.push('Participating in technical discussions and problem-solving');
+    if (lowerTitle.includes('assistant') || lowerTitle.includes('associate') || lowerTitle.includes('junior')) {
+      activities.push('Supporting senior staff with daily administrative tasks');
+      activities.push('Preparing reports and data entry for departmental use');
+    } else if (lowerTitle.includes('specialist') || lowerTitle.includes('analyst')) {
+      activities.push('Analyzing data sets and preparing summary reports');
+      activities.push('Researching industry trends and compiling findings');
+    } else if (lowerTitle.includes('coordinator')) {
+      activities.push('Scheduling meetings and coordinating team activities');
+      activities.push('Tracking project timelines and following up on tasks');
+    } else if (lowerTitle.includes('supervisor') || lowerTitle.includes('team lead')) {
+      activities.push('Monitoring team productivity and workflow');
+      activities.push('Handling escalated issues and problem resolution');
+    } else if (lowerTitle.includes('manager')) {
+      activities.push('Reviewing team performance and providing feedback');
+      activities.push('Coordinating between departments and stakeholders');
     } else {
-      activities.push('Managing day-to-day operational responsibilities');
-      activities.push('Collaborating with stakeholders on ongoing initiatives');
+      activities.push('Completing assigned tasks and meeting deadlines');
+      activities.push('Participating in team meetings and collaborative work');
     }
   }
   
@@ -169,44 +175,56 @@ function generateActivityPoolForExperience(achievements: string[], title: string
 }
 
 /**
- * Generates activities specific to the experience index (seniority level)
+ * Generates activities specific to the experience index (appropriate for actual job levels)
  */
 function generateExperienceSpecificActivities(title: string, experienceIndex: number): string[] {
   const lowerTitle = title.toLowerCase();
   const activities: string[] = [];
   
   if (experienceIndex === 0) {
-    // Most recent/senior experience - strategic activities
-    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
-      activities.push('Developing long-term strategic plans and vision');
-      activities.push('Leading board presentations and stakeholder meetings');
-      activities.push('Mentoring senior staff and succession planning');
+    // Most recent experience - more responsibility but still realistic
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
+      activities.push('Approving team requests and handling escalations');
+      activities.push('Reviewing monthly department reports and metrics');
+      activities.push('Conducting staff meetings and performance check-ins');
+    } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
+      activities.push('Mentoring junior staff and reviewing their work');
+      activities.push('Leading project meetings and status updates');
+      activities.push('Making technical decisions and recommendations');
     } else {
-      activities.push('Leading cross-functional initiatives and innovation projects');
-      activities.push('Serving as subject matter expert and technical advisor');
-      activities.push('Driving continuous improvement and best practice adoption');
+      activities.push('Taking on additional project responsibilities');
+      activities.push('Training new team members on processes');
+      activities.push('Representing the team in cross-departmental meetings');
     }
   } else if (experienceIndex === 1) {
-    // Second experience - operational excellence
-    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
-      activities.push('Implementing operational improvements and efficiency measures');
-      activities.push('Managing departmental budgets and performance metrics');
-      activities.push('Coordinating with senior leadership on strategic initiatives');
+    // Second experience - solid contributor level
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
+      activities.push('Managing daily team operations and workflow');
+      activities.push('Handling budget tracking and expense approvals');
+      activities.push('Coordinating with other department managers');
+    } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
+      activities.push('Overseeing specific project components');
+      activities.push('Reviewing and quality-checking team deliverables');
+      activities.push('Participating in planning and resource allocation');
     } else {
-      activities.push('Managing complex projects and client relationships');
-      activities.push('Training and mentoring junior team members');
-      activities.push('Analyzing performance data and recommending improvements');
+      activities.push('Managing assigned projects from start to finish');
+      activities.push('Collaborating with multiple departments on initiatives');
+      activities.push('Contributing to process improvements and suggestions');
     }
   } else {
-    // Earlier experiences - foundational activities
-    if (lowerTitle.includes('manager') || lowerTitle.includes('director') || lowerTitle.includes('lead')) {
-      activities.push('Building team capabilities and establishing processes');
-      activities.push('Developing standard operating procedures and workflows');
-      activities.push('Managing day-to-day operations and team development');
+    // Earlier experiences - learning and contributing
+    if (lowerTitle.includes('manager') || lowerTitle.includes('director')) {
+      activities.push('Learning company procedures and management systems');
+      activities.push('Building relationships with team members and peers');
+      activities.push('Focusing on immediate team needs and daily operations');
+    } else if (lowerTitle.includes('senior') || lowerTitle.includes('lead')) {
+      activities.push('Developing expertise in specific technical areas');
+      activities.push('Supporting team goals and departmental objectives');
+      activities.push('Building professional relationships and networks');
     } else {
-      activities.push('Contributing to team projects and collaborative initiatives');
-      activities.push('Learning industry best practices and developing expertise');
-      activities.push('Supporting senior staff with research and analysis');
+      activities.push('Learning job-specific skills and company procedures');
+      activities.push('Completing assigned tasks and meeting expectations');
+      activities.push('Participating in team activities and training programs');
     }
   }
   
