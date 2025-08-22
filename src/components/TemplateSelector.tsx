@@ -2,21 +2,27 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Palette } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Check, Palette, Eye } from "lucide-react";
 import { resumeTemplates, type ResumeTemplate } from "@/lib/resumeTemplates";
+import { PreviewSection } from "./PreviewSection";
 
 interface TemplateSelectorProps {
   selectedTemplate: ResumeTemplate;
   selectedColorTheme: { id: string; name: string; primary: string; secondary: string; accent: string; };
   onTemplateChange: (template: ResumeTemplate) => void;
   onColorThemeChange: (colorTheme: { id: string; name: string; primary: string; secondary: string; accent: string; }) => void;
+  file?: File;
+  onPurchase?: () => void;
 }
 
 export function TemplateSelector({ 
   selectedTemplate, 
   selectedColorTheme, 
   onTemplateChange, 
-  onColorThemeChange 
+  onColorThemeChange,
+  file,
+  onPurchase 
 }: TemplateSelectorProps) {
   const [showColorThemes, setShowColorThemes] = useState(false);
 
@@ -75,16 +81,36 @@ export function TemplateSelector({
                     {template.description}
                   </p>
                   
-                  <div className="flex flex-wrap gap-1">
-                    {template.features.slice(0, 2).map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs px-2 py-0">
-                        {feature}
-                      </Badge>
-                    ))}
-                    {template.features.length > 2 && (
-                      <Badge variant="outline" className="text-xs px-2 py-0">
-                        +{template.features.length - 2}
-                      </Badge>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1 flex-1">
+                      {template.features.slice(0, 2).map((feature, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs px-2 py-0">
+                          {feature}
+                        </Badge>
+                      ))}
+                      {template.features.length > 2 && (
+                        <Badge variant="outline" className="text-xs px-2 py-0">
+                          +{template.features.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {file && onPurchase && selectedTemplate.id === template.id && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-6">
+                            <Eye className="w-3 h-3 mr-1" />
+                            Preview
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 border-0">
+                          <PreviewSection
+                            file={file}
+                            onPurchase={onPurchase}
+                            onBack={() => {}}
+                          />
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
                 </div>

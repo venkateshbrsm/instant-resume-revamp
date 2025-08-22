@@ -172,14 +172,15 @@ const Index = () => {
           <FileUploadSection
             onFileProcessed={handleFileProcessed}
             onBack={handleBackToHero}
+            onPurchase={handlePurchase}
           />
         );
       case "preview":
         return uploadedFile ? (
-          <PreviewSection
-            file={uploadedFile}
+          <FileUploadSection
+            onFileProcessed={handleFileProcessed}
+            onBack={handleBackToHero}
             onPurchase={handlePurchase}
-            onBack={handleBackToUpload}
           />
         ) : (
           <HeroSection onGetStarted={handleGetStarted} />
