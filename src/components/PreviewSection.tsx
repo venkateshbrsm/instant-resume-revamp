@@ -361,66 +361,25 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsGeneratingPdf(true);
     
     try {
-      // Use smart PDF generator for executive template to prevent text splitting
-      if (selectedTemplate.id === 'executive') {
-        console.log('Using smart PDF generator for executive template');
-        toast({
-          title: "Generating Executive Resume PDF",
-          description: "Using smart scaling to prevent text splitting at page borders...",
-        });
+      console.log('Using client-side PDF generation for all templates');
+      toast({
+        title: "Generating PDF Resume",
+        description: "Creating high-quality PDF from your enhanced resume...",
+      });
 
-        await downloadSmartPdf(resumeContentRef.current, {
-          filename: `Executive_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
-          scaleStrategy: 'quality', // Use quality strategy for executive template
-          dynamicScale: true,
-          format: 'a4',
-          margin: 0.5
-        });
+      // Use client-side PDF generation for all templates in test mode
+      await downloadSmartPdf(resumeContentRef.current!, {
+        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+        scaleStrategy: selectedTemplate.id === 'executive' ? 'quality' : 'balanced',
+        dynamicScale: true,
+        format: 'a4',
+        margin: 0.5
+      });
 
-        toast({
-          title: "Executive PDF Downloaded",
-          description: "Your executive resume PDF has been optimized to prevent text splitting!",
-        });
-      } else {
-        console.log('Using server-side PDF generation for template:', selectedTemplate.id);
-        toast({
-          title: "Generating ATS-Readable Resume",
-          description: "Creating text-based PDF optimized for Applicant Tracking Systems...",
-        });
-
-        // Use server-side text-based PDF generation for other templates
-        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
-          body: {
-            enhancedContent,
-            templateId: selectedTemplate.id,
-            themeId: selectedColorTheme.id,
-            fileName: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}`
-          }
-        });
-
-        console.log('Server PDF generation response:', { data, error });
-
-        if (error) {
-          console.error('Server PDF generation error:', error);
-          throw new Error(error.message || 'Failed to generate ATS-readable PDF');
-        }
-
-        // Create download link
-        const blob = new Blob([data], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toast({
-          title: "ATS-Readable PDF Downloaded",
-          description: "Your resume is optimized for Applicant Tracking Systems with selectable text!",
-        });
-      }
+      toast({
+        title: "PDF Downloaded Successfully",
+        description: "Your enhanced resume PDF has been downloaded!",
+      });
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
