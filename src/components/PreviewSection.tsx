@@ -19,7 +19,9 @@ import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
 import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
+import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
+import { enhanceResumeWithATS } from "@/lib/atsOptimizer";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -536,7 +538,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (data.success && data.enhancedResume) {
-        setEnhancedContent(data.enhancedResume);
+        // Apply ATS optimization to the enhanced resume
+        const atsOptimizedContent = enhanceResumeWithATS(data.enhancedResume);
+        setEnhancedContent(atsOptimizedContent);
         setEnhancementProgress(100);
         
         console.log('Enhancement successful, enhanced content:', data.enhancedResume);

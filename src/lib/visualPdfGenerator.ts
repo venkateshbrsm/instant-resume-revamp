@@ -357,45 +357,70 @@ async function generateCreativePdf(
 
   let currentY = 20;
 
-  // Creative gradient header
-  const headerHeight = 40;
-  for (let i = 0; i < headerHeight; i += 1) {
-    const ratio = i / headerHeight;
-    const r = Math.round(pr + (ar - pr) * ratio);
-    const g = Math.round(pg + (ag - pg) * ratio);
-    const b = Math.round(pb + (ab - pb) * ratio);
+  // Creative gradient header matching preview exactly
+  const headerHeight = 50;
+  
+  // Create gradient from primary to accent to secondary (matching preview)
+  for (let i = 0; i < headerHeight; i += 0.5) {
+    let ratio1, ratio2;
+    let r, g, b;
+    
+    if (i < headerHeight * 0.7) {
+      // First 70%: primary to accent
+      ratio1 = i / (headerHeight * 0.7);
+      r = Math.round(pr + (ar - pr) * ratio1);
+      g = Math.round(pg + (ag - pg) * ratio1);
+      b = Math.round(pb + (ab - pb) * ratio1);
+    } else {
+      // Last 30%: accent to secondary
+      ratio2 = (i - headerHeight * 0.7) / (headerHeight * 0.3);
+      r = Math.round(ar + (sr - ar) * ratio2);
+      g = Math.round(ag + (sg - ag) * ratio2);
+      b = Math.round(ab + (sb - ab) * ratio2);
+    }
     
     doc.setFillColor(r, g, b);
-    doc.rect(0, i, pageWidth, 1, 'F');
+    doc.rect(0, i, pageWidth, 0.5, 'F');
   }
 
-  // Geometric shapes in header
-  doc.setFillColor(255, 255, 255, 0.2);
-  doc.circle(20, 15, 8, 'F');
-  doc.rect(pageWidth - 30, 8, 12, 12, 'F');
+  // Geometric shapes in header with white transparency
+  doc.setFillColor(255, 255, 255);
+  doc.setGState({ opacity: 0.2 });
+  doc.circle(25, 20, 10, 'F');
+  doc.rect(pageWidth - 35, 15, 15, 15, 'F');
+  doc.circle(pageWidth / 4, 35, 5, 'F');
+  doc.setGState({ opacity: 1 }); // Reset opacity
 
-  // Header text
+  // Profile photo area (matching preview)
+  doc.setFillColor(255, 255, 255);
+  doc.setGState({ opacity: 0.2 });
+  doc.circle(margin + 25, 25, 12, 'F');
+  doc.setGState({ opacity: 1 });
+
+  // Header text (matching preview layout)
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
+  doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text(resumeData.name, margin, 25);
+  doc.text(resumeData.name, margin + 45, 25);
   
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'normal');
-  doc.text(resumeData.title, margin, 32);
+  doc.text(resumeData.title, margin + 45, 32);
 
-  // Contact info in header
+  // Contact info in header (matching preview)
   const contactInfo = [resumeData.email, resumeData.phone].filter(Boolean).join(' • ');
   if (contactInfo) {
-    doc.setFontSize(9);
-    doc.text(contactInfo, margin, 38);
+    doc.setFontSize(10);
+    doc.text(contactInfo, margin + 45, 40);
   }
 
   currentY = headerHeight + 15;
 
-  // Creative Vision section
-  doc.setFillColor(pr, pg, pb, 0.1);
-  doc.rect(margin - 5, currentY - 5, contentWidth + 10, 25, 'F');
+  // Creative Vision section with light background (no black)
+  doc.setFillColor(pr, pg, pb);
+  doc.setGState({ opacity: 0.05 });
+  doc.rect(margin - 5, currentY - 5, contentWidth + 10, 30, 'F');
+  doc.setGState({ opacity: 1 });
 
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(14);
@@ -433,13 +458,13 @@ async function generateCreativePdf(
         const skill = resumeData.skills[skillIndex];
         const x = margin + (j * badgeWidth);
         
-        // Badge background
-        doc.setFillColor(ar, ag, ab, 0.3);
+        // Badge background (white with colored border - matching preview)
+        doc.setFillColor(255, 255, 255);
         doc.roundedRect(x, currentY - 4, badgeWidth - 2, 8, 2, 2, 'F');
         
-        // Badge border
-        doc.setDrawColor(pr, pg, pb);
-        doc.setLineWidth(0.5);
+        // Badge border (matching preview style)
+        doc.setDrawColor(ar, ag, ab);
+        doc.setLineWidth(1);
         doc.roundedRect(x, currentY - 4, badgeWidth - 2, 8, 2, 2, 'S');
         
         // Skill text
@@ -502,9 +527,13 @@ async function generateCreativePdf(
       // Achievements with checkmarks
       if (exp.achievements && exp.achievements.length > 0) {
         exp.achievements.slice(0, 4).forEach((achievement) => {
-          // Achievement bullet
+          // Achievement bullet (matching preview)
           doc.setFillColor(ar, ag, ab);
-          doc.circle(margin + 7, currentY - 1, 1.5, 'F');
+          doc.circle(margin + 7, currentY - 1, 2, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(7);
+          doc.setFont('helvetica', 'bold');
+          doc.text('✓', margin + 5.5, currentY + 0.5);
           
           // Achievement text
           doc.setTextColor(60, 60, 60);
