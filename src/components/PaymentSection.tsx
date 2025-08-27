@@ -35,6 +35,20 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
       setUser(session?.user ?? null);
     };
 
+    // Check for applied coupon from session storage
+    const storedCoupon = sessionStorage.getItem('appliedCoupon');
+    const storedPrice = sessionStorage.getItem('discountedPrice');
+    
+    if (storedCoupon && storedPrice) {
+      setAppliedCoupon(storedCoupon);
+      setDiscountedPrice(parseInt(storedPrice));
+      setCouponCode(storedCoupon);
+      toast({
+        title: "Coupon Restored",
+        description: `${storedCoupon} coupon is still active`,
+      });
+    }
+
     checkAuth();
 
     // Listen for auth changes
@@ -61,6 +75,20 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   }, [toast]);
 
   const handlePaymentClick = async () => {
+    // If coupon makes it free, skip payment and go directly to success
+    if (appliedCoupon === "15AUGSALE" && discountedPrice === 0) {
+      // Clear coupon from session storage after use
+      sessionStorage.removeItem('appliedCoupon');
+      sessionStorage.removeItem('discountedPrice');
+      
+      setPaymentCompleted(true);
+      toast({
+        title: "Free Download Ready! 🎉",
+        description: "Your enhanced resume is ready for download.",
+      });
+      return;
+    }
+
     // Enhanced rate limiting: Prevent multiple clicks within 5 seconds
     const now = Date.now();
     if (now - lastPaymentAttempt < 5000) {
@@ -145,10 +173,10 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
     const trimmedCode = couponCode.trim().toUpperCase();
     if (trimmedCode === "15AUGSALE") {
       setAppliedCoupon(trimmedCode);
-      setDiscountedPrice(1);
+      setDiscountedPrice(0);
       toast({
-        title: "Coupon Applied!",
-        description: "15AUGSALE coupon applied. Price reduced to ₹1",
+        title: "Coupon Applied! 🎉",
+        description: "15AUGSALE coupon applied. Your download is now FREE!",
       });
     } else if (trimmedCode === "") {
       toast({
@@ -176,6 +204,10 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
   };
 
   const handlePaymentSuccess = () => {
+    // Clear coupon from session storage after successful payment
+    sessionStorage.removeItem('appliedCoupon');
+    sessionStorage.removeItem('discountedPrice');
+    
     setPaymentCompleted(true);
     setShowPayment(false);
   };
@@ -332,12 +364,18 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
                         ₹299
                       </span>
                  </div>
-                {appliedCoupon && (
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs sm:text-sm text-green-600">After {appliedCoupon} discount</span>
-                    <span className="font-semibold text-sm sm:text-base text-green-600">₹{discountedPrice}</span>
-                  </div>
-                )}
+                 {appliedCoupon && discountedPrice === 0 && (
+                   <div className="flex justify-between items-center mb-2">
+                     <span className="text-xs sm:text-sm text-green-600 font-medium">🎉 FREE with {appliedCoupon}!</span>
+                     <span className="font-bold text-sm sm:text-base text-green-600">FREE</span>
+                   </div>
+                 )}
+                 {appliedCoupon && discountedPrice > 0 && (
+                   <div className="flex justify-between items-center mb-2">
+                     <span className="text-xs sm:text-sm text-green-600">After {appliedCoupon} discount</span>
+                     <span className="font-semibold text-sm sm:text-base text-green-600">₹{discountedPrice}</span>
+                   </div>
+                 )}
                 <div className="flex justify-between items-center text-xs sm:text-sm text-muted-foreground">
                   <span className="break-all">Original file: {file.name}</span>
                 </div>
@@ -346,7 +384,9 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
               <div className="border-t pt-3 sm:pt-4">
                 <div className="flex justify-between items-center text-base sm:text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">₹{discountedPrice}</span>
+                  <span className={`${discountedPrice === 0 ? 'text-green-600' : 'text-primary'}`}>
+                    {discountedPrice === 0 ? 'FREE' : `₹${discountedPrice}`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -363,7 +403,7 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
 
             {/* Payment Button */}
             <Button 
-              variant="hero" 
+              variant={discountedPrice === 0 ? "success" : "hero"} 
               size="xl" 
               onClick={handlePaymentClick}
               disabled={isCheckingAuth || isPaymentProcessing}
@@ -371,15 +411,14 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
             >
               <CreditCard className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
                 {isCheckingAuth || isPaymentProcessing ? "Processing..." : 
+                 discountedPrice === 0 ? "Get FREE Download" :
                  user ? `Pay ₹${discountedPrice} with Razorpay` : `Sign In & Pay ₹${discountedPrice}`}
             </Button>
 
             {/* Security Note */}
-            <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                🔒 Secured by Razorpay • India's trusted payment gateway • No subscription
+                {appliedCoupon && discountedPrice === 0 ? '🎉 Free with coupon • No payment required' : '🔒 Secured by Razorpay • India\'s trusted payment gateway • No subscription'}
               </p>
-            </div>
 
             {/* Features Reminder */}
             <div className="space-y-2 text-xs sm:text-sm">
