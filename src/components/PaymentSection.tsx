@@ -216,14 +216,55 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
     setShowPayment(false);
   };
 
-  const handleDownload = () => {
-    // Simulate download
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = `enhanced-${file.name}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    try {
+      // Get the enhanced content from session storage (set during preview)
+      const enhancedContentStr = sessionStorage.getItem('enhancedContent');
+      if (!enhancedContentStr) {
+        toast({
+          title: "Error",
+          description: "Enhanced content not found. Please go back and try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const enhancedContent = JSON.parse(enhancedContentStr);
+      
+      // Call the download function from supabase
+      const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
+        body: {
+          fileName: file.name,
+          enhancedContent: enhancedContent,
+          themeId: 'navy', // default theme
+          paymentStatus: 'completed' // since coupon made it free
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Download the generated PDF
+        const link = document.createElement('a');
+        link.href = data.url;
+        link.download = `enhanced-${file.name.replace('.pdf', '')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Download Complete! 🎉",
+          description: "Your enhanced resume has been downloaded successfully.",
+        });
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Error",
+        description: "Failed to download. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (showPayment) {
