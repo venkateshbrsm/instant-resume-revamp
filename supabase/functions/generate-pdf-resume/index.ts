@@ -1607,16 +1607,16 @@ serve(async (req) => {
         console.log('Searching by razorpay_payment_id:', paymentId);
         const result = await supabase
           .from('payments')
-          .select('enhanced_content')
+          .select('enhanced_content, theme_id, file_name')
           .eq('razorpay_payment_id', paymentId)
           .maybeSingle();
           
         if (result.error || !result.data) {
           console.log('Payment not found by razorpay_payment_id, trying recent completed payments...');
-          // Try to find the most recent completed payment for this user
+          // Try to find the most recent completed payment
           const fallbackResult = await supabase
             .from('payments')
-            .select('enhanced_content')
+            .select('enhanced_content, theme_id, file_name')
             .eq('status', 'completed')
             .order('created_at', { ascending: false })
             .limit(1)
@@ -1632,7 +1632,7 @@ serve(async (req) => {
         console.log('Searching by UUID:', paymentId);
         const result = await supabase
           .from('payments')
-          .select('enhanced_content')
+          .select('enhanced_content, theme_id, file_name')
           .eq('id', paymentId)
           .maybeSingle();
         payment = result.data;
