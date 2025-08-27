@@ -19,7 +19,8 @@ import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
 import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
-import { generateTextBasedPdf, extractResumeDataFromEnhanced } from "@/lib/textBasedPdfGenerator";
+import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
+import { downloadSmartPdf } from "@/lib/smartPdfGenerator";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -210,15 +211,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               description: "Generating high-quality PDF preview...",
             });
             
-            const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-            const pdfBlob = await generateTextBasedPdf(resumeData, {
-              filename: 'enhanced-resume.pdf',
-              templateType: selectedTemplate.id as any,
-              colorTheme: {
-                primary: selectedColorTheme.primary,
-                secondary: selectedColorTheme.secondary,
-                accent: selectedColorTheme.accent
-              }
+            const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
+              quality: 0.95,
+              scale: 2
             });
             
             // Convert blob to base64 for session storage
@@ -272,16 +267,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
         if (enhancedContent && resumeContentRef.current) {
           try {
-            // Generate text-based PDF for login flow too
-            const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-            const pdfBlob = await generateTextBasedPdf(resumeData, {
-              filename: 'enhanced-resume.pdf',
-              templateType: selectedTemplate.id as any,
-              colorTheme: {
-                primary: selectedColorTheme.primary,
-                secondary: selectedColorTheme.secondary,
-                accent: selectedColorTheme.accent
-              }
+            // Generate canvas PDF for login flow too
+            const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
+              quality: 0.95,
+              scale: 2
             });
             
             const reader = new FileReader();
@@ -336,7 +325,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handleTestDownload = async () => {
-    if (!enhancedContent) {
+    if (!resumeContentRef.current || !enhancedContent) {
       toast({
         title: "Preview Not Ready",
         description: "Please wait for the enhanced resume to load completely.",
@@ -349,38 +338,32 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     try {
       toast({
-        title: "Generating ATS-Compatible PDF",
-        description: "Creating text-based PDF that ATS systems can easily read...",
+        title: "Generating Smart PDF",
+        description: "Optimizing layout and preventing text splitting near page breaks...",
       });
 
-      // Use text-based PDF generator for ATS compatibility
-      const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-      const pdfBlob = await generateTextBasedPdf(resumeData, {
-        templateType: selectedTemplate.id as any,
-        colorTheme: {
-          primary: selectedColorTheme.primary,
-          secondary: selectedColorTheme.secondary,
-          accent: selectedColorTheme.accent
-        },
-        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`
-      });
+      // Use advanced PDF generator with comprehensive text splitting prevention
+      const { downloadAdvancedPdf } = await import("@/lib/advancedPdfGenerator");
       
-      // Create download link
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Detect template type from the component data
+      const templateType = selectedTemplate?.id?.toLowerCase() || 'modern';
+      
+      await downloadAdvancedPdf(resumeContentRef.current, {
+        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`,
+        templateType: templateType as any,
+        dynamicScale: true,
+        contentAwareOptimization: true,
+        fallbackRecovery: true,
+        scaleStrategy: 'conservative',
+        quality: 0.98
+      });
 
       toast({
-        title: "ATS-Compatible PDF Downloaded",
-        description: "Text-based PDF downloaded - fully readable by ATS systems!",
+        title: "Smart PDF Downloaded",
+        description: "Resume optimized with intelligent page breaks and scaling!",
       });
     } catch (error) {
-      console.error('Error generating text-based PDF:', error);
+      console.error('Error generating smart PDF:', error);
       toast({
         title: "Download Failed",
         description: "Failed to generate PDF. Please try again.",
