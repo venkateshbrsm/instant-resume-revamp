@@ -19,8 +19,7 @@ import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
 import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
-import { downloadPdfFromElement, generatePdfFromElement } from "@/lib/canvasPdfGenerator";
-import { downloadSmartPdf } from "@/lib/smartPdfGenerator";
+import { generateAdvancedPdf } from "@/lib/advancedPdfGenerator";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -211,9 +210,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               description: "Generating high-quality PDF preview...",
             });
             
-            const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
-              quality: 0.95,
-              scale: 2
+            const pdfBlob = await generateAdvancedPdf(resumeContentRef.current, {
+              filename: 'enhanced-resume.pdf',
+              dynamicScale: true,
+              contentAwareOptimization: true,
+              templateType: selectedTemplate.id as any
             });
             
             // Convert blob to base64 for session storage
@@ -267,10 +268,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
         if (enhancedContent && resumeContentRef.current) {
           try {
-            // Generate canvas PDF for login flow too
-            const pdfBlob = await generatePdfFromElement(resumeContentRef.current, {
-              quality: 0.95,
-              scale: 2
+            // Generate text-based PDF for login flow too
+            const pdfBlob = await generateAdvancedPdf(resumeContentRef.current, {
+              filename: 'enhanced-resume.pdf',
+              dynamicScale: true,
+              contentAwareOptimization: true,
+              templateType: selectedTemplate.id as any
             });
             
             const reader = new FileReader();
