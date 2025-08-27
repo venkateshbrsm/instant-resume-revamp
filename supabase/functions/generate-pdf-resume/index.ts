@@ -22,25 +22,12 @@ const colorThemes = {
 async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'modern', themeId: string = 'navy'): Promise<Uint8Array> {
   const theme = colorThemes[themeId as keyof typeof colorThemes] || colorThemes.navy;
   
-  // Template generators - for now using simplified versions
-  const templateGenerators = {
-    modern: () => generateModernHTML(resumeData, theme),
-    classic: () => generateClassicHTML(resumeData, theme),
-    creative: () => generateCreativeHTML(resumeData, theme), // Use creative template
-    executive: () => generateClassicHTML(resumeData, theme), // Use classic as fallback  
-    minimalist: () => generateClassicHTML(resumeData, theme), // Use classic as fallback
-  };
-  
-  const generateHTML = templateGenerators[templateId as keyof typeof templateGenerators] || templateGenerators.modern;
-  
   // Generate realistic skill proficiency percentages matching the preview
   const generateSkillProficiency = (skill: string) => {
     const baseSkillLevel = 75 + (skill.length % 20); // 75-95% based on skill name
     return Math.min(95, baseSkillLevel);
   };
 
-  const htmlContent = generateHTML();
-  
   function generateModernHTML(resumeData: any, theme: any) {
     return `<!DOCTYPE html>
 <html lang="en">
@@ -1399,8 +1386,19 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   </div>
 </body>
 </html>`;
-  }
-
+  
+  // Template generators - now defined after the HTML functions  
+  const templateGenerators = {
+    modern: () => generateModernHTML(resumeData, theme),
+    classic: () => generateClassicHTML(resumeData, theme),
+    creative: () => generateCreativeHTML(resumeData, theme),
+    executive: () => generateClassicHTML(resumeData, theme), // Use classic as fallback  
+    minimalist: () => generateClassicHTML(resumeData, theme), // Use classic as fallback
+  };
+  
+  const generateHTML = templateGenerators[templateId as keyof typeof templateGenerators] || templateGenerators.modern;
+  const htmlContent = generateHTML();
+  
   console.log(`Generating PDF with PDFShift for template: ${templateId}, theme: ${themeId}`);
   console.log('HTML content length:', htmlContent.length);
 
