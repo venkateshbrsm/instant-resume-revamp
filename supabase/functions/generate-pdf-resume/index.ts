@@ -1472,25 +1472,51 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   return new Uint8Array(pdfBuffer);
 }
 
+// Helper function to sanitize filename
+function sanitizeFilename(filename: string): string {
+  if (!filename) return 'Enhanced_Resume';
+  
+  return filename
+    .replace(/[^a-zA-Z0-9_\-\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+    .substring(0, 50) // Limit length
+    .replace(/^_+|_+$/g, '') || 'Enhanced_Resume'; // Remove leading/trailing underscores
+}
+
 // Fallback function to generate text content when PDF API is unavailable
 function generateTextFallback(resumeData: any): string {
+  // Helper to clean text content
+  const cleanText = (text: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '') // Remove non-printable characters
+      .replace(/\u2019/g, "'") // Replace smart quotes
+      .replace(/\u201C/g, '"')
+      .replace(/\u201D/g, '"')
+      .replace(/\u2013/g, '-') // Replace em dash
+      .replace(/\u2014/g, '--') // Replace en dash
+      .replace(/\u00A0/g, ' ') // Replace non-breaking space
+      .trim();
+  };
+
   let resume = "ENHANCED RESUME\n";
   resume += "=".repeat(50) + "\n\n";
 
   if (resumeData.name) {
-    resume += `Name: ${resumeData.name}\n`;
+    resume += `Name: ${cleanText(resumeData.name)}\n`;
   }
   
   if (resumeData.email) {
-    resume += `Email: ${resumeData.email}\n`;
+    resume += `Email: ${cleanText(resumeData.email)}\n`;
   }
   
   if (resumeData.phone) {
-    resume += `Phone: ${resumeData.phone}\n`;
+    resume += `Phone: ${cleanText(resumeData.phone)}\n`;
   }
   
   if (resumeData.location) {
-    resume += `Location: ${resumeData.location}\n`;
+    resume += `Location: ${cleanText(resumeData.location)}\n`;
   }
   
   resume += "\n";
@@ -1498,19 +1524,19 @@ function generateTextFallback(resumeData: any): string {
   if (resumeData.summary) {
     resume += "PROFESSIONAL SUMMARY\n";
     resume += "-".repeat(20) + "\n";
-    resume += resumeData.summary + "\n\n";
+    resume += cleanText(resumeData.summary) + "\n\n";
   }
 
   if (resumeData.experience && resumeData.experience.length > 0) {
     resume += "WORK EXPERIENCE\n";
     resume += "-".repeat(15) + "\n";
     resumeData.experience.forEach((exp: any) => {
-      resume += `${exp.title || 'Position'} at ${exp.company || 'Company'}\n`;
-      if (exp.duration) resume += `Duration: ${exp.duration}\n`;
+      resume += `${cleanText(exp.title || 'Position')} at ${cleanText(exp.company || 'Company')}\n`;
+      if (exp.duration) resume += `Duration: ${cleanText(exp.duration)}\n`;
       if (exp.achievements && exp.achievements.length > 0) {
         resume += "Key Achievements:\n";
         exp.achievements.forEach((achievement: string) => {
-          resume += `• ${achievement}\n`;
+          resume += `• ${cleanText(achievement)}\n`;
         });
       }
       resume += "\n";
@@ -1521,8 +1547,8 @@ function generateTextFallback(resumeData: any): string {
     resume += "EDUCATION\n";
     resume += "-".repeat(9) + "\n";
     resumeData.education.forEach((edu: any) => {
-      resume += `${edu.degree || 'Degree'} from ${edu.institution || 'Institution'}\n`;
-      if (edu.year) resume += `Year: ${edu.year}\n`;
+      resume += `${cleanText(edu.degree || 'Degree')} from ${cleanText(edu.institution || 'Institution')}\n`;
+      if (edu.year) resume += `Year: ${cleanText(edu.year)}\n`;
       resume += "\n";
     });
   }
@@ -1530,11 +1556,12 @@ function generateTextFallback(resumeData: any): string {
   if (resumeData.skills && resumeData.skills.length > 0) {
     resume += "SKILLS\n";
     resume += "-".repeat(6) + "\n";
-    resume += resumeData.skills.join(", ") + "\n\n";
+    resume += resumeData.skills.map((skill: string) => cleanText(skill)).join(", ") + "\n\n";
   }
 
   return resume;
 }
+
 
 serve(async (req) => {
   console.log('PDF Generation function started');
@@ -1641,20 +1668,22 @@ serve(async (req) => {
       new TextDecoder().decode(pdfBytes.slice(0, 100)).includes('ENHANCED RESUME');
     
     if (isTextFallback) {
+      const cleanFilename = sanitizeFilename(fileName);
       return new Response(pdfBytes, {
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/plain',
-          'Content-Disposition': `attachment; filename="${fileName || `Enhanced_Resume_${Date.now()}`}.txt"`,
+          'Content-Disposition': `attachment; filename="${cleanFilename}.txt"`,
         },
       });
     }
 
+    const cleanFilename = sanitizeFilename(fileName);
     return new Response(pdfBytes, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${fileName || `Enhanced_Resume_${Date.now()}`}.pdf"`,
+        'Content-Disposition': `attachment; filename="${cleanFilename}.pdf"`,
       },
     });
 
