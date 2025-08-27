@@ -34,7 +34,7 @@ export default function PaymentSuccess() {
       // Set a timeout to prevent infinite loading - extend for PDF processing
       const fileName = searchParams.get('fileName') || '';
       const isPDF = fileName.toLowerCase().endsWith('.pdf');
-      const timeoutDuration = isPDF ? 60000 : 30000; // 60 seconds for PDFs, 30 for others
+      const timeoutDuration = isPDF ? 90000 : 45000; // Increased timeout: 90 seconds for PDFs, 45 for others
       
       timeoutId = setTimeout(() => {
         console.warn(`Payment verification timeout after ${timeoutDuration/1000} seconds`);
@@ -392,7 +392,7 @@ export default function PaymentSuccess() {
           title: "Download Started",
           description: "Your enhanced resume PDF is being downloaded.",
         });
-        return;
+        
     } catch (error) {
       console.error('Download error:', error);
       toast({
