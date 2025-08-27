@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Document, Paragraph, TextRun, AlignmentType, Packer, Table, TableRow, TableCell, WidthType, HeadingLevel } from "https://esm.sh/docx@8.5.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,291 +44,74 @@ const cleanText = (text: string) => {
     .trim();
 };
 
-async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Promise<Uint8Array> {
-  const colors = getThemeColors(themeId);
-
-  const doc = new Document({
-    sections: [{
-      children: [
-        // Header with name and title
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: cleanText(resumeData.name || "Professional Resume"),
-              bold: true,
-              size: 36,
-              color: colors.primary,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: cleanText(resumeData.title || "Professional"),
-              size: 26,
-              color: colors.secondary,
-              bold: true,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 300 },
-        }),
-        
-        // Contact Information Table
-        new Table({
-          rows: [
-            new TableRow({
-              children: [
-                new TableCell({
-                  children: [
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: `Email: ${resumeData.email || ""}`,
-                          size: 18,
-                          color: colors.accent,
-                        }),
-                      ],
-                      alignment: AlignmentType.CENTER,
-                    }),
-                  ],
-                  width: { size: 33, type: WidthType.PERCENTAGE },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: `Phone: ${resumeData.phone || ""}`,
-                          size: 18,
-                          color: colors.accent,
-                        }),
-                      ],
-                      alignment: AlignmentType.CENTER,
-                    }),
-                  ],
-                  width: { size: 33, type: WidthType.PERCENTAGE },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: `Location: ${resumeData.location || ""}`,
-                          size: 18,
-                          color: colors.accent,
-                        }),
-                      ],
-                      alignment: AlignmentType.CENTER,
-                    }),
-                  ],
-                  width: { size: 34, type: WidthType.PERCENTAGE },
-                }),
-              ],
-            }),
-          ],
-          width: { size: 100, type: WidthType.PERCENTAGE },
-        }),
-        
-        // Separator line
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "─".repeat(60),
-              size: 16,
-              color: colors.primary,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { before: 300, after: 300 },
-        }),
-        
-        // Professional Summary
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "PROFESSIONAL SUMMARY",
-              bold: true,
-              size: 24,
-              color: colors.primary,
-            }),
-          ],
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 200 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: cleanText(resumeData.summary || "Professional with extensive experience in their field."),
-              size: 20,
-            }),
-          ],
-          spacing: { after: 400 },
-        }),
-        
-        // Professional Experience
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "PROFESSIONAL EXPERIENCE",
-              bold: true,
-              size: 24,
-              color: colors.primary,
-            }),
-          ],
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 200 },
-        }),
-        
-        // Experience entries
-        ...(resumeData.experience || []).flatMap((exp: any, index: number) => [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: cleanText(exp.title || "Position"),
-                bold: true,
-                size: 22,
-                color: colors.secondary,
-              }),
-            ],
-            spacing: { after: 100 },
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: cleanText(`${exp.company || "Company"} | ${exp.duration || "Duration"}`),
-                size: 18,
-                italics: true,
-                color: colors.accent,
-              }),
-            ],
-            spacing: { after: 150 },
-          }),
-          ...(exp.achievements || []).map((achievement: string) => 
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: cleanText(`• ${achievement}`),
-                  size: 18,
-                }),
-              ],
-              spacing: { after: 100 },
-            })
-          ),
-          ...(index < (resumeData.experience || []).length - 1 ? [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "─".repeat(40),
-                  size: 12,
-                  color: colors.accent,
-                }),
-              ],
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 200, after: 200 },
-            }),
-          ] : [
-            new Paragraph({
-              children: [new TextRun({ text: "", size: 12 })],
-              spacing: { after: 300 },
-            }),
-          ]),
-        ]),
-        
-        // Skills Section
-        ...(resumeData.skills && resumeData.skills.length > 0 ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "SKILLS",
-                bold: true,
-                size: 24,
-                color: colors.primary,
-              }),
-            ],
-            heading: HeadingLevel.HEADING_1,
-            spacing: { after: 200 },
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: cleanText(resumeData.skills.join(" • ")),
-                size: 20,
-              }),
-            ],
-            spacing: { after: 400 },
-          }),
-        ] : []),
-        
-        // Education Section
-        ...(resumeData.education && resumeData.education.length > 0 ? [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "EDUCATION",
-                bold: true,
-                size: 24,
-                color: colors.primary,
-              }),
-            ],
-            heading: HeadingLevel.HEADING_1,
-            spacing: { after: 200 },
-          }),
-          ...resumeData.education.flatMap((edu: any, index: number) => [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: cleanText(edu.degree || "Degree"),
-                  bold: true,
-                  size: 22,
-                  color: colors.secondary,
-                }),
-              ],
-              spacing: { after: 100 },
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: cleanText(`${edu.institution || "Institution"} | ${edu.year || "Year"}`),
-                  size: 18,
-                  color: colors.accent,
-                }),
-              ],
-              spacing: { after: index < (resumeData.education || []).length - 1 ? 300 : 200 },
-            }),
-          ]),
-        ] : []),
-        
-        // Footer
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "─".repeat(60),
-              size: 16,
-              color: colors.primary,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { before: 400, after: 200 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "Enhanced by AI • Professional Resume",
-              size: 14,
-              color: colors.accent,
-              italics: true,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-        }),
-      ],
-    }],
-  });
-
-  return await Packer.toBuffer(doc);
+async function generateResumeText(resumeData: any): Promise<string> {
+  let content = '';
+  
+  // Header
+  content += `${cleanText(resumeData.name || "Professional Resume")}\n`;
+  content += `${cleanText(resumeData.title || "Professional")}\n`;
+  content += '='.repeat(60) + '\n\n';
+  
+  // Contact Information
+  content += 'CONTACT INFORMATION\n';
+  content += '-'.repeat(20) + '\n';
+  if (resumeData.email) content += `Email: ${resumeData.email}\n`;
+  if (resumeData.phone) content += `Phone: ${resumeData.phone}\n`;
+  if (resumeData.location) content += `Location: ${resumeData.location}\n`;
+  content += '\n';
+  
+  // Professional Summary
+  if (resumeData.summary) {
+    content += 'PROFESSIONAL SUMMARY\n';
+    content += '-'.repeat(20) + '\n';
+    content += `${cleanText(resumeData.summary)}\n\n`;
+  }
+  
+  // Professional Experience
+  if (resumeData.experience && resumeData.experience.length > 0) {
+    content += 'PROFESSIONAL EXPERIENCE\n';
+    content += '-'.repeat(25) + '\n';
+    
+    resumeData.experience.forEach((exp: any, index: number) => {
+      content += `${cleanText(exp.title || "Position")}\n`;
+      content += `${cleanText(exp.company || "Company")} | ${cleanText(exp.duration || "Duration")}\n`;
+      
+      if (exp.achievements && exp.achievements.length > 0) {
+        exp.achievements.forEach((achievement: string) => {
+          content += `• ${cleanText(achievement)}\n`;
+        });
+      }
+      
+      if (index < resumeData.experience.length - 1) {
+        content += '\n';
+      }
+    });
+    content += '\n';
+  }
+  
+  // Skills
+  if (resumeData.skills && resumeData.skills.length > 0) {
+    content += 'SKILLS\n';
+    content += '-'.repeat(6) + '\n';
+    content += `${resumeData.skills.map((skill: string) => cleanText(skill)).join(' • ')}\n\n`;
+  }
+  
+  // Education
+  if (resumeData.education && resumeData.education.length > 0) {
+    content += 'EDUCATION\n';
+    content += '-'.repeat(9) + '\n';
+    
+    resumeData.education.forEach((edu: any) => {
+      content += `${cleanText(edu.degree || "Degree")}\n`;
+      content += `${cleanText(edu.institution || "Institution")} | ${cleanText(edu.year || "Year")}\n\n`;
+    });
+  }
+  
+  // Footer
+  content += '='.repeat(60) + '\n';
+  content += 'Enhanced by AI • Professional Resume\n';
+  
+  return content;
 }
 
 serve(async (req) => {
@@ -347,18 +129,19 @@ serve(async (req) => {
       throw new Error("Resume data is required");
     }
 
-    // Generate DOCX content
-    const docxBuffer = await generateResumeDocx(resumeData, themeId || 'navy');
-    const cleanFileName = `enhanced_${fileName.replace(/\.[^/.]+$/, '.docx')}`;
+    // Generate text content
+    const textContent = await generateResumeText(resumeData);
+    const cleanFileName = `enhanced_${fileName.replace(/\.[^/.]+$/, '.txt')}`;
+    const buffer = new TextEncoder().encode(textContent);
     
-    console.log(`Generated DOCX, size: ${docxBuffer.byteLength} bytes`);
+    console.log(`Generated text file, size: ${buffer.byteLength} bytes`);
     
-    return new Response(docxBuffer, {
+    return new Response(buffer, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Type': 'text/plain',
         'Content-Disposition': `attachment; filename="${cleanFileName}"`,
-        'Content-Length': docxBuffer.byteLength.toString(),
+        'Content-Length': buffer.byteLength.toString(),
       },
       status: 200,
     });
