@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { templateGenerators } from './pdfTemplates';
 
 export interface TextBasedPdfOptions {
   filename?: string;
@@ -32,7 +33,7 @@ interface ResumeData {
 }
 
 /**
- * Generates a text-based PDF that ATS systems can read
+ * Generates a text-based PDF that ATS systems can read using HTML templates
  */
 export async function generateTextBasedPdf(
   resumeData: ResumeData,
@@ -48,9 +49,83 @@ export async function generateTextBasedPdf(
     }
   } = options;
 
-  console.log('🚀 Generating text-based PDF for ATS compatibility...');
+  console.log('🚀 Generating text-based PDF using HTML template for ATS compatibility...');
 
-  // Create new jsPDF instance
+  try {
+    // Get the appropriate template generator
+    const templateGenerator = templateGenerators[templateType as keyof typeof templateGenerators] || templateGenerators.modern;
+    
+    // Generate HTML content using the same template system as preview
+    const htmlContent = templateGenerator({
+      resumeData,
+      theme: colorTheme
+    });
+
+    // Create new jsPDF instance
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+      putOnlyUsedFonts: true
+    });
+
+    // Create a temporary container to render HTML
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = htmlContent;
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.width = '210mm';
+    tempContainer.style.fontSize = '12px';
+    tempContainer.style.fontFamily = 'Arial, sans-serif';
+    document.body.appendChild(tempContainer);
+
+    try {
+      // Use jsPDF's HTML functionality to convert HTML to PDF
+      await new Promise<void>((resolve, reject) => {
+        doc.html(tempContainer, {
+          callback: (doc) => {
+            resolve();
+          },
+          x: 0,
+          y: 0,
+          width: 210, // A4 width in mm
+          windowWidth: 794, // A4 width in pixels at 96 DPI
+          autoPaging: 'text',
+          margin: [20, 20, 20, 20],
+          html2canvas: {
+            scale: 0.5,
+            useCORS: true,
+            allowTaint: true,
+            letterRendering: true
+          }
+        });
+      });
+    } finally {
+      // Clean up temporary container
+      document.body.removeChild(tempContainer);
+    }
+
+    console.log('✅ Template-based PDF generated successfully');
+    
+    // Return as blob
+    const pdfBlob = new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
+    return pdfBlob;
+  } catch (error) {
+    console.error('Error generating template-based PDF, falling back to simple text-based PDF:', error);
+    
+    // Fallback to simple text-based PDF if HTML conversion fails
+    return generateSimpleTextPdf(resumeData, options);
+  }
+}
+
+/**
+ * Fallback function to generate simple text-based PDF
+ */
+async function generateSimpleTextPdf(
+  resumeData: ResumeData,
+  options: TextBasedPdfOptions = {}
+): Promise<Blob> {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -59,9 +134,8 @@ export async function generateTextBasedPdf(
     putOnlyUsedFonts: true
   });
 
-  // Page dimensions
-  const pageWidth = 210; // A4 width in mm
-  const pageHeight = 297; // A4 height in mm
+  const pageWidth = 210;
+  const pageHeight = 297;
   const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   
@@ -93,15 +167,11 @@ export async function generateTextBasedPdf(
       currentY = margin;
     }
     
-    // Add some space before section
     currentY += sectionSpacing;
-    
-    // Section title with underline
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text(title.toUpperCase(), margin, currentY);
     
-    // Add underline
     const textWidth = doc.getTextWidth(title.toUpperCase());
     doc.setLineWidth(0.5);
     doc.line(margin, currentY + 2, margin + textWidth, currentY + 2);
@@ -124,7 +194,6 @@ export async function generateTextBasedPdf(
   doc.text(resumeData.name || 'Enhanced Resume', margin, currentY);
   currentY += 10;
 
-  // Professional title
   if (resumeData.title) {
     doc.setFontSize(16);
     doc.setFont('helvetica', 'normal');
@@ -148,7 +217,6 @@ export async function generateTextBasedPdf(
     currentY += lineHeight + 2;
   }
 
-  // Add separator line
   doc.setLineWidth(0.5);
   doc.line(margin, currentY, pageWidth - margin, currentY);
   currentY += 8;
@@ -160,7 +228,7 @@ export async function generateTextBasedPdf(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
-    summaryLines.forEach((line: string, index: number) => {
+    summaryLines.forEach((line: string) => {
       checkPageBreak();
       doc.text(line, margin, currentY);
       currentY += lineHeight;
@@ -174,7 +242,6 @@ export async function generateTextBasedPdf(
     resumeData.experience.forEach((exp, index) => {
       checkPageBreak(25);
       
-      // Job title and company
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text(exp.title || 'Position Title', margin, currentY);
@@ -184,13 +251,11 @@ export async function generateTextBasedPdf(
       doc.setFont('helvetica', 'normal');
       doc.text(exp.company || 'Company Name', margin, currentY);
       
-      // Duration (right-aligned)
       if (exp.duration) {
         doc.text(exp.duration, pageWidth - margin, currentY, { align: 'right' });
       }
       currentY += lineHeight + 2;
       
-      // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
         doc.setFontSize(10);
         exp.achievements.forEach((achievement) => {
@@ -204,7 +269,6 @@ export async function generateTextBasedPdf(
         });
       }
       
-      // Add space between experiences
       if (index < resumeData.experience!.length - 1) {
         currentY += 4;
       }
@@ -218,7 +282,6 @@ export async function generateTextBasedPdf(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     
-    // Group skills in rows of 3
     const skillsPerRow = 3;
     const colWidth = contentWidth / skillsPerRow;
     
@@ -242,33 +305,28 @@ export async function generateTextBasedPdf(
     resumeData.education.forEach((edu, index) => {
       checkPageBreak(15);
       
-      // Degree
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.text(edu.degree || 'Bachelor\'s Degree', margin, currentY);
       currentY += lineHeight;
       
-      // Institution
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text(edu.institution || 'University Name', margin, currentY);
       
-      // Year (right-aligned)
       if (edu.year && edu.year !== 'N/A' && edu.year !== 'Year not specified') {
         doc.text(edu.year, pageWidth - margin, currentY, { align: 'right' });
       }
       currentY += lineHeight;
       
-      // Add space between education entries
       if (index < resumeData.education!.length - 1) {
         currentY += 4;
       }
     });
   }
 
-  console.log('✅ Text-based PDF generated successfully');
+  console.log('✅ Fallback text-based PDF generated successfully');
   
-  // Return as blob
   const pdfBlob = new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
   return pdfBlob;
 }
