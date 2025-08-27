@@ -133,15 +133,21 @@ async function generateModernPdf(
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   if (resumeData.email) {
-    doc.text('✉ ' + resumeData.email, 8, sidebarY);
-    sidebarY += 5;
+    doc.text('EMAIL', 8, sidebarY);
+    sidebarY += 4;
+    doc.text(resumeData.email, 8, sidebarY);
+    sidebarY += 6;
   }
   if (resumeData.phone) {
-    doc.text('📞 ' + resumeData.phone, 8, sidebarY);
-    sidebarY += 5;
+    doc.text('PHONE', 8, sidebarY);
+    sidebarY += 4;
+    doc.text(resumeData.phone, 8, sidebarY);
+    sidebarY += 6;
   }
   if (resumeData.location) {
-    doc.text('📍 ' + resumeData.location, 8, sidebarY);
+    doc.text('LOCATION', 8, sidebarY);
+    sidebarY += 4;
+    doc.text(resumeData.location, 8, sidebarY);
     sidebarY += 8;
   }
 
@@ -394,7 +400,7 @@ async function generateCreativePdf(
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('🌟 CREATIVE VISION', margin, currentY);
+  doc.text('CREATIVE VISION', margin, currentY);
   currentY += 8;
 
   if (resumeData.summary) {
@@ -414,7 +420,7 @@ async function generateCreativePdf(
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('🎨 CREATIVE SKILLS', margin, currentY);
+    doc.text('CREATIVE SKILLS', margin, currentY);
     currentY += 10;
 
     // Create skill badges in rows
@@ -455,7 +461,7 @@ async function generateCreativePdf(
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('🚀 PROFESSIONAL EXPERIENCE', margin, currentY);
+    doc.text('PROFESSIONAL EXPERIENCE', margin, currentY);
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
@@ -496,12 +502,9 @@ async function generateCreativePdf(
       // Achievements with checkmarks
       if (exp.achievements && exp.achievements.length > 0) {
         exp.achievements.slice(0, 4).forEach((achievement) => {
-          // Checkmark
+          // Achievement bullet
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 7, currentY - 1, 1.5, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(6);
-          doc.text('✓', margin + 6, currentY + 0.5);
           
           // Achievement text
           doc.setTextColor(60, 60, 60);
@@ -525,7 +528,7 @@ async function generateCreativePdf(
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('🎓 EDUCATION', margin, currentY);
+    doc.text('EDUCATION', margin, currentY);
     currentY += 10;
 
     resumeData.education.forEach((edu) => {
