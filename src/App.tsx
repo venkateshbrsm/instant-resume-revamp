@@ -6,19 +6,21 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useRouteTracking } from "@/hooks/useRouteTracking";
 import { useWhatsAppDetection } from "@/hooks/useWhatsAppDetection";
 import { SecurityMonitor } from "./components/SecurityMonitor";
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentFailure from "./pages/PaymentFailure";
-import Auth from "./pages/Auth";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import RefundPolicy from "./pages/RefundPolicy";
-import AboutUs from "./pages/AboutUs";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import ContactUs from "./pages/ContactUs";
+
+// Lazy load components to reduce initial bundle size
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
+const Auth = lazy(() => import("./pages/Auth"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const ContactUs = lazy(() => import("./pages/ContactUs"));
 
 const queryClient = new QueryClient();
 
@@ -59,52 +61,66 @@ const WhatsAppBadgeHider = () => {
   return null;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <RouteTracker />
-        <WhatsAppBadgeHider />
-        <SecurityMonitor />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/payment-failure" element={<PaymentFailure />} />
-          <Route path="/terms" element={<TermsAndConditions />} />
-          <Route path="/refund" element={<RefundPolicy />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/contact" element={<ContactUs />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        
-        {/* Global WhatsApp Floating Action Button */}
-        <a
-          href="https://wa.me/919945514909?text=Hi!%20I'm%20interested%20in%20your%20resume%20makeover%20service."
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 z-50 group animate-bounce hover:animate-none"
-          aria-label="Contact us on WhatsApp"
-        >
-          <Button
-            variant="success"
-            className="px-4 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white border-2 border-green-400 flex items-center gap-2"
-          >
-            <MessageCircle className="w-6 h-6" />
-            <span className="font-semibold">WhatsApp Now</span>
-          </Button>
-          <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
-            Chat with us on WhatsApp
-            <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-          </div>
-        </a>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+  </div>
 );
+
+const App = () => {
+  useEffect(() => {
+    console.log('App component mounted successfully');
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <RouteTracker />
+          <WhatsAppBadgeHider />
+          <SecurityMonitor />
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/payment-failure" element={<PaymentFailure />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/refund" element={<RefundPolicy />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/contact" element={<ContactUs />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+          
+          {/* Global WhatsApp Floating Action Button */}
+          <a
+            href="https://wa.me/919945514909?text=Hi!%20I'm%20interested%20in%20your%20resume%20makeover%20service."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="fixed bottom-6 right-6 z-50 group animate-bounce hover:animate-none"
+            aria-label="Contact us on WhatsApp"
+          >
+            <Button
+              variant="success"
+              className="px-4 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white border-2 border-green-400 flex items-center gap-2"
+            >
+              <MessageCircle className="w-6 h-6" />
+              <span className="font-semibold">WhatsApp Now</span>
+            </Button>
+            <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+              Chat with us on WhatsApp
+              <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </a>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
