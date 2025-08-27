@@ -306,9 +306,10 @@ export default function PaymentSuccess() {
               .eq('razorpay_payment_id', paymentId)
               .maybeSingle();
               
-            console.log('Database query result:', paymentData, 'Error:', paymentError);
               
-            if (paymentData && paymentData.enhanced_content) {
+            console.log('Database query result:', paymentData, 'Error:', paymentError);
+            
+            if (!paymentError && paymentData && paymentData.enhanced_content) {
               console.log('Retrieved enhanced content from database for payment:', paymentId);
               requestBody = {
                 paymentId,
@@ -318,7 +319,7 @@ export default function PaymentSuccess() {
                 hasEnhancedContent: true
               };
             } else {
-              console.log('No enhanced content found in database for payment:', paymentId);
+              console.log('No enhanced content found in database for payment:', paymentId, 'Error:', paymentError);
               requestBody = {
                 paymentId,
                 hasEnhancedContent: false,
