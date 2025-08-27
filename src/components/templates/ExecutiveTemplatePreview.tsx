@@ -180,7 +180,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                                     className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
                                     style={{ backgroundColor: selectedColorTheme.accent }}
                                   >
-                                    <span className="text-white text-xs">✓</span>
+                                    <span className="text-white text-xs">•</span>
                                   </div>
                                   <p className="text-sm leading-relaxed text-gray-600 font-medium break-words min-w-0 flex-1">
                                     {achievement}

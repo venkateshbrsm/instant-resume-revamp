@@ -173,7 +173,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                   className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
                                   style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
                                 >
-                                  <span className="text-white text-xs font-bold">✓</span>
+                                  <span className="text-white text-xs font-bold">V</span>
                                 </div>
                                 <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1">{achievement}</p>
                               </div>

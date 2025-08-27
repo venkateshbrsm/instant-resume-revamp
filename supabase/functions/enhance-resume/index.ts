@@ -87,7 +87,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: `📧 ${resumeData.email || ""}`,
+                          text: `EMAIL: ${resumeData.email || ""}`,
                           size: 18,
                           color: colors.accent,
                         }),
@@ -105,7 +105,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: `📞 ${resumeData.phone || ""}`,
+                          text: `PHONE: ${resumeData.phone || ""}`,
                           size: 18,
                           color: colors.accent,
                         }),
@@ -123,7 +123,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: `📍 ${resumeData.location || ""}`,
+                          text: `LOCATION: ${resumeData.location || ""}`,
                           size: 18,
                           color: colors.accent,
                         }),
@@ -165,7 +165,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
         new Paragraph({
           children: [
             new TextRun({
-              text: "👥 PROFESSIONAL SUMMARY",
+              text: "PROFESSIONAL SUMMARY",
               bold: true,
               size: 24,
               color: colors.primary,
@@ -192,7 +192,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
         new Paragraph({
           children: [
             new TextRun({
-              text: "📅 PROFESSIONAL EXPERIENCE",
+              text: "PROFESSIONAL EXPERIENCE",
               bold: true,
               size: 24,
               color: colors.primary,
@@ -236,7 +236,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
             new Paragraph({
               children: [
                 new TextRun({
-                  text: cleanText(`• ${achievement}`),
+                  text: cleanText(`* ${achievement}`),
                   size: 18,
                 }),
               ],
@@ -276,7 +276,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           new Paragraph({
             children: [
               new TextRun({
-                text: "🛠️ SKILLS",
+                text: "SKILLS",
                 bold: true,
                 size: 24,
                 color: colors.primary,
@@ -305,7 +305,7 @@ async function generateResumeDocx(resumeData: any, themeId: string = 'navy'): Pr
           new Paragraph({
             children: [
               new TextRun({
-                text: "🎓 EDUCATION",
+                text: "EDUCATION",
                 bold: true,
                 size: 24,
                 color: colors.primary,

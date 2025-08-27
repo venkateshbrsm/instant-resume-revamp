@@ -533,7 +533,7 @@ async function generateCreativePdf(
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(7);
           doc.setFont('helvetica', 'bold');
-          doc.text('✓', margin + 5.5, currentY + 0.5);
+          doc.text('V', margin + 5.5, currentY + 0.5);
           
           // Achievement text
           doc.setTextColor(60, 60, 60);
