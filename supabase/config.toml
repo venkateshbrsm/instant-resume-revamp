@@ -1,5 +1,11 @@
 project_id = "goorszhscvxywfigydfp"
 
+[functions.download-enhanced-resume]
+verify_jwt = false
+
+[functions.enhance-resume]
+verify_jwt = true
+
 [functions.convert-docx-to-pdf]
 verify_jwt = false
 
