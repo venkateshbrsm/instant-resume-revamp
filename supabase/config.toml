@@ -101,6 +101,3 @@ verify_jwt = true
 
 [functions.razorpay-verify]
 verify_jwt = false
-
-[functions.free-download]
-verify_jwt = false

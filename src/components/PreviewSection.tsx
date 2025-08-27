@@ -45,9 +45,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [enhancementProgress, setEnhancementProgress] = useState(0);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-  const [discountedPrice, setDiscountedPrice] = useState(299);
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>(getDefaultTemplate());
   const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -200,26 +197,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const handlePurchaseClick = async () => {
-    // If coupon makes it free, skip payment and go directly to success
-    if (appliedCoupon === "15AUGSALE" && discountedPrice === 0) {
-      toast({
-        title: "Free Download Ready! 🎉",
-        description: "Your enhanced resume is ready for download.",
-      });
-      // Trigger download directly
-      handleDirectDownload();
-      return;
-    }
-
     setIsCheckingAuth(true);
     
     try {
-      // Store coupon info for the payment page
-      if (appliedCoupon) {
-        sessionStorage.setItem('appliedCoupon', appliedCoupon);
-        sessionStorage.setItem('discountedPrice', discountedPrice.toString());
-      }
-      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
@@ -468,77 +448,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       });
     } finally {
       setIsGeneratingPdf(false);
-    }
-  };
-
-  const applyCoupon = () => {
-    const trimmedCode = couponCode.trim().toUpperCase();
-    if (trimmedCode === "15AUGSALE") {
-      setAppliedCoupon(trimmedCode);
-      setDiscountedPrice(0);
-      toast({
-        title: "Coupon Applied! 🎉",
-        description: "15AUGSALE coupon applied. Your download is now FREE!",
-      });
-    } else if (trimmedCode === "") {
-      toast({
-        title: "Enter Coupon Code",
-        description: "Please enter a coupon code to apply",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Invalid Coupon",
-        description: "This coupon code is not valid",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const removeCoupon = () => {
-    setAppliedCoupon(null);
-    setDiscountedPrice(299);
-    setCouponCode("");
-    toast({
-      title: "Coupon Removed",
-      description: "Price restored to original amount",
-    });
-  };
-
-  const handleDirectDownload = async () => {
-    if (!enhancedContent) {
-      toast({
-        title: "Error",
-        description: "Please wait for the enhanced resume to load completely.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-      
-      await generateVisualPdf(resumeData, {
-        templateType: selectedTemplate.layout,
-        colorTheme: {
-          primary: selectedColorTheme.primary,
-          secondary: selectedColorTheme.secondary,
-          accent: selectedColorTheme.accent
-        },
-        filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`
-      });
-      
-      toast({
-        title: "Download Started! 🎉",
-        description: "Your free enhanced resume is downloading now.",
-      });
-    } catch (error) {
-      console.error('Download error:', error);
-      toast({
-        title: "Download Error",
-        description: "Failed to download. Please try again.",
-        variant: "destructive"
-      });
     }
   };
   const enhanceResume = async () => {
@@ -886,51 +795,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         {/* Purchase Section */}
         <Card className="max-w-md mx-auto bg-gradient-primary/5 border-primary/20">
           <CardContent className="p-4 sm:p-6 text-center">
-            {/* Coupon Section */}
             <div className="mb-4 sm:mb-6">
-              <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                <h4 className="font-semibold mb-3 text-sm">Have a Coupon Code?</h4>
-                {!appliedCoupon ? (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 px-3 py-2 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    />
-                    <Button variant="outline" onClick={applyCoupon} size="sm">
-                      Apply
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
-                    <span className="text-green-700 text-sm font-medium">
-                      {appliedCoupon} Applied!
-                    </span>
-                    <Button variant="ghost" size="sm" onClick={removeCoupon} className="text-green-700 hover:text-green-800">
-                      Remove
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mb-4 sm:mb-6">
-              <div className={`text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 ${appliedCoupon && discountedPrice === 0 ? 'text-green-600 line-through' : 'text-primary'}`}>
-                ₹299
-              </div>
-              {appliedCoupon && discountedPrice === 0 && (
-                <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-1">FREE!</div>
-              )}
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                {appliedCoupon && discountedPrice === 0 ? 'Free with coupon • No payment required' : 'One-time payment • Instant download'}
-              </p>
+              <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">₹299</div>
+              <p className="text-muted-foreground text-xs sm:text-sm">One-time payment • Instant download</p>
             </div>
             
             <div className="space-y-3 mb-6">
               <Button 
-                variant={appliedCoupon && discountedPrice === 0 ? "success" : "success"} 
+                variant="success" 
                 size="xl" 
                 onClick={handlePurchaseClick}
                 className="w-full"
@@ -939,7 +811,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 <CreditCard className="w-5 h-5 mr-2" />
                 {isCheckingAuth ? 'Checking authentication...' : 
                  !enhancedContent ? 'Processing Enhancement...' :
-                 appliedCoupon && discountedPrice === 0 ? 'Get FREE Download' :
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
