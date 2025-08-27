@@ -296,6 +296,7 @@ export default function PaymentSuccess() {
           }
         } else {
           console.log('No session storage data found, checking database for enhanced content...');
+          console.log('Looking for payment with razorpay_payment_id:', paymentId);
           
           // Fallback: Try to get enhanced content from database using payment ID
           try {
@@ -304,6 +305,8 @@ export default function PaymentSuccess() {
               .select('enhanced_content, theme_id, file_name')
               .eq('razorpay_payment_id', paymentId)
               .maybeSingle();
+              
+            console.log('Database query result:', paymentData, 'Error:', paymentError);
               
             if (paymentData && paymentData.enhanced_content) {
               console.log('Retrieved enhanced content from database for payment:', paymentId);
