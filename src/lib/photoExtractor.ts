@@ -1,10 +1,5 @@
 import * as mammoth from 'mammoth';
-import { PDFDocument } from 'pdf-lib';
-import { pipeline, env } from '@huggingface/transformers';
-
-// Configure transformers.js
-env.allowLocalModels = false;
-env.useBrowserCache = false;
+// AI dependencies removed to optimize build
 
 export interface ExtractedPhoto {
   blob: Blob;
@@ -18,56 +13,10 @@ export interface PhotoExtractionResult {
   profilePhoto?: ExtractedPhoto;
 }
 
-// Face detection using basic image analysis and AI
+// Face detection using heuristic approach only (AI detection removed for optimization)
 const detectFaces = async (imageBlob: Blob): Promise<number> => {
-  try {
-    console.log('Analyzing image for faces...');
-    
-    // First try with a proper face detection model
-    try {
-      const detector = await pipeline('object-detection', 'Xenova/yolos-tiny', {
-        device: 'webgpu'
-      });
-      
-      const imageUrl = URL.createObjectURL(imageBlob);
-      const result = await detector(imageUrl);
-      URL.revokeObjectURL(imageUrl);
-      
-      // Look for person objects
-      const faces = result.filter((obj: any) => 
-        obj.label === 'person' && obj.score > 0.3
-      );
-      
-      console.log(`AI detected ${faces.length} faces with YOLOS`);
-      return faces.length;
-    } catch (aiError) {
-      console.log('AI face detection failed, trying CPU fallback...', aiError);
-      
-      // Fallback to CPU
-      try {
-        const detector = await pipeline('object-detection', 'Xenova/yolos-tiny', {
-          device: 'cpu'
-        });
-        
-        const imageUrl = URL.createObjectURL(imageBlob);
-        const result = await detector(imageUrl);
-        URL.revokeObjectURL(imageUrl);
-        
-        const faces = result.filter((obj: any) => 
-          obj.label === 'person' && obj.score > 0.3
-        );
-        
-        console.log(`CPU detected ${faces.length} faces`);
-        return faces.length;
-      } catch (cpuError) {
-        console.log('CPU face detection also failed, using heuristics...', cpuError);
-        return await detectFacesHeuristic(imageBlob);
-      }
-    }
-  } catch (error) {
-    console.warn('Face detection completely failed:', error);
-    return await detectFacesHeuristic(imageBlob);
-  }
+  // Use heuristic detection only
+  return await detectFacesHeuristic(imageBlob);
 };
 
 // Heuristic face detection based on image properties
