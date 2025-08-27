@@ -195,6 +195,12 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled = false, coup
         handler: async (response: any) => {
           console.log('Payment successful:', response);
           
+          // Store payment ID in sessionStorage for persistence
+          if (response.razorpay_payment_id) {
+            console.log('Storing payment ID in sessionStorage:', response.razorpay_payment_id);
+            sessionStorage.setItem('razorpay_payment_id', response.razorpay_payment_id);
+          }
+          
           toast({
             title: "Payment Successful",
             description: "Your payment has been processed successfully!",

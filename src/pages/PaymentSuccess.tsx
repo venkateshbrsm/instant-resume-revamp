@@ -15,6 +15,13 @@ export default function PaymentSuccess() {
   const [payment, setPayment] = useState<any>(null);
 
   useEffect(() => {
+    // Store payment ID in sessionStorage when we receive it
+    const paymentId = searchParams.get('razorpay_payment_id');
+    if (paymentId) {
+      console.log('Storing payment ID in sessionStorage:', paymentId);
+      sessionStorage.setItem('razorpay_payment_id', paymentId);
+    }
+    
     verifyPayment();
   }, []);
 
@@ -32,8 +39,15 @@ export default function PaymentSuccess() {
       timeoutId = setTimeout(() => {
         console.warn(`Payment verification timeout after ${timeoutDuration/1000} seconds`);
         setIsVerifying(false);
+        
+        // Try to get payment ID from URL or sessionStorage
+        let paymentId = searchParams.get('razorpay_payment_id');
+        if (!paymentId) {
+          paymentId = sessionStorage.getItem('razorpay_payment_id');
+        }
+        
         setPayment({
-          paymentId: searchParams.get('razorpay_payment_id') || 'unknown',
+          paymentId: paymentId || 'unknown',
           amount: '299',
           status: 'paid'
         });
@@ -45,12 +59,21 @@ export default function PaymentSuccess() {
         });
       }, timeoutDuration);
       
-      // Get Razorpay response parameters
-      const razorpayResponse = {
+      // Get Razorpay response parameters from URL first, then sessionStorage as fallback
+      let razorpayResponse = {
         razorpay_order_id: searchParams.get('razorpay_order_id'),
         razorpay_payment_id: searchParams.get('razorpay_payment_id'),
         razorpay_signature: searchParams.get('razorpay_signature')
       };
+
+      // If payment ID not in URL, try to get from sessionStorage
+      if (!razorpayResponse.razorpay_payment_id) {
+        const storedPaymentId = sessionStorage.getItem('razorpay_payment_id');
+        if (storedPaymentId) {
+          console.log('Payment ID not in URL, using sessionStorage value:', storedPaymentId);
+          razorpayResponse.razorpay_payment_id = storedPaymentId;
+        }
+      }
 
       console.log('Payment params:', razorpayResponse);
 
@@ -117,8 +140,13 @@ export default function PaymentSuccess() {
     } catch (error) {
       console.error('Payment verification error:', error);
       
-      // Check if we have payment params - if so, still show success
-      const hasPaymentId = searchParams.get('razorpay_payment_id');
+      // Check if we have payment params from URL or sessionStorage
+      let hasPaymentId = searchParams.get('razorpay_payment_id');
+      if (!hasPaymentId) {
+        hasPaymentId = sessionStorage.getItem('razorpay_payment_id');
+        console.log('Payment ID not in URL, retrieved from sessionStorage:', hasPaymentId);
+      }
+      
       if (hasPaymentId) {
         console.log('Payment ID found, showing success despite verification error');
         setPayment({
@@ -150,9 +178,15 @@ export default function PaymentSuccess() {
 
   const handleDownload = async (format: 'pdf' | 'docx' = 'pdf') => {
     try {
-      const paymentId = searchParams.get('razorpay_payment_id');
+      // Try to get payment ID from URL first, then from sessionStorage
+      let paymentId = searchParams.get('razorpay_payment_id');
       if (!paymentId) {
-        throw new Error('Payment ID not found');
+        paymentId = sessionStorage.getItem('razorpay_payment_id');
+        console.log('Payment ID not in URL, retrieved from sessionStorage:', paymentId);
+      }
+      
+      if (!paymentId) {
+        throw new Error('Payment ID not found in URL or sessionStorage');
       }
 
       toast({
