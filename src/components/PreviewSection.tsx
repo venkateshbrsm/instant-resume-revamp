@@ -393,63 +393,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   };
 
-  const handleDownloadDocx = async () => {
-    if (!enhancedContent) {
-      toast({
-        title: "Preview Not Ready",
-        description: "Please wait for the enhanced resume to load completely.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsGeneratingPdf(true);
-    
-    try {
-      toast({
-        title: "Generating DOCX Resume",
-        description: "Creating editable Word document - perfect for ATS systems...",
-      });
-
-      // Use the DOCX generation endpoint
-      const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
-        body: {
-          paymentId: 'preview', // Special case for preview downloads
-          enhancedContent,
-          themeId: selectedColorTheme.id
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to generate DOCX');
-      }
-
-      // Create download link for DOCX
-      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "DOCX Downloaded",
-        description: "Editable Word document downloaded - 100% ATS compatible!",
-      });
-    } catch (error) {
-      console.error('Error generating DOCX:', error);
-      toast({
-        title: "Download Failed", 
-        description: "Failed to generate DOCX. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingPdf(false);
-    }
-  };
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);

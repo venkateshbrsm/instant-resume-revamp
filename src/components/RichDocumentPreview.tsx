@@ -4,7 +4,7 @@ import { ExtractedContent } from '@/lib/fileExtractor';
 
 interface RichDocumentPreviewProps {
   content: string | ExtractedContent;
-  fileType?: 'docx' | 'pdf' | 'txt';
+  fileType?: 'pdf' | 'txt';
   fileName: string;
 }
 
@@ -22,21 +22,6 @@ export const RichDocumentPreview = ({ content, fileType, fileName }: RichDocumen
 
     // Otherwise, render based on file type
     switch (actualFileType) {
-      case 'docx':
-        // Sanitize and render HTML content for DOCX files
-        const sanitizedHTML = DOMPurify.sanitize(textContent, {
-          ALLOWED_TAGS: ['p', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'div', 'span'],
-          ALLOWED_ATTR: ['class', 'style'],
-          ALLOW_DATA_ATTR: false
-        });
-        
-        return (
-          <div 
-            className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground"
-            dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
-          />
-        );
-        
       case 'pdf':
         // For PDFs without PDF URL, display as structured text
         return (

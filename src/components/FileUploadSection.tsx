@@ -22,9 +22,8 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     const allowedTypes = [
       'application/pdf',
       'text/plain',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
     ];
-    const allowedExtensions = ['.pdf', '.txt', '.docx'];
+    const allowedExtensions = ['.pdf', '.txt'];
     
     // Enhanced security checks
     if (file.size === 0) {
@@ -40,7 +39,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     if (file.name.toLowerCase().endsWith('.doc')) {
       toast({
         title: "File not supported",
-        description: "Legacy .doc files are not supported. Please save your document as .docx, PDF, or text format and try again.",
+        description: "Legacy .doc files are not supported. Please save your document as PDF or text format and try again.",
         variant: "destructive"
       });
       return false;
@@ -77,7 +76,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     if (!isValidType || !isValidExtension) {
       toast({
         title: "Invalid file type",
-        description: "Please select a PDF, DOCX, or TXT file.",
+        description: "Please select a PDF or TXT file.",
         variant: "destructive"
       });
       return false;
@@ -138,7 +137,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
             Upload Your Current Resume
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 sm:px-6">
-            Supported formats: PDF, DOCX, TXT (Max 10MB)
+            Supported formats: PDF, TXT (Max 10MB)
           </p>
         </div>
 
@@ -166,7 +165,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
                 <input
                   id="file-input"
                   type="file"
-                  accept=".pdf,.docx,.txt"
+                  accept=".pdf,.txt"
                   onChange={handleFileInput}
                   className="hidden"
                 />

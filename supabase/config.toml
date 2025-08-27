@@ -1,13 +1,7 @@
 project_id = "goorszhscvxywfigydfp"
 
-[functions.download-enhanced-resume]
-verify_jwt = false
-
 [functions.enhance-resume]
 verify_jwt = true
-
-[functions.convert-docx-to-pdf]
-verify_jwt = false
 
 [api]
 enabled = true
@@ -75,11 +69,6 @@ verify_jwt = true
 [functions.payu-verify]
 verify_jwt = false
 
-[functions.convert-pdf-to-docx]
-verify_jwt = true
-
-[functions.enhance-resume]
-verify_jwt = true
 
 [functions.extract-pdf-cloud]
 verify_jwt = true
@@ -99,8 +88,6 @@ verify_jwt = true
 [functions.generate-pdf-resume]
 verify_jwt = false
 
-[functions.download-enhanced-resume]
-verify_jwt = false
 
 [functions.razorpay-initiate]
 verify_jwt = true

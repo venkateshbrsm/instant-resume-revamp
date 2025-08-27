@@ -176,7 +176,7 @@ export default function PaymentSuccess() {
     }
   };
 
-  const handleDownload = async (format: 'pdf' | 'docx' = 'pdf') => {
+  const handleDownload = async () => {
     try {
       // Try to get payment ID from URL first, then from sessionStorage
       let paymentId = searchParams.get('razorpay_payment_id');
@@ -191,12 +191,11 @@ export default function PaymentSuccess() {
 
       toast({
         title: "Preparing Download",
-        description: `Your enhanced resume ${format.toUpperCase()} is being prepared...`,
+        description: "Your enhanced resume PDF is being prepared...",
       });
 
-      if (format === 'pdf') {
-        // Check if we have a pre-generated canvas PDF blob with perfect visual fidelity
-        const canvasPdfBlob = sessionStorage.getItem('canvasPdfBlob');
+      // Check if we have a pre-generated canvas PDF blob with perfect visual fidelity
+      const canvasPdfBlob = sessionStorage.getItem('canvasPdfBlob');
         
         if (canvasPdfBlob) {
           try {
@@ -394,56 +393,6 @@ export default function PaymentSuccess() {
           description: "Your enhanced resume PDF is being downloaded.",
         });
         return;
-      }
-
-      // For DOCX, use the existing download method
-      const functionName = 'download-enhanced-resume';
-      
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: { paymentId }
-      });
-      
-      if (error) {
-        throw new Error(error.message || 'Download failed');
-      }
-      
-      if (!data) {
-        throw new Error('Download failed: No data returned');
-      }
-
-      // Convert the returned data to arrayBuffer
-      let arrayBuffer: ArrayBuffer;
-      if (data instanceof ArrayBuffer) {
-        arrayBuffer = data;
-      } else if (typeof data === 'string') {
-        // Handle base64 data
-        const binaryString = atob(data);
-        arrayBuffer = new ArrayBuffer(binaryString.length);
-        const uint8Array = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < binaryString.length; i++) {
-          uint8Array[i] = binaryString.charCodeAt(i);
-        }
-      } else {
-        throw new Error('Unexpected data format from download');
-      }
-      const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      
-      const blob = new Blob([arrayBuffer], { type: mimeType });
-      const filename = `Enhanced_Resume_${new Date().getTime()}.${format}`;
-      
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "Download Started",
-        description: `Your enhanced resume ${format.toUpperCase()} is being downloaded.`,
-      });
     } catch (error) {
       console.error('Download error:', error);
       toast({
@@ -524,7 +473,7 @@ export default function PaymentSuccess() {
 
           <div className="space-y-3">
             <Button 
-              onClick={() => handleDownload('pdf')}
+              onClick={handleDownload}
               className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold"
               size="lg"
             >

@@ -156,78 +156,6 @@ const processExtractedPhotos = async (photos: ExtractedPhoto[]): Promise<PhotoEx
   };
 };
 
-// Extract images from DOCX using mammoth
-export const extractImagesFromDOCX = async (file: File): Promise<PhotoExtractionResult> => {
-  try {
-    console.log('Extracting images from DOCX...');
-    const arrayBuffer = await file.arrayBuffer();
-    const photos: ExtractedPhoto[] = [];
-    
-    // Configure mammoth to extract images with better options
-    const options = {
-      convertImage: mammoth.images.imgElement(async (image: any) => {
-        console.log('Found image in DOCX:', {
-          contentType: image.contentType,
-          altText: image.altText || 'No alt text'
-        });
-        
-        try {
-          const imageBuffer = await image.read();
-          const imageBlob = new Blob([imageBuffer], { type: image.contentType });
-          
-          console.log(`DOCX image size: ${imageBlob.size} bytes, type: ${image.contentType}`);
-          
-          // Process images with reasonable size constraints
-          if (imageBlob.size > 1024 && imageBlob.size < 10 * 1024 * 1024) {
-            const url = URL.createObjectURL(imageBlob);
-            
-            // Check if it's a valid image format
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            const isValidImage = validTypes.includes(image.contentType.toLowerCase()) || 
-                               image.contentType.startsWith('image/');
-            
-            if (isValidImage) {
-              photos.push({
-                blob: imageBlob,
-                url,
-                type: 'other',
-                confidence: 0.6
-              });
-              
-              console.log(`Successfully extracted DOCX image: ${imageBlob.size} bytes`);
-            } else {
-              console.warn(`Skipping non-image content: ${image.contentType}`);
-              URL.revokeObjectURL(url);
-            }
-          } else {
-            console.warn(`Image size out of bounds: ${imageBlob.size} bytes`);
-          }
-          
-          return { src: '' }; // We don't need the HTML img element
-        } catch (error) {
-          console.error('Failed to process DOCX image:', error);
-          return { src: '' };
-        }
-      }),
-      // Include more image types
-      includeEmbeddedStyleMap: false,
-      includeDefaultStyleMap: false
-    };
-    
-    console.log('Processing DOCX with mammoth...');
-    const result = await mammoth.convertToHtml({ arrayBuffer }, options);
-    
-    if (result.messages && result.messages.length > 0) {
-      console.log('Mammoth processing messages:', result.messages);
-    }
-    
-    console.log(`DOCX processing complete. Found ${photos.length} images.`);
-    return await processExtractedPhotos(photos);
-  } catch (error) {
-    console.error('DOCX image extraction failed:', error);
-    return { photos: [] };
-  }
-};
 
 // Optimize photo for web display
 export const optimizePhoto = async (photo: ExtractedPhoto): Promise<Blob> => {
@@ -299,8 +227,6 @@ export const extractPhotosFromFile = async (file: File): Promise<PhotoExtraction
   try {
     if (fileType.endsWith('.pdf')) {
       return await extractImagesFromPDF(file);
-    } else if (fileType.endsWith('.docx')) {
-      return await extractImagesFromDOCX(file);
     } else {
       console.log('File type does not support image extraction');
       return { photos: [] };
