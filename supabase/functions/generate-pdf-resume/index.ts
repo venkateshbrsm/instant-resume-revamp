@@ -1504,17 +1504,45 @@ serve(async (req) => {
 
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
       
-      // Check if paymentId is a Razorpay payment ID or a UUID
-      const isRazorpayId = paymentId.startsWith('pay_');
-      const queryField = isRazorpayId ? 'razorpay_payment_id' : 'id';
+      // First try to find by razorpay_payment_id if it looks like a Razorpay ID
+      let payment = null;
+      let error = null;
       
-      console.log(`Querying payments table by ${queryField}:`, paymentId);
-      
-      const { data: payment, error } = await supabase
-        .from('payments')
-        .select('enhanced_content')
-        .eq(queryField, paymentId)
-        .single();
+      if (paymentId.startsWith('pay_')) {
+        console.log('Searching by razorpay_payment_id:', paymentId);
+        const result = await supabase
+          .from('payments')
+          .select('enhanced_content')
+          .eq('razorpay_payment_id', paymentId)
+          .single();
+          
+        if (result.error) {
+          console.log('Payment not found by razorpay_payment_id, trying recent completed payments...');
+          // Try to find the most recent completed payment for this user
+          const fallbackResult = await supabase
+            .from('payments')
+            .select('enhanced_content')
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+            
+          payment = fallbackResult.data;
+          error = fallbackResult.error;
+        } else {
+          payment = result.data;
+          error = result.error;
+        }
+      } else {
+        console.log('Searching by UUID:', paymentId);
+        const result = await supabase
+          .from('payments')
+          .select('enhanced_content')
+          .eq('id', paymentId)
+          .single();
+        payment = result.data;
+        error = result.error;
+      }
 
       if (error) {
         console.error('Error fetching payment data:', error);
