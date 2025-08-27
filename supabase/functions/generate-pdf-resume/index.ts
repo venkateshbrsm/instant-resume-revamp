@@ -1609,9 +1609,9 @@ serve(async (req) => {
           .from('payments')
           .select('enhanced_content')
           .eq('razorpay_payment_id', paymentId)
-          .single();
+          .maybeSingle();
           
-        if (result.error) {
+        if (result.error || !result.data) {
           console.log('Payment not found by razorpay_payment_id, trying recent completed payments...');
           // Try to find the most recent completed payment for this user
           const fallbackResult = await supabase
@@ -1620,7 +1620,7 @@ serve(async (req) => {
             .eq('status', 'completed')
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
             
           payment = fallbackResult.data;
           error = fallbackResult.error;
@@ -1634,7 +1634,7 @@ serve(async (req) => {
           .from('payments')
           .select('enhanced_content')
           .eq('id', paymentId)
-          .single();
+          .maybeSingle();
         payment = result.data;
         error = result.error;
       }
