@@ -36,95 +36,33 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
-    @page {
-      size: A4;
-      margin: 0.25in;
-      page-break-inside: avoid;
-    }
-    
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-      text-decoration: none !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Comprehensive underline removal for email and phone */
-    a, a:link, a:visited, a:hover, a:active,
-    .contact, .contact-item, .contact-grid,
-    span[href], span[data-email], span[data-phone],
-    *[href^="mailto:"], *[href^="tel:"] {
-      text-decoration: none !important;
-      border-bottom: none !important;
-      outline: none !important;
-    }
-    
-    /* Page break rules for printer-friendly output */
-    h1, h2, h3, h4, h5, h6 {
-      page-break-after: avoid;
-      break-after: avoid;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    .section, .header, .content-section, .contact-info, .skills-grid, .experience-item, .education-item {
-      page-break-inside: avoid;
-      break-inside: avoid;
-      orphans: 3;
-      widows: 3;
-    }
-    
-    .skills-item, .skill-bar, .contact-item {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Images and tables should not break across pages */
-    img, table {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Avoid breaks right after headings */
-    h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
-      page-break-after: avoid;
-      break-after: avoid;
-    }
-    
-    /* Prevent any auto-linking behavior */
-    a, a:link, a:visited, a:hover, a:active {
-      text-decoration: none !important;
-      color: inherit !important;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     
     body {
-      font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.5;
-      color: #1a202c;
-      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-      font-size: 9pt;
-      width: 100%;
-      min-height: auto;
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: white;
     }
     
-     .container {
-       background: white;
-       border-radius: 6pt;
-       overflow: hidden;
-       box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-       width: 100%;
-       max-width: none;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .resume-container {
+      width: 8.5in;
+      min-height: 11in;
+      margin: 0 auto;
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
     
-    /* Header matching the enhanced preview exactly */
     .header {
-      background: linear-gradient(to right, ${theme.primary}, ${theme.accent});
+      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%);
       color: white;
-      padding: 12pt;
+      padding: 40px;
+      text-align: center;
       position: relative;
       overflow: hidden;
     }
@@ -132,487 +70,281 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     .header::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.1);
-      pointer-events: none;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
     }
     
-    .header-content {
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.1; }
+      50% { transform: scale(1.1); opacity: 0.3; }
+    }
+    
+    .name {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
       position: relative;
-      z-index: 10;
+      z-index: 1;
     }
     
-    .header h1 {
-      font-size: 24pt;
-      font-weight: 800;
-      margin-bottom: 4pt;
-      line-height: 1.1;
+    .title {
+      font-size: 1.3em;
+      opacity: 0.9;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
     
-    .header .title {
-      font-size: 14pt;
-      margin-bottom: 16pt;
-      opacity: 0.95;
-      font-weight: 500;
-    }
-    
-    .contact-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8pt;
-      margin-top: 12pt;
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
     }
     
     .contact-item {
-      font-size: 9pt;
-      opacity: 0.9;
-      display: flex;
-      align-items: flex-start;
-      gap: 6pt;
-      font-weight: 500;
-      text-decoration: none;
-      line-height: 1.15;
-      padding: 2.3pt 0;
-    }
-    
-    .icon {
-      width: 10pt;
-      height: 10pt;
-      fill: currentColor;
-      flex-shrink: 0;
-    }
-    
-     /* Main content grid matching the preview layout */
-     .main-content {
-       display: grid;
-       grid-template-columns: 1.4fr 0.6fr;
-       gap: 12pt;
-       padding: 12pt;
-       min-height: calc(297mm - 60pt);
-       width: 100%;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .left-column {
-       space-y: 12pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-     
-     .sidebar {
-       space-y: 12pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .section {
-       margin-bottom: 12pt;
-       break-inside: avoid;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     /* Section titles with gradient icons matching preview */
-     .section-header {
-       display: flex;
-       align-items: center;
-       gap: 6pt;
-       margin-bottom: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .section-icon {
-      width: 24pt;
-      height: 24pt;
-      border-radius: 6pt;
-      background: linear-gradient(to right, ${theme.primary}, ${theme.accent});
       display: flex;
       align-items: center;
-      justify-content: center;
-      color: white;
+      gap: 8px;
+      font-size: 0.95em;
+    }
+    
+    .main-content {
+      display: flex;
+      flex: 1;
+    }
+    
+    .left-column {
+      width: 35%;
+      background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      padding: 40px 30px;
+    }
+    
+    .right-column {
+      width: 65%;
+      padding: 40px;
+    }
+    
+    .section {
+      margin-bottom: 35px;
     }
     
     .section-title {
-      font-size: 14pt;
-      font-weight: 700;
+      font-size: 1.3em;
+      font-weight: bold;
       color: ${theme.primary};
-    }
-    
-    /* Professional Summary Card */
-     .summary-card {
-       background: white;
-       padding: 12pt;
-       border-radius: 8pt;
-       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-       border: 1pt solid rgba(0,0,0,0.05);
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .summary-text {
-      font-size: 10pt;
-      line-height: 1.6;
-      color: #2d3748;
-    }
-    
-     /* Experience timeline matching preview */
-     .experience-timeline {
-       position: relative;
-       padding-left: 12pt;
-       margin-bottom: 12pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .experience-item {
-       position: relative;
-       margin-bottom: 12pt;
-       padding: 10pt;
-       border-radius: 6pt;
-       background: linear-gradient(to right, ${theme.accent}08, ${theme.primary}08);
-       border-left: 2pt solid ${theme.accent}30;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .experience-item::before {
-      content: '';
-      position: absolute;
-      left: -21pt;
-      top: 16pt;
-      width: 12pt;
-      height: 12pt;
-      background: ${theme.accent};
-      border-radius: 50%;
-      border: 2pt solid white;
-      box-shadow: 0 0 0 2pt ${theme.accent}30;
-    }
-    
-     .experience-header {
-       display: flex;
-       justify-content: space-between;
-       align-items: flex-start;
-       margin-bottom: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .experience-title {
-      font-size: 12pt;
-      font-weight: 700;
-      color: #1a202c;
-      margin-bottom: 2pt;
-    }
-    
-    .experience-company {
-      font-size: 11pt;
-      font-weight: 600;
-      color: ${theme.accent};
-    }
-    
-    .experience-duration {
-      background: ${theme.accent}10;
-      color: ${theme.accent};
-      padding: 4pt 8pt;
-      border-radius: 12pt;
-      font-size: 8pt;
-      font-weight: 600;
-      border: 1pt solid ${theme.accent}20;
-    }
-    
-     .achievements {
-       list-style: none;
-       margin-top: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .achievement {
-       margin-bottom: 6pt;
-       font-size: 9pt;
-       line-height: 1.5;
-       display: flex;
-       align-items: flex-start;
-       gap: 8pt;
-       padding: 6pt 8pt;
-       background: rgba(255,255,255,0.5);
-       border-radius: 6pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .achievement::before {
-      content: '';
-      width: 12pt;
-      height: 12pt;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 2pt;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid ${theme.accent};
       position: relative;
     }
     
-    /* Skills section matching preview with progress bars */
-    .skills-section {
-      background: white;
-      padding: 12pt;
-      border-radius: 8pt;
-      box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-      border: 1pt solid rgba(0,0,0,0.05);
-      margin-bottom: 12pt;
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background: ${theme.primary};
     }
     
-     .skill-item {
-       margin-bottom: 12pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .experience-item, .education-item {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-left: 4px solid ${theme.accent};
+    }
     
-     .skill-header {
-       display: flex;
-       justify-content: space-between;
-       align-items: center;
-       margin-bottom: 4pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .job-title, .degree {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: ${theme.primary};
+      margin-bottom: 5px;
+    }
+    
+    .company, .institution {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    
+    .date {
+      color: #777;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+    }
+    
+    .description {
+      color: #666;
+      line-height: 1.6;
+    }
+    
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .skill-item {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
     
     .skill-name {
       font-weight: 600;
-      color: #1a202c;
-      font-size: 9pt;
-    }
-    
-    .skill-percentage {
-      font-size: 8pt;
-      color: #6b7280;
+      color: ${theme.primary};
+      margin-bottom: 8px;
     }
     
     .skill-bar {
-      height: 4pt;
-      background: #e5e7eb;
-      border-radius: 2pt;
+      background: #e2e8f0;
+      height: 8px;
+      border-radius: 4px;
       overflow: hidden;
     }
     
     .skill-progress {
       height: 100%;
-      background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
-      border-radius: 2pt;
+      background: linear-gradient(90deg, ${theme.primary} 0%, ${theme.secondary} 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
     }
     
-    /* Stats cards matching preview */
-     .stats-grid {
-       display: grid;
-       grid-template-columns: 1fr;
-       gap: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .stat-item {
-       text-align: center;
-       padding: 8pt;
-       border-radius: 6pt;
-       background: ${theme.primary}08;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .stat-number {
-      font-size: 18pt;
-      font-weight: 700;
-      color: ${theme.primary};
+    .personal-info {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
-    .stat-label {
-      font-size: 8pt;
-      color: #6b7280;
-      margin-top: 2pt;
+    .info-item {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
-    /* Education section matching preview */
-     .education-section {
-       background: white;
-       padding: 12pt;
-       border-radius: 8pt;
-       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-       border: 1pt solid rgba(0,0,0,0.05);
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .education-item {
-       padding: 10pt;
-       border-radius: 6pt;
-       margin-bottom: 6pt;
-       background: linear-gradient(to right, ${theme.primary}08, ${theme.accent}08);
-       border: 1pt solid ${theme.primary}10;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .education-degree {
-      font-weight: 700;
-      color: #1a202c;
-      font-size: 11pt;
-      margin-bottom: 2pt;
-    }
-    
-    .education-institution {
+    .info-label {
       font-weight: 600;
-      color: ${theme.accent};
-      font-size: 10pt;
-      margin-bottom: 2pt;
+      color: ${theme.primary};
+      min-width: 80px;
     }
     
-    .education-year {
-      font-size: 8pt;
-      color: #6b7280;
+    .info-value {
+      color: #555;
+    }
+    
+    .summary {
+      background: linear-gradient(135deg, ${theme.accent}20 0%, ${theme.secondary}20 100%);
+      padding: 25px;
+      border-radius: 8px;
+      border: 1px solid ${theme.accent}40;
+      font-style: italic;
+      color: #555;
+      line-height: 1.7;
+    }
+    
+    @media print {
+      .resume-container {
+        box-shadow: none;
+        margin: 0;
+      }
+      
+      .header::before {
+        animation: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="resume-container">
     <div class="header">
-      <div class="header-content">
-        <h1>${resumeData.name || 'Enhanced Resume'}</h1>
-        <div class="title">${resumeData.title || 'Professional'}</div>
-        <div class="contact-grid">
-          <div class="contact-item">
-            <span>📧</span>
-            <span>${resumeData.email || 'email@example.com'}</span>
-          </div>
-          <div class="contact-item">
-            <span>📱</span>
-            <span>${resumeData.phone || '+1 (555) 123-4567'}</span>
-          </div>
-          <div class="contact-item">
-            <span>📍</span>
-            <span>${resumeData.location || 'City, Country'}</span>
-          </div>
-        </div>
+      <h1 class="name">${resumeData.name || 'Professional Name'}</h1>
+      <p class="title">${resumeData.title || 'Professional Title'}</p>
+      <div class="contact-info">
+        ${resumeData.email ? `<div class="contact-item">📧 ${resumeData.email}</div>` : ''}
+        ${resumeData.phone ? `<div class="contact-item">📞 ${resumeData.phone}</div>` : ''}
+        ${resumeData.location ? `<div class="contact-item">📍 ${resumeData.location}</div>` : ''}
+        ${resumeData.linkedin ? `<div class="contact-item">💼 ${resumeData.linkedin}</div>` : ''}
       </div>
     </div>
-
+    
     <div class="main-content">
       <div class="left-column">
+        ${resumeData.skills && resumeData.skills.length > 0 ? `
         <div class="section">
-          <div class="section-header">
-            <div class="section-icon">👤</div>
-            <h3 class="section-title">Professional Summary</h3>
-          </div>
-          <div class="summary-card">
-            <p class="summary-text">${resumeData.summary || 'Dynamic and results-driven professional with extensive experience in delivering innovative solutions and driving organizational success.'}</p>
-          </div>
-        </div>
-
-        ${resumeData.experience && resumeData.experience.length > 0 ? `
-        <div class="section">
-          <div class="section-header">
-            <div class="section-icon">💼</div>
-            <h3 class="section-title">Professional Experience</h3>
-          </div>
-          <div class="experience-timeline">
-            ${resumeData.experience.map((exp: any) => `
-            <div class="experience-item">
-              <div class="experience-header">
-                <div>
-                  <div class="experience-title">${exp.title || 'Position Title'}</div>
-                  <div class="experience-company">${exp.company || 'Company Name'}</div>
+          <h2 class="section-title">Skills</h2>
+          <div class="skills-grid">
+            ${resumeData.skills.slice(0, 8).map((skill: string) => `
+              <div class="skill-item">
+                <div class="skill-name">${skill}</div>
+                <div class="skill-bar">
+                  <div class="skill-progress" style="width: ${generateSkillProficiency(skill)}%"></div>
                 </div>
-                <div class="experience-duration">${exp.duration || 'Date Range'}</div>
               </div>
-              ${exp.achievements && exp.achievements.length > 0 ? `
-              <ul class="achievements">
-                ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
-              </ul>
-              ` : `
-              <ul class="achievements">
-                <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
-                <li class="achievement">Collaborated effectively with cross-functional teams to achieve strategic objectives</li>
-              </ul>
-              `}
-            </div>
             `).join('')}
           </div>
         </div>
         ` : ''}
+        
+        <div class="section">
+          <h2 class="section-title">Personal Info</h2>
+          <div class="personal-info">
+            ${resumeData.email ? `<div class="info-item"><span class="info-label">Email:</span><span class="info-value">${resumeData.email}</span></div>` : ''}
+            ${resumeData.phone ? `<div class="info-item"><span class="info-label">Phone:</span><span class="info-value">${resumeData.phone}</span></div>` : ''}
+            ${resumeData.location ? `<div class="info-item"><span class="info-label">Location:</span><span class="info-value">${resumeData.location}</span></div>` : ''}
+            ${resumeData.linkedin ? `<div class="info-item"><span class="info-label">LinkedIn:</span><span class="info-value">${resumeData.linkedin}</span></div>` : ''}
+          </div>
+        </div>
       </div>
-
-      <div class="sidebar">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-            <div class="stat-label">Total Skills</div>
-          </div>
-          <div class="stat-item" style="background: ${theme.accent}08;">
-            <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-            <div class="stat-label">Work Experiences</div>
-          </div>
+      
+      <div class="right-column">
+        ${resumeData.summary ? `
+        <div class="section">
+          <h2 class="section-title">Professional Summary</h2>
+          <div class="summary">${resumeData.summary}</div>
         </div>
-
-        <div class="skills-section">
-          <div class="section-header">
-            <div class="section-icon">⚡</div>
-            <h3 class="section-title">Skills Proficiency</h3>
-          </div>
-          ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
-            resumeData.skills.slice(0, 6).map((skill: string) => {
-              const proficiency = generateSkillProficiency(skill);
-              return `
-              <div class="skill-item">
-                <div class="skill-header">
-                  <span class="skill-name">${skill}</span>
-                  <span class="skill-percentage">${Math.round(proficiency)}%</span>
-                </div>
-                <div class="skill-bar">
-                  <div class="skill-progress" style="width: ${proficiency}%"></div>
-                </div>
-              </div>
-              `;
-            }).join('') :
-            `
-            <div class="skill-item">
-              <div class="skill-header">
-                <span class="skill-name">Communication</span>
-                <span class="skill-percentage">92%</span>
-              </div>
-              <div class="skill-bar">
-                <div class="skill-progress" style="width: 92%"></div>
-              </div>
+        ` : ''}
+        
+        ${resumeData.experience && resumeData.experience.length > 0 ? `
+        <div class="section">
+          <h2 class="section-title">Experience</h2>
+          ${resumeData.experience.map((exp: any) => `
+            <div class="experience-item">
+              <div class="job-title">${exp.title || exp.position || 'Position Title'}</div>
+              <div class="company">${exp.company || 'Company Name'}</div>
+              <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
+              <div class="description">${exp.description || exp.responsibilities || 'Job responsibilities and achievements'}</div>
             </div>
-            `
-          }
+          `).join('')}
         </div>
-
-        <div class="education-section">
-          <div class="section-header">
-            <div class="section-icon">🎓</div>
-            <h3 class="section-title">Education</h3>
-          </div>
-          ${resumeData.education && resumeData.education.length > 0 ? 
-            resumeData.education.map((edu: any) => `
+        ` : ''}
+        
+        ${resumeData.education && resumeData.education.length > 0 ? `
+        <div class="section">
+          <h2 class="section-title">Education</h2>
+          ${resumeData.education.map((edu: any) => `
             <div class="education-item">
-              <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-              <div class="education-institution">${edu.institution || 'University Name'}</div>
-              <div class="education-year">${edu.year || 'Year'}</div>
+              <div class="degree">${edu.degree || edu.qualification || 'Degree/Qualification'}</div>
+              <div class="institution">${edu.institution || edu.school || 'Institution Name'}</div>
+              <div class="date">${edu.year || edu.duration || 'Year'}</div>
+              ${edu.gpa ? `<div class="description">GPA: ${edu.gpa}</div>` : ''}
             </div>
-            `).join('') :
-            `
-            <div class="education-item">
-              <div class="education-degree">Bachelor's Degree</div>
-              <div class="education-institution">University Name</div>
-              <div class="education-year">2020</div>
-            </div>
-            `
-          }
+          `).join('')}
         </div>
+        ` : ''}
       </div>
     </div>
   </div>
@@ -628,198 +360,192 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
-    @page { 
-      size: A4; 
-      margin: 0.5in; 
-      page-break-inside: avoid;
-    }
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-      text-decoration: none !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Comprehensive underline removal for email and phone */
-    a, a:link, a:visited, a:hover, a:active,
-    .contact, .contact-item, .contact-grid,
-    span[href], span[data-email], span[data-phone],
-    *[href^="mailto:"], *[href^="tel:"] {
-      text-decoration: none !important;
-      border-bottom: none !important;
-      outline: none !important;
-    }
-    
-    /* Page break rules for printer-friendly output */
-    h1, h2, h3, h4, h5, h6 {
-      page-break-after: avoid;
-      break-after: avoid;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    .section, .header, .content-section, .contact-info, .skills-grid, .experience-item, .education-item {
-      page-break-inside: avoid;
-      break-inside: avoid;
-      orphans: 3;
-      widows: 3;
-    }
-    
-    .skills-item, .skill-bar, .contact-item {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Images and tables should not break across pages */
-    img, table {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Avoid breaks right after headings */
-    h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
-      page-break-after: avoid;
-      break-after: avoid;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     
     body {
-      font-family: 'Times New Roman', 'Georgia', serif;
-      line-height: 1.6; color: #2c3e50; background: white;
-      font-size: 11pt; width: 100%; min-height: auto;
+      font-family: 'Times New Roman', serif;
+      line-height: 1.6;
+      color: #333;
+      background: white;
     }
     
-     .container { 
-       background: white; 
-       width: 100%; 
-       max-width: none; 
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .resume-container {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 40px;
+      background: white;
+    }
     
     .header {
-      text-align: center; padding: 20pt 0; border-bottom: 2pt solid ${theme.primary};
-      margin-bottom: 20pt;
+      text-align: center;
+      border-bottom: 3px solid ${theme.primary};
+      padding-bottom: 20px;
+      margin-bottom: 30px;
     }
     
-    .header h1 { font-size: 28pt; font-weight: 700; margin-bottom: 8pt; color: ${theme.primary}; }
-    .header .title { font-size: 16pt; margin-bottom: 12pt; color: #2c3e50; font-weight: 500; }
-    .header .contact { font-size: 11pt; color: #34495e; }
-    
-     .section { 
-       margin-bottom: 24pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    .section-title { 
-      font-size: 16pt; font-weight: 700; color: ${theme.primary}; 
-      margin-bottom: 12pt; padding-bottom: 4pt; 
-      border-bottom: 1pt solid ${theme.primary}30;
+    .name {
+      font-size: 2.2em;
+      font-weight: bold;
+      color: ${theme.primary};
+      margin-bottom: 10px;
+      letter-spacing: 1px;
     }
     
-    .summary { font-size: 12pt; line-height: 1.6; color: #2c3e50; text-align: justify; }
+    .title {
+      font-size: 1.2em;
+      color: #555;
+      margin-bottom: 15px;
+      font-style: italic;
+    }
     
-     .experience-item { 
-       margin-bottom: 16pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-     .experience-header { 
-       margin-bottom: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    .experience-title { font-size: 14pt; font-weight: 700; color: #2c3e50; }
-    .experience-company { font-size: 12pt; font-weight: 600; color: ${theme.primary}; margin-bottom: 4pt; }
-    .experience-duration { font-size: 10pt; color: #7f8c8d; font-style: italic; }
+    .contact-info {
+      font-size: 0.95em;
+      color: #666;
+      line-height: 1.4;
+    }
     
-     .achievements { 
-       margin-top: 8pt; 
-       padding-left: 20pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-     .achievement { 
-       margin-bottom: 4pt; 
-       font-size: 11pt; 
-       line-height: 1.5;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .section {
+      margin-bottom: 25px;
+    }
     
-    .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8pt; }
-    .skill-item { font-size: 11pt; color: #2c3e50; padding: 4pt; }
+    .section-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: ${theme.primary};
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid ${theme.primary};
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
     
-     .education-item { 
-       margin-bottom: 12pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    .education-degree { font-weight: 700; color: #2c3e50; font-size: 12pt; }
-    .education-institution { font-weight: 600; color: ${theme.primary}; font-size: 11pt; }
-    .education-year { font-size: 10pt; color: #7f8c8d; font-style: italic; }
+    .experience-item, .education-item {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .experience-item:last-child, .education-item:last-child {
+      border-bottom: none;
+    }
+    
+    .job-title, .degree {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: ${theme.primary};
+      margin-bottom: 5px;
+    }
+    
+    .company, .institution {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 3px;
+    }
+    
+    .date {
+      color: #777;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    
+    .description {
+      color: #666;
+      text-align: justify;
+      line-height: 1.6;
+    }
+    
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .skill-tag {
+      background: ${theme.accent};
+      color: ${theme.primary};
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+    
+    .summary {
+      background: #f8f9fa;
+      padding: 20px;
+      border-left: 4px solid ${theme.primary};
+      font-style: italic;
+      color: #555;
+      line-height: 1.7;
+    }
+    
+    @media print {
+      .resume-container {
+        padding: 20px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="resume-container">
     <div class="header">
-      <h1>${resumeData.name || 'Enhanced Resume'}</h1>
-      <div class="title">${resumeData.title || 'Professional'}</div>
-      <div class="contact">
-        ${resumeData.email || 'email@example.com'} | ${resumeData.phone || '+1 (555) 123-4567'} | ${resumeData.location || 'City, Country'}
+      <h1 class="name">${resumeData.name || 'Professional Name'}</h1>
+      <p class="title">${resumeData.title || 'Professional Title'}</p>
+      <div class="contact-info">
+        ${resumeData.email ? resumeData.email : ''}
+        ${resumeData.phone ? ` • ${resumeData.phone}` : ''}
+        ${resumeData.location ? ` • ${resumeData.location}` : ''}
+        ${resumeData.linkedin ? ` • ${resumeData.linkedin}` : ''}
       </div>
     </div>
-
+    
+    ${resumeData.summary ? `
     <div class="section">
-      <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
-      <p class="summary">${resumeData.summary || 'Experienced professional with a proven track record of delivering high-quality results and driving organizational success through strategic thinking and effective leadership.'}</p>
+      <h2 class="section-title">Professional Summary</h2>
+      <div class="summary">${resumeData.summary}</div>
     </div>
-
+    ` : ''}
+    
     ${resumeData.experience && resumeData.experience.length > 0 ? `
     <div class="section">
-      <h2 class="section-title">PROFESSIONAL EXPERIENCE</h2>
+      <h2 class="section-title">Professional Experience</h2>
       ${resumeData.experience.map((exp: any) => `
-      <div class="experience-item">
-        <div class="experience-header">
-          <div class="experience-title">${exp.title || 'Position Title'}</div>
-          <div class="experience-company">${exp.company || 'Company Name'}</div>
-          <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+        <div class="experience-item">
+          <div class="job-title">${exp.title || exp.position || 'Position Title'}</div>
+          <div class="company">${exp.company || 'Company Name'}</div>
+          <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
+          <div class="description">${exp.description || exp.responsibilities || 'Job responsibilities and achievements'}</div>
         </div>
-        ${exp.achievements && exp.achievements.length > 0 ? `
-        <ul class="achievements">
-          ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
-        </ul>
-        ` : `
-        <ul class="achievements">
-          <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
-          <li class="achievement">Demonstrated strong leadership and collaboration skills</li>
-        </ul>
-        `}
-      </div>
       `).join('')}
     </div>
     ` : ''}
-
-    ${resumeData.skills && resumeData.skills.length > 0 ? `
-    <div class="section">
-      <h2 class="section-title">CORE COMPETENCIES</h2>
-      <div class="skills-grid">
-        ${resumeData.skills.map((skill: string) => `<div class="skill-item">• ${skill}</div>`).join('')}
-      </div>
-    </div>
-    ` : ''}
-
+    
     ${resumeData.education && resumeData.education.length > 0 ? `
     <div class="section">
-      <h2 class="section-title">EDUCATION</h2>
+      <h2 class="section-title">Education</h2>
       ${resumeData.education.map((edu: any) => `
-      <div class="education-item">
-        <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-        <div class="education-institution">${edu.institution || 'University Name'}</div>
-        <div class="education-year">${edu.year || 'Year'}</div>
-      </div>
+        <div class="education-item">
+          <div class="degree">${edu.degree || edu.qualification || 'Degree/Qualification'}</div>
+          <div class="institution">${edu.institution || edu.school || 'Institution Name'}</div>
+          <div class="date">${edu.year || edu.duration || 'Year'}</div>
+          ${edu.gpa ? `<div class="description">GPA: ${edu.gpa}</div>` : ''}
+        </div>
       `).join('')}
+    </div>
+    ` : ''}
+    
+    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Skills</h2>
+      <div class="skills-list">
+        ${resumeData.skills.map((skill: string) => `
+          <span class="skill-tag">${skill}</span>
+        `).join('')}
+      </div>
     </div>
     ` : ''}
   </div>
@@ -835,557 +561,322 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Resume - ${resumeData.name}</title>
   <style>
-    @page {
-      size: A4;
-      margin: 0.25in;
-    }
-    
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-      text-decoration: none !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Comprehensive underline removal for email and phone */
-    a, a:link, a:visited, a:hover, a:active,
-    .contact, .contact-item, .contact-grid,
-    span[href], span[data-email], span[data-phone],
-    *[href^="mailto:"], *[href^="tel:"] {
-      text-decoration: none !important;
-      border-bottom: none !important;
-      outline: none !important;
-    }
-    
-    /* Page break rules for printer-friendly output */
-    h1, h2, h3, h4, h5, h6 {
-      page-break-after: avoid;
-      break-after: avoid;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    .section, .header, .content-section, .contact-info, .skills-grid, .experience-item, .education-item, .card {
-      page-break-inside: avoid;
-      break-inside: avoid;
-      orphans: 3;
-      widows: 3;
-    }
-    
-    .skills-item, .skill-bar, .contact-item, .experience-card, .summary-card, .education-section, .skills-section {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Images and tables should not break across pages */
-    img, table {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    /* Avoid breaks right after headings */
-    h1:not(:last-child), h2:not(:last-child), h3:not(:last-child) {
-      page-break-after: avoid;
-      break-after: avoid;
-    }
-    
-    /* Prevent any auto-linking behavior */
-    a, a:link, a:visited, a:hover, a:active {
-      text-decoration: none !important;
-      color: inherit !important;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     
     body {
-      font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-      line-height: 1.5;
-      color: #1a202c;
-      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-      font-size: 9pt;
-      width: 100%;
-      min-height: auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
     }
     
-     .container {
-       background: white;
-       border-radius: 6pt;
-       overflow: hidden;
-       box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-       width: 100%;
-       max-width: none;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .resume-container {
+      max-width: 8.5in;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
     
-    /* Creative Header with gradient */
     .header {
-      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent} 70%, ${theme.secondary} 100%);
+      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%);
       color: white;
-      padding: 12pt;
+      padding: 50px 40px;
       position: relative;
       overflow: hidden;
-      break-inside: avoid;
-      page-break-inside: avoid;
     }
     
     .header::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.1);
-      pointer-events: none;
+      top: -50%;
+      right: -20%;
+      width: 100%;
+      height: 200%;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="25" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      transform: rotate(15deg);
     }
     
     .header-content {
       position: relative;
-      z-index: 10;
+      z-index: 1;
     }
     
-    .header h1 {
-      font-size: 24pt;
-      font-weight: 800;
-      margin-bottom: 4pt;
-      line-height: 1.1;
+    .name {
+      font-size: 3em;
+      font-weight: 300;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      letter-spacing: 2px;
     }
     
-    .header .title {
-      font-size: 14pt;
-      margin-bottom: 16pt;
-      opacity: 0.95;
-      font-weight: 500;
+    .title {
+      font-size: 1.4em;
+      opacity: 0.9;
+      margin-bottom: 25px;
+      font-weight: 300;
     }
     
-    .contact-grid {
+    .contact-info {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8pt;
-      margin-top: 12pt;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
     }
     
     .contact-item {
-      font-size: 9pt;
-      opacity: 0.9;
-      display: flex;
-      align-items: flex-start;
-      gap: 6pt;
-      font-weight: 500;
-      text-decoration: none;
-      line-height: 1.15;
-      padding: 2.3pt 0;
-    }
-    
-    .icon {
-      width: 10pt;
-      height: 10pt;
-      fill: currentColor;
-      flex-shrink: 0;
-    }
-    
-     /* Main content - single column for independent cards */
-     .main-content {
-       padding: 12pt;
-       width: 100%;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-     
-     .card {
-       margin-bottom: 16pt;
-       break-inside: avoid;
-       page-break-inside: avoid;
-       position: relative;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .section {
-      margin-bottom: 0;
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-    
-     /* Creative section headers */
-     .section-header {
-       display: flex;
-       align-items: center;
-       gap: 6pt;
-       margin-bottom: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .section-icon {
-      width: 24pt;
-      height: 24pt;
-      border-radius: 6pt;
-      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
       display: flex;
       align-items: center;
-      justify-content: center;
-      color: white;
+      gap: 10px;
+      font-size: 0.95em;
+      background: rgba(255,255,255,0.1);
+      padding: 10px 15px;
+      border-radius: 25px;
+      backdrop-filter: blur(10px);
     }
     
-    .section-title {
-      font-size: 14pt;
-      font-weight: 700;
-      color: ${theme.primary};
+    .main-content {
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 40px;
     }
     
-     /* Creative summary card */
-     .summary-card {
-       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
-       padding: 12pt;
-       border-radius: 8pt;
-       box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
-       border-left: 3pt solid ${theme.accent};
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .summary-text {
-      font-size: 10pt;
-      line-height: 1.6;
-      color: #2d3748;
-    }
-    
-     /* Experience items - independent cards */
-     .experience-card {
-       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
-       padding: 12pt;
-       border-radius: 8pt;
-       box-shadow: 0 2px 8pt rgba(0,0,0,0.06);
-       border-left: 3pt solid ${theme.accent};
-       position: static;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .experience-header {
-       display: flex;
-       justify-content: space-between;
-       align-items: flex-start;
-       margin-bottom: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .experience-title {
-      font-size: 12pt;
-      font-weight: 700;
-      color: #1a202c;
-      margin-bottom: 2pt;
-    }
-    
-    .experience-company {
-      font-size: 11pt;
-      font-weight: 600;
-      color: ${theme.accent};
-    }
-    
-    .experience-duration {
-      background: linear-gradient(135deg, ${theme.accent}, ${theme.secondary});
-      color: white;
-      padding: 4pt 8pt;
-      border-radius: 12pt;
-      font-size: 8pt;
-      font-weight: 600;
-      border: 1pt solid ${theme.accent}20;
-    }
-    
-     .achievements {
-       list-style: none;
-       margin-top: 8pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .achievement {
-       margin-bottom: 6pt;
-       font-size: 9pt;
-       line-height: 1.5;
-       display: flex;
-       align-items: flex-start;
-       gap: 8pt;
-       padding: 6pt 8pt;
-       background: rgba(255,255,255,0.5);
-       border-radius: 6pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .achievement::before {
-      content: '';
-      width: 12pt;
-      height: 12pt;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 2pt;
+    .left-column {
       position: relative;
     }
     
-     /* Creative skills section */
-     .skills-section {
-       background: linear-gradient(135deg, ${theme.primary}08, ${theme.accent}15);
-       padding: 12pt;
-       border-radius: 8pt;
-       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-       border-left: 3pt solid ${theme.accent};
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .right-column {
+      position: relative;
+    }
     
-     .skill-item {
-       margin-bottom: 12pt;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
+    .section {
+      margin-bottom: 35px;
+      position: relative;
+    }
     
-    .skill-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4pt;
+    .section-title {
+      font-size: 1.4em;
+      font-weight: 600;
+      color: ${theme.primary};
+      margin-bottom: 20px;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, ${theme.primary} 0%, ${theme.accent} 100%);
+      border-radius: 2px;
+    }
+    
+    .experience-item, .education-item {
+      margin-bottom: 30px;
+      padding: 25px;
+      background: linear-gradient(135deg, ${theme.accent}10 0%, transparent 100%);
+      border-radius: 15px;
+      border: 1px solid ${theme.accent}30;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .experience-item::before, .education-item::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: -5px;
+      width: 10px;
+      height: 10px;
+      background: ${theme.primary};
+      border-radius: 50%;
+      box-shadow: 0 0 0 5px white, 0 0 0 7px ${theme.accent};
+    }
+    
+    .job-title, .degree {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: ${theme.primary};
+      margin-bottom: 8px;
+    }
+    
+    .company, .institution {
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 5px;
+      font-size: 1.05em;
+    }
+    
+    .date {
+      color: #777;
+      font-size: 0.9em;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    
+    .description {
+      color: #666;
+      line-height: 1.7;
+    }
+    
+    .skills-container {
+      display: grid;
+      gap: 15px;
+    }
+    
+    .skill-item {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border: 1px solid ${theme.accent}20;
     }
     
     .skill-name {
       font-weight: 600;
-      color: #1a202c;
-      font-size: 9pt;
-    }
-    
-    .skill-percentage {
-      font-size: 8pt;
-      color: #6b7280;
+      color: ${theme.primary};
+      margin-bottom: 8px;
+      font-size: 0.95em;
     }
     
     .skill-bar {
-      height: 4pt;
-      background: #e5e7eb;
-      border-radius: 2pt;
+      background: #e2e8f0;
+      height: 6px;
+      border-radius: 3px;
       overflow: hidden;
     }
     
     .skill-progress {
       height: 100%;
-      background: linear-gradient(90deg, ${theme.primary}, ${theme.accent});
-      border-radius: 2pt;
+      background: linear-gradient(90deg, ${theme.primary} 0%, ${theme.secondary} 100%);
+      border-radius: 3px;
+      transition: width 0.5s ease;
     }
     
-    /* Creative stats */
-    .stats-grid {
-      display: flex;
-      gap: 12pt;
-      justify-content: space-between;
+    .summary {
+      background: linear-gradient(135deg, ${theme.accent}15 0%, ${theme.secondary}15 100%);
+      padding: 25px;
+      border-radius: 15px;
+      border: 1px solid ${theme.accent}30;
+      font-style: italic;
+      color: #555;
+      line-height: 1.8;
+      position: relative;
     }
     
-    .stat-item {
-      text-align: center;
-      padding: 8pt;
-      border-radius: 6pt;
-      background: linear-gradient(135deg, ${theme.accent}10, ${theme.secondary}15);
-      flex: 1;
-    }
-    
-    .stat-number {
-      font-size: 18pt;
-      font-weight: 700;
-      color: ${theme.primary};
-    }
-    
-    .stat-label {
-      font-size: 8pt;
-      color: #6b7280;
-      margin-top: 2pt;
-    }
-    
-     /* Creative education */
-     .education-section {
-       background: linear-gradient(135deg, ${theme.secondary}08, ${theme.primary}10);
-       padding: 12pt;
-       border-radius: 8pt;
-       box-shadow: 0 2px 8pt rgba(0,0,0,0.05);
-       border-left: 3pt solid ${theme.accent};
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-     .education-item {
-       padding: 10pt;
-       border-radius: 6pt;
-       margin-bottom: 6pt;
-       background: rgba(255,255,255,0.8);
-       border-left: 2pt solid ${theme.accent}40;
-       page-break-inside: avoid;
-       break-inside: avoid;
-     }
-    
-    .education-degree {
-      font-weight: 700;
-      color: #1a202c;
-      font-size: 11pt;
-      margin-bottom: 2pt;
-    }
-    
-    .education-institution {
-      font-weight: 600;
+    .summary::before {
+      content: '"';
+      font-size: 4em;
       color: ${theme.accent};
-      font-size: 10pt;
-      margin-bottom: 2pt;
+      position: absolute;
+      top: -10px;
+      left: 15px;
+      font-family: Georgia, serif;
     }
     
-    .education-year {
-      font-size: 8pt;
-      color: #6b7280;
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      
+      .resume-container {
+        box-shadow: none;
+        border-radius: 0;
+      }
+      
+      .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="resume-container">
     <div class="header">
       <div class="header-content">
-        <h1>${resumeData.name || 'Enhanced Resume'}</h1>
-        <div class="title">${resumeData.title || 'Creative Professional'}</div>
-        <div class="contact-grid">
-          <div class="contact-item">
-            <span>📧</span>
-            <span>${resumeData.email || 'email@example.com'}</span>
-          </div>
-          <div class="contact-item">
-            <span>📱</span>
-            <span>${resumeData.phone || '+1 (555) 123-4567'}</span>
-          </div>
-          <div class="contact-item">
-            <span>📍</span>
-            <span>${resumeData.location || 'City, Country'}</span>
-          </div>
+        <h1 class="name">${resumeData.name || 'Professional Name'}</h1>
+        <p class="title">${resumeData.title || 'Professional Title'}</p>
+        <div class="contact-info">
+          ${resumeData.email ? `<div class="contact-item">✉️ ${resumeData.email}</div>` : ''}
+          ${resumeData.phone ? `<div class="contact-item">📱 ${resumeData.phone}</div>` : ''}
+          ${resumeData.location ? `<div class="contact-item">🌍 ${resumeData.location}</div>` : ''}
+          ${resumeData.linkedin ? `<div class="contact-item">💼 ${resumeData.linkedin}</div>` : ''}
         </div>
       </div>
     </div>
-
+    
     <div class="main-content">
-      <!-- Creative Vision Card -->
-      <div class="card">
+      <div class="left-column">
+        ${resumeData.skills && resumeData.skills.length > 0 ? `
         <div class="section">
-          <div class="section-header">
-            <div class="section-icon">✨</div>
-            <h3 class="section-title">Creative Vision</h3>
-          </div>
-          <div class="summary-card">
-            <p class="summary-text">${resumeData.summary || 'Dynamic creative professional with a passion for innovative design and strategic thinking. Expertise in delivering compelling visual solutions that drive engagement and achieve business objectives.'}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Portfolio Stats Card -->
-      <div class="card">
-        <div class="section">
-          <div class="section-header">
-            <div class="section-icon">📊</div>
-            <h3 class="section-title">Portfolio Stats</h3>
-          </div>
-          <div class="summary-card">
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-                <div class="stat-label">Creative Skills</div>
-              </div>
-              <div class="stat-item" style="background: linear-gradient(135deg, ${theme.primary}10, ${theme.accent}15);">
-                <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
-                <div class="stat-label">Projects</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Individual Experience Cards -->
-      ${resumeData.experience && resumeData.experience.length > 0 ? 
-        resumeData.experience.map((exp: any, index: number) => `
-        <div class="card">
-          <div class="section">
-            <div class="section-header">
-              <div class="section-icon">💼</div>
-              <h3 class="section-title">${index === 0 ? 'Experience Journey' : 'Professional Experience'}</h3>
-            </div>
-            <div class="experience-card">
-              <div class="experience-header">
-                <div>
-                  <div class="experience-title">${exp.title || 'Position Title'}</div>
-                  <div class="experience-company">${exp.company || 'Company Name'}</div>
-                </div>
-                <div class="experience-duration">${exp.duration || 'Date Range'}</div>
-              </div>
-              ${exp.achievements && exp.achievements.length > 0 ? `
-              <ul class="achievements">
-                ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
-              </ul>
-              ` : `
-              <ul class="achievements">
-                <li class="achievement">Delivered exceptional creative solutions and exceeded client expectations</li>
-                <li class="achievement">Collaborated effectively with cross-functional teams to achieve strategic objectives</li>
-              </ul>
-              `}
-            </div>
-          </div>
-        </div>
-        `).join('') : ''}
-
-      <!-- Individual Education Cards -->
-      ${resumeData.education && resumeData.education.length > 0 ? 
-        resumeData.education.map((edu: any, index: number) => `
-        <div class="card">
-          <div class="section">
-            <div class="section-header">
-              <div class="section-icon">🎓</div>
-              <h3 class="section-title">${index === 0 ? 'Education' : 'Academic Background'}</h3>
-            </div>
-            <div class="education-section">
-              <div class="education-item">
-                <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
-                <div class="education-institution">${edu.institution || 'University Name'}</div>
-                <div class="education-year">${edu.year || 'Year'}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        `).join('') : ''}
-
-      <!-- Creative Skills Card -->
-      ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? `
-      <div class="card">
-        <div class="section">
-          <div class="section-header">
-            <div class="section-icon">⚡</div>
-            <h3 class="section-title">Creative Skills</h3>
-          </div>
-          <div class="skills-section">
-            ${resumeData.skills.slice(0, 8).map((skill: string) => {
-              const proficiency = 75 + (skill.length % 20);
-              return `
+          <h2 class="section-title">Skills</h2>
+          <div class="skills-container">
+            ${resumeData.skills.slice(0, 8).map((skill: string) => `
               <div class="skill-item">
-                <div class="skill-header">
-                  <span class="skill-name">${skill}</span>
-                  <span class="skill-percentage">${Math.round(proficiency)}%</span>
-                </div>
+                <div class="skill-name">${skill}</div>
                 <div class="skill-bar">
-                  <div class="skill-progress" style="width: ${proficiency}%"></div>
+                  <div class="skill-progress" style="width: ${generateSkillProficiency(skill)}%"></div>
                 </div>
               </div>
-              `;
-            }).join('')}
+            `).join('')}
           </div>
         </div>
+        ` : ''}
+        
+        ${resumeData.education && resumeData.education.length > 0 ? `
+        <div class="section">
+          <h2 class="section-title">Education</h2>
+          ${resumeData.education.map((edu: any) => `
+            <div class="education-item">
+              <div class="degree">${edu.degree || edu.qualification || 'Degree/Qualification'}</div>
+              <div class="institution">${edu.institution || edu.school || 'Institution Name'}</div>
+              <div class="date">${edu.year || edu.duration || 'Year'}</div>
+              ${edu.gpa ? `<div class="description">GPA: ${edu.gpa}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
       </div>
-      ` : ''}
+      
+      <div class="right-column">
+        ${resumeData.summary ? `
+        <div class="section">
+          <h2 class="section-title">About Me</h2>
+          <div class="summary">${resumeData.summary}</div>
+        </div>
+        ` : ''}
+        
+        ${resumeData.experience && resumeData.experience.length > 0 ? `
+        <div class="section">
+          <h2 class="section-title">Experience Journey</h2>
+          ${resumeData.experience.map((exp: any) => `
+            <div class="experience-item">
+              <div class="job-title">${exp.title || exp.position || 'Position Title'}</div>
+              <div class="company">${exp.company || 'Company Name'}</div>
+              <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
+              <div class="description">${exp.description || exp.responsibilities || 'Job responsibilities and achievements'}</div>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+      </div>
     </div>
   </div>
 </body>
 </html>`;
+  }
   
   // Template generators - now defined after the HTML functions  
   const templateGenerators = {
@@ -1402,156 +893,117 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   console.log(`Generating PDF with PDFShift for template: ${templateId}, theme: ${themeId}`);
   console.log('HTML content length:', htmlContent.length);
 
-  const API_KEY = Deno.env.get('PDFSHIFT_API_KEY');
-  if (!API_KEY) {
-    console.error('PDFSHIFT_API_KEY not found, falling back to text-based PDF generation');
-    // Fallback to a simple text-based PDF response
-    const textContent = generateTextFallback(resumeData);
-    const encoder = new TextEncoder();
-    return encoder.encode(textContent);
+  const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
+  
+  if (!pdfShiftApiKey) {
+    console.warn('PDFShift API key not found, returning text fallback');
+    return new TextEncoder().encode(convertToTextResume(resumeData));
   }
 
-  const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${btoa(API_KEY + ':')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      source: htmlContent,
-      landscape: false,
-      use_print: true,
-      format: 'A4',
-      margin: '0.25in',
-      zoom: 1,
-      wait_for: 3000,
-      sandbox: false,
-      protect: false,
-      filename: 'enhanced_resume.pdf',
-      autoPaging: 'text',
-      // Enhanced page break handling options
-      css: `
-        @media print {
-          * { 
-            -webkit-print-color-adjust: exact !important; 
-            color-adjust: exact !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
-          .page-break-before { page-break-before: always !important; }
-          .page-break-after { page-break-after: always !important; }
-          .page-break-avoid { page-break-inside: avoid !important; break-inside: avoid !important; }
-          .section, .header, .experience-item, .education-item, .skills-section, .card {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            orphans: 3 !important;
-            widows: 3 !important;
-          }
-          h1, h2, h3, h4, h5, h6 {
-            page-break-after: avoid !important;
-            break-after: avoid !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
-        }
-      `,
-    }),
-  });
+  try {
+    const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${btoa(`api:${pdfShiftApiKey}`)}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        source: htmlContent,
+        landscape: false,
+        format: 'Letter',
+        margin: '0.5in',
+        print_background: true,
+        prefer_css_page_size: false,
+        wait_for: 1000,
+        sandbox: false
+      }),
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('PDFShift API error:', errorText);
-    throw new Error(`PDFShift API failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('PDFShift API error:', response.status, errorText);
+      throw new Error(`PDFShift API error: ${response.status}`);
+    }
+
+    const pdfBuffer = await response.arrayBuffer();
+    console.log(`PDF generated successfully, size: ${pdfBuffer.byteLength} bytes`);
+    return new Uint8Array(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating PDF with PDFShift:', error);
+    console.warn('Falling back to text format');
+    return new TextEncoder().encode(convertToTextResume(resumeData));
   }
-
-  const pdfBuffer = await response.arrayBuffer();
-  console.log('PDF generated successfully via PDFShift');
-  
-  return new Uint8Array(pdfBuffer);
 }
 
-// Helper function to sanitize filename
-function sanitizeFilename(filename: string): string {
-  if (!filename) return 'Enhanced_Resume';
-  
-  return filename
-    .replace(/[^a-zA-Z0-9_\-\s]/g, '') // Remove special characters
-    .replace(/\s+/g, '_') // Replace spaces with underscores
-    .replace(/_{2,}/g, '_') // Replace multiple underscores with single
-    .substring(0, 50) // Limit length
-    .replace(/^_+|_+$/g, '') || 'Enhanced_Resume'; // Remove leading/trailing underscores
-}
-
-// Fallback function to generate text content when PDF API is unavailable
-function generateTextFallback(resumeData: any): string {
-  // Helper to clean text content
-  const cleanText = (text: string): string => {
-    if (!text) return '';
-    return text
-      .replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '') // Remove non-printable characters
-      .replace(/\u2019/g, "'") // Replace smart quotes
-      .replace(/\u201C/g, '"')
-      .replace(/\u201D/g, '"')
-      .replace(/\u2013/g, '-') // Replace em dash
-      .replace(/\u2014/g, '--') // Replace en dash
-      .replace(/\u00A0/g, ' ') // Replace non-breaking space
-      .trim();
-  };
-
+function convertToTextResume(resumeData: any): string {
   let resume = "ENHANCED RESUME\n";
-  resume += "=".repeat(50) + "\n\n";
-
+  resume += "================\n\n";
+  
+  // Clean text function to handle potential undefined values
+  const cleanText = (text: any) => {
+    if (typeof text === 'string') return text;
+    if (typeof text === 'object' && text !== null) return JSON.stringify(text);
+    return String(text || '');
+  };
+  
+  // Header
   if (resumeData.name) {
-    resume += `Name: ${cleanText(resumeData.name)}\n`;
+    resume += cleanText(resumeData.name).toUpperCase() + "\n";
+    resume += "=".repeat(cleanText(resumeData.name).length) + "\n\n";
   }
   
-  if (resumeData.email) {
-    resume += `Email: ${cleanText(resumeData.email)}\n`;
+  if (resumeData.title) {
+    resume += cleanText(resumeData.title) + "\n\n";
   }
   
-  if (resumeData.phone) {
-    resume += `Phone: ${cleanText(resumeData.phone)}\n`;
+  // Contact Info
+  if (resumeData.email || resumeData.phone || resumeData.location) {
+    resume += "CONTACT INFORMATION\n";
+    resume += "-".repeat(19) + "\n";
+    if (resumeData.email) resume += "Email: " + cleanText(resumeData.email) + "\n";
+    if (resumeData.phone) resume += "Phone: " + cleanText(resumeData.phone) + "\n";
+    if (resumeData.location) resume += "Location: " + cleanText(resumeData.location) + "\n";
+    if (resumeData.linkedin) resume += "LinkedIn: " + cleanText(resumeData.linkedin) + "\n";
+    resume += "\n";
   }
   
-  if (resumeData.location) {
-    resume += `Location: ${cleanText(resumeData.location)}\n`;
-  }
-  
-  resume += "\n";
-
+  // Summary
   if (resumeData.summary) {
     resume += "PROFESSIONAL SUMMARY\n";
     resume += "-".repeat(20) + "\n";
     resume += cleanText(resumeData.summary) + "\n\n";
   }
-
-  if (resumeData.experience && resumeData.experience.length > 0) {
-    resume += "WORK EXPERIENCE\n";
-    resume += "-".repeat(15) + "\n";
+  
+  // Experience
+  if (resumeData.experience && Array.isArray(resumeData.experience) && resumeData.experience.length > 0) {
+    resume += "PROFESSIONAL EXPERIENCE\n";
+    resume += "-".repeat(23) + "\n";
     resumeData.experience.forEach((exp: any) => {
-      resume += `${cleanText(exp.title || 'Position')} at ${cleanText(exp.company || 'Company')}\n`;
-      if (exp.duration) resume += `Duration: ${cleanText(exp.duration)}\n`;
-      if (exp.achievements && exp.achievements.length > 0) {
-        resume += "Key Achievements:\n";
-        exp.achievements.forEach((achievement: string) => {
-          resume += `• ${cleanText(achievement)}\n`;
-        });
+      if (exp.title || exp.position) resume += cleanText(exp.title || exp.position) + "\n";
+      if (exp.company) resume += cleanText(exp.company) + "\n";
+      if (exp.duration || exp.dates) resume += cleanText(exp.duration || exp.dates) + "\n";
+      if (exp.description || exp.responsibilities) {
+        resume += cleanText(exp.description || exp.responsibilities) + "\n";
       }
       resume += "\n";
     });
   }
-
-  if (resumeData.education && resumeData.education.length > 0) {
+  
+  // Education
+  if (resumeData.education && Array.isArray(resumeData.education) && resumeData.education.length > 0) {
     resume += "EDUCATION\n";
     resume += "-".repeat(9) + "\n";
     resumeData.education.forEach((edu: any) => {
-      resume += `${cleanText(edu.degree || 'Degree')} from ${cleanText(edu.institution || 'Institution')}\n`;
-      if (edu.year) resume += `Year: ${cleanText(edu.year)}\n`;
+      if (edu.degree || edu.qualification) resume += cleanText(edu.degree || edu.qualification) + "\n";
+      if (edu.institution || edu.school) resume += cleanText(edu.institution || edu.school) + "\n";
+      if (edu.year || edu.duration) resume += cleanText(edu.year || edu.duration) + "\n";
+      if (edu.gpa) resume += "GPA: " + cleanText(edu.gpa) + "\n";
       resume += "\n";
     });
   }
-
-  if (resumeData.skills && resumeData.skills.length > 0) {
+  
+  // Skills
+  if (resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0) {
     resume += "SKILLS\n";
     resume += "-".repeat(6) + "\n";
     resume += resumeData.skills.map((skill: string) => cleanText(skill)).join(", ") + "\n\n";
@@ -1560,6 +1012,15 @@ function generateTextFallback(resumeData: any): string {
   return resume;
 }
 
+function sanitizeFilename(filename: string): string {
+  // Remove or replace invalid characters for filenames
+  return filename
+    .replace(/[<>:"/\\|?*]/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_{2,}/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .substring(0, 100); // Limit length
+}
 
 serve(async (req) => {
   console.log('PDF Generation function started');
@@ -1571,12 +1032,17 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting PDF resume generation...');
-    
-    const { enhancedContent, paymentId, templateId = 'modern', themeId = 'navy', fileName } = await req.json();
-    
-    console.log('Request data:', {
-      paymentId,
+    const { 
+      paymentId, 
+      enhancedContent, 
+      templateId = 'modern', 
+      themeId = 'navy',
+      fileName = 'Enhanced_Resume',
+      hasEnhancedContent = false
+    } = await req.json();
+
+    console.log('Received request:', {
+      paymentId: paymentId ? `${paymentId.slice(0, 10)}...` : 'none',
       hasEnhancedContent: !!enhancedContent,
       themeId,
       fileName: fileName || `Enhanced_Resume_${Date.now()}`
