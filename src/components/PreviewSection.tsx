@@ -19,7 +19,7 @@ import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
 import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
-import { generateTextBasedPdf, extractResumeDataFromEnhanced } from "@/lib/textBasedPdfGenerator";
+import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
 import { resumeTemplates, getDefaultTemplate, type ResumeTemplate } from "@/lib/resumeTemplates";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -211,9 +211,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             });
             
             const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-            const pdfBlob = await generateTextBasedPdf(resumeData, {
+            const pdfBlob = await generateVisualPdf(resumeData, {
               filename: 'enhanced-resume.pdf',
-              templateType: selectedTemplate.id as any,
+              templateType: selectedTemplate.layout,
               colorTheme: {
                 primary: selectedColorTheme.primary,
                 secondary: selectedColorTheme.secondary,
@@ -272,11 +272,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
         if (enhancedContent && resumeContentRef.current) {
           try {
-            // Generate text-based PDF for login flow too
+            // Generate visual PDF for login flow too
             const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-            const pdfBlob = await generateTextBasedPdf(resumeData, {
+            const pdfBlob = await generateVisualPdf(resumeData, {
               filename: 'enhanced-resume.pdf',
-              templateType: selectedTemplate.id as any,
+              templateType: selectedTemplate.layout,
               colorTheme: {
                 primary: selectedColorTheme.primary,
                 secondary: selectedColorTheme.secondary,
@@ -349,14 +349,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     try {
       toast({
-        title: "Generating ATS-Compatible PDF",
-        description: "Creating text-based PDF that ATS systems can easily read...",
+        title: "Generating Beautiful Visual PDF",
+        description: "Creating a stunning resume that matches your template preview...",
       });
 
-      // Use text-based PDF generator for ATS compatibility
+      // Use visual PDF generator that matches template preview
       const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-      const pdfBlob = await generateTextBasedPdf(resumeData, {
-        templateType: selectedTemplate.id as any,
+      const pdfBlob = await generateVisualPdf(resumeData, {
+        templateType: selectedTemplate.layout,
         colorTheme: {
           primary: selectedColorTheme.primary,
           secondary: selectedColorTheme.secondary,
@@ -376,11 +376,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       URL.revokeObjectURL(url);
 
       toast({
-        title: "ATS-Compatible PDF Downloaded",
-        description: "Text-based PDF downloaded - fully readable by ATS systems!",
+        title: "Visual PDF Downloaded! 🎨",
+        description: "Your beautifully designed resume has been downloaded - matches the preview exactly!",
       });
     } catch (error) {
-      console.error('Error generating text-based PDF:', error);
+      console.error('Error generating visual PDF:', error);
       toast({
         title: "Download Failed",
         description: "Failed to generate PDF. Please try again.",
