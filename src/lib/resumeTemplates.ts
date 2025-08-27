@@ -52,6 +52,7 @@ export const resumeTemplates: ResumeTemplate[] = [
       { id: 'orange', name: 'Vibrant Orange', primary: '#f97316', secondary: '#fb923c', accent: '#fdba74' },
       { id: 'rose', name: 'Rose Pink', primary: '#f43f5e', secondary: '#fb7185', accent: '#fda4af' },
       { id: 'teal', name: 'Teal Blue', primary: '#0d9488', secondary: '#14b8a6', accent: '#5eead4' },
+      { id: 'neon-purple', name: 'Neon Purple', primary: '#a855f7', secondary: '#c084fc', accent: '#d8b4fe' },
     ],
     layout: 'creative',
     features: ['Creative sections', 'Dynamic layouts', 'Visual elements', 'Portfolio focus']
