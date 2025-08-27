@@ -231,36 +231,38 @@ export function PaymentSection({ file, onBack, onStartOver }: PaymentSectionProp
 
       const enhancedContent = JSON.parse(enhancedContentStr);
       
-      // Call the download function from supabase
-      const { data, error } = await supabase.functions.invoke('download-enhanced-resume', {
+      // For free coupon downloads, call the free-download function directly
+      const { data, error } = await supabase.functions.invoke('free-download', {
         body: {
           fileName: file.name,
-          enhancedContent: enhancedContent,
-          themeId: 'navy', // default theme
-          paymentStatus: 'completed' // since coupon made it free
+          resumeData: enhancedContent,
+          themeId: 'navy' // default theme
         }
       });
 
       if (error) throw error;
 
-      if (data?.url) {
-        // Download the generated PDF
-        const link = document.createElement('a');
-        link.href = data.url;
-        link.download = `enhanced-${file.name.replace('.pdf', '')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      // Create blob from the response and download
+      const blob = new Blob([new Uint8Array(data)], { 
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `enhanced-${file.name.replace('.pdf', '')}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
         
         toast({
           title: "Download Complete! 🎉",
           description: "Your enhanced resume has been downloaded successfully.",
         });
-      }
     } catch (error) {
       console.error('Download error:', error);
       toast({
-        title: "Download Error",
+        title: "Download Error",  
         description: "Failed to download. Please try again.",
         variant: "destructive"
       });
