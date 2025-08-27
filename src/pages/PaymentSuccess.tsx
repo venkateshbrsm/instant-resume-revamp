@@ -295,7 +295,43 @@ export default function PaymentSuccess() {
             console.warn('Failed to parse session storage content, falling back to payment ID');
           }
         } else {
-          console.log('No session storage data found, using payment ID fallback');
+          console.log('No session storage data found, checking database for enhanced content...');
+          
+          // Fallback: Try to get enhanced content from database using payment ID
+          try {
+            const { data: paymentData, error: paymentError } = await supabase
+              .from('payments')
+              .select('enhanced_content, theme_id, file_name')
+              .eq('razorpay_payment_id', paymentId)
+              .maybeSingle();
+              
+            if (paymentData && paymentData.enhanced_content) {
+              console.log('Retrieved enhanced content from database for payment:', paymentId);
+              requestBody = {
+                paymentId,
+                enhancedContent: paymentData.enhanced_content,
+                themeId: paymentData.theme_id || 'navy',
+                fileName: paymentData.file_name || 'resume',
+                hasEnhancedContent: true
+              };
+            } else {
+              console.log('No enhanced content found in database for payment:', paymentId);
+              requestBody = {
+                paymentId,
+                hasEnhancedContent: false,
+                themeId: 'navy',
+                fileName: `Enhanced_Resume_${new Date().getTime()}`
+              };
+            }
+          } catch (dbError) {
+            console.warn('Failed to retrieve enhanced content from database:', dbError);
+            requestBody = {
+              paymentId,
+              hasEnhancedContent: false,
+              themeId: 'navy',
+              fileName: `Enhanced_Resume_${new Date().getTime()}`
+            };
+          }
         }
 
         const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
