@@ -16,17 +16,34 @@ serve(async (req) => {
     
     console.log('Enhancement request received:', { templateId, themeId });
 
-    // Simple text parsing to extract resume information
-    const enhancedContent = parseResumeText(extractedText);
+    // Validate input
+    if (!extractedText || extractedText.trim().length < 10) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Insufficient text content for enhancement" 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Enhanced text parsing to extract resume information
+    const enhancedResume = parseResumeText(extractedText);
     
-    return new Response(JSON.stringify({ enhancedContent }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      enhancedResume 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Enhancement error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "Failed to enhance resume. Please try again." 
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
