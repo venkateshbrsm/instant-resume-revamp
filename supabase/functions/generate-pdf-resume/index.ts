@@ -1406,7 +1406,11 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 
   const API_KEY = Deno.env.get('PDFSHIFT_API_KEY');
   if (!API_KEY) {
-    throw new Error('PDFSHIFT_API_KEY not found in environment variables');
+    console.error('PDFSHIFT_API_KEY not found, falling back to text-based PDF generation');
+    // Fallback to a simple text-based PDF response
+    const textContent = generateTextFallback(resumeData);
+    const encoder = new TextEncoder();
+    return encoder.encode(textContent);
   }
 
   const response = await fetch('https://api.pdfshift.io/v3/convert/pdf', {
@@ -1466,6 +1470,70 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   console.log('PDF generated successfully via PDFShift');
   
   return new Uint8Array(pdfBuffer);
+}
+
+// Fallback function to generate text content when PDF API is unavailable
+function generateTextFallback(resumeData: any): string {
+  let resume = "ENHANCED RESUME\n";
+  resume += "=".repeat(50) + "\n\n";
+
+  if (resumeData.name) {
+    resume += `Name: ${resumeData.name}\n`;
+  }
+  
+  if (resumeData.email) {
+    resume += `Email: ${resumeData.email}\n`;
+  }
+  
+  if (resumeData.phone) {
+    resume += `Phone: ${resumeData.phone}\n`;
+  }
+  
+  if (resumeData.location) {
+    resume += `Location: ${resumeData.location}\n`;
+  }
+  
+  resume += "\n";
+
+  if (resumeData.summary) {
+    resume += "PROFESSIONAL SUMMARY\n";
+    resume += "-".repeat(20) + "\n";
+    resume += resumeData.summary + "\n\n";
+  }
+
+  if (resumeData.experience && resumeData.experience.length > 0) {
+    resume += "WORK EXPERIENCE\n";
+    resume += "-".repeat(15) + "\n";
+    resumeData.experience.forEach((exp: any) => {
+      resume += `${exp.title || 'Position'} at ${exp.company || 'Company'}\n`;
+      if (exp.duration) resume += `Duration: ${exp.duration}\n`;
+      if (exp.achievements && exp.achievements.length > 0) {
+        resume += "Key Achievements:\n";
+        exp.achievements.forEach((achievement: string) => {
+          resume += `• ${achievement}\n`;
+        });
+      }
+      resume += "\n";
+    });
+  }
+
+  if (resumeData.education && resumeData.education.length > 0) {
+    resume += "EDUCATION\n";
+    resume += "-".repeat(9) + "\n";
+    resumeData.education.forEach((edu: any) => {
+      resume += `${edu.degree || 'Degree'} from ${edu.institution || 'Institution'}\n`;
+      if (edu.year) resume += `Year: ${edu.year}\n`;
+      resume += "\n";
+    });
+  }
+
+  if (resumeData.skills && resumeData.skills.length > 0) {
+    resume += "SKILLS\n";
+    resume += "-".repeat(6) + "\n";
+    resume += resumeData.skills.join(", ") + "\n\n";
+  }
+
+  return resume;
 }
 
 serve(async (req) => {
@@ -1567,6 +1635,20 @@ serve(async (req) => {
     const pdfBytes = await generatePDFWithPDFShift(resumeData, templateId, themeId);
     
     console.log(`PDF generated successfully from direct content, size: ${pdfBytes.length} bytes`);
+
+    // Check if we got text fallback (when API key is missing)
+    const isTextFallback = pdfBytes.length < 10000 && 
+      new TextDecoder().decode(pdfBytes.slice(0, 100)).includes('ENHANCED RESUME');
+    
+    if (isTextFallback) {
+      return new Response(pdfBytes, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/plain',
+          'Content-Disposition': `attachment; filename="${fileName || `Enhanced_Resume_${Date.now()}`}.txt"`,
+        },
+      });
+    }
 
     return new Response(pdfBytes, {
       headers: {
