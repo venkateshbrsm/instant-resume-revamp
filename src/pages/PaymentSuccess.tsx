@@ -311,22 +311,72 @@ export default function PaymentSuccess() {
           throw new Error('PDF generation failed: No data returned');
         }
 
-        // Convert the returned data to blob
-        let arrayBuffer: ArrayBuffer;
-        if (data instanceof ArrayBuffer) {
-          arrayBuffer = data;
+        // Handle different response formats
+        let blob: Blob;
+        
+        if (data instanceof Blob) {
+          blob = data;
+        } else if (data instanceof ArrayBuffer) {
+          // Detect if it's text content (fallback mode)
+          const uint8Array = new Uint8Array(data);
+          const firstChars = new TextDecoder().decode(uint8Array.slice(0, 20));
+          
+          if (firstChars.includes('ENHANCED RESUME')) {
+            blob = new Blob([data], { type: 'text/plain' });
+            const filename = `Enhanced_Resume_${new Date().getTime()}.txt`;
+            
+            // Create download link for text file
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            toast({
+              title: "Text Resume Downloaded",
+              description: "Your enhanced resume has been downloaded as a text file (PDF service temporarily unavailable).",
+            });
+            return;
+          } else {
+            blob = new Blob([data], { type: 'application/pdf' });
+          }
         } else if (typeof data === 'string') {
-          // Handle base64 data
-          const binaryString = atob(data);
-          arrayBuffer = new ArrayBuffer(binaryString.length);
-          const uint8Array = new Uint8Array(arrayBuffer);
-          for (let i = 0; i < binaryString.length; i++) {
-            uint8Array[i] = binaryString.charCodeAt(i);
+          try {
+            // Try to decode base64
+            const binaryString = atob(data);
+            const arrayBuffer = new ArrayBuffer(binaryString.length);
+            const uint8Array = new Uint8Array(arrayBuffer);
+            for (let i = 0; i < binaryString.length; i++) {
+              uint8Array[i] = binaryString.charCodeAt(i);
+            }
+            blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+          } catch (base64Error) {
+            // If base64 decode fails, treat as plain text
+            blob = new Blob([data], { type: 'text/plain' });
+            const filename = `Enhanced_Resume_${new Date().getTime()}.txt`;
+            
+            // Create download link for text file
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            toast({
+              title: "Text Resume Downloaded",
+              description: "Your enhanced resume has been downloaded as a text file.",
+            });
+            return;
           }
         } else {
           throw new Error('Unexpected data format from PDF generation');
         }
-        const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
         const filename = `Enhanced_Resume_${new Date().getTime()}.pdf`;
         
         // Create download link
