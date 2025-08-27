@@ -1504,10 +1504,16 @@ serve(async (req) => {
 
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
       
+      // Check if paymentId is a Razorpay payment ID or a UUID
+      const isRazorpayId = paymentId.startsWith('pay_');
+      const queryField = isRazorpayId ? 'razorpay_payment_id' : 'id';
+      
+      console.log(`Querying payments table by ${queryField}:`, paymentId);
+      
       const { data: payment, error } = await supabase
         .from('payments')
         .select('enhanced_content')
-        .eq('id', paymentId)
+        .eq(queryField, paymentId)
         .single();
 
       if (error) {
