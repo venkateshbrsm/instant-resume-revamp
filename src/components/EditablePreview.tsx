@@ -86,6 +86,9 @@ export const EditablePreview = ({
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
+      console.log('🔍 Downloading with current editable data:', editableData);
+      
+      // Use the current editable data for PDF generation
       const resumeData = extractResumeDataFromEnhanced(editableData);
       const pdfBlob = await generateVisualPdf(resumeData, {
         templateType: selectedTemplate.layout,
@@ -273,6 +276,20 @@ export const EditablePreview = ({
               Edit
             </Button>
           )}
+          
+          <Button 
+            onClick={handleDownload} 
+            variant="default" 
+            size="sm"
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
+            Download PDF
+          </Button>
         </div>
       </div>
 
