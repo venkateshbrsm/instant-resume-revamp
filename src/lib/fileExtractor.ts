@@ -214,61 +214,82 @@ export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
 };
 
 const extractTextFromDOCX = async (file: File): Promise<string> => {
-  console.log('🔍 [DOCX] Starting DOCX extraction:', file.name, 'Size:', file.size, 'Type:', file.type);
+  console.log('🔍 [DOCX] Starting DOCX extraction with mammoth:', file.name, 'Size:', file.size, 'Type:', file.type);
   
   try {
-    // Use server-side edge function for robust DOCX text extraction
+    // First try mammoth library (client-side)
+    console.log('🔍 [DOCX] Attempting mammoth extraction...');
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // Import mammoth dynamically to ensure it's available
+    const mammoth = await import('mammoth');
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    
+    console.log('🔍 [DOCX] Mammoth extraction result:', {
+      textLength: result.value?.length || 0,
+      hasMessages: result.messages && result.messages.length > 0,
+      messages: result.messages?.length || 0
+    });
+    
+    if (result.messages && result.messages.length > 0) {
+      console.warn('🔍 [DOCX] Mammoth extraction warnings:', result.messages);
+    }
+    
+    let extractedText = result.value || '';
+    
+    // If mammoth worked well, use its result
+    if (extractedText && extractedText.trim().length > 50) {
+      console.log('✅ [DOCX] Mammoth extraction successful, text length:', extractedText.length);
+      console.log('🔍 [DOCX] Mammoth text preview:', extractedText.substring(0, 200));
+      return extractedText.trim();
+    }
+    
+    // If mammoth didn't extract enough, fall back to edge function
+    console.log('⚠️ [DOCX] Mammoth extraction insufficient, trying edge function fallback...');
+    
     const formData = new FormData();
     formData.append('file', file);
-
-    console.log('🔍 [DOCX] Sending DOCX to server-side processor...');
 
     const response = await supabase.functions.invoke('extract-docx', {
       body: formData,
     });
     
-    console.log('🔍 [DOCX] Raw response from supabase.functions.invoke:', response);
-    console.log('🔍 [DOCX] Response data:', response.data);
-    console.log('🔍 [DOCX] Response error:', response.error);
+    console.log('🔍 [DOCX] Edge function response:', response);
     
     if (response.error) {
-      console.error('❌ [DOCX] Edge function request failed:', response.error);
+      console.error('❌ [DOCX] Edge function failed:', response.error);
       throw new Error(`DOCX extraction failed: ${response.error.message}`);
     }
     
-    if (!response.data) {
-      console.error('❌ [DOCX] No data returned from edge function');
-      throw new Error('DOCX extraction failed: No data returned');
+    if (!response.data || !response.data.success) {
+      console.error('❌ [DOCX] Edge function reported failure:', response.data?.error);
+      throw new Error(`DOCX extraction failed: ${response.data?.error || 'Unknown error'}`);
     }
 
-    const data = response.data;
-    console.log('🔍 [DOCX] Processing response data:', {
-      hasSuccess: 'success' in data,
-      success: data.success,
-      hasExtractedText: 'extractedText' in data,
-      extractedTextType: typeof data.extractedText,
-      extractedTextLength: data.extractedText?.length || 0,
-      keys: Object.keys(data)
-    });
-
-    if (!data.success) {
-      console.error('❌ [DOCX] Edge function reported failure:', data.error);
-      throw new Error(`DOCX extraction failed: ${data.error || 'Unknown error'}`);
-    }
-
-    const extractedText = data.extractedText || '';
-    console.log('✅ [DOCX] Extraction completed successfully, text length:', extractedText.length);
+    const edgeExtractedText = response.data.extractedText || '';
+    console.log('🔍 [DOCX] Edge function extracted text length:', edgeExtractedText.length);
     
-    if (extractedText.length < 100) {
-      console.warn('⚠️ [DOCX] Extracted text is very short:', extractedText);
+    // Use the better result between mammoth and edge function
+    if (edgeExtractedText.length > extractedText.length) {
+      console.log('✅ [DOCX] Using edge function result (longer text)');
+      extractedText = edgeExtractedText;
+    } else if (extractedText.length > 0) {
+      console.log('✅ [DOCX] Using mammoth result (better quality)');
     } else {
-      console.log('🔍 [DOCX] First 200 chars:', extractedText.substring(0, 200));
+      console.log('⚠️ [DOCX] Both methods failed, using edge function result as fallback');
+      extractedText = edgeExtractedText;
     }
     
-    return extractedText || 'Text extracted successfully from DOCX';
+    if (extractedText.length < 20) {
+      throw new Error('Insufficient text extracted from DOCX file');
+    }
+    
+    console.log('✅ [DOCX] Final extraction result length:', extractedText.length);
+    console.log('🔍 [DOCX] Final text preview:', extractedText.substring(0, 300));
+    return extractedText;
 
   } catch (error) {
-    console.error('💥 [DOCX] Processing failed:', error);
+    console.error('💥 [DOCX] All extraction methods failed:', error);
     console.error('💥 [DOCX] Error stack:', error.stack);
     
     return `📄 DOCX Resume: ${file.name}
@@ -280,15 +301,16 @@ File Details:
 
 ❌ DOCX Processing Error
 
-Unable to process this DOCX file with server-side extraction.
+Unable to process this DOCX file. Both client-side and server-side extraction failed.
 
 Error: ${error.message}
 
 💡 Try instead:
 • Convert to PDF format from your word processor
-• Use a different DOCX file
+• Save as a newer DOCX format (.docx)
 • Ensure the file isn't corrupted or password-protected
+• Try copying content to a plain text document
 
-The resume enhancement will still attempt to process the document.`;
+The resume enhancement will still attempt to process any available content.`;
   }
 };
