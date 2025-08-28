@@ -95,21 +95,21 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                           JS
                         </div>
                         <div>
-                          <h4 className="font-bold text-gray-900 text-xs">John Smith</h4>
+                          <h4 className="font-bold text-gray-600 text-xs">John Smith</h4>
                           <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
                         </div>
                       </div>
                       
                       {/* Enhanced experience */}
                       <div>
-                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase">Experience</h5>
-                        <p className="text-gray-700 text-xs">• Delivered 15+ React apps, +40% engagement</p>
-                        <p className="text-gray-700 text-xs">• Led team of 5, -60% deployment time</p>
+                        <h5 className="font-bold text-gray-600 mb-1 text-xs uppercase">Experience</h5>
+                        <p className="text-gray-500 text-xs">• Delivered 15+ React apps, +40% engagement</p>
+                        <p className="text-gray-500 text-xs">• Led team of 5, -60% deployment time</p>
                       </div>
                       
                       {/* Skills */}
                       <div>
-                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase">Skills</h5>
+                        <h5 className="font-bold text-gray-600 mb-1 text-xs uppercase">Skills</h5>
                         <div className="flex flex-wrap gap-1">
                           {['React', 'Node.js', 'TypeScript'].map((skill) => (
                             <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
@@ -199,7 +199,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                           JS
                         </div>
                         <div>
-                          <h4 className="font-bold text-gray-900">John Smith</h4>
+                          <h4 className="font-bold text-gray-600">John Smith</h4>
                           <p className="text-primary font-medium text-xs">Senior Software Engineer</p>
                           <p className="text-gray-600 text-xs">john.smith@email.com | 555-0123</p>
                         </div>
@@ -207,15 +207,15 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                       
                       {/* Enhanced experience */}
                       <div>
-                        <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">Experience</h5>
-                        <p className="text-gray-700 text-xs font-medium">Senior Software Engineer • Tech Corp (2020-2023)</p>
-                        <p className="text-gray-700 text-xs">• Delivered 15+ React applications, increasing user engagement by 40%</p>
-                        <p className="text-gray-700 text-xs">• Led cross-functional team of 5, reducing deployment time by 60%</p>
+                        <h5 className="font-bold text-gray-600 mb-2 text-xs uppercase tracking-wide">Experience</h5>
+                        <p className="text-gray-500 text-xs font-medium">Senior Software Engineer • Tech Corp (2020-2023)</p>
+                        <p className="text-gray-500 text-xs">• Delivered 15+ React applications, increasing user engagement by 40%</p>
+                        <p className="text-gray-500 text-xs">• Led cross-functional team of 5, reducing deployment time by 60%</p>
                       </div>
                       
                       {/* Skills with visual enhancement */}
                       <div>
-                        <h5 className="font-bold text-gray-900 mb-2 text-xs uppercase tracking-wide">Core Skills</h5>
+                        <h5 className="font-bold text-gray-600 mb-2 text-xs uppercase tracking-wide">Core Skills</h5>
                         <div className="flex flex-wrap gap-1">
                           {['React', 'Node.js', 'TypeScript'].map((skill) => (
                             <span key={skill} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded font-medium">
@@ -227,7 +227,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
                       
                       {/* Performance metrics - Hidden on mobile for better performance */}
                       <div className="hidden sm:block">
-                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase tracking-wide">Impact</h5>
+                        <h5 className="font-bold text-gray-600 mb-1 text-xs uppercase tracking-wide">Impact</h5>
                         <div className="h-16 w-full min-w-[200px]">
                           <ResponsiveContainer width="100%" height="100%" minHeight={64}>
                             <BarChart data={performanceData}>
@@ -251,7 +251,7 @@ export function BeforeAfterShowcase({ onGetStarted }: BeforeAfterShowcaseProps) 
 
                       {/* Simple metrics for mobile */}
                       <div className="sm:hidden">
-                        <h5 className="font-bold text-gray-900 mb-1 text-xs uppercase">Impact</h5>
+                        <h5 className="font-bold text-gray-600 mb-1 text-xs uppercase">Impact</h5>
                         <div className="flex gap-2 text-xs">
                           <span className="bg-primary/10 text-primary px-2 py-1 rounded">75% Response</span>
                           <span className="bg-primary/10 text-primary px-2 py-1 rounded">85% Engagement</span>

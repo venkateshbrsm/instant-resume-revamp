@@ -230,7 +230,7 @@ async function generateModernPdf(
     doc.text('PROFESSIONAL SUMMARY', mainContentX, mainY);
     mainY += 10;
 
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(120, 120, 120);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
@@ -304,7 +304,7 @@ async function generateModernPdf(
           doc.setFillColor(ar, ag, ab);
           doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
           
-          doc.setTextColor(60, 60, 60);
+          doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
           const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
@@ -427,7 +427,7 @@ async function generateCreativePdf(
   currentY += 8;
 
   if (resumeData.summary) {
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
@@ -534,7 +534,7 @@ async function generateCreativePdf(
           doc.text('V', margin + 5.5, currentY + 0.5);
           
           // Achievement text
-          doc.setTextColor(60, 60, 60);
+          doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
           const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
@@ -663,7 +663,7 @@ async function generateClassicPdf(
   if (resumeData.summary) {
     addSectionHeader('Professional Summary');
     
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
@@ -703,7 +703,7 @@ async function generateClassicPdf(
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
         exp.achievements.forEach((achievement) => {
-          doc.setTextColor(60, 60, 60);
+          doc.setTextColor(120, 120, 120);
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
           doc.text('•', margin + 5, currentY);
@@ -723,7 +723,7 @@ async function generateClassicPdf(
   if (resumeData.skills && resumeData.skills.length > 0) {
     addSectionHeader('Core Competencies');
     
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     

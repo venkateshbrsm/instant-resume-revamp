@@ -199,7 +199,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
               </h2>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border-l-4" style={{ borderColor: selectedColorTheme.primary }}>
-              <p className="text-sm leading-relaxed text-gray-700">
+              <p className="text-sm leading-relaxed text-gray-500">
                 {enhancedContent.summary}
               </p>
             </div>
@@ -225,7 +225,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                       <div key={index} className="bg-white p-6 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-8" style={{ borderColor: selectedColorTheme.accent }} data-experience>
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">{exp.title}</h3>
+                            <h3 className="text-lg font-bold text-gray-600 mb-1">{exp.title}</h3>
                             <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
                               {exp.company}
                             </p>
@@ -240,7 +240,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                         
                         {exp.achievements && exp.achievements.length > 0 && (
                           <div className="page-break-avoid">
-                            <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                            <h4 className="font-semibold text-gray-600 flex items-center gap-2 mb-4">
                               <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
                               Strategic Achievements & Leadership Impact
                             </h4>
@@ -286,7 +286,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                             
                             {/* Executive Leadership & Strategic Vision */}
                             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
+                              <h5 className="font-semibold text-gray-600 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
                               <p className="text-xs leading-relaxed text-gray-600">
                                 {extractLeadershipLearnings(exp.achievements, exp.title, exp.company, index)}
                               </p>
