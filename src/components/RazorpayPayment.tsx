@@ -127,11 +127,11 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled = false, coup
             console.log('No theme found in sessionStorage, will default to navy');
           }
           
-          // Clear from storage after using
-          sessionStorage.removeItem('enhancedContentForPayment');
-          sessionStorage.removeItem('extractedTextForPayment');
-          sessionStorage.removeItem('selectedColorThemeForPayment');
-          sessionStorage.removeItem('selectedTemplateForPayment');
+          // Don't clear from storage yet - PaymentSuccess page needs this data
+          // sessionStorage.removeItem('enhancedContentForPayment');
+          // sessionStorage.removeItem('extractedTextForPayment');
+          // sessionStorage.removeItem('selectedColorThemeForPayment');
+          // sessionStorage.removeItem('selectedTemplateForPayment');
         } catch (error) {
           console.warn('Failed to parse enhanced content or theme from storage:', error);
         }

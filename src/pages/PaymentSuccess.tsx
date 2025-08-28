@@ -243,6 +243,13 @@ export default function PaymentSuccess() {
         const enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
         const selectedThemeStr = sessionStorage.getItem('selectedColorThemeForPayment');
         
+        console.log('Session storage check:', {
+          hasEnhancedContent: !!enhancedContentStr2,
+          hasTheme: !!selectedThemeStr,
+          enhancedContentLength: enhancedContentStr2?.length,
+          themeLength: selectedThemeStr?.length
+        });
+        
         if (enhancedContentStr2 && selectedThemeStr) {
           try {
             const enhancedContent = JSON.parse(enhancedContentStr2);
