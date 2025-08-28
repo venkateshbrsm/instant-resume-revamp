@@ -195,82 +195,91 @@ export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
 };
 
 const extractTextFromDOCX = async (file: File): Promise<string> => {
-  console.log('Extracting text from DOCX using edge function:', file.name, 'Size:', file.size);
+  console.log('Extracting text from DOCX using mammoth:', file.name, 'Size:', file.size);
   
   try {
-    // Use edge function to extract text from DOCX (similar to PDF processing)
-    const formData = new FormData();
-    formData.append('file', file);
-
-    console.log('Sending DOCX to extraction service...');
-
-    const { data, error } = await supabase.functions.invoke('extract-docx', {
-      body: formData,
-    });
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
     
-    if (error) {
-      console.error('DOCX extraction request failed:', error);
-      throw new Error(`DOCX extraction failed: ${error.message}`);
+    if (result.messages && result.messages.length > 0) {
+      console.warn('DOCX extraction warnings:', result.messages);
     }
     
-    if (!data) {
-      console.error('DOCX extraction request failed: No data returned');
-      throw new Error('DOCX extraction failed: No data returned');
-    }
-
-    const extractionData = data;
-
-    if (!extractionData.success) {
-      console.error('DOCX extraction failed:', extractionData.error);
-      throw new Error(`DOCX extraction failed: ${extractionData.error}`);
-    }
-
-    console.log('DOCX extraction completed successfully');
-    return extractionData.extractedText || 'Professional resume content extracted from DOCX file';
-
-  } catch (error) {
-    console.error('DOCX processing failed, falling back to mammoth:', error);
+    console.log('Mammoth extraction completed');
+    console.log('Raw text length:', result.value?.length || 0);
+    console.log('Sample text (first 200 chars):', result.value?.substring(0, 200));
     
-    // Fallback to mammoth if edge function fails
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer });
+    if (!result.value || result.value.trim().length < 10) {
+      console.log('Mammoth extraction yielded minimal content, trying edge function...');
       
-      if (result.messages && result.messages.length > 0) {
-        console.warn('DOCX extraction warnings:', result.messages);
+      // Fallback to edge function if mammoth fails
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const { data, error } = await supabase.functions.invoke('extract-docx', {
+        body: formData,
+      });
+      
+      if (error) {
+        console.error('Edge function fallback failed:', error);
+      } else if (data?.success && data?.extractedText) {
+        console.log('Edge function fallback successful, text length:', data.extractedText.length);
+        return data.extractedText;
       }
-      
-      console.log('Mammoth fallback extraction completed');
-      return result.value || `Professional Resume Document: ${file.name}
-
-Document processed successfully. Contains professional resume content ready for AI enhancement including work experience, skills, education, and qualifications.
+    }
+    
+    const extractedText = result.value || '';
+    
+    // If we still have very little content, provide a meaningful response
+    if (extractedText.trim().length < 10) {
+      return `📄 Resume Document: ${file.name}
 
 File Details:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
 - Processed: ${new Date().toLocaleString()}
 
-The AI enhancement system will create a comprehensive, ATS-optimized resume from this content.`;
-      
-    } catch (mammothError) {
-      console.error('Mammoth fallback also failed:', mammothError);
-      
-      return `📄 Professional Resume: ${file.name}
+⚠️ Text Extraction Notice
+The document was processed but yielded limited extractable text. This can happen with:
+• Complex formatting or embedded images
+• Protected or encrypted documents  
+• Non-standard DOCX structure
 
-File Details:
+💡 For Better Results:
+• Try saving as a simpler Word document
+• Convert to PDF format
+• Ensure the document contains readable text
+
+The AI enhancement will still work with the document structure and attempt to create a professional resume based on common resume patterns.`;
+    }
+    
+    console.log('DOCX extraction successful, final text length:', extractedText.length);
+    return extractedText;
+
+  } catch (error) {
+    console.error('DOCX extraction failed:', error);
+    
+    return `📄 Resume Processing Error: ${file.name}
+
+Error Details: ${error.message}
+
+File Information:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
-- Uploaded: ${new Date().toLocaleString()}
 
-Document Status: Successfully uploaded and ready for AI enhancement
+❌ Document Processing Failed
 
-This DOCX resume document contains professional content including:
-✓ Work experience and career history
-✓ Skills and technical competencies
-✓ Education and certifications
-✓ Contact information and qualifications
+This can occur due to:
+• Corrupted DOCX file
+• Unsupported document format
+• Complex document structure
 
-The AI enhancement process will transform this content into a comprehensive, ATS-friendly resume with detailed achievements, optimized keywords, and professional formatting.`;
-    }
+🔧 Troubleshooting Steps:
+1. Try re-saving the document in Word
+2. Convert to PDF format for better compatibility
+3. Ensure the file isn't password protected
+4. Use a simpler document template
+
+Please try uploading a different version of your resume or convert to PDF format.`;
   }
 };

@@ -75,166 +75,112 @@ async function extractTextFromDOCX(arrayBuffer: ArrayBuffer): Promise<string> {
   console.log('Starting DOCX text extraction...');
   
   try {
-    // Use JSZip-like approach to extract DOCX content
+    // DOCX files are ZIP archives - we need to extract and parse the document.xml file
     const uint8Array = new Uint8Array(arrayBuffer);
     
-    // Convert ArrayBuffer to string to work with ZIP structure
-    let zipContent = '';
-    for (let i = 0; i < uint8Array.length; i++) {
-      zipContent += String.fromCharCode(uint8Array[i]);
-    }
+    // Simple ZIP parsing to find document.xml
+    let documentXML = '';
     
-    // Look for document.xml content in the ZIP structure
-    const documentStart = zipContent.indexOf('word/document.xml');
-    if (documentStart === -1) {
-      throw new Error('Could not locate document.xml in DOCX file');
-    }
-    
-    // Extract the XML content
-    let xmlContent = '';
-    
-    // Try to find and extract the compressed document.xml content
-    // Look for XML patterns in the compressed data
-    const patterns = [
-      /<w:t[^>]*>([^<]+)<\/w:t>/g,
-      /<w:t>([^<]+)<\/w:t>/g,
-      />([^<]{3,})</g  // General text patterns
-    ];
-    
-    let extractedText = '';
-    
-    // Try multiple extraction approaches
-    for (const pattern of patterns) {
-      const matches = zipContent.match(pattern);
-      if (matches && matches.length > 0) {
-        matches.forEach(match => {
-          // Clean and extract text
-          let text = match.replace(/<[^>]*>/g, '').trim();
-          if (text.length > 2 && !text.includes('xml') && !text.includes('word/')) {
-            extractedText += text + ' ';
+    // Look for the ZIP local file header signature and document.xml
+    for (let i = 0; i < uint8Array.length - 30; i++) {
+      // Check for ZIP local file header (0x04034b50)
+      if (uint8Array[i] === 0x50 && uint8Array[i + 1] === 0x4b && 
+          uint8Array[i + 2] === 0x03 && uint8Array[i + 3] === 0x04) {
+        
+        // Read filename length
+        const filenameLength = uint8Array[i + 26] | (uint8Array[i + 27] << 8);
+        const extraLength = uint8Array[i + 28] | (uint8Array[i + 29] << 8);
+        
+        // Get filename
+        const filenameStart = i + 30;
+        const filename = String.fromCharCode(...uint8Array.slice(filenameStart, filenameStart + filenameLength));
+        
+        // If this is document.xml, extract its content
+        if (filename === 'word/document.xml') {
+          const dataStart = filenameStart + filenameLength + extraLength;
+          const compressedSize = uint8Array[i + 18] | (uint8Array[i + 19] << 8) | 
+                                (uint8Array[i + 20] << 16) | (uint8Array[i + 21] << 24);
+          
+          // Extract the compressed data (this is a simplified approach)
+          const compressedData = uint8Array.slice(dataStart, dataStart + compressedSize);
+          
+          try {
+            // Try to decompress and decode
+            documentXML = new TextDecoder('utf-8', { ignoreBOM: true }).decode(compressedData);
+            break;
+          } catch (decompressError) {
+            console.warn('Failed to decompress document.xml, trying raw extraction:', decompressError);
+            // Try raw extraction without decompression
+            documentXML = String.fromCharCode(...compressedData.filter(byte => byte >= 32 && byte <= 126));
           }
-        });
+        }
       }
     }
     
-    // Additional approach: look for readable text sequences
-    const readableTextPattern = /[A-Za-z][A-Za-z0-9\s.,;:!?()-]{10,}/g;
-    const readableMatches = zipContent.match(readableTextPattern);
+    console.log('Attempting to extract text from document XML, length:', documentXML.length);
     
-    if (readableMatches) {
-      readableMatches.forEach(match => {
-        const cleanText = match.trim();
-        if (cleanText.length > 10 && 
-            !cleanText.includes('xml') && 
-            !cleanText.includes('word/') &&
-            !cleanText.includes('rels/') &&
-            !extractedText.includes(cleanText)) {
-          extractedText += cleanText + ' ';
-        }
-      });
+    // If we couldn't find document.xml, try alternative approach
+    if (!documentXML) {
+      console.log('Could not find document.xml, trying alternative extraction...');
+      
+      // Convert entire buffer to string and look for text patterns
+      const fullText = String.fromCharCode(...uint8Array.filter(byte => byte >= 32 && byte <= 126));
+      
+      // Look for readable text sequences
+      const textMatches = fullText.match(/[A-Z][a-zA-Z0-9\s.,;:!?()'-]{15,}/g);
+      
+      if (textMatches && textMatches.length > 0) {
+        documentXML = textMatches.join(' ');
+        console.log('Alternative extraction found', textMatches.length, 'text segments');
+      }
     }
     
-    // Clean up the extracted text
+    // Extract text from XML content
+    let extractedText = '';
+    
+    if (documentXML) {
+      // Extract text from w:t tags (Word text elements)
+      const textTagPattern = /<w:t[^>]*>([^<]*)<\/w:t>/g;
+      let match;
+      
+      while ((match = textTagPattern.exec(documentXML)) !== null) {
+        const text = match[1].trim();
+        if (text && text.length > 0) {
+          extractedText += text + ' ';
+        }
+      }
+      
+      // Also try simpler text extraction
+      if (extractedText.length < 50) {
+        const simpleTextPattern = />([A-Za-z][A-Za-z0-9\s.,;:!?()'-]{5,})</g;
+        while ((match = simpleTextPattern.exec(documentXML)) !== null) {
+          const text = match[1].trim();
+          if (text && text.length > 5 && !text.includes('xml') && !text.includes('word')) {
+            extractedText += text + ' ';
+          }
+        }
+      }
+    }
+    
+    // Clean up extracted text
     extractedText = extractedText
       .replace(/\s+/g, ' ')
-      .replace(/[^\x20-\x7E\s]/g, '') // Remove non-printable characters
-      .replace(/\b(?:xml|word|rels|styles|theme|document|docProps)\b/gi, '') // Remove DOCX-specific terms
+      .replace(/[^\x20-\x7E\s]/g, '')
       .trim();
     
-    console.log('Raw extraction result length:', extractedText.length);
+    console.log('Final extraction result length:', extractedText.length);
+    console.log('Sample of extracted text:', extractedText.substring(0, 200));
     
-    // If extraction is still poor, provide a comprehensive fallback
-    if (extractedText.length < 200) {
-      console.log('Extraction yielded limited text, using enhanced fallback');
-      
-      return `Professional Resume Document - ${arrayBuffer.byteLength} bytes
-
-This is a comprehensive DOCX resume document containing detailed professional information including:
-
-PROFESSIONAL EXPERIENCE:
-• Multiple positions with detailed job responsibilities and achievements
-• Quantifiable accomplishments and business impact metrics  
-• Industry-relevant skills and technical competencies
-• Leadership roles and team management experience
-• Project management and strategic planning initiatives
-
-TECHNICAL SKILLS:
-• Programming languages and software development tools
-• Database management and data analysis capabilities
-• Cloud technologies and infrastructure management
-• Business intelligence and reporting systems
-• Quality assurance and testing methodologies
-
-EDUCATION & CERTIFICATIONS:
-• Academic qualifications and professional degrees
-• Industry certifications and specialized training
-• Continuing education and professional development
-• Technical workshops and skill enhancement programs
-
-CORE COMPETENCIES:
-• Strategic planning and business development
-• Team leadership and cross-functional collaboration
-• Process improvement and operational excellence
-• Customer relationship management
-• Project delivery and stakeholder management
-• Problem-solving and analytical thinking
-• Communication and presentation skills
-
-This document contains substantial professional content ready for AI enhancement to create a comprehensive, ATS-optimized resume with detailed achievements, industry keywords, and professional formatting.
-
-Document processing: Successfully parsed DOCX structure containing professional resume data.`;
+    // Only return fallback if we have very little content
+    if (extractedText.length < 50) {
+      console.log('Insufficient text extracted, this may indicate a parsing issue');
+      return `Error: Could not extract readable content from DOCX file. Document size: ${arrayBuffer.byteLength} bytes. Please try converting to PDF format for better text extraction.`;
     }
     
-    console.log('DOCX extraction successful, final text length:', extractedText.length);
     return extractedText;
     
   } catch (error) {
-    console.error('DOCX parsing error:', error);
-    
-    // Return comprehensive fallback content for AI enhancement
-    return `Professional Resume Document - DOCX Format (${arrayBuffer.byteLength} bytes)
-
-EXECUTIVE SUMMARY:
-Accomplished professional with extensive experience across multiple domains including technology, business development, and team leadership. Proven track record of delivering exceptional results through strategic planning, innovative problem-solving, and effective stakeholder management.
-
-PROFESSIONAL EXPERIENCE:
-
-Senior Technology Professional | Leading Organization | 2020-Present
-• Led cross-functional teams of 10+ members in delivering high-impact technology solutions
-• Managed enterprise-level projects with budgets exceeding $2M, consistently delivering on time and under budget  
-• Implemented process improvements that increased operational efficiency by 30%
-• Developed and executed strategic initiatives that generated $5M+ in additional revenue
-• Mentored junior team members and established best practices for code quality and development workflows
-
-Technology Specialist | Previous Company | 2018-2020  
-• Designed and implemented scalable software solutions serving 100K+ active users
-• Collaborated with product managers and designers to deliver user-centric applications
-• Optimized database performance resulting in 40% reduction in query response times
-• Established automated testing frameworks that reduced production bugs by 60%
-• Participated in architecture decisions and technology stack evaluations
-
-Software Developer | Early Career Company | 2016-2018
-• Developed full-stack web applications using modern frameworks and technologies
-• Participated in agile development cycles and contributed to sprint planning sessions
-• Implemented responsive user interfaces with focus on accessibility and performance
-• Maintained comprehensive documentation and participated in code review processes
-
-TECHNICAL SKILLS:
-Programming Languages: JavaScript, Python, Java, C#, TypeScript, SQL
-Web Technologies: React, Node.js, HTML5, CSS3, RESTful APIs, GraphQL
-Databases: PostgreSQL, MongoDB, MySQL, Redis, Elasticsearch  
-Cloud Platforms: AWS, Azure, Google Cloud Platform, Docker, Kubernetes
-Development Tools: Git, Jenkins, JIRA, VS Code, Postman, Figma
-
-EDUCATION:
-Bachelor of Science in Computer Science | University Name | 2016
-Relevant Coursework: Data Structures, Algorithms, Database Systems, Software Engineering
-
-CERTIFICATIONS:
-• AWS Certified Solutions Architect
-• Scrum Master Certification
-• Google Cloud Professional Developer
-
-This document represents a comprehensive professional profile ready for AI enhancement and ATS optimization.`;
+    console.error('DOCX extraction failed:', error);
+    return `Error extracting DOCX content: ${error.message}. Please try converting your resume to PDF format for better compatibility.`;
   }
 }
