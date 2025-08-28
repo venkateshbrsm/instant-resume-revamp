@@ -269,7 +269,9 @@ const parseJobBlock = (block: string[]): any => {
   let location = '';
   let responsibilities: string[] = [];
   
-  console.log('Parsing job block:', block);
+  console.log('=== PARSING JOB BLOCK ===');
+  console.log('Block content:', block);
+  console.log('Block length:', block.length);
   
   // First pass: identify company and dates from lines containing both
   for (let i = 0; i < block.length; i++) {
@@ -369,9 +371,15 @@ const parseJobBlock = (block: string[]): any => {
         line.startsWith('- ') ||
         line.startsWith('• ')) {
       const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
+      console.log('=== BULLET POINT DETECTED ===');
+      console.log('Original line:', line);
+      console.log('Cleaned line:', cleanedLine);
+      console.log('Company/Position context:', company || position);
       if (cleanedLine.length > 3) { // Reduced minimum length
-        console.log('Found bullet point for', company || position, ':', cleanedLine);
+        console.log('Adding bullet point:', cleanedLine);
         responsibilities.push(cleanedLine);
+      } else {
+        console.log('Bullet point too short, skipping');
       }
       continue; // Skip other checks for bullet points
     }
@@ -444,7 +452,12 @@ const parseJobBlock = (block: string[]): any => {
     responsibilities: responsibilities.filter(r => r.length > 10)
   };
   
-  console.log('Parsed job result:', result);
+  console.log('=== JOB PARSING RESULT ===');
+  console.log('Final responsibilities found:', responsibilities.length);
+  console.log('Responsibilities after filtering:', result.responsibilities.length);
+  console.log('All responsibilities:', responsibilities);
+  console.log('Filtered responsibilities:', result.responsibilities);
+  console.log('Final job result:', result);
   return result;
 };
 
