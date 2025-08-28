@@ -1,5 +1,48 @@
 // DOCX Resume Parser - Extracts structured data from DOCX resume text
 
+// ATS-friendly bullet point optimization function
+const makeATSFriendly = (text: string): string => {
+  // Remove redundant phrases and make more action-oriented
+  let optimized = text;
+  
+  // Replace weak verbs with stronger action verbs
+  const verbReplacements = {
+    'handling': 'Managing',
+    'worked on': 'Developed',
+    'helped with': 'Facilitated',
+    'was responsible for': 'Led',
+    'assisted in': 'Supported',
+    'involved in': 'Contributed to',
+    'participated in': 'Executed',
+    'took part in': 'Collaborated on'
+  };
+  
+  // Apply verb replacements
+  for (const [weak, strong] of Object.entries(verbReplacements)) {
+    optimized = optimized.replace(new RegExp(weak, 'gi'), strong);
+  }
+  
+  // Ensure it starts with an action verb
+  if (!optimized.match(/^[A-Z][a-z]+(ed|ing|s)\s/)) {
+    // If it doesn't start with an action verb, try to add one
+    if (optimized.toLowerCase().includes('responsible')) {
+      optimized = optimized.replace(/responsible for/gi, 'Managed');
+    } else if (!optimized.match(/^[A-Z]/)) {
+      optimized = 'Executed ' + optimized.toLowerCase();
+    }
+  }
+  
+  // Clean up and format
+  optimized = optimized.charAt(0).toUpperCase() + optimized.slice(1);
+  
+  // Ensure it ends with a period if it doesn't already
+  if (!optimized.endsWith('.') && !optimized.endsWith('!') && !optimized.endsWith('?')) {
+    optimized += '.';
+  }
+  
+  return optimized;
+};
+
 export interface BasicResumeData {
   name: string;
   email: string;
@@ -287,69 +330,49 @@ const parseJobBlock = (block: string[]): any => {
     }
   }
   
-  // Third pass: collect responsibilities - be more inclusive
+  // Third pass: collect ALL bullet points and content - be maximally inclusive
   for (let i = 0; i < block.length; i++) {
     const line = block[i].trim();
+    
+    // Skip empty lines
+    if (!line) continue;
     
     // Skip company and position lines
     if (line === company || line === position) {
       continue;
     }
     
-    // Skip company descriptions and metadata
+    // Skip dates only
+    if (hasDatePattern(line) && line.length < 30) {
+      continue;
+    }
+    
+    // Skip very generic company descriptions (but keep specific achievements)
     if (line.toLowerCase().includes('is a provider of') ||
         line.toLowerCase().includes('delivers global') ||
         line.toLowerCase().includes('tech-driven innovation') ||
         line.toLowerCase().includes('focused in solving') ||
         line.toLowerCase().includes('headquartered in') ||
-        line.toLowerCase().includes('subsidiary of') ||
-        line.length > 200) {
+        line.toLowerCase().includes('subsidiary of')) {
       continue;
     }
     
-    // Collect explicit bullet points
-    if (line.match(/^[•\-*]/) || 
-        line.match(/^\d+\./) || 
-        line.match(/^[\u2022\u2023\u25E6]/)) {
-      const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
-      if (cleanedLine.length > 5) {
-        responsibilities.push(cleanedLine);
+    // Collect ALL content that could be responsibilities/achievements
+    // This includes bullet points, descriptions, achievements, etc.
+    if (line.length > 8 && 
+        !isCompanyName(line) &&
+        !line.toLowerCase().includes('position:') &&
+        !line.toLowerCase().includes('title:') &&
+        !line.toLowerCase().includes('location:')) {
+      
+      // Clean the line of bullet markers
+      let cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
+      
+      // Make the bullet point ATS-friendly
+      if (cleanedLine.length > 8) {
+        const atsOptimizedLine = makeATSFriendly(cleanedLine);
+        responsibilities.push(atsOptimizedLine);
       }
-    }
-    // Collect descriptive sentences and achievements - be more inclusive
-    else if (line.length > 15 && 
-             !hasDatePattern(line) && 
-             !isCompanyName(line) &&
-             !line.toLowerCase().includes('position') &&
-             (line.toLowerCase().includes('manage') ||
-              line.toLowerCase().includes('lead') ||
-              line.toLowerCase().includes('develop') ||
-              line.toLowerCase().includes('handle') ||
-              line.toLowerCase().includes('direct') ||
-              line.toLowerCase().includes('establish') ||
-              line.toLowerCase().includes('enable') ||
-              line.toLowerCase().includes('work') ||
-              line.toLowerCase().includes('coordinate') ||
-              line.toLowerCase().includes('implement') ||
-              line.toLowerCase().includes('deliver') ||
-              line.toLowerCase().includes('execute') ||
-              line.toLowerCase().includes('negotiate') ||
-              line.toLowerCase().includes('oversee') ||
-              line.toLowerCase().includes('transform') ||
-              line.toLowerCase().includes('clear') ||
-              line.toLowerCase().includes('total') ||
-              line.toLowerCase().includes('space') ||
-              line.toLowerCase().includes('portfolio') ||
-              line.toLowerCase().includes('project') ||
-              line.toLowerCase().includes('responsibl') ||
-              line.toLowerCase().includes('accountabilit') ||
-              line.toLowerCase().includes('join') ||
-              line.toLowerCase().includes('transfer') ||
-              line.match(/^\s*[A-Z]/) || // Lines starting with capital letters (likely descriptions)
-              line.includes(':') || // Lines with colons (often descriptions)
-              line.match(/\d+[\s,]/) // Lines with numbers (metrics, sizes, etc.)
-             )) {
-      responsibilities.push(line);
     }
   }
   
