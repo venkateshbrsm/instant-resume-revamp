@@ -552,9 +552,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (data.success && data.enhancedResume) {
-        // Apply ATS optimization to the enhanced resume
-        const atsOptimizedContent = enhanceResumeWithATS(data.enhancedResume);
-        setEnhancedContent(atsOptimizedContent);
+        // ATS optimization disabled - use direct enhanced resume
+        setEnhancedContent(data.enhancedResume);
         setEnhancementProgress(100);
         
         console.log('Enhancement successful, enhanced content:', data.enhancedResume);
