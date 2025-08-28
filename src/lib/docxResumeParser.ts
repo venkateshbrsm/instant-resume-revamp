@@ -213,44 +213,63 @@ const parseJobBlock = (block: string[]): any => {
   let location = '';
   let responsibilities: string[] = [];
   
-  let inResponsibilities = false;
+  let headerProcessed = false;
   
   for (let i = 0; i < block.length; i++) {
     const line = block[i];
     const lowerLine = line.toLowerCase();
     
-    // Check if this line indicates start of responsibilities
+    // Skip explicit section headers
     if (lowerLine.includes('key achievements') || 
         lowerLine.includes('responsibilities') || 
         lowerLine.includes('accomplishments')) {
-      inResponsibilities = true;
       continue;
     }
     
-    // If we're in responsibilities section, collect bullet points
-    if (inResponsibilities) {
-      if (line.match(/^[•\-*]/) || line.match(/^\d+\./) || 
-          (line.length > 20 && !hasDatePattern(line))) {
-        responsibilities.push(line.replace(/^[•\-*\d\.\s]+/, '').trim());
+    // Process header information first (first 2-3 lines typically contain job info)
+    if (!headerProcessed && i < 3) {
+      if (hasDatePattern(line)) {
+        // This line contains dates - extract all info from it
+        const parsed = extractJobHeaderInfo(line);
+        if (parsed.duration) duration = parsed.duration;
+        if (parsed.location) location = parsed.location;
+        if (parsed.company) company = parsed.company;
+        if (parsed.position) position = parsed.position;
+        headerProcessed = true;
+        continue;
+      } else if (isCompanyName(line) && !company) {
+        company = line;
+        continue;
+      } else if (isJobTitle(line) && !position) {
+        position = line;
+        continue;
+      } else if (i === 0 && line.length > 5 && !line.match(/^[•\-*]/)) {
+        // First line is likely position if not a bullet point
+        position = line;
+        continue;
+      } else if (i === 1 && line.length > 5 && !line.match(/^[•\-*]/)) {
+        // Second line might be company if first was position
+        if (position && !company) {
+          company = line;
+          continue;
+        }
       }
-      continue;
     }
     
-    // Try to identify what this line contains
-    if (hasDatePattern(line) && !position && !company) {
-      // This might be a header with dates
-      const parsed = extractJobHeaderInfo(line);
-      if (parsed.duration) duration = parsed.duration;
-      if (parsed.location) location = parsed.location;
-      if (parsed.company) company = parsed.company;
-      if (parsed.position) position = parsed.position;
-    } else if (isCompanyName(line) && !company) {
-      company = line;
-    } else if (isJobTitle(line) && !position) {
-      position = line;
-    } else if (line.length > 30 && !inResponsibilities && i > 0) {
-      // This might be a job description - treat as responsibility
-      responsibilities.push(line);
+    // Collect all bullet points and descriptive text as responsibilities
+    if (line.match(/^[•\-*]/) || line.match(/^\d+\./) || line.match(/^[\u2022\u2023\u25E6]/)) {
+      // Explicit bullet points
+      const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
+      if (cleanedLine.length > 5) {
+        responsibilities.push(cleanedLine);
+      }
+    } else if (line.length > 15 && 
+               !hasDatePattern(line) && 
+               !isCompanyName(line) && 
+               !isJobTitle(line) &&
+               i > 0) {
+      // Long descriptive lines that are likely responsibilities
+      responsibilities.push(line.trim());
     }
   }
   
