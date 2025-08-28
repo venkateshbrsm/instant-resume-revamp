@@ -63,37 +63,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we're returning from login and restore state
-    const storedExtractedText = sessionStorage.getItem('extractedText');
-    const storedEnhancedContent = sessionStorage.getItem('enhancedContent');
-    const storedOriginalContent = sessionStorage.getItem('originalContent');
+    // Clear any existing cached content when processing a new file
+    sessionStorage.removeItem('extractedText');
+    sessionStorage.removeItem('enhancedContent');
+    sessionStorage.removeItem('originalContent');
     
-    if (storedExtractedText) {
-      setExtractedText(storedExtractedText);
-      sessionStorage.removeItem('extractedText');
-    }
+    // Reset all state for new file
+    setExtractedText("");
+    setEnhancedContent(null);
+    setEditedContent(null);
+    setOriginalContent("");
+    setPreviewPdfBlob(null);
+    setActiveTab("before");
     
-    if (storedEnhancedContent) {
-      try {
-        setEnhancedContent(JSON.parse(storedEnhancedContent));
-        sessionStorage.removeItem('enhancedContent');
-      } catch (error) {
-        console.error('Error parsing stored enhanced content:', error);
-      }
-    }
-    
-    if (storedOriginalContent) {
-      setOriginalContent(storedOriginalContent);
-      sessionStorage.removeItem('originalContent');
-    }
-    
-    // Only extract file content if we don't have stored content
-    if (!storedExtractedText || !storedOriginalContent) {
-      extractFileContent();
-    } else {
-      setIsLoading(false);
-    }
-    
+    // Always extract content for new file
+    extractFileContent();
     checkAuth();
   }, [file]);
 
