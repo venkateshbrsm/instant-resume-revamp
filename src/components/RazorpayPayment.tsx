@@ -36,8 +36,16 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled = false, coup
     });
   };
 
-  const handlePayment = async () => {
-    if (isLoading) return;
+  const handlePayment = async (event: React.MouseEvent) => {
+    // Prevent event bubbling and default behavior
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Prevent double-clicking
+    if (isLoading) {
+      console.log('Payment already in progress, ignoring additional click');
+      return;
+    }
     
     setIsLoading(true);
     console.log('Starting Razorpay payment process...', { fileName, amount });
