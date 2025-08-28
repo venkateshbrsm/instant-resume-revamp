@@ -499,17 +499,54 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
       }
       
-      const { data, error } = await supabase.functions.invoke('enhance-resume', {
-        body: {
-          fileName: file.name,
-          originalText: extractedText,
-          extractedText: extractedText,
-          file: fileBase64 || null,
-          templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.id,
-          profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
+      let data, error;
+      let retryCount = 0;
+      const maxRetries = 2;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          console.log(`Attempting to call enhance-resume function (attempt ${retryCount + 1})`);
+          
+          const response = await supabase.functions.invoke('enhance-resume', {
+            body: {
+              fileName: file.name,
+              originalText: extractedText,
+              extractedText: extractedText,
+              file: fileBase64 || null,
+              templateId: selectedTemplate.id,
+              themeId: selectedColorTheme.id,
+              profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
+            }
+          });
+          
+          data = response.data;
+          error = response.error;
+          
+          if (!error) {
+            console.log('Successfully called enhance-resume function');
+            break;
+          }
+          
+          console.warn(`Attempt ${retryCount + 1} failed:`, error);
+          retryCount++;
+          
+          if (retryCount <= maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+        } catch (invocationError) {
+          console.error(`Invocation attempt ${retryCount + 1} failed:`, invocationError);
+          retryCount++;
+          
+          if (retryCount > maxRetries) {
+            error = { 
+              message: "Failed to send a request to the Edge Function. Please check your internet connection and try again." 
+            };
+            break;
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-      });
+      }
 
       setEnhancementProgress(70);
       await new Promise(resolve => setTimeout(resolve, 300));
