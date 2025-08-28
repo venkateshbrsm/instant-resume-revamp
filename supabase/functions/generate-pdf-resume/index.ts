@@ -930,7 +930,6 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
      console.error('Error generating PDF with PDFShift:', error);
      throw new Error(`PDF generation failed: ${error.message}`);
    }
-  }
 }
 
 function convertToTextResume(resumeData: any): string {
