@@ -324,8 +324,16 @@ export const EditablePreview = ({
                     <Textarea
                       value={skillCategory.items?.join(', ') || ''}
                       onChange={(e) => {
-                        const items = e.target.value.split(',').map(item => item.trim()).filter(item => item);
-                        handleArrayFieldChange('skills', categoryIndex, 'items', items);
+                        setEditableData((prev: any) => {
+                          const updated = { ...prev };
+                          if (!updated.skills) updated.skills = [];
+                          if (!updated.skills[categoryIndex]) {
+                            updated.skills[categoryIndex] = { category: skillCategory.category, items: [] };
+                          }
+                          const items = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                          updated.skills[categoryIndex].items = items;
+                          return updated;
+                        });
                       }}
                       className="w-full"
                       placeholder="Enter skills separated by commas"
