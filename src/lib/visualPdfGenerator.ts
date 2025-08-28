@@ -271,6 +271,22 @@ async function generateModernPdf(
     mainY += 12;
 
     resumeData.experience.forEach((exp, index) => {
+      // Check if we need a new page before rendering this experience
+      if (mainY > pageHeight - 80) {
+        doc.addPage();
+        // Re-create sidebar on new page
+        for (let i = 0; i < sidebarWidth; i += 2) {
+          const ratio = i / sidebarWidth;
+          const r = Math.round(pr + (ar - pr) * ratio);
+          const g = Math.round(pg + (ag - pg) * ratio);
+          const b = Math.round(pb + (ab - pb) * ratio);
+          
+          doc.setFillColor(r, g, b);
+          doc.rect(i, 0, 2, pageHeight, 'F');
+        }
+        mainY = 20;
+      }
+      
       // Timeline dot
       doc.setFillColor(pr, pg, pb);
       doc.circle(mainContentX - 3, mainY - 2, 1.5, 'F');
@@ -518,6 +534,13 @@ async function generateCreativePdf(
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
+      // Check if we need a new page before rendering this experience
+      const estimatedHeight = 50 + (exp.achievements?.length || 0) * 6;
+      if (currentY + estimatedHeight > pageHeight - 30) {
+        doc.addPage();
+        currentY = 30;
+      }
+      
       // Experience container background
       doc.setFillColor(pr, pg, pb, 0.05);
       const containerHeight = 30 + (exp.achievements?.length || 0) * 5;
@@ -639,6 +662,7 @@ async function generateClassicPdf(
   });
 
   const pageWidth = 210;
+  const pageHeight = 297;
   const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   
@@ -722,6 +746,13 @@ async function generateClassicPdf(
     addSectionHeader('Professional Experience');
     
     resumeData.experience.forEach((exp) => {
+      // Check if we need a new page before rendering this experience
+      const estimatedHeight = 40 + (exp.achievements?.length || 0) * 5;
+      if (currentY + estimatedHeight > pageHeight - 30) {
+        doc.addPage();
+        currentY = 30;
+      }
+      
       // Job title
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);
