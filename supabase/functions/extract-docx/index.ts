@@ -75,168 +75,151 @@ async function extractTextFromDOCX(arrayBuffer: ArrayBuffer): Promise<string> {
   console.log('Starting enhanced DOCX text extraction...');
   
   try {
-    // Use proper ZIP library-like extraction for DOCX files
     const uint8Array = new Uint8Array(arrayBuffer);
+    console.log('Processing DOCX file, size:', arrayBuffer.byteLength, 'bytes');
     
-    // Find and extract document.xml from the DOCX ZIP structure
-    let documentXML = '';
-    let headerXML = '';
-    let footerXML = '';
+    // Method 1: Try to extract readable text directly from the binary data
+    // DOCX files contain readable text even in compressed form
+    const decoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: false });
+    const fullText = decoder.decode(uint8Array);
     
-    // Enhanced ZIP parsing - look for central directory first
-    const centralDirSignature = new Uint8Array([0x50, 0x4b, 0x01, 0x02]);
-    const localFileSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
+    console.log('Decoded full text length:', fullText.length);
     
-    console.log('Parsing DOCX ZIP structure...');
-    
-    // Look for document.xml, header1.xml, and footer1.xml files
-    for (let i = 0; i < uint8Array.length - 30; i++) {
-      // Check for ZIP local file header
-      if (uint8Array[i] === localFileSignature[0] && 
-          uint8Array[i + 1] === localFileSignature[1] && 
-          uint8Array[i + 2] === localFileSignature[2] && 
-          uint8Array[i + 3] === localFileSignature[3]) {
-        
-        // Read file header information
-        const filenameLength = uint8Array[i + 26] | (uint8Array[i + 27] << 8);
-        const extraLength = uint8Array[i + 28] | (uint8Array[i + 29] << 8);
-        const compressedSize = uint8Array[i + 18] | (uint8Array[i + 19] << 8) | 
-                              (uint8Array[i + 20] << 16) | (uint8Array[i + 21] << 24);
-        
-        if (filenameLength > 0 && filenameLength < 200) {
-          const filenameStart = i + 30;
-          const filename = String.fromCharCode(...uint8Array.slice(filenameStart, filenameStart + filenameLength));
-          
-          console.log('Found file in ZIP:', filename, 'compressed size:', compressedSize);
-          
-          // Extract content from specific Word document files
-          if (filename === 'word/document.xml' || filename === 'word/header1.xml' || filename === 'word/footer1.xml') {
-            const dataStart = filenameStart + filenameLength + extraLength;
-            
-            if (dataStart + compressedSize <= uint8Array.length) {
-              const compressedData = uint8Array.slice(dataStart, dataStart + compressedSize);
-              
-              // Try multiple decompression approaches
-              let decompressedXML = '';
-              
-              try {
-                // Method 1: Direct UTF-8 decode (works if data is not heavily compressed)
-                decompressedXML = new TextDecoder('utf-8', { ignoreBOM: true, fatal: false }).decode(compressedData);
-                
-                // If result doesn't look like XML, try alternative methods
-                if (!decompressedXML.includes('<w:') && !decompressedXML.includes('<?xml')) {
-                  // Method 2: Raw character extraction for compressed data
-                  const readableChars = [];
-                  for (let j = 0; j < compressedData.length; j++) {
-                    const byte = compressedData[j];
-                    // Include printable ASCII characters and common XML characters
-                    if ((byte >= 32 && byte <= 126) || byte === 9 || byte === 10 || byte === 13) {
-                      readableChars.push(String.fromCharCode(byte));
-                    }
-                  }
-                  decompressedXML = readableChars.join('');
-                }
-              } catch (decodeError) {
-                console.warn(`Failed to decode ${filename}:`, decodeError);
-                continue;
-              }
-              
-              // Store the extracted XML based on file type
-              if (filename === 'word/document.xml') {
-                documentXML = decompressedXML;
-                console.log('Extracted document.xml, length:', documentXML.length);
-              } else if (filename === 'word/header1.xml') {
-                headerXML = decompressedXML;
-                console.log('Extracted header1.xml, length:', headerXML.length);
-              } else if (filename === 'word/footer1.xml') {
-                footerXML = decompressedXML;
-                console.log('Extracted footer1.xml, length:', footerXML.length);
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    console.log('XML extraction completed. Document XML length:', documentXML.length);
-    
-    // Fallback method if standard extraction failed
-    if (!documentXML || documentXML.length < 100) {
-      console.log('Standard extraction insufficient, trying fallback method...');
-      
-      // Convert entire buffer to string and look for Word document patterns
-      const textDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: false });
-      const fullText = textDecoder.decode(uint8Array);
-      
-      // Look for Word document XML patterns
-      const xmlMatch = fullText.match(/<w:document[\s\S]*?<\/w:document>/);
-      if (xmlMatch) {
-        documentXML = xmlMatch[0];
-        console.log('Found document XML via pattern matching, length:', documentXML.length);
-      } else {
-        // Extract readable text sequences as final fallback
-        const textMatches = fullText.match(/[A-Za-z][A-Za-z0-9\s.,;:!?()'\-@#$%&*+=<>{}[\]|\\\/]{10,}/g);
-        if (textMatches && textMatches.length > 0) {
-          const combinedText = textMatches.join(' ').replace(/\s+/g, ' ').trim();
-          if (combinedText.length > 100) {
-            console.log(`Fallback text extraction found ${textMatches.length} text segments, total length:`, combinedText.length);
-            return combinedText;
-          }
-        }
-      }
-    }
-    
-    // Extract text from all XML content (document, header, footer)
+    // Extract meaningful text patterns from the decoded content
     let extractedText = '';
-    const allXML = [documentXML, headerXML, footerXML].filter(xml => xml.length > 0);
     
-    for (const xml of allXML) {
-      const xmlText = extractTextFromWordXML(xml);
-      if (xmlText) {
-        extractedText += xmlText + ' ';
+    // Pattern 1: Look for text between common Word XML patterns
+    const xmlTextPatterns = [
+      /<w:t[^>]*>([^<]+)<\/w:t>/g,
+      /<w:instrText[^>]*>([^<]+)<\/w:instrText>/g,
+      />([A-Za-z][A-Za-z0-9\s.,;:!?\-'"()]{10,})</g
+    ];
+    
+    for (const pattern of xmlTextPatterns) {
+      let match;
+      while ((match = pattern.exec(fullText)) !== null) {
+        const text = match[1]?.trim();
+        if (text && text.length > 3 && 
+            !text.includes('xml') && 
+            !text.includes('http') && 
+            !text.match(/^[0-9.]+$/) &&
+            !text.includes('word/') &&
+            text.match(/[A-Za-z]/)) {
+          extractedText += text + ' ';
+        }
       }
     }
     
-    // Clean up final text
+    console.log('XML pattern extraction yielded:', extractedText.length, 'characters');
+    
+    // Method 2: If XML patterns didn't work well, try broader text extraction
+    if (extractedText.length < 200) {
+      console.log('Trying broader text extraction...');
+      
+      // Look for sequences of readable text (letters, numbers, common punctuation)
+      const readableTextPattern = /[A-Za-z][A-Za-z0-9\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]{15,}/g;
+      const matches = fullText.match(readableTextPattern);
+      
+      if (matches && matches.length > 0) {
+        console.log('Found', matches.length, 'readable text sequences');
+        
+        // Filter and clean the matches
+        const cleanedMatches = matches
+          .filter(match => {
+            // Filter out XML/technical content
+            return !match.includes('<?xml') &&
+                   !match.includes('schemas.openxmlformats') &&
+                   !match.includes('w:') &&
+                   !match.includes('xmlns') &&
+                   match.length > 10 &&
+                   match.match(/[A-Za-z]/) && // Must contain letters
+                   !match.match(/^[0-9.]+$/); // Not just numbers
+          })
+          .map(match => match
+            .replace(/[^\w\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]/g, ' ') // Clean special chars
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .trim()
+          )
+          .filter(match => match.length > 5);
+        
+        extractedText = cleanedMatches.join(' ');
+        console.log('Cleaned text extraction yielded:', extractedText.length, 'characters');
+      }
+    }
+    
+    // Method 3: Final fallback - extract any text that looks like resume content
+    if (extractedText.length < 100) {
+      console.log('Trying final fallback extraction...');
+      
+      // Look for common resume keywords and extract surrounding context
+      const resumeKeywords = ['experience', 'education', 'skills', 'work', 'university', 'degree', 'phone', 'email', 'address', 'summary', 'objective'];
+      const lines = fullText.split(/[\n\r]+/);
+      
+      for (const line of lines) {
+        const cleanLine = line.replace(/[^\w\s.,;:!?\-'"()@]/g, ' ').replace(/\s+/g, ' ').trim();
+        
+        if (cleanLine.length > 10 && cleanLine.match(/[A-Za-z]/)) {
+          // Check if line contains resume-related content
+          const hasResumeKeyword = resumeKeywords.some(keyword => 
+            cleanLine.toLowerCase().includes(keyword)
+          );
+          
+          // Or if it looks like contact info, names, etc.
+          const looksLikeResumeContent = cleanLine.match(/^[A-Z][a-zA-Z\s]+$/) || // Names
+                                       cleanLine.match(/\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/) || // Phone numbers
+                                       cleanLine.match(/@[\w.-]+\.\w+/) || // Email addresses
+                                       cleanLine.match(/\b[A-Z][a-z]+\s+[A-Z][a-z]+\b/); // Names
+          
+          if (hasResumeKeyword || looksLikeResumeContent) {
+            extractedText += cleanLine + ' ';
+          }
+        }
+      }
+      
+      console.log('Final fallback extraction yielded:', extractedText.length, 'characters');
+    }
+    
+    // Clean up the final result
     extractedText = extractedText
       .replace(/\s+/g, ' ')
       .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
       .trim();
     
-    console.log('Final DOCX extraction result length:', extractedText.length);
-    console.log('Sample of extracted text (first 300 chars):', extractedText.substring(0, 300));
+    console.log('Final DOCX extraction result:');
+    console.log('- Length:', extractedText.length);
+    console.log('- Preview (first 500 chars):', extractedText.substring(0, 500));
     
     // Validate extraction quality
-    if (extractedText.length < 100) {
+    if (extractedText.length < 50) {
       console.log('Extraction yielded insufficient content');
-      return `⚠️ Limited Content Extracted
+      return `⚠️ Limited Content Extracted from DOCX
 
-Document processed but text extraction was minimal. This can happen with:
-• Documents with mostly images or graphics
-• Complex formatting or embedded objects
-• Protected or encrypted content
-• Non-standard DOCX structure
+Document: ${arrayBuffer.byteLength} bytes processed
 
-Document size: ${(arrayBuffer.byteLength / 1024).toFixed(1)} KB
+The DOCX file was processed but yielded minimal readable text. This can happen with:
+• Documents with complex formatting or embedded objects
+• Password-protected or encrypted files
+• Files with mostly images/graphics
+• Corrupted or non-standard DOCX structure
 
-💡 For better results, try:
-1. Save as a simpler Word document (.docx)
-2. Convert to PDF format
-3. Copy and paste text into a plain text document
+💡 Recommended solutions:
+1. Try saving as a simpler Word document format
+2. Convert to PDF format for better text extraction
+3. Copy and paste the content into a plain text document
+4. Ensure the document contains readable text content
 
-The AI enhancement will still attempt to process the available content.`;
+The AI will still attempt to enhance based on available content and common resume patterns.`;
     }
     
     return extractedText;
     
   } catch (error) {
-    console.error('Enhanced DOCX extraction failed:', error);
+    console.error('DOCX extraction failed:', error);
     return `❌ DOCX Processing Error
 
 Failed to extract text from DOCX file.
 
 Error: ${error.message}
-
 Document size: ${(arrayBuffer.byteLength / 1024).toFixed(1)} KB
 
 🔧 Recommended solutions:
@@ -245,70 +228,6 @@ Document size: ${(arrayBuffer.byteLength / 1024).toFixed(1)} KB
 3. Ensure the file isn't corrupted or password-protected
 4. Try a different DOCX file
 
-The system will still attempt to enhance based on document structure patterns.`;
+The system will still attempt enhancement based on document structure patterns.`;
   }
-}
-
-// Helper function to extract text from Word XML content
-function extractTextFromWordXML(xmlContent: string): string {
-  if (!xmlContent || xmlContent.length === 0) {
-    return '';
-  }
-  
-  let extractedText = '';
-  
-  try {
-    // Method 1: Extract text from w:t tags (Word text elements)
-    const textTagPattern = /<w:t[^>]*>([^<]*)<\/w:t>/g;
-    let match;
-    
-    while ((match = textTagPattern.exec(xmlContent)) !== null) {
-      const text = match[1];
-      if (text && text.length > 0) {
-        extractedText += text + ' ';
-      }
-    }
-    
-    // Method 2: Extract text from w:instrText tags (instruction text)
-    const instrTextPattern = /<w:instrText[^>]*>([^<]*)<\/w:instrText>/g;
-    while ((match = instrTextPattern.exec(xmlContent)) !== null) {
-      const text = match[1];
-      if (text && text.length > 0 && !text.includes('HYPERLINK')) {
-        extractedText += text + ' ';
-      }
-    }
-    
-    // Method 3: If minimal extraction, try broader pattern matching
-    if (extractedText.length < 50) {
-      // Look for any text content between XML tags
-      const broadTextPattern = />([A-Za-z][A-Za-z0-9\s.,;:!?()'\-@#$%&*+=<>{}[\]|\\\/]{3,})</g;
-      while ((match = broadTextPattern.exec(xmlContent)) !== null) {
-        const text = match[1].trim();
-        // Filter out XML-specific content
-        if (text.length > 2 && 
-            !text.includes('xml') && 
-            !text.includes('word') && 
-            !text.includes('http') && 
-            !text.match(/^[0-9.]+$/)) {
-          extractedText += text + ' ';
-        }
-      }
-    }
-    
-    // Method 4: Extract from w:p (paragraph) content more broadly
-    const paragraphPattern = /<w:p\b[^>]*>(.*?)<\/w:p>/gs;
-    while ((match = paragraphPattern.exec(xmlContent)) !== null) {
-      const paragraphContent = match[1];
-      // Extract any readable text from paragraph content
-      const paragraphText = paragraphContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      if (paragraphText.length > 3) {
-        extractedText += paragraphText + ' ';
-      }
-    }
-    
-  } catch (error) {
-    console.warn('Text extraction from XML failed:', error);
-  }
-  
-  return extractedText;
 }
