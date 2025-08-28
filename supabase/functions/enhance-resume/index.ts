@@ -160,7 +160,7 @@ ENHANCEMENT GUIDELINES:
           content: prompt 
         }
       ],
-      max_completion_tokens: 4000,
+      max_tokens: 4000,
     }),
   });
 
