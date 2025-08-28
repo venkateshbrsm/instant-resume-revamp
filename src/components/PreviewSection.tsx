@@ -486,39 +486,30 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setEnhancementProgress(30);
       
-      // Call enhance-resume edge function with retry logic
-      let data, error;
-      let retryCount = 0;
-      const maxRetries = 2;
-      
-      while (retryCount <= maxRetries) {
+      // Convert file to base64 for potential re-extraction in edge function
+      let fileBase64 = '';
+      if (file.name.toLowerCase().endsWith('.docx')) {
         try {
-          const response = await supabase.functions.invoke('enhance-resume', {
-            body: {
-              extractedText: extractedText,
-              templateId: selectedTemplate.id,
-              themeId: selectedColorTheme.id
-            }
-          });
-          
-          data = response.data;
-          error = response.error;
-          
-          // If successful or if it's an application error (not network), break
-          if (!error || !error.message?.includes('Failed to send a request')) {
-            break;
-          }
-        } catch (networkError) {
-          console.log(`Network attempt ${retryCount + 1} failed:`, networkError);
-          error = networkError;
-        }
-        
-        retryCount++;
-        if (retryCount <= maxRetries) {
-          console.log(`Retrying request... (${retryCount}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          const arrayBuffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          fileBase64 = btoa(String.fromCharCode(...bytes));
+          console.log('File converted to base64, size:', fileBase64.length);
+        } catch (error) {
+          console.warn('Failed to convert file to base64:', error);
         }
       }
+      
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          fileName: file.name,
+          originalText: extractedText,
+          extractedText: extractedText,
+          file: fileBase64 || null,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
+        }
+      });
 
       setEnhancementProgress(70);
       await new Promise(resolve => setTimeout(resolve, 300));
