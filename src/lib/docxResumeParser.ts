@@ -170,55 +170,195 @@ const extractExperience = (lines: string[]): Array<{
   
   const experienceLines = lines.slice(experienceStart, experienceEnd);
   
-  // Improved parsing - look for patterns more carefully
-  let currentJob: any = null;
-  let responsibilities: string[] = [];
-  let currentDescription: string[] = [];
+  // Group consecutive lines into job blocks
+  const jobBlocks: string[][] = [];
+  let currentBlock: string[] = [];
   
   for (let i = 0; i < experienceLines.length; i++) {
-    const line = experienceLines[i];
-    const nextLine = i < experienceLines.length - 1 ? experienceLines[i + 1] : '';
+    const line = experienceLines[i].trim();
     
-    // Check if this is a strong job header indicator (has dates and company-like structure)
-    if (isStrongJobHeader(line, nextLine)) {
-      // Save previous job if exists
-      if (currentJob) {
-        // Combine description lines into responsibilities if no explicit responsibilities found
-        if (responsibilities.length === 0 && currentDescription.length > 0) {
-          responsibilities = currentDescription.filter(desc => desc.length > 10);
-        }
-        currentJob.responsibilities = responsibilities;
-        experience.push(currentJob);
+    if (line.length === 0) {
+      // Empty line - potential job separator
+      if (currentBlock.length > 0) {
+        jobBlocks.push(currentBlock);
+        currentBlock = [];
       }
-      
-      // Start new job
-      const jobInfo = parseJobHeader(line, nextLine);
-      currentJob = jobInfo;
-      responsibilities = [];
-      currentDescription = [];
-      
-      // Skip the next line if it was part of the job header
-      if (nextLine && isCompanyOrPositionLine(nextLine)) {
-        i++; // Skip next line as it's part of current job header
-      }
-    } else if (currentJob && isResponsibility(line)) {
-      responsibilities.push(line.replace(/^[•\-*]\s*/, '').trim());
-    } else if (currentJob && line.length > 10 && !isJobHeader(line)) {
-      // This might be part of job description
-      currentDescription.push(line);
+    } else {
+      currentBlock.push(line);
     }
   }
   
-  // Add last job
-  if (currentJob) {
-    if (responsibilities.length === 0 && currentDescription.length > 0) {
-      responsibilities = currentDescription.filter(desc => desc.length > 10);
+  // Add the last block if it exists
+  if (currentBlock.length > 0) {
+    jobBlocks.push(currentBlock);
+  }
+  
+  // Process each job block
+  for (const block of jobBlocks) {
+    if (block.length === 0) continue;
+    
+    const job = parseJobBlock(block);
+    if (job.position || job.company) {
+      experience.push(job);
     }
-    currentJob.responsibilities = responsibilities;
-    experience.push(currentJob);
   }
   
   return experience;
+};
+
+const parseJobBlock = (block: string[]): any => {
+  let company = '';
+  let position = '';
+  let duration = '';
+  let location = '';
+  let responsibilities: string[] = [];
+  
+  let inResponsibilities = false;
+  
+  for (let i = 0; i < block.length; i++) {
+    const line = block[i];
+    const lowerLine = line.toLowerCase();
+    
+    // Check if this line indicates start of responsibilities
+    if (lowerLine.includes('key achievements') || 
+        lowerLine.includes('responsibilities') || 
+        lowerLine.includes('accomplishments')) {
+      inResponsibilities = true;
+      continue;
+    }
+    
+    // If we're in responsibilities section, collect bullet points
+    if (inResponsibilities) {
+      if (line.match(/^[•\-*]/) || line.match(/^\d+\./) || 
+          (line.length > 20 && !hasDatePattern(line))) {
+        responsibilities.push(line.replace(/^[•\-*\d\.\s]+/, '').trim());
+      }
+      continue;
+    }
+    
+    // Try to identify what this line contains
+    if (hasDatePattern(line) && !position && !company) {
+      // This might be a header with dates
+      const parsed = extractJobHeaderInfo(line);
+      if (parsed.duration) duration = parsed.duration;
+      if (parsed.location) location = parsed.location;
+      if (parsed.company) company = parsed.company;
+      if (parsed.position) position = parsed.position;
+    } else if (isCompanyName(line) && !company) {
+      company = line;
+    } else if (isJobTitle(line) && !position) {
+      position = line;
+    } else if (line.length > 30 && !inResponsibilities && i > 0) {
+      // This might be a job description - treat as responsibility
+      responsibilities.push(line);
+    }
+  }
+  
+  // If no explicit position found, try to extract from first meaningful line
+  if (!position && block.length > 0) {
+    const firstLine = block[0];
+    if (!hasDatePattern(firstLine) && firstLine.length > 5) {
+      position = firstLine;
+    }
+  }
+  
+  // If no company found, try to find it in any line
+  if (!company) {
+    for (const line of block) {
+      if (isCompanyName(line)) {
+        company = line;
+        break;
+      }
+    }
+  }
+  
+  return {
+    company: company || 'Company',
+    position: position || 'Position',
+    duration: duration,
+    location: location,
+    responsibilities: responsibilities.filter(r => r.length > 5)
+  };
+};
+
+const hasDatePattern = (line: string): boolean => {
+  return !!(line.match(/\b\d{4}\b/) || 
+           line.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i) ||
+           line.match(/\b(Present|Current)\b/i));
+};
+
+const isCompanyName = (line: string): boolean => {
+  return !!(line.includes('Ltd') || 
+           line.includes('Inc') || 
+           line.includes('Corp') || 
+           line.includes('Company') ||
+           line.includes('Systems') || 
+           line.includes('Technologies') ||
+           line.includes('Solutions') ||
+           line.includes('Services') ||
+           line.includes('Group') ||
+           line.match(/\b[A-Z][a-z]+\s+[A-Z][a-z]+\s*(Pvt|Private|Limited|LLC)\b/));
+};
+
+const isJobTitle = (line: string): boolean => {
+  const jobTitles = [
+    'manager', 'director', 'president', 'vice president', 'associate', 'senior',
+    'junior', 'lead', 'head', 'chief', 'officer', 'analyst', 'consultant',
+    'specialist', 'coordinator', 'supervisor', 'executive', 'developer',
+    'engineer', 'architect'
+  ];
+  
+  const lowerLine = line.toLowerCase();
+  return jobTitles.some(title => lowerLine.includes(title)) && line.length < 100;
+};
+
+const extractJobHeaderInfo = (line: string): any => {
+  let duration = '';
+  let location = '';
+  let company = '';
+  let position = '';
+  
+  // Extract dates
+  const dateMatches = line.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi);
+  if (dateMatches && dateMatches.length >= 1) {
+    if (dateMatches.length >= 2) {
+      duration = `${dateMatches[0]} - ${dateMatches[1]}`;
+    } else {
+      duration = `${dateMatches[0]} - Present`;
+    }
+  } else {
+    const yearMatches = line.match(/\b\d{4}\b/g);
+    if (yearMatches && yearMatches.length >= 2) {
+      duration = `${yearMatches[0]} - ${yearMatches[1]}`;
+    } else if (yearMatches && yearMatches.length === 1) {
+      duration = `${yearMatches[0]} - Present`;
+    }
+  }
+  
+  // Extract location (typically before dates)
+  const locationMatch = line.match(/^([A-Za-z\s,]+?)\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4})/i);
+  if (locationMatch) {
+    location = locationMatch[1].trim();
+  }
+  
+  // Extract remaining text as company/position
+  let remainingText = line;
+  if (location) remainingText = remainingText.replace(location, '');
+  if (duration) {
+    remainingText = remainingText.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi, '');
+    remainingText = remainingText.replace(/\b\d{4}\b/g, '');
+  }
+  remainingText = remainingText.replace(/^[\s\-–]+|[\s\-–]+$/g, '').trim();
+  
+  if (remainingText.includes('–') || remainingText.includes('-')) {
+    const parts = remainingText.split(/[–-]/);
+    position = parts[0]?.trim();
+    company = parts[1]?.trim();
+  } else {
+    company = remainingText;
+  }
+  
+  return { duration, location, company, position };
 };
 
 const isStrongJobHeader = (line: string, nextLine: string): boolean => {
