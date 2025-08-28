@@ -18,16 +18,20 @@ serve(async (req) => {
     console.log('Enhancement request received:', { templateId, themeId });
     console.log('Extracted text length:', extractedText?.length || 0);
 
-    // Validate input
-    if (!extractedText || extractedText.trim().length < 10) {
+    // Validate input - be more lenient with DOCX extraction
+    if (!extractedText || extractedText.trim().length < 5) {
+      console.log('Insufficient text content, extracted text preview:', extractedText?.substring(0, 200));
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Insufficient text content for enhancement" 
+        error: "Insufficient text content for enhancement. Please ensure your document contains readable text." 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Log the actual extracted text for debugging
+    console.log('Extracted text preview (first 300 chars):', extractedText.substring(0, 300));
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -183,6 +187,9 @@ ENHANCEMENT GUIDELINES:
     // Clean up the response to ensure it's valid JSON
     let cleanedContent = enhancedContent.trim();
     
+    // Log the raw AI response for debugging
+    console.log('Raw AI response (first 500 chars):', cleanedContent.substring(0, 500));
+    
     // Remove any markdown code block markers
     if (cleanedContent.startsWith('```json')) {
       cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -190,10 +197,18 @@ ENHANCEMENT GUIDELINES:
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
 
+    console.log('Attempting to parse cleaned JSON...');
     const parsedResume = JSON.parse(cleanedContent);
+    
+    console.log('Successfully parsed JSON, validating structure...');
     
     // Validate the structure
     if (!parsedResume.name || !parsedResume.summary || !parsedResume.experience) {
+      console.log('Invalid resume structure, missing required fields:', {
+        hasName: !!parsedResume.name,
+        hasSummary: !!parsedResume.summary, 
+        hasExperience: !!parsedResume.experience
+      });
       throw new Error('Invalid resume structure received from AI');
     }
 
@@ -255,10 +270,11 @@ ENHANCEMENT GUIDELINES:
 
   } catch (parseError) {
     console.error('JSON parsing error:', parseError);
-    console.error('Raw content:', enhancedContent);
+    console.error('Raw AI response length:', enhancedContent?.length || 0);
+    console.error('Raw content preview:', enhancedContent?.substring(0, 500));
     
-    // Fallback to basic parsing if AI response is invalid
-    return basicParseResume(originalText);
+    // Instead of falling back to placeholder data, throw the error
+    throw new Error(`Failed to parse AI response: ${parseError.message}. Please try again with a clearer document.`);
   }
 }
 
