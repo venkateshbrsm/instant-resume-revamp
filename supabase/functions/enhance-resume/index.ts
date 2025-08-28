@@ -18,20 +18,16 @@ serve(async (req) => {
     console.log('Enhancement request received:', { templateId, themeId });
     console.log('Extracted text length:', extractedText?.length || 0);
 
-    // Validate input - be more lenient with DOCX extraction
-    if (!extractedText || extractedText.trim().length < 5) {
-      console.log('Insufficient text content, extracted text preview:', extractedText?.substring(0, 200));
+    // Validate input
+    if (!extractedText || extractedText.trim().length < 10) {
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Insufficient text content for enhancement. Please ensure your document contains readable text." 
+        error: "Insufficient text content for enhancement" 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    // Log the actual extracted text for debugging
-    console.log('Extracted text preview (first 300 chars):', extractedText.substring(0, 300));
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -39,8 +35,6 @@ serve(async (req) => {
     }
 
     console.log('Enhancing resume with AI...');
-    console.log('Using extracted text (length:', extractedText?.length, ')');
-    console.log('Text preview:', extractedText?.substring(0, 200));
     
     // Enhanced text parsing and AI enhancement
     const enhancedResume = await enhanceResumeWithAI(extractedText, openAIApiKey);
@@ -70,81 +64,83 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer. Take the original resume text and reword it to be ATS-friendly with industry keywords, while preserving all factual information. Each job role must have UNIQUE, role-specific content.
+  const prompt = `You are an expert ATS resume optimizer and career consultant. Transform the following resume content into a comprehensive, ATS-friendly, keyword-rich professional resume.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL RULES:
-1. Use ONLY actual information from the resume - no fictional content
-2. Each job role MUST have completely different, role-specific descriptions
-3. Analyze each actual role and create unique, relevant responsibilities
-4. Use different action verbs and terminology for each position
-5. Keep all real names, companies, dates, and credentials exactly as provided
-6. Focus on what each role actually did based on the resume content
-
-CONTENT DIVERSITY REQUIREMENTS:
-- Job #1: Focus on leadership and strategic responsibilities if mentioned
-- Job #2: Emphasize technical skills and project management aspects
-- Job #3: Highlight operational efficiency and process improvements
-- Use completely different vocabulary and focus areas for each role
-- NO generic statements that could apply to any job
-- Extract actual specifics from the resume text for each position
+CRITICAL INSTRUCTIONS:
+1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
+2. Preserve EVERY job position, company, and time period from the original
+3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
+4. Expand descriptions to be more comprehensive and achievement-focused
+5. Add relevant industry keywords and ATS-friendly terms for each role
+6. Make each section detailed and professional with specific accomplishments
+7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
+8. Use strong action verbs and quantifiable achievements where possible
+9. Return ONLY a valid JSON object with the exact structure shown below
+10. MANDATORY: Include ALL work experience entries from the original resume
+11. MANDATORY: Include ALL skills and technical skills from the original resume
 
 REQUIRED JSON STRUCTURE:
 {
-  "name": "Exact name from the original resume",
-  "title": "Actual professional title or role from resume", 
-  "email": "Exact email address from resume",
-  "phone": "Exact phone number from resume",
-  "location": "Actual location from resume",
-  "linkedin": "Actual LinkedIn URL if mentioned in resume",
-  "summary": "Professional summary based on actual experience and skills mentioned in resume",
+  "name": "Full professional name",
+  "title": "Professional title or desired role", 
+  "email": "email@example.com",
+  "phone": "phone number",
+  "location": "City, State/Country",
+  "linkedin": "LinkedIn profile URL if available",
+  "summary": "Comprehensive 4-6 sentence professional summary with keywords and achievements",
   "experience": [
     {
-      "title": "Exact job title from resume",
-      "company": "Exact company name from resume",
-      "duration": "Exact dates from resume",
-      "description": "ATS-friendly rewrite of actual role description from resume",
+      "title": "Job Title",
+      "company": "Company Name",
+      "duration": "Start Date - End Date",
+      "description": "Brief 1-2 sentence overview of the role and main focus",
       "core_responsibilities": [
-        "Reworded version of actual responsibility #1 with ATS keywords",
-        "Reworded version of actual responsibility #2 with industry terms",
-        "Reworded version of actual responsibility #3 with professional language"
+        "Primary responsibility with detailed description",
+        "Secondary responsibility with specific tasks and duties",
+        "Third key responsibility with operational details"
       ],
       "achievements": [
-        "ATS-enhanced version of actual achievement #1 from resume",
-        "Professional rewrite of actual accomplishment #2 from resume",
-        "Keyword-rich version of actual result #3 from resume"
+        "Specific achievement with metrics and impact",
+        "Another key accomplishment with quantifiable results",
+        "Third major contribution with measurable outcomes"
       ]
     }
   ],
   "education": [
     {
-      "degree": "Exact degree name from resume",
-      "institution": "Exact institution name from resume", 
-      "year": "Exact year/duration from resume",
-      "gpa": "Actual GPA if mentioned in resume"
+      "degree": "Degree Name",
+      "institution": "Institution Name", 
+      "year": "Graduation Year or Duration",
+      "gpa": "GPA if available"
     }
   ],
-  "skills": ["Actual skills from resume with ATS-friendly formatting"],
-  "tools": ["Actual tools/technologies mentioned in resume"],
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10", "skill11", "skill12"],
+  "tools": ["tool1", "tool2", "tool3", "tool4", "tool5", "tool6", "tool7", "tool8", "tool9", "tool10"],
   "core_technical_skills": [
     {
-      "name": "Actual technical skill from resume",
+      "name": "Technical Skill Name",
       "proficiency": 85
     }
   ]
 }
 
-REWRITING EXAMPLES BY ROLE TYPE:
-- Facilities Management: "Managed facilities operations" → "Orchestrated comprehensive facility management operations including space planning, vendor coordination, and regulatory compliance"
-- Corporate Real Estate: "Handled real estate" → "Executed strategic real estate portfolio optimization initiatives, lease negotiations, and property acquisitions"
-- Consulting: "Provided consulting" → "Delivered specialized consulting solutions for operational excellence and business transformation initiatives"
-- Each role should reflect its specific industry terminology and focus areas
-- Use actual metrics, technologies, or achievements mentioned in the resume
-- Make each role sound distinct and specialized based on the actual content`;
+ENHANCEMENT GUIDELINES:
+- Professional summary should be compelling and keyword-rich
+- Experience descriptions should be brief role overviews (1-2 sentences)
+- Each experience should have 3-5 core responsibilities detailing daily tasks and duties
+- Each experience should have 3-5 specific achievements with metrics and impact
+- Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
+- Extract ALL tools mentioned in original resume as a separate "tools" array
+- Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
+- Expand on responsibilities with action verbs and specific outcomes
+- Make content ATS-friendly with industry standard terminology
+- Ensure all sections are comprehensive and detailed
+- Focus achievements on quantifiable results and business impact`;
 
-  console.log('Sending request to OpenAI with model: gpt-4o');
+  console.log('Sending request to OpenAI...');
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -157,23 +153,21 @@ REWRITING EXAMPLES BY ROLE TYPE:
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Create unique, role-specific content for each job by rewording actual resume information. Each position must have distinct responsibilities and achievements. Never repeat generic phrases across different roles. Always return valid JSON.' 
+          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
         },
         { 
           role: 'user', 
           content: prompt 
         }
       ],
-      max_tokens: 4000,
-      temperature: 0.5, // Balanced temperature for creativity while maintaining accuracy
+      max_completion_tokens: 4000,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('OpenAI API error:', response.status, response.statusText);
-    console.error('Error response body:', errorText);
-    throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
+    console.error('OpenAI API error:', response.status, errorText);
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
@@ -189,9 +183,6 @@ REWRITING EXAMPLES BY ROLE TYPE:
     // Clean up the response to ensure it's valid JSON
     let cleanedContent = enhancedContent.trim();
     
-    // Log the raw AI response for debugging
-    console.log('Raw AI response (first 500 chars):', cleanedContent.substring(0, 500));
-    
     // Remove any markdown code block markers
     if (cleanedContent.startsWith('```json')) {
       cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -199,18 +190,10 @@ REWRITING EXAMPLES BY ROLE TYPE:
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
 
-    console.log('Attempting to parse cleaned JSON...');
     const parsedResume = JSON.parse(cleanedContent);
-    
-    console.log('Successfully parsed JSON, validating structure...');
     
     // Validate the structure
     if (!parsedResume.name || !parsedResume.summary || !parsedResume.experience) {
-      console.log('Invalid resume structure, missing required fields:', {
-        hasName: !!parsedResume.name,
-        hasSummary: !!parsedResume.summary, 
-        hasExperience: !!parsedResume.experience
-      });
       throw new Error('Invalid resume structure received from AI');
     }
 
@@ -272,11 +255,10 @@ REWRITING EXAMPLES BY ROLE TYPE:
 
   } catch (parseError) {
     console.error('JSON parsing error:', parseError);
-    console.error('Raw AI response length:', enhancedContent?.length || 0);
-    console.error('Raw content preview:', enhancedContent?.substring(0, 500));
+    console.error('Raw content:', enhancedContent);
     
-    // Instead of falling back to placeholder data, throw the error
-    throw new Error(`Failed to parse AI response: ${parseError.message}. Please try again with a clearer document.`);
+    // Fallback to basic parsing if AI response is invalid
+    return basicParseResume(originalText);
   }
 }
 

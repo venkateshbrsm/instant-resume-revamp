@@ -31,17 +31,17 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           )}
           
           <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-light tracking-wide overflow-visible break-words whitespace-normal" style={{ color: selectedColorTheme.primary, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+            <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-xl text-muted-foreground font-light overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+            <p className="text-xl text-muted-foreground font-light">
               {enhancedContent.title}
             </p>
             
             <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
-              <span className="break-words no-underline whitespace-normal">{enhancedContent.email}</span>
-              <span className="no-underline break-words whitespace-normal">{enhancedContent.phone}</span>
-              <span className="break-words whitespace-normal">{enhancedContent.location}</span>
+              <span className="break-all no-underline">{enhancedContent.email}</span>
+              <span className="no-underline">{enhancedContent.phone}</span>
+              <span>{enhancedContent.location}</span>
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
           PROFESSIONAL SUMMARY
         </h2>
-        <p className="text-base leading-relaxed text-muted-foreground font-light max-w-4xl break-words whitespace-normal">
+        <p className="text-base leading-relaxed text-muted-foreground font-light max-w-4xl">
           {enhancedContent.summary}
         </p>
       </div>
@@ -66,16 +66,16 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           
           <div className="space-y-8">
             {enhancedContent.experience.map((exp: any, index: number) => (
-               <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                 <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                   <div className="overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                     <h3 className="text-lg font-medium text-foreground break-words whitespace-normal">{exp.title}</h3>
-                     <p className="text-base font-light break-words whitespace-normal" style={{ color: selectedColorTheme.primary }}>
-                       {exp.company}
-                     </p>
-                   </div>
-                   <p className="text-sm text-muted-foreground font-light break-words whitespace-normal">{exp.duration}</p>
-                 </div>
+              <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
+                  <div>
+                    <h3 className="text-lg font-medium text-foreground">{exp.title}</h3>
+                    <p className="text-base font-light" style={{ color: selectedColorTheme.primary }}>
+                      {exp.company}
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground font-light">{exp.duration}</p>
+                </div>
                 
                 {exp.achievements && exp.achievements.length > 0 && (
                   <div className="pl-4 space-y-3 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
@@ -83,7 +83,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                       Key Achievements & Measurable Impact:
                     </h4>
                     {exp.achievements.map((achievement: string, achIndex: number) => (
-                      <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light break-words whitespace-normal">
+                      <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light">
                         <span className="mr-2" style={{ color: selectedColorTheme.primary }}>•</span>
                         {achievement}
                       </p>
@@ -91,20 +91,18 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                     
                      {/* Job-specific Core Responsibilities */}
                      {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                       <div className="mt-4 p-3 rounded border print:break-inside-avoid overflow-visible" style={{ 
+                       <div className="mt-4 p-3 rounded border print:break-inside-avoid" style={{ 
                          backgroundColor: `${selectedColorTheme.primary}03`,
-                         borderColor: `${selectedColorTheme.primary}15`,
-                         wordWrap: 'break-word',
-                         overflowWrap: 'break-word'
+                         borderColor: `${selectedColorTheme.primary}15`
                        }}>
                          <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
                           <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
                             {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                               <p key={idx} className="flex items-start text-xs text-muted-foreground overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                                 <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
-                                       style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                                 <span className="break-words whitespace-normal">{responsibility}</span>
-                               </p>
+                              <p key={idx} className="flex items-start text-xs text-muted-foreground">
+                                <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                      style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                                {responsibility}
+                              </p>
                             ))}
                          </div>
                        </div>
@@ -186,13 +184,13 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </h2>
             
             <div className="space-y-2">
-               {enhancedContent.certifications.map((certification: string, index: number) => (
-                 <div key={index} className="flex items-start gap-2 text-sm overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
-                         style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                   <span className="font-light text-muted-foreground break-words whitespace-normal">{certification}</span>
-                 </div>
-               ))}
+              {enhancedContent.certifications.map((certification: string, index: number) => (
+                <div key={index} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                  <span className="font-light text-muted-foreground">{certification}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -205,13 +203,13 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </h2>
             
             <div className="space-y-2">
-               {enhancedContent.languages.map((language: string, index: number) => (
-                 <div key={index} className="flex items-start gap-2 text-sm overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
-                         style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                   <span className="font-light text-muted-foreground break-words whitespace-normal">{language}</span>
-                 </div>
-               ))}
+              {enhancedContent.languages.map((language: string, index: number) => (
+                <div key={index} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                  <span className="font-light text-muted-foreground">{language}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

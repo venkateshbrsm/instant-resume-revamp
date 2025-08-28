@@ -16,7 +16,7 @@ export interface ExtractedContent {
 export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
   const fileType = getFileType(file);
   
-  console.log('🚀 [EXTRACTION] Starting enhanced file extraction:', {
+  console.log('Starting enhanced file extraction:', {
     name: file.name,
     type: file.type,
     size: file.size,
@@ -32,58 +32,39 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
     const photoExtractionPromise = extractPhotosFromFile(file);
 
     if (fileType === 'pdf') {
-      console.log('🔍 [EXTRACTION] Processing as PDF file');
       // For PDFs, extract text and keep original file for visual preview
       text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
     } else if (fileType === 'docx') {
-      console.log('🔍 [EXTRACTION] Processing as DOCX file');
-      // For DOCX files, extract text using enhanced server-side processing
+      // For DOCX files, extract text using mammoth
       text = await extractTextFromDOCX(file);
-      // Create blob URL for DOCX preview (browsers can often display DOCX files)
-      pdfUrl = URL.createObjectURL(file);
     } else {
-      console.log('🔍 [EXTRACTION] Processing as text file');
       // For text files, just extract text
       text = await file.text();
     }
-
-    console.log('✅ [EXTRACTION] Text extraction completed, length:', text?.length || 0);
-    console.log('🔍 [EXTRACTION] Text preview (first 200 chars):', text?.substring(0, 200));
 
     // Process photos
     try {
       const photoResult = await photoExtractionPromise;
       if (photoResult.profilePhoto) {
-        console.log('📷 [EXTRACTION] Profile photo found, optimizing...');
+        console.log('Profile photo found, optimizing...');
         const optimizedPhoto = await optimizePhoto(photoResult.profilePhoto);
         profilePhotoUrl = URL.createObjectURL(optimizedPhoto);
-        console.log('✅ [EXTRACTION] Profile photo processed successfully');
-      } else {
-        console.log('📷 [EXTRACTION] No profile photo found');
+        console.log('Profile photo processed successfully');
       }
     } catch (error) {
-      console.warn('⚠️ [EXTRACTION] Photo extraction failed:', error);
+      console.warn('Photo extraction failed:', error);
     }
 
-    const result = {
+    return {
       text,
       pdfUrl,
       profilePhotoUrl,
       originalFile: file,
       fileType
     };
-    
-    console.log('🎉 [EXTRACTION] Complete extraction result:', {
-      textLength: result.text?.length || 0,
-      hasPdfUrl: !!result.pdfUrl,
-      hasProfilePhoto: !!result.profilePhotoUrl,
-      fileType: result.fileType
-    });
-
-    return result;
   } catch (error) {
-    console.error('💥 [EXTRACTION] Error extracting content from file:', error);
+    console.error('Error extracting content from file:', error);
     throw error;
   }
 };
@@ -214,103 +195,20 @@ export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
 };
 
 const extractTextFromDOCX = async (file: File): Promise<string> => {
-  console.log('🔍 [DOCX] Starting DOCX extraction with mammoth:', file.name, 'Size:', file.size, 'Type:', file.type);
+  console.log('Extracting text from DOCX file:', file.name);
   
   try {
-    // First try mammoth library (client-side)
-    console.log('🔍 [DOCX] Attempting mammoth extraction...');
     const arrayBuffer = await file.arrayBuffer();
-    
-    // Import mammoth dynamically to ensure it's available
-    const mammoth = await import('mammoth');
     const result = await mammoth.extractRawText({ arrayBuffer });
     
-    console.log('🔍 [DOCX] Mammoth extraction result:', {
-      textLength: result.value?.length || 0,
-      hasMessages: result.messages && result.messages.length > 0,
-      messages: result.messages?.length || 0
-    });
-    
     if (result.messages && result.messages.length > 0) {
-      console.warn('🔍 [DOCX] Mammoth extraction warnings:', result.messages);
+      console.warn('DOCX extraction warnings:', result.messages);
     }
     
-    let extractedText = result.value || '';
-    
-    // If mammoth worked well, use its result
-    if (extractedText && extractedText.trim().length > 50) {
-      console.log('✅ [DOCX] Mammoth extraction successful, text length:', extractedText.length);
-      console.log('🔍 [DOCX] Mammoth text preview:', extractedText.substring(0, 200));
-      return extractedText.trim();
-    }
-    
-    // If mammoth didn't extract enough, fall back to edge function
-    console.log('⚠️ [DOCX] Mammoth extraction insufficient, trying edge function fallback...');
-    
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await supabase.functions.invoke('extract-docx', {
-      body: formData,
-    });
-    
-    console.log('🔍 [DOCX] Edge function response:', response);
-    
-    if (response.error) {
-      console.error('❌ [DOCX] Edge function failed:', response.error);
-      throw new Error(`DOCX extraction failed: ${response.error.message}`);
-    }
-    
-    if (!response.data || !response.data.success) {
-      console.error('❌ [DOCX] Edge function reported failure:', response.data?.error);
-      throw new Error(`DOCX extraction failed: ${response.data?.error || 'Unknown error'}`);
-    }
-
-    const edgeExtractedText = response.data.extractedText || '';
-    console.log('🔍 [DOCX] Edge function extracted text length:', edgeExtractedText.length);
-    
-    // Use the better result between mammoth and edge function
-    if (edgeExtractedText.length > extractedText.length) {
-      console.log('✅ [DOCX] Using edge function result (longer text)');
-      extractedText = edgeExtractedText;
-    } else if (extractedText.length > 0) {
-      console.log('✅ [DOCX] Using mammoth result (better quality)');
-    } else {
-      console.log('⚠️ [DOCX] Both methods failed, using edge function result as fallback');
-      extractedText = edgeExtractedText;
-    }
-    
-    if (extractedText.length < 20) {
-      throw new Error('Insufficient text extracted from DOCX file');
-    }
-    
-    console.log('✅ [DOCX] Final extraction result length:', extractedText.length);
-    console.log('🔍 [DOCX] Final text preview:', extractedText.substring(0, 300));
-    return extractedText;
-
+    console.log('DOCX extraction completed successfully');
+    return result.value || 'No text content found in DOCX file';
   } catch (error) {
-    console.error('💥 [DOCX] All extraction methods failed:', error);
-    console.error('💥 [DOCX] Error stack:', error.stack);
-    
-    return `📄 DOCX Resume: ${file.name}
-
-File Details:
-- Size: ${(file.size / 1024).toFixed(1)} KB
-- Type: ${file.type}
-- Uploaded: ${new Date().toLocaleString()}
-
-❌ DOCX Processing Error
-
-Unable to process this DOCX file. Both client-side and server-side extraction failed.
-
-Error: ${error.message}
-
-💡 Try instead:
-• Convert to PDF format from your word processor
-• Save as a newer DOCX format (.docx)
-• Ensure the file isn't corrupted or password-protected
-• Try copying content to a plain text document
-
-The resume enhancement will still attempt to process any available content.`;
+    console.error('DOCX extraction failed:', error);
+    throw new Error(`Failed to extract text from DOCX file: ${error.message}`);
   }
 };

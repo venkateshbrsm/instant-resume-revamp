@@ -1,5 +1,4 @@
 import * as mammoth from 'mammoth';
-import { supabase } from "@/integrations/supabase/client";
 // AI dependencies removed to optimize build
 
 export interface ExtractedPhoto {

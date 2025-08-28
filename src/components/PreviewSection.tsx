@@ -15,8 +15,6 @@ import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
 import { EditablePreview } from "./EditablePreview";
-import { BasicResumePreview } from "./BasicResumePreview";
-import { parseBasicResumeFromText, BasicResumeData, enhanceResponsibilitiesForATS } from "@/lib/basicResumeParser";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
@@ -39,7 +37,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [editedContent, setEditedContent] = useState<any>(null);
-  const [basicResumeData, setBasicResumeData] = useState<BasicResumeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStage, setLoadingStage] = useState("Initializing...");
@@ -117,64 +114,22 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-parse basic resume data when text is available
+  // Auto-enhance after extracting text
   useEffect(() => {
-    if (extractedText && extractedText.length > 0 && !basicResumeData) {
-      console.log('🔍 Parsing basic resume data from extracted text...');
-      const parsedData = parseBasicResumeFromText(extractedText);
-      
-      // Apply ATS enhancement to the parsed data
-      const enhancedData = {
-        ...parsedData,
-        experience: parsedData.experience.map(exp => ({
-          ...exp,
-          responsibilities: enhanceResponsibilitiesForATS(exp.responsibilities)
-        }))
-      };
-      
-      setBasicResumeData(enhancedData);
-      console.log('✅ Basic resume data parsed and ATS-enhanced:', enhancedData);
+    // Only enhance after we have extracted text
+    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
+      enhanceResume();
     }
   }, [extractedText]);
 
-  // Disabled auto-enhancement - just show basic content for now
-  // useEffect(() => {
-  //   if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && basicResumeData) {
-  //     const timer = setTimeout(() => {
-  //       enhanceResume();
-  //     }, 2000);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [extractedText, basicResumeData]);
-
-  // Generate preview PDF when basic or enhanced content or template/theme changes
+  // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
-    // Use edited content if available, otherwise use enhanced content, otherwise use basic data
-    const contentToUse = editedContent || enhancedContent || (basicResumeData ? {
-      name: basicResumeData.name,
-      title: basicResumeData.title,
-      email: basicResumeData.email,
-      phone: basicResumeData.phone,
-      location: basicResumeData.location,
-      summary: basicResumeData.summary,
-      experience: basicResumeData.experience.map(exp => ({
-        title: exp.title,
-        company: exp.company,
-        duration: exp.duration,
-        description: exp.description,
-        core_responsibilities: exp.responsibilities,
-        achievements: []
-      })),
-      education: basicResumeData.education,
-      skills: basicResumeData.skills,
-      tools: [],
-      core_technical_skills: basicResumeData.skills.map(skill => ({ name: skill, proficiency: 85 }))
-    } : null);
-    
+    // Use edited content if available, otherwise use enhanced content
+    const contentToUse = editedContent || enhancedContent;
     if (contentToUse && !isGeneratingPreview) {
       generatePreviewPdf();
     }
-  }, [enhancedContent, editedContent, basicResumeData, selectedTemplate, selectedColorTheme]);
+  }, [enhancedContent, editedContent, selectedTemplate, selectedColorTheme]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -182,14 +137,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const extractFileContent = async () => {
-    console.log('🚀 [FILE-UPLOAD] Starting file content extraction process');
-    console.log('🚀 [FILE-UPLOAD] File details:', {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified
-    });
-    
     setIsLoading(true);
     setLoadingProgress(0);
     setLoadingStage("Preparing file...");
@@ -202,21 +149,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setLoadingProgress(30);
       setLoadingStage("Analyzing document structure...");
-      console.log('🚀 [FILE-UPLOAD] About to call extractContentFromFile');
+      console.log('Extracting content from file:', file.name);
       
       setLoadingProgress(50);
       setLoadingStage("Scanning for photos and images...");
       
       // Use the new enhanced extraction function
-      console.log('🚀 [FILE-UPLOAD] Calling extractContentFromFile with file:', file);
       const extractedContent = await extractContentFromFile(file);
-      console.log('🚀 [FILE-UPLOAD] extractContentFromFile returned:', {
-        textLength: extractedContent.text?.length || 0,
-        textPreview: extractedContent.text?.substring(0, 100),
-        hasPdfUrl: !!extractedContent.pdfUrl,
-        hasProfilePhoto: !!extractedContent.profilePhotoUrl,
-        fileType: extractedContent.fileType
-      });
       
       setLoadingProgress(70);
       
@@ -239,7 +178,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingStage("Processing content...");
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('🚀 [FILE-UPLOAD] Setting extracted text:', extractedContent.text?.length || 0, 'characters');
       setExtractedText(extractedContent.text);
       // Store the complete extracted content for visual preview
       setOriginalContent(extractedContent);
@@ -253,12 +191,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       });
       
     } catch (error) {
-      console.error('💥 [FILE-UPLOAD] Error extracting content:', error);
-      console.error('💥 [FILE-UPLOAD] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('Error extracting content:', error);
       toast({
         title: "Extraction Error",
         description: "There was an issue processing your file. Please try again.",
@@ -553,39 +486,30 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setEnhancementProgress(30);
       
-      // Call enhance-resume edge function with retry logic
-      let data, error;
-      let retryCount = 0;
-      const maxRetries = 2;
-      
-      while (retryCount <= maxRetries) {
+      // Convert file to base64 for potential re-extraction in edge function
+      let fileBase64 = '';
+      if (file.name.toLowerCase().endsWith('.docx')) {
         try {
-          const response = await supabase.functions.invoke('enhance-resume', {
-            body: {
-              extractedText: extractedText,
-              templateId: selectedTemplate.id,
-              themeId: selectedColorTheme.id
-            }
-          });
-          
-          data = response.data;
-          error = response.error;
-          
-          // If successful or if it's an application error (not network), break
-          if (!error || !error.message?.includes('Failed to send a request')) {
-            break;
-          }
-        } catch (networkError) {
-          console.log(`Network attempt ${retryCount + 1} failed:`, networkError);
-          error = networkError;
-        }
-        
-        retryCount++;
-        if (retryCount <= maxRetries) {
-          console.log(`Retrying request... (${retryCount}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          const arrayBuffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          fileBase64 = btoa(String.fromCharCode(...bytes));
+          console.log('File converted to base64, size:', fileBase64.length);
+        } catch (error) {
+          console.warn('Failed to convert file to base64:', error);
         }
       }
+      
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          fileName: file.name,
+          originalText: extractedText,
+          extractedText: extractedText,
+          file: fileBase64 || null,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
+        }
+      });
 
       setEnhancementProgress(70);
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -701,28 +625,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               </CardTitle>
             </CardHeader>
             <CardContent>
-               {isEnhancing ? (
-                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
-                   <div className="text-center space-y-4 w-full max-w-md">
-                     <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
-                     <div>
-                       <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
-                       <p className="text-muted-foreground text-sm sm:text-base mb-4">
-                         Our AI is analyzing and enhancing your resume...
-                       </p>
-                       <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
-                       <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                         {Math.round(enhancementProgress)}% complete
-                       </p>
-                     </div>
-                   </div>
-                 </div>
-               ) : enhancedContent ? (
-                  <div className="w-full border border-border/20 rounded-lg overflow-hidden">
-                    <div 
-                      ref={enhancedResumeRef}
-                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
-                    >
+              {isEnhancing ? (
+                <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                  <div className="text-center space-y-4 w-full max-w-md">
+                    <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                      <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                        Our AI is analyzing and enhancing your resume...
+                      </p>
+                      <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                        {Math.round(enhancementProgress)}% complete
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : enhancedContent ? (
+                 <div className="w-full border border-border/20 rounded-lg overflow-hidden">
+                   <div 
+                     ref={enhancedResumeRef}
+                     className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
+                   >
                   
                        {/* Template and Color Selector */}
                        <TemplateSelector
@@ -830,138 +754,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         </Tabs>
                     </div>
                   </div>
-                ) : basicResumeData ? (
-                 /* Show basic parsed resume while waiting for AI enhancement */
-                 <div className="w-full border border-border/20 rounded-lg overflow-hidden">
-                   <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20">
-                     
-                     {/* Template and Color Selector */}
-                     <TemplateSelector
-                       selectedTemplate={selectedTemplate}
-                       selectedColorTheme={selectedColorTheme}
-                       onTemplateChange={setSelectedTemplate}
-                       onColorThemeChange={setSelectedColorTheme}
-                     />
-
-                       {/* Basic Resume Preview with Edit Option */}
-                      <Tabs defaultValue="basic" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                          <TabsTrigger value="basic">📄 Basic Preview</TabsTrigger>
-                          {/* Show PDF tab only for PDF files */}
-                          {typeof originalContent === 'object' && originalContent.fileType === 'pdf' && (
-                            <TabsTrigger value="pdf">📋 Original PDF</TabsTrigger>
-                          )}
-                          <TabsTrigger value="edit">✏️ Edit Content</TabsTrigger>
-                        </TabsList>
-                        
-                         <TabsContent value="basic" className="space-y-4">
-                           <div className="flex items-center justify-between mb-4">
-                             <div className="flex items-center gap-2">
-                               <FileText className="w-5 h-5 text-primary" />
-                               <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
-                             </div>
-                             <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                               Content Extracted & ATS Enhanced
-                             </Badge>
-                           </div>
-                           <p className="text-sm text-muted-foreground mb-4">
-                             This is your resume content as extracted from your uploaded file, with ATS-friendly enhancements applied.
-                           </p>
-                           
-                           {/* Basic Resume Content */}
-                           <div 
-                             ref={resumeContentRef}
-                             className="bg-white rounded-lg p-4 border shadow-sm"
-                           >
-                             <BasicResumePreview
-                               resumeData={basicResumeData}
-                               selectedColorTheme={selectedColorTheme}
-                               templateLayout={selectedTemplate.layout}
-                             />
-                           </div>
-                         </TabsContent>
-                         
-                         {/* PDF Preview Tab - Show original PDF for PDF uploads */}
-                         {typeof originalContent === 'object' && originalContent.fileType === 'pdf' && originalContent.pdfUrl && (
-                           <TabsContent value="pdf" className="space-y-4">
-                             <div className="flex items-center justify-between mb-4">
-                               <div className="flex items-center gap-2">
-                                 <FileText className="w-5 h-5 text-primary" />
-                                 <h3 className="text-lg font-semibold">Original PDF Document</h3>
-                               </div>
-                               <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                 Original File Preview
-                               </Badge>
-                             </div>
-                             <p className="text-sm text-muted-foreground mb-4">
-                               This is your original PDF document. You can view the full document as uploaded.
-                             </p>
-                             
-                             {/* PDF Viewer */}
-                             <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-                               <PDFViewer 
-                                 file={originalContent.pdfUrl} 
-                                 className="w-full"
-                               />
-                             </div>
-                           </TabsContent>
-                         )}
-                         
-                         <TabsContent value="edit" className="space-y-4">
-                          <EditablePreview
-                            enhancedContent={{
-                              name: basicResumeData.name,
-                              title: basicResumeData.title,
-                              email: basicResumeData.email,
-                              phone: basicResumeData.phone,
-                              location: basicResumeData.location,
-                              summary: basicResumeData.summary,
-                              experience: basicResumeData.experience.map(exp => ({
-                                title: exp.title,
-                                company: exp.company,
-                                duration: exp.duration,
-                                description: exp.description,
-                                core_responsibilities: exp.responsibilities,
-                                achievements: []
-                              })),
-                              education: basicResumeData.education,
-                              skills: basicResumeData.skills,
-                              tools: [],
-                              core_technical_skills: basicResumeData.skills.map(skill => ({ name: skill, proficiency: 85 }))
-                            }}
-                            selectedTemplate={selectedTemplate}
-                            selectedColorTheme={selectedColorTheme}
-                            onContentUpdate={(updatedContent) => {
-                              console.log('DOCX content updated from EditablePreview:', updatedContent);
-                              setEditedContent(updatedContent);
-                              // Update basic resume data structure for consistency
-                              if (updatedContent) {
-                                const updatedBasicData: BasicResumeData = {
-                                  name: updatedContent.name || '',
-                                  title: updatedContent.title || '',
-                                  email: updatedContent.email || '',
-                                  phone: updatedContent.phone || '',
-                                  location: updatedContent.location || '',
-                                  summary: updatedContent.summary || '',
-                                  experience: updatedContent.experience?.map(exp => ({
-                                    title: exp.title || '',
-                                    company: exp.company || '',
-                                    duration: exp.duration || '',
-                                    description: exp.description || '',
-                                    responsibilities: exp.core_responsibilities || []
-                                  })) || [],
-                                  education: updatedContent.education || [],
-                                  skills: updatedContent.skills || []
-                                };
-                                setBasicResumeData(updatedBasicData);
-                              }
-                            }}
-                          />
-                        </TabsContent>
-                      </Tabs>
-                   </div>
-                 </div>
-                ) : (
+              ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
                     <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
@@ -1022,19 +815,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 size="xl" 
                 onClick={handlePurchaseClick}
                 className="w-full"
-                disabled={(!enhancedContent && !basicResumeData) || isCheckingAuth}
+                disabled={!enhancedContent || isCheckingAuth}
               >
                 <CreditCard className="w-5 h-5 mr-2" />
-                 {isCheckingAuth ? 'Checking authentication...' : 
-                 (!enhancedContent && !basicResumeData) ? 'Processing Content...' :
+                {isCheckingAuth ? 'Checking authentication...' : 
+                 !enhancedContent ? 'Processing Enhancement...' :
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
               
               <p className="text-xs text-muted-foreground">
-                {(enhancedContent || basicResumeData)
+                {enhancedContent 
                   ? 'Secure payment • Download the enhanced version immediately' 
-                  : 'Content processing • Payment will be enabled once complete'
+                  : 'Enhancement in progress • Payment will be enabled once complete'
                 }
               </p>
             </div>

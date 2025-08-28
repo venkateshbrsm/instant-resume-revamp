@@ -163,9 +163,7 @@ async function generateModernPdf(
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
-      skillLines.forEach((line: string, lineIndex: number) => {
-        doc.text(line, 8, sidebarY + (lineIndex * 3));
-      });
+      doc.text(skillLines[0], 8, sidebarY);
       
       // Progress bar background
       doc.setFillColor(255, 255, 255, 0.3);
@@ -176,7 +174,7 @@ async function generateModernPdf(
       const progressWidth = (sidebarWidth - 16) * (0.7 + (index * 0.03));
       doc.rect(8, sidebarY + 2, progressWidth, 2, 'F');
       
-      sidebarY += 6 + (skillLines.length * 3);
+      sidebarY += 8;
     });
   }
 
@@ -192,17 +190,13 @@ async function generateModernPdf(
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
       const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
-      degreeLines.forEach((line: string, lineIndex: number) => {
-        doc.text(line, 8, sidebarY + (lineIndex * 3));
-      });
-      sidebarY += degreeLines.length * 3 + 1;
+      doc.text(degreeLines[0], 8, sidebarY);
+      sidebarY += 4;
       
       doc.setFont('helvetica', 'normal');
       const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
-      instLines.forEach((line: string, lineIndex: number) => {
-        doc.text(line, 8, sidebarY + (lineIndex * 3));
-      });
-      sidebarY += instLines.length * 3 + 1;
+      doc.text(instLines[0], 8, sidebarY);
+      sidebarY += 4;
       
       if (edu.year && edu.year !== 'N/A') {
         doc.text(edu.year, 8, sidebarY);
@@ -458,8 +452,6 @@ async function generateCreativePdf(
     let skillIndex = 0;
 
     for (let i = 0; i < Math.ceil(resumeData.skills.length / skillsPerRow); i++) {
-      let maxLinesInRow = 1; // Track the tallest skill badge in this row
-      
       for (let j = 0; j < skillsPerRow && skillIndex < resumeData.skills.length; j++) {
         const skill = resumeData.skills[skillIndex];
         const x = margin + (j * badgeWidth);
@@ -478,16 +470,11 @@ async function generateCreativePdf(
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
         const skillLines = doc.splitTextToSize(skill, badgeWidth - 4);
-        skillLines.forEach((line: string, lineIndex: number) => {
-          doc.text(line, x + 2, currentY + (lineIndex * 3));
-        });
-        
-        // Update maxLinesInRow if this skill has more lines
-        maxLinesInRow = Math.max(maxLinesInRow, skillLines.length);
+        doc.text(skillLines[0], x + 2, currentY);
         
         skillIndex++;
       }
-      currentY += 8 + (maxLinesInRow * 3);
+      currentY += 12;
     }
     currentY += 5;
   }
@@ -501,19 +488,6 @@ async function generateCreativePdf(
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
-      // Check for page break before each experience
-      if (currentY > pageHeight - 80) {
-        doc.addPage();
-        currentY = 20;
-        
-        // Re-add section header on new page
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('PROFESSIONAL EXPERIENCE', margin, currentY);
-        currentY += 12;
-      }
-      
       // Experience container background
       doc.setFillColor(pr, pg, pb, 0.05);
       const containerHeight = 30 + (exp.achievements?.length || 0) * 5;
@@ -550,12 +524,7 @@ async function generateCreativePdf(
 
       // Achievements with checkmarks
       if (exp.achievements && exp.achievements.length > 0) {
-        exp.achievements.forEach((achievement) => {
-          // Check for page break before adding achievement
-          if (currentY > pageHeight - 40) {
-            doc.addPage();
-            currentY = 20;
-          }
+        exp.achievements.slice(0, 4).forEach((achievement) => {
           // Achievement bullet (matching preview)
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 7, currentY - 1, 2, 'F');
@@ -631,7 +600,6 @@ async function generateClassicPdf(
   });
 
   const pageWidth = 210;
-  const pageHeight = 297;
   const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   
@@ -711,15 +679,6 @@ async function generateClassicPdf(
     addSectionHeader('Professional Experience');
     
     resumeData.experience.forEach((exp) => {
-      // Check for page break before each experience
-      if (currentY > pageHeight - 60) {
-        doc.addPage();
-        currentY = 20;
-        
-        // Re-add section header on new page
-        addSectionHeader('Professional Experience');
-      }
-      
       // Job title
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);

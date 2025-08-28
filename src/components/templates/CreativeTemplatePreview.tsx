@@ -19,7 +19,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
-      className="bg-white rounded-2xl shadow-2xl overflow-visible border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
       style={{
         pageBreakInside: 'avoid',
         breakInside: 'avoid'
@@ -57,9 +57,9 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   <Palette className="w-8 h-8 text-white" />
                 )}
               </div>
-              <div className="overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                <h1 className="text-4xl font-bold print:text-3xl overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{enhancedContent.name}</h1>
-                <p className="text-xl opacity-90 print:text-lg overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{enhancedContent.title}</p>
+              <div>
+                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
+                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
               </div>
             </div>
             
@@ -97,7 +97,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 <h2 className="text-2xl font-bold mb-3 print:text-xl print:mb-2" style={{ color: selectedColorTheme.primary }}>
                   Creative Vision
                 </h2>
-                <p className="text-base leading-relaxed text-muted-foreground print:text-sm print:leading-normal break-words whitespace-normal">
+                <p className="text-base leading-relaxed text-muted-foreground print:text-sm print:leading-normal">
                   {enhancedContent.summary}
                 </p>
               </div>
@@ -128,18 +128,16 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   
                   <div className="space-y-8 print:space-y-6">
                     {enhancedContent.experience.map((exp: any, index: number) => (
-                        <div 
-                          key={index} 
-                          className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg print:break-inside-avoid print:mb-6 overflow-visible"
-                         style={{ 
-                           background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
-                           borderColor: selectedColorTheme.accent,
-                           pageBreakInside: 'avoid',
-                           breakInside: 'avoid',
-                           wordWrap: 'break-word',
-                           overflowWrap: 'break-word'
-                         }}
-                       >
+                       <div 
+                         key={index} 
+                         className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg print:break-inside-avoid print:mb-6"
+                        style={{ 
+                          background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
+                          borderColor: selectedColorTheme.accent,
+                          pageBreakInside: 'avoid',
+                          breakInside: 'avoid'
+                        }}
+                      >
                         <div className="flex flex-col gap-4 mb-6 print:mb-4">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2">
                             <div>
@@ -148,12 +146,12 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                 {exp.company}
                               </p>
                             </div>
-                             <Badge 
-                               className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start overflow-visible break-words"
-                               style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})`, wordWrap: 'break-word', overflowWrap: 'break-word' }}
-                             >
-                               <span className="whitespace-normal">{exp.duration}</span>
-                             </Badge>
+                            <Badge 
+                              className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start"
+                              style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
+                            >
+                              {exp.duration}
+                            </Badge>
                           </div>
                         </div>
                         
@@ -166,19 +164,19 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                               Key Achievements & Quantifiable Impact:
                             </h4>
                             {exp.achievements.map((achievement: string, achIndex: number) => (
-                               <div 
-                                 key={achIndex} 
-                                 className="flex items-start gap-3 print:gap-2 print:break-inside-avoid overflow-visible" 
-                                 style={{ pageBreakInside: 'avoid', wordWrap: 'break-word', overflowWrap: 'break-word' }}
-                               >
-                                 <div 
-                                   className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
-                                   style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
-                                 >
-                                   <span className="text-white text-xs font-bold">V</span>
-                                 </div>
-                                 <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1 whitespace-normal">{achievement}</p>
-                               </div>
+                              <div 
+                                key={achIndex} 
+                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid overflow-hidden" 
+                                style={{ pageBreakInside: 'avoid' }}
+                              >
+                                <div 
+                                  className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
+                                  style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
+                                >
+                                  <span className="text-white text-xs font-bold">V</span>
+                                </div>
+                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1">{achievement}</p>
+                              </div>
                             ))}
                             
                              {/* Job-specific Core Responsibilities */}
@@ -197,11 +195,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                     </h5>
                                      <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
                                        {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                          <p key={idx} className="flex items-start">
-                                            <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
-                                                  style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                            <span className="break-words whitespace-normal">{responsibility}</span>
-                                          </p>
+                                         <p key={idx} className="flex items-start">
+                                           <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                                 style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                           {responsibility}
+                                         </p>
                                        ))}
                                      </div>
                                   </>
