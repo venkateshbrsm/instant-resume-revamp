@@ -220,126 +220,124 @@ const parseJobBlock = (block: string[]): any => {
   
   console.log('Parsing job block:', block);
   
-  // Enhanced parsing strategy - look at the entire block structure
+  // First pass: identify company and dates from lines containing both
   for (let i = 0; i < block.length; i++) {
     const line = block[i].trim();
-    const lowerLine = line.toLowerCase();
     
-    // Skip explicit section headers
-    if (lowerLine.includes('key achievements') || 
-        lowerLine.includes('responsibilities') || 
-        lowerLine.includes('accomplishments')) {
+    // Skip explicit section headers and descriptions
+    if (line.toLowerCase().includes('key achievements') || 
+        line.toLowerCase().includes('responsibilities') || 
+        line.toLowerCase().includes('accomplishments') ||
+        line.toLowerCase().includes('is a provider of') ||
+        line.toLowerCase().includes('delivers global') ||
+        line.toLowerCase().includes('tech-driven innovation') ||
+        line.toLowerCase().includes('focused in solving') ||
+        line.length > 150) {
       continue;
     }
     
-    // Handle bullet points and responsibilities
-    if (line.match(/^[•\-*]/) || line.match(/^\d+\./) || line.match(/^[\u2022\u2023\u25E6]/)) {
-      const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
-      if (cleanedLine.length > 5) {
-        responsibilities.push(cleanedLine);
-      }
-      continue;
-    }
-    
-    // Parse header information
-    if (hasDatePattern(line)) {
-      // Extract duration from this line
+    // Look for lines with company names and dates
+    if (hasDatePattern(line) && (isCompanyName(line) || line.includes(','))) {
+      // Extract duration
       const extractedDuration = extractDurationFromLine(line);
       if (extractedDuration) {
         duration = extractedDuration;
       }
       
-      // Extract location if present
-      const extractedLocation = extractLocationFromLine(line);
-      if (extractedLocation) {
-        location = extractedLocation;
-      }
+      // Extract company name (before dates and location indicators)
+      let companyCandidate = line;
       
-      // Remove date and location to see if there's company/position info
-      let remainingText = line;
-      if (extractedDuration) {
-        remainingText = remainingText.replace(extractedDuration, '').trim();
-        // Also remove individual date components
-        remainingText = remainingText.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi, '').trim();
-        remainingText = remainingText.replace(/\b\d{4}\b/g, '').trim();
-        remainingText = remainingText.replace(/\s*-\s*to\s*-\s*/gi, '').trim();
-        remainingText = remainingText.replace(/\s*-\s*to\s*/gi, '').trim();
-        remainingText = remainingText.replace(/^-+|to|-+$/gi, '').trim();
-      }
-      if (extractedLocation) {
-        remainingText = remainingText.replace(extractedLocation, '').trim();
-      }
+      // Remove date patterns
+      companyCandidate = companyCandidate.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi, '');
+      companyCandidate = companyCandidate.replace(/\b\d{4}\b/g, '');
+      companyCandidate = companyCandidate.replace(/\s*[-–]\s*(to|Present)\s*/gi, '');
+      companyCandidate = companyCandidate.replace(/\s*[-–]\s*/g, '');
+      companyCandidate = companyCandidate.replace(/^[-,\s]+|[-,\s]+$/g, '').trim();
       
-      // Clean up remaining text
-      remainingText = remainingText.replace(/^[-,\s]+|[-,\s]+$/g, '').trim();
-      
-      if (remainingText.length > 3 && !company) {
-        company = remainingText;
+      // If it looks like a company, use it
+      if (companyCandidate.length > 3 && companyCandidate.length < 100) {
+        company = companyCandidate;
       }
-    } else if (isCompanyName(line) && !company) {
-      company = line;
-    } else if (isJobTitle(line) && !position) {
+      break; // Found the main company line
+    }
+  }
+  
+  // Second pass: find position (job title) - look for standalone job titles
+  for (let i = 0; i < block.length; i++) {
+    const line = block[i].trim();
+    
+    // Skip if this line was used for company or is clearly a responsibility
+    if (line === company || 
+        line.includes(company) ||
+        line.toLowerCase().includes('handling') ||
+        line.toLowerCase().includes('developed') ||
+        line.toLowerCase().includes('enabling') ||
+        line.toLowerCase().includes('joined') ||
+        line.toLowerCase().includes('established') ||
+        line.toLowerCase().includes('total portfolio') ||
+        line.startsWith('•') || 
+        line.length > 120) {
+      continue;
+    }
+    
+    // Look for job titles
+    if (isJobTitle(line) || (line.length > 10 && line.length < 80 && !hasDatePattern(line))) {
       position = line;
-    } else if (line.length > 10 && !line.match(/^[•\-*]/) && i < 3) {
-      // Early lines that might contain job info
-      if (!position && !isCompanyName(line)) {
-        position = line;
-      } else if (!company && isCompanyName(line)) {
-        company = line;
-      } else if (line.length > 15 && !position && !company) {
-        // This might be descriptive text - use as responsibility
-        responsibilities.push(line);
-      }
-    } else if (line.length > 15 && i > 2) {
-      // Later lines are likely responsibilities
-      responsibilities.push(line);
+      break;
     }
   }
   
-  // Post-processing to ensure we have meaningful data
-  if (!company && block.length > 0) {
-    // Look for any line that might be a company
-    for (const line of block) {
-      if (isCompanyName(line) || (line.includes(',') && line.length > 10 && line.length < 100)) {
-        company = line;
-        break;
-      }
+  // Third pass: collect responsibilities
+  for (let i = 0; i < block.length; i++) {
+    const line = block[i].trim();
+    
+    // Skip company and position lines
+    if (line === company || line === position) {
+      continue;
     }
-  }
-  
-  if (!position && block.length > 0) {
-    // Look for any line that might be a position - avoid generic placeholders
-    for (const line of block) {
-      if (!isCompanyName(line) && 
-          !hasDatePattern(line) && 
-          line.length > 5 && 
-          line.length < 100 &&
-          !line.toLowerCase().includes('position') &&
-          !line.toLowerCase().includes('from was') &&
-          !line.toLowerCase().includes('multinational') &&
-          !line.toLowerCase().includes('headquartered')) {
-        position = line;
-        break;
+    
+    // Collect responsibilities - explicit bullets or descriptive sentences
+    if (line.match(/^[•\-*]/) || 
+        line.match(/^\d+\./) || 
+        line.match(/^[\u2022\u2023\u25E6]/) ||
+        (line.length > 20 && 
+         !hasDatePattern(line) && 
+         !isCompanyName(line) &&
+         (line.toLowerCase().includes('handling') ||
+          line.toLowerCase().includes('developed') ||
+          line.toLowerCase().includes('managed') ||
+          line.toLowerCase().includes('led') ||
+          line.toLowerCase().includes('established') ||
+          line.toLowerCase().includes('enabled') ||
+          line.toLowerCase().includes('worked') ||
+          line.toLowerCase().includes('directed') ||
+          line.toLowerCase().includes('negotiated') ||
+          line.toLowerCase().includes('space') ||
+          line.toLowerCase().includes('portfolio')))) {
+      
+      const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
+      if (cleanedLine.length > 10) {
+        responsibilities.push(cleanedLine);
       }
     }
   }
   
-  // Validate that we have meaningful data before creating entry
-  const hasValidCompany = company && company !== 'Company' && company.length > 3 && !company.toLowerCase().startsWith('from was');
-  const hasValidPosition = position && position !== 'Position' && position.length > 3;
+  // Validate that we have meaningful data
+  const hasValidCompany = company && company.length > 3 && !company.toLowerCase().includes('enabling');
+  const hasValidPosition = position && position.length > 3 && position.length < 100;
   
-  // Don't create entries with completely invalid data
+  // Don't create entries with invalid data
   if (!hasValidCompany && !hasValidPosition) {
     console.log('Skipping invalid job entry:', { company, position });
     return null;
   }
   
   const result = {
-    company: hasValidCompany ? company : 'Company',
-    position: hasValidPosition ? position : 'Position',
+    company: hasValidCompany ? company : '',
+    position: hasValidPosition ? position : '',
     duration: duration || '',
     location: location || '',
-    responsibilities: responsibilities.filter(r => r.length > 5)
+    responsibilities: responsibilities.filter(r => r.length > 10)
   };
   
   console.log('Parsed job result:', result);

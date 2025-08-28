@@ -357,33 +357,39 @@ export const DocxResumePreview = ({
                       {/* Company Name and Dates - Single Line Header */}
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/30">
                         <div className="flex items-center gap-4">
-                          {isEditing ? (
-                            <Input
-                              value={exp.company}
-                              onChange={(e) => handleArrayFieldChange('experience', index, 'company', e.target.value)}
-                              className="text-lg font-bold"
-                              placeholder="Company Name"
-                              style={{ color: selectedColorTheme.primary }}
-                            />
-                          ) : (
-                            <h3 className="text-lg font-bold" style={{ color: selectedColorTheme.primary }}>
-                              {exp.company}
-                            </h3>
+                          {exp.company && (
+                            <>
+                              {isEditing ? (
+                                <Input
+                                  value={exp.company}
+                                  onChange={(e) => handleArrayFieldChange('experience', index, 'company', e.target.value)}
+                                  className="text-lg font-bold"
+                                  placeholder="Company Name"
+                                  style={{ color: selectedColorTheme.primary }}
+                                />
+                              ) : (
+                                <h3 className="text-lg font-bold" style={{ color: selectedColorTheme.primary }}>
+                                  {exp.company}
+                                </h3>
+                              )}
+                            </>
                           )}
                           
-                          {isEditing ? (
-                            <Input
-                              value={exp.duration}
-                              onChange={(e) => handleArrayFieldChange('experience', index, 'duration', e.target.value)}
-                              className="text-sm font-medium"
-                              placeholder="Duration"
-                            />
-                          ) : (
-                            exp.duration && (
-                              <span className="text-sm font-medium text-muted-foreground">
-                                {exp.duration}
-                              </span>
-                            )
+                          {exp.duration && (
+                            <>
+                              {isEditing ? (
+                                <Input
+                                  value={exp.duration}
+                                  onChange={(e) => handleArrayFieldChange('experience', index, 'duration', e.target.value)}
+                                  className="text-sm font-medium"
+                                  placeholder="Duration"
+                                />
+                              ) : (
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {exp.duration}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                         
@@ -403,8 +409,8 @@ export const DocxResumePreview = ({
                         )}
                       </div>
                       
-                      {/* Job Position - Secondary */}
-                      {exp.position && (
+                      {/* Job Position - Secondary - Only show if exists */}
+                      {exp.position && exp.position !== 'Position' && (
                         <div className="mb-3">
                           {isEditing ? (
                             <Input
