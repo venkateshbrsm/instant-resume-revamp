@@ -203,7 +203,7 @@ const extractExperience = (lines: string[]): Array<{
     if (block.length === 0) continue;
     
     const job = parseJobBlock(block);
-    if (job.position || job.company) {
+    if (job && (job.position || job.company)) {
       experience.push(job);
     }
   }
@@ -300,7 +300,7 @@ const parseJobBlock = (block: string[]): any => {
   if (!company && block.length > 0) {
     // Look for any line that might be a company
     for (const line of block) {
-      if (isCompanyName(line) || (line.includes(',') && line.length > 10)) {
+      if (isCompanyName(line) || (line.includes(',') && line.length > 10 && line.length < 100)) {
         company = line;
         break;
       }
@@ -308,18 +308,35 @@ const parseJobBlock = (block: string[]): any => {
   }
   
   if (!position && block.length > 0) {
-    // Look for any line that might be a position
+    // Look for any line that might be a position - avoid generic placeholders
     for (const line of block) {
-      if (!isCompanyName(line) && !hasDatePattern(line) && line.length > 5 && line.length < 100) {
+      if (!isCompanyName(line) && 
+          !hasDatePattern(line) && 
+          line.length > 5 && 
+          line.length < 100 &&
+          !line.toLowerCase().includes('position') &&
+          !line.toLowerCase().includes('from was') &&
+          !line.toLowerCase().includes('multinational') &&
+          !line.toLowerCase().includes('headquartered')) {
         position = line;
         break;
       }
     }
   }
   
+  // Validate that we have meaningful data before creating entry
+  const hasValidCompany = company && company !== 'Company' && company.length > 3 && !company.toLowerCase().startsWith('from was');
+  const hasValidPosition = position && position !== 'Position' && position.length > 3;
+  
+  // Don't create entries with completely invalid data
+  if (!hasValidCompany && !hasValidPosition) {
+    console.log('Skipping invalid job entry:', { company, position });
+    return null;
+  }
+  
   const result = {
-    company: company || 'Company',
-    position: position || 'Position',
+    company: hasValidCompany ? company : 'Company',
+    position: hasValidPosition ? position : 'Position',
     duration: duration || '',
     location: location || '',
     responsibilities: responsibilities.filter(r => r.length > 5)
@@ -368,6 +385,16 @@ const hasDatePattern = (line: string): boolean => {
 };
 
 const isCompanyName = (line: string): boolean => {
+  // Reject obvious non-company patterns
+  if (line.toLowerCase().startsWith('from was') || 
+      line.toLowerCase().startsWith('position') ||
+      line.toLowerCase().includes('is a multinational') ||
+      line.toLowerCase().includes('company headquartered') ||
+      line.toLowerCase().includes('subsidiary of') ||
+      line.length > 200) {
+    return false;
+  }
+  
   return !!(line.includes('Ltd') || 
            line.includes('Inc') || 
            line.includes('Corp') || 
@@ -377,7 +404,13 @@ const isCompanyName = (line: string): boolean => {
            line.includes('Solutions') ||
            line.includes('Services') ||
            line.includes('Group') ||
-           line.match(/\b[A-Z][a-z]+\s+[A-Z][a-z]+\s*(Pvt|Private|Limited|LLC)\b/));
+           line.includes('Enterprises') ||
+           line.includes('Networks') ||
+           line.includes('Bank') ||
+           line.includes('Pvt') ||
+           line.includes('Private') ||
+           line.includes('Limited') ||
+           line.match(/\b[A-Z][a-z]+\s+[A-Z][a-z]+\s*(Pvt|Private|Limited|LLC|Inc|Corp)\b/));
 };
 
 const isJobTitle = (line: string): boolean => {
