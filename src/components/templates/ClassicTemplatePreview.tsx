@@ -58,7 +58,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           >
             PROFESSIONAL SUMMARY
           </h2>
-          <p className="text-base leading-relaxed text-muted-foreground text-justify">
+          <p className="text-base leading-relaxed text-muted-foreground text-justify break-words whitespace-normal">
             {enhancedContent.summary}
           </p>
         </div>
@@ -96,7 +96,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                         {exp.achievements.map((achievement: string, achIndex: number) => (
                           <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start page-break-avoid">
                             <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
-                            <span className="font-medium">{achievement}</span>
+                            <span className="font-medium break-words whitespace-normal">{achievement}</span>
                           </li>
                         ))}
                       </ul>
@@ -115,7 +115,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                                 <p key={idx} className="flex items-start">
                                   <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
                                         style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                  {responsibility}
+                                  <span className="break-words whitespace-normal">{responsibility}</span>
                                 </p>
                               ))}
                            </div>

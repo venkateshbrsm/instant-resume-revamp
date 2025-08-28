@@ -97,7 +97,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 <h2 className="text-2xl font-bold mb-3 print:text-xl print:mb-2" style={{ color: selectedColorTheme.primary }}>
                   Creative Vision
                 </h2>
-                <p className="text-base leading-relaxed text-muted-foreground print:text-sm print:leading-normal">
+                <p className="text-base leading-relaxed text-muted-foreground print:text-sm print:leading-normal break-words whitespace-normal">
                   {enhancedContent.summary}
                 </p>
               </div>
@@ -195,11 +195,11 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                     </h5>
                                      <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
                                        {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                         <p key={idx} className="flex items-start">
-                                           <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
-                                                 style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                           {responsibility}
-                                         </p>
+                                          <p key={idx} className="flex items-start">
+                                            <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                                  style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                            <span className="break-words whitespace-normal">{responsibility}</span>
+                                          </p>
                                        ))}
                                      </div>
                                   </>

@@ -42,13 +42,13 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             <p className="text-lg opacity-95 font-medium text-center mb-4">{enhancedContent.title}</p>
             
             <div className="space-y-2 text-sm opacity-90">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="break-all no-underline">{enhancedContent.email}</span>
+              <div className="flex items-start gap-2">
+                <Mail className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span className="break-words no-underline whitespace-normal">{enhancedContent.email}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 flex-shrink-0" />
-                <span className="no-underline">{enhancedContent.phone}</span>
+              <div className="flex items-start gap-2">
+                <Phone className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span className="no-underline break-words whitespace-normal">{enhancedContent.phone}</span>
               </div>
             </div>
           </div>
@@ -199,7 +199,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
               </h2>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border-l-4" style={{ borderColor: selectedColorTheme.primary }}>
-              <p className="text-sm leading-relaxed text-gray-500">
+              <p className="text-sm leading-relaxed text-gray-500 break-words whitespace-normal">
                 {enhancedContent.summary}
               </p>
             </div>
@@ -274,11 +274,11 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                                 </h5>
                                 <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
                                   {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                    <p key={idx} className="flex items-start">
-                                      <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
-                                            style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                      {responsibility}
-                                    </p>
+                                     <p key={idx} className="flex items-start">
+                                       <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                             style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                       <span className="break-words whitespace-normal">{responsibility}</span>
+                                     </p>
                                   ))}
                                 </div>
                                </div>
