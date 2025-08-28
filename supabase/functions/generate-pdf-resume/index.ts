@@ -894,6 +894,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   console.log('HTML content length:', htmlContent.length);
 
   const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
+  console.log('PDFShift API key available:', !!pdfShiftApiKey);
+  console.log('PDFShift API key length:', pdfShiftApiKey ? pdfShiftApiKey.length : 0);
   
   if (!pdfShiftApiKey) {
     console.warn('PDFShift API key not found, returning text fallback');
