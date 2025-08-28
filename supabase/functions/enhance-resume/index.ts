@@ -78,73 +78,78 @@ ${originalText}
 CRITICAL INSTRUCTIONS:
 1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
 2. Preserve EVERY job position, company, and time period from the original
-3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. Expand descriptions to be more comprehensive and achievement-focused
-5. Add relevant industry keywords and ATS-friendly terms for each role
-6. Make each section detailed and professional with specific accomplishments
-7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
-8. Use strong action verbs and quantifiable achievements where possible
+3. Create UNIQUE, DIVERSE content for each job - NO REPETITIVE LANGUAGE between positions
+4. Each job must have DISTINCT responsibilities and achievements that reflect the actual role
+5. Extract and preserve ALL skills and technical skills from the original resume
+6. Use the actual extracted content as the foundation - don't create fictional information
+7. Make each job description significantly different from others in language, focus, and responsibilities
+8. Avoid generic phrases like "cross-functional team collaboration" across multiple roles
 9. Return ONLY a valid JSON object with the exact structure shown below
-10. MANDATORY: Include ALL work experience entries from the original resume
-11. MANDATORY: Include ALL skills and technical skills from the original resume
+10. MANDATORY: Each experience entry must be substantially different in content and language
+
+DIVERSITY REQUIREMENTS FOR EXPERIENCE:
+- Use different action verbs for each role (developed, implemented, managed, led, created, optimized, etc.)
+- Focus on role-specific responsibilities (technical for dev roles, creative for marketing, etc.)
+- Vary the achievement metrics and outcomes for each position
+- Use different industry terminology appropriate to each role
+- Ensure no phrases or sentence structures are repeated across jobs
 
 REQUIRED JSON STRUCTURE:
 {
-  "name": "Full professional name",
-  "title": "Professional title or desired role", 
-  "email": "email@example.com",
-  "phone": "phone number",
-  "location": "City, State/Country",
-  "linkedin": "LinkedIn profile URL if available",
-  "summary": "Comprehensive 4-6 sentence professional summary with keywords and achievements",
+  "name": "Full professional name from resume",
+  "title": "Professional title or desired role from resume", 
+  "email": "actual email from resume",
+  "phone": "actual phone number from resume",
+  "location": "actual location from resume",
+  "linkedin": "LinkedIn profile URL if available in resume",
+  "summary": "Comprehensive 4-6 sentence professional summary based on actual experience and skills",
   "experience": [
     {
-      "title": "Job Title",
-      "company": "Company Name",
-      "duration": "Start Date - End Date",
-      "description": "Brief 1-2 sentence overview of the role and main focus",
+      "title": "Exact Job Title from Resume",
+      "company": "Exact Company Name from Resume",
+      "duration": "Exact Start Date - End Date from Resume",
+      "description": "Unique 1-2 sentence overview specific to this role's focus and industry",
       "core_responsibilities": [
-        "Primary responsibility with detailed description",
-        "Secondary responsibility with specific tasks and duties",
-        "Third key responsibility with operational details"
+        "Role-specific responsibility with unique language and technical details",
+        "Different responsibility using varied action verbs and industry terms",
+        "Third unique responsibility with distinct focus from other roles"
       ],
       "achievements": [
-        "Specific achievement with metrics and impact",
-        "Another key accomplishment with quantifiable results",
-        "Third major contribution with measurable outcomes"
+        "Specific achievement with unique metrics and role-appropriate outcomes",
+        "Different accomplishment with varied language and distinct results",
+        "Third achievement with unique phrasing and role-specific impact"
       ]
     }
   ],
   "education": [
     {
-      "degree": "Degree Name",
-      "institution": "Institution Name", 
-      "year": "Graduation Year or Duration",
-      "gpa": "GPA if available"
+      "degree": "Exact Degree Name from Resume",
+      "institution": "Exact Institution Name from Resume", 
+      "year": "Exact Graduation Year from Resume",
+      "gpa": "GPA if mentioned in resume"
     }
   ],
-  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10", "skill11", "skill12"],
-  "tools": ["tool1", "tool2", "tool3", "tool4", "tool5", "tool6", "tool7", "tool8", "tool9", "tool10"],
+  "skills": ["Extract ALL skills mentioned in original resume - maintain exact list"],
+  "tools": ["Extract ALL tools/technologies mentioned in original resume"],
   "core_technical_skills": [
     {
-      "name": "Technical Skill Name",
+      "name": "Technical Skill from Resume",
       "proficiency": 85
     }
   ]
 }
 
 ENHANCEMENT GUIDELINES:
-- Professional summary should be compelling and keyword-rich
-- Experience descriptions should be brief role overviews (1-2 sentences)
-- Each experience should have 3-5 core responsibilities detailing daily tasks and duties
-- Each experience should have 3-5 specific achievements with metrics and impact
-- Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
-- Extract ALL tools mentioned in original resume as a separate "tools" array
-- Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
-- Expand on responsibilities with action verbs and specific outcomes
-- Make content ATS-friendly with industry standard terminology
-- Ensure all sections are comprehensive and detailed
-- Focus achievements on quantifiable results and business impact`;
+- Use ONLY information that can be inferred from the original resume text
+- Professional summary should reflect actual experience and skills mentioned
+- Each experience description must be unique - no copy-paste language between jobs
+- Vary sentence structures, vocabulary, and focus areas for each role
+- Core responsibilities should reflect actual job functions with enhanced detail
+- Achievements should be role-specific with realistic metrics
+- Skills and tools must come from the original resume content
+- Add technical skills with proficiency based on experience level shown
+- Ensure all personal information (name, email, phone) matches the original exactly
+- Make content comprehensive but authentic to the original resume`;
 
   console.log('Sending request to OpenAI with model: gpt-4o');
 
@@ -159,7 +164,7 @@ ENHANCEMENT GUIDELINES:
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
+          content: 'You are an expert resume optimizer. Create unique, diverse content for each job role. Never repeat language or phrases between different positions. Always return valid JSON.' 
         },
         { 
           role: 'user', 
@@ -167,7 +172,7 @@ ENHANCEMENT GUIDELINES:
         }
       ],
       max_tokens: 4000,
-      temperature: 0.7,
+      temperature: 0.8, // Increased for more creative, diverse content
     }),
   });
 
