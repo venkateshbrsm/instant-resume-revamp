@@ -1,48 +1,5 @@
 // DOCX Resume Parser - Extracts structured data from DOCX resume text
 
-// ATS-friendly bullet point optimization function
-const makeATSFriendly = (text: string): string => {
-  // Remove redundant phrases and make more action-oriented
-  let optimized = text;
-  
-  // Replace weak verbs with stronger action verbs
-  const verbReplacements = {
-    'handling': 'Managing',
-    'worked on': 'Developed',
-    'helped with': 'Facilitated',
-    'was responsible for': 'Led',
-    'assisted in': 'Supported',
-    'involved in': 'Contributed to',
-    'participated in': 'Executed',
-    'took part in': 'Collaborated on'
-  };
-  
-  // Apply verb replacements
-  for (const [weak, strong] of Object.entries(verbReplacements)) {
-    optimized = optimized.replace(new RegExp(weak, 'gi'), strong);
-  }
-  
-  // Ensure it starts with an action verb
-  if (!optimized.match(/^[A-Z][a-z]+(ed|ing|s)\s/)) {
-    // If it doesn't start with an action verb, try to add one
-    if (optimized.toLowerCase().includes('responsible')) {
-      optimized = optimized.replace(/responsible for/gi, 'Managed');
-    } else if (!optimized.match(/^[A-Z]/)) {
-      optimized = 'Executed ' + optimized.toLowerCase();
-    }
-  }
-  
-  // Clean up and format
-  optimized = optimized.charAt(0).toUpperCase() + optimized.slice(1);
-  
-  // Ensure it ends with a period if it doesn't already
-  if (!optimized.endsWith('.') && !optimized.endsWith('!') && !optimized.endsWith('?')) {
-    optimized += '.';
-  }
-  
-  return optimized;
-};
-
 export interface BasicResumeData {
   name: string;
   email: string;
@@ -330,86 +287,69 @@ const parseJobBlock = (block: string[]): any => {
     }
   }
   
-  // Third pass: collect only actual job responsibilities - be selective
+  // Third pass: collect responsibilities - be more inclusive
   for (let i = 0; i < block.length; i++) {
     const line = block[i].trim();
-    
-    // Skip empty lines
-    if (!line) continue;
     
     // Skip company and position lines
     if (line === company || line === position) {
       continue;
     }
     
-    // Skip date-only lines or lines that repeat company info
-    if (hasDatePattern(line) && line.length < 50) {
-      continue;
-    }
-    
-    // Skip lines that just repeat company name and dates
-    if (line.includes(company) && (hasDatePattern(line) || line.length < 80)) {
-      continue;
-    }
-    
-    // Skip company descriptions and generic info
+    // Skip company descriptions and metadata
     if (line.toLowerCase().includes('is a provider of') ||
         line.toLowerCase().includes('delivers global') ||
         line.toLowerCase().includes('tech-driven innovation') ||
         line.toLowerCase().includes('focused in solving') ||
         line.toLowerCase().includes('headquartered in') ||
         line.toLowerCase().includes('subsidiary of') ||
-        line.toLowerCase().includes('privately owned') ||
-        line.toLowerCase().includes('multinational') ||
-        line.toLowerCase().includes('based in') ||
-        line.toLowerCase().includes('formed from') ||
-        line.toLowerCase().includes('platforms') ||
-        line.toLowerCase().includes('purchase of') ||
-        line.toLowerCase().includes('equity stake') ||
-        line.length > 150) { // Very long lines are usually descriptions
+        line.length > 200) {
       continue;
     }
     
-    // Skip lines with date ranges that don't match this job (likely from other experiences)
-    if (duration && hasDatePattern(line)) {
-      const lineHasValidDate = checkDateRelevance(line, duration);
-      if (!lineHasValidDate) {
-        continue;
+    // Collect explicit bullet points
+    if (line.match(/^[•\-*]/) || 
+        line.match(/^\d+\./) || 
+        line.match(/^[\u2022\u2023\u25E6]/)) {
+      const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
+      if (cleanedLine.length > 5) {
+        responsibilities.push(cleanedLine);
       }
     }
-    
-    // Only collect actual job responsibilities and achievements
-    if (line.length > 15 && 
-        !isCompanyName(line) &&
-        !line.toLowerCase().includes('position:') &&
-        !line.toLowerCase().includes('title:') &&
-        !line.toLowerCase().includes('location:') &&
-        (line.match(/^[•\-*\d\.\s\u2022\u2023\u25E6]/) || // Explicit bullet points
-         line.toLowerCase().includes('manage') ||
-         line.toLowerCase().includes('lead') ||
-         line.toLowerCase().includes('develop') ||
-         line.toLowerCase().includes('handle') ||
-         line.toLowerCase().includes('coordinate') ||
-         line.toLowerCase().includes('implement') ||
-         line.toLowerCase().includes('execute') ||
-         line.toLowerCase().includes('responsibl') ||
-         line.toLowerCase().includes('accountabilit') ||
-         line.toLowerCase().includes('oversee') ||
-         line.toLowerCase().includes('direct') ||
-         line.toLowerCase().includes('establish') ||
-         line.toLowerCase().includes('achieve') ||
-         line.toLowerCase().includes('deliver') ||
-         line.toLowerCase().includes('complete') ||
-         line.toLowerCase().includes('successful'))) {
-      
-      // Clean the line of bullet markers
-      let cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
-      
-      // Make the bullet point ATS-friendly
-      if (cleanedLine.length > 15) {
-        const atsOptimizedLine = makeATSFriendly(cleanedLine);
-        responsibilities.push(atsOptimizedLine);
-      }
+    // Collect descriptive sentences and achievements - be more inclusive
+    else if (line.length > 15 && 
+             !hasDatePattern(line) && 
+             !isCompanyName(line) &&
+             !line.toLowerCase().includes('position') &&
+             (line.toLowerCase().includes('manage') ||
+              line.toLowerCase().includes('lead') ||
+              line.toLowerCase().includes('develop') ||
+              line.toLowerCase().includes('handle') ||
+              line.toLowerCase().includes('direct') ||
+              line.toLowerCase().includes('establish') ||
+              line.toLowerCase().includes('enable') ||
+              line.toLowerCase().includes('work') ||
+              line.toLowerCase().includes('coordinate') ||
+              line.toLowerCase().includes('implement') ||
+              line.toLowerCase().includes('deliver') ||
+              line.toLowerCase().includes('execute') ||
+              line.toLowerCase().includes('negotiate') ||
+              line.toLowerCase().includes('oversee') ||
+              line.toLowerCase().includes('transform') ||
+              line.toLowerCase().includes('clear') ||
+              line.toLowerCase().includes('total') ||
+              line.toLowerCase().includes('space') ||
+              line.toLowerCase().includes('portfolio') ||
+              line.toLowerCase().includes('project') ||
+              line.toLowerCase().includes('responsibl') ||
+              line.toLowerCase().includes('accountabilit') ||
+              line.toLowerCase().includes('join') ||
+              line.toLowerCase().includes('transfer') ||
+              line.match(/^\s*[A-Z]/) || // Lines starting with capital letters (likely descriptions)
+              line.includes(':') || // Lines with colons (often descriptions)
+              line.match(/\d+[\s,]/) // Lines with numbers (metrics, sizes, etc.)
+             )) {
+      responsibilities.push(line);
     }
   }
   
@@ -423,32 +363,17 @@ const parseJobBlock = (block: string[]): any => {
     return null;
   }
   
-  return {
-    company,
-    position,
-    duration,
-    responsibilities
+  const result = {
+    company: hasValidCompany ? company : '',
+    position: hasValidPosition ? position : '',
+    duration: duration || '',
+    location: location || '',
+    responsibilities: responsibilities.filter(r => r.length > 10)
   };
-}
-
-// Helper function to check if a date range is relevant to the current job
-function checkDateRelevance(line: string, jobDuration: string): boolean {
-  const dateMatches = line.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\b/g);
-  if (!dateMatches || dateMatches.length === 0) return true; // No dates found, assume relevant
   
-  const jobDates = jobDuration.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\b/g);
-  if (!jobDates || jobDates.length === 0) return true; // No job dates to compare
-  
-  // Extract years from both
-  const lineYears = dateMatches.map(date => parseInt(date.split(' ')[1]));
-  const jobYears = jobDates.map(date => parseInt(date.split(' ')[1]));
-  
-  const minJobYear = Math.min(...jobYears);
-  const maxJobYear = Math.max(...jobYears);
-  
-  // Check if any date in the line falls within the job period (with 1 year buffer)
-  return lineYears.some(year => year >= minJobYear - 1 && year <= maxJobYear + 1);
-}
+  console.log('Parsed job result:', result);
+  return result;
+};
 
 const isNewJobEntry = (line: string, nextLine: string, currentBlock: string[]): boolean => {
   // Don't start new job entry if current block is too small (less than 3 lines)
