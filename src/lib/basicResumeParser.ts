@@ -452,7 +452,9 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
     'Spearheaded', 'Orchestrated', 'Pioneered', 'Championed', 'Executed', 'Implemented', 'Developed', 
     'Managed', 'Led', 'Directed', 'Coordinated', 'Supervised', 'Oversaw', 'Facilitated', 'Streamlined',
     'Optimized', 'Enhanced', 'Improved', 'Transformed', 'Delivered', 'Achieved', 'Exceeded', 'Generated',
-    'Established', 'Created', 'Designed', 'Built', 'Initiated', 'Launched', 'Collaborated', 'Partnered'
+    'Established', 'Created', 'Designed', 'Built', 'Initiated', 'Launched', 'Collaborated', 'Partnered',
+    'Accelerated', 'Architected', 'Automated', 'Consolidated', 'Cultivated', 'Demonstrated', 'Engineered',
+    'Formulated', 'Maximized', 'Modernized', 'Negotiated', 'Standardized', 'Strategized', 'Synthesized'
   ];
 
   const enhancedResponsibilities = responsibilities.map(responsibility => {
@@ -461,58 +463,18 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
     // Remove bullet points and clean up
     enhanced = enhanced.replace(/^[•\-▪\*]\s*/, '').trim();
     
-    // Skip if too short or if it looks like company info/description
-    if (enhanced.length < 15) return enhanced;
+    // Skip if too short
+    if (enhanced.length < 10) return enhanced;
     
-    // Skip if it looks like a company name, location, or general description
-    const isCompanyInfo = (
-      enhanced.toLowerCase().includes('pvt ltd') ||
-      enhanced.toLowerCase().includes('inc.') ||
-      enhanced.toLowerCase().includes('corp') ||
-      enhanced.toLowerCase().includes('company') ||
-      enhanced.toLowerCase().includes('organization') ||
-      enhanced.toLowerCase().includes('founded in') ||
-      enhanced.toLowerCase().includes('based in') ||
-      enhanced.toLowerCase().includes('provider of') ||
-      enhanced.toLowerCase().includes('is a ') ||
-      enhanced.toLowerCase().includes('specializes in') ||
-      enhanced.match(/^\w+,\s*\w+,?\s*\d{4}/) || // Location and date pattern
-      enhanced.match(/^\d{4}\s*[-–—]\s*\d{4}/) // Date range at start
+    // Skip obvious company info/headers - be more specific
+    const isCompanyHeader = (
+      enhanced.match(/^[A-Z\s]+,\s*[A-Z][a-z]+,?\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i) ||
+      enhanced.match(/^\d{4}\s*[-–—]\s*\d{4}/) ||
+      enhanced.match(/^[A-Z][A-Z\s&]+\s+(PVT|PRIVATE|LIMITED|LTD|INC|CORP)/i)
     );
     
-    if (isCompanyInfo) {
-      return enhanced; // Return as-is for company descriptions
-    }
-    
-    // Only enhance if it looks like an actual responsibility/achievement
-    const isResponsibility = (
-      enhanced.toLowerCase().includes('responsible') ||
-      enhanced.toLowerCase().includes('managed') ||
-      enhanced.toLowerCase().includes('developed') ||
-      enhanced.toLowerCase().includes('implemented') ||
-      enhanced.toLowerCase().includes('worked') ||
-      enhanced.toLowerCase().includes('led') ||
-      enhanced.toLowerCase().includes('handled') ||
-      enhanced.toLowerCase().includes('created') ||
-      enhanced.toLowerCase().includes('improved') ||
-      enhanced.toLowerCase().includes('achieved') ||
-      enhanced.toLowerCase().includes('coordinated') ||
-      enhanced.toLowerCase().includes('oversaw') ||
-      enhanced.toLowerCase().includes('supervised') ||
-      enhanced.toLowerCase().includes('collaborated') ||
-      enhanced.toLowerCase().includes('assisted') ||
-      enhanced.toLowerCase().includes('helped') ||
-      enhanced.toLowerCase().includes('supported') ||
-      enhanced.toLowerCase().includes('maintained') ||
-      enhanced.toLowerCase().includes('ensured') ||
-      enhanced.toLowerCase().includes('performed') ||
-      enhanced.toLowerCase().includes('executed') ||
-      enhanced.toLowerCase().includes('delivered') ||
-      enhanced.match(/^(conducted|organized|planned|analyzed|designed|built|established|initiated|launched)/i)
-    );
-    
-    if (!isResponsibility) {
-      return enhanced; // Return as-is if not clearly a responsibility
+    if (isCompanyHeader) {
+      return enhanced;
     }
     
     // Convert to sentence case if all caps
@@ -521,23 +483,23 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
       enhanced = enhanced.charAt(0).toUpperCase() + enhanced.slice(1);
     }
     
-    // Check if it already starts with an action verb
-    const startsWithActionVerb = actionVerbs.some(verb => 
+    // More aggressive ATS-friendly rewriting
+    const needsActionVerb = !actionVerbs.some(verb => 
       enhanced.toLowerCase().startsWith(verb.toLowerCase())
     );
     
-    if (!startsWithActionVerb) {
+    if (needsActionVerb) {
       // Replace weak starts with stronger action verbs
       if (enhanced.toLowerCase().startsWith('responsible for')) {
-        const verbs = ['Managed', 'Oversaw', 'Led', 'Coordinated', 'Supervised'];
+        const verbs = ['Orchestrated', 'Spearheaded', 'Managed', 'Led', 'Supervised', 'Coordinated'];
         const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
         enhanced = enhanced.replace(/^responsible for\s*/i, `${randomVerb} `);
-      } else if (enhanced.toLowerCase().startsWith('worked on')) {
-        enhanced = enhanced.replace(/^worked on\s*/i, 'Collaborated on ');
+      } else if (enhanced.toLowerCase().startsWith('worked on') || enhanced.toLowerCase().startsWith('worked with')) {
+        enhanced = enhanced.replace(/^worked (on|with)\s*/i, 'Collaborated on ');
       } else if (enhanced.toLowerCase().startsWith('helped with') || enhanced.toLowerCase().startsWith('helped in')) {
         enhanced = enhanced.replace(/^helped (with|in)\s*/i, 'Facilitated ');  
       } else if (enhanced.toLowerCase().startsWith('helped')) {
-        enhanced = enhanced.replace(/^helped\s*/i, 'Assisted in ');
+        enhanced = enhanced.replace(/^helped\s*/i, 'Assisted with ');
       } else if (enhanced.toLowerCase().startsWith('involved in')) {
         enhanced = enhanced.replace(/^involved in\s*/i, 'Participated in ');
       } else if (enhanced.toLowerCase().startsWith('handled')) {
@@ -548,12 +510,62 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
         enhanced = enhanced.replace(/^took care of\s*/i, 'Oversaw ');
       } else if (enhanced.toLowerCase().startsWith('was in charge of')) {
         enhanced = enhanced.replace(/^was in charge of\s*/i, 'Led ');
-      } else if (enhanced.toLowerCase().startsWith('ensured')) {
-        // Keep "ensured" as it's already a good action verb
-      } else if (enhanced.toLowerCase().startsWith('maintained')) {
-        // Keep "maintained" as it's already a good action verb  
       } else if (enhanced.toLowerCase().startsWith('supported')) {
-        enhanced = enhanced.replace(/^supported\s*/i, 'Provided support for ');
+        enhanced = enhanced.replace(/^supported\s*/i, 'Facilitated ');
+      } else if (enhanced.toLowerCase().startsWith('assisted')) {
+        enhanced = enhanced.replace(/^assisted\s*/i, 'Collaborated in ');
+      } else if (enhanced.toLowerCase().startsWith('participated')) {
+        enhanced = enhanced.replace(/^participated\s*/i, 'Contributed to ');
+      } else if (enhanced.toLowerCase().startsWith('contributed')) {
+        enhanced = enhanced.replace(/^contributed\s*/i, 'Delivered ');
+      } else if (enhanced.toLowerCase().startsWith('completed')) {
+        enhanced = enhanced.replace(/^completed\s*/i, 'Accomplished ');
+      } else if (enhanced.toLowerCase().startsWith('conducted')) {
+        enhanced = enhanced.replace(/^conducted\s*/i, 'Orchestrated ');
+      } else if (enhanced.toLowerCase().startsWith('organized')) {
+        enhanced = enhanced.replace(/^organized\s*/i, 'Streamlined ');
+      } else if (enhanced.toLowerCase().startsWith('monitored')) {
+        enhanced = enhanced.replace(/^monitored\s*/i, 'Oversaw ');
+      } else if (enhanced.toLowerCase().startsWith('reviewed')) {
+        enhanced = enhanced.replace(/^reviewed\s*/i, 'Analyzed ');
+      } else if (enhanced.toLowerCase().startsWith('updated')) {
+        enhanced = enhanced.replace(/^updated\s*/i, 'Enhanced ');
+      } else if (enhanced.toLowerCase().startsWith('prepared')) {
+        enhanced = enhanced.replace(/^prepared\s*/i, 'Developed ');
+      } else if (enhanced.toLowerCase().startsWith('coordinated')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('managed')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('developed')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('implemented')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('created')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('designed')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('established')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('improved')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('enhanced')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('optimized')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('streamlined')) {
+        // Keep as is - already strong
+      } else if (enhanced.toLowerCase().startsWith('maintained')) {
+        enhanced = enhanced.replace(/^maintained\s*/i, 'Sustained ');
+      } else if (enhanced.toLowerCase().startsWith('ensured')) {
+        enhanced = enhanced.replace(/^ensured\s*/i, 'Guaranteed ');
+      } else {
+        // For any other case, try to add a strong action verb at the beginning
+        const defaultVerbs = ['Executed', 'Delivered', 'Accomplished', 'Achieved', 'Implemented'];
+        const randomVerb = defaultVerbs[Math.floor(Math.random() * defaultVerbs.length)];
+        // Only add if it doesn't already start with a verb-like word
+        if (!enhanced.match(/^[A-Z][a-z]+(ed|ing|s)\s/)) {
+          enhanced = `${randomVerb} ${enhanced.toLowerCase()}`;
+        }
       }
     }
     
