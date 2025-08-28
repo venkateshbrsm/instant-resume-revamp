@@ -93,6 +93,11 @@ REQUIRED JSON STRUCTURE:
       "company": "Company Name",
       "duration": "Start Date - End Date",
       "description": "Brief 1-2 sentence overview of the role and main focus",
+      "core_responsibilities": [
+        "Primary responsibility with detailed description",
+        "Secondary responsibility with specific tasks and duties",
+        "Third key responsibility with operational details"
+      ],
       "achievements": [
         "Specific achievement with metrics and impact",
         "Another key accomplishment with quantifiable results",
@@ -120,6 +125,7 @@ REQUIRED JSON STRUCTURE:
 ENHANCEMENT GUIDELINES:
 - Professional summary should be compelling and keyword-rich
 - Experience descriptions should be brief role overviews (1-2 sentences)
+- Each experience should have 3-5 core responsibilities detailing daily tasks and duties
 - Each experience should have 3-5 specific achievements with metrics and impact
 - Include 10+ relevant skills including technical and soft skills
 - Add 8-12 core technical skills with proficiency levels (70-95%)
@@ -199,6 +205,12 @@ ENHANCEMENT GUIDELINES:
         company: "Professional Organization", 
         duration: "Recent Experience",
         description: "Demonstrated expertise in various professional domains with focus on delivering measurable results.",
+        core_responsibilities: [
+          "Training new team members on specific procedures and tools",
+          "Managing daily operations related to business initiatives and objectives",
+          "Participating in team meetings and updating progress status",
+          "Attending departmental meetings and sharing project updates"
+        ],
         achievements: [
           "Delivered exceptional results through innovative problem-solving approaches and collaborative teamwork",
           "Drove process improvements that enhanced operational efficiency and stakeholder satisfaction", 
@@ -292,6 +304,12 @@ function basicParseResume(text: string): any {
       company: "Professional Organization",
       duration: "Recent Experience",
       description: "Led cross-functional initiatives and strategic planning efforts to drive organizational growth.",
+      core_responsibilities: [
+        "Training new team members on specific procedures and organizational tools",
+        "Managing daily operations related to strategic initiatives and business objectives",
+        "Participating in leadership meetings and updating project progress status",
+        "Coordinating departmental activities and sharing critical project updates"
+      ],
       achievements: [
         "Improved operational efficiency by 25% through process optimization and team collaboration",
         "Enhanced stakeholder satisfaction rates by implementing customer-focused solutions and quality improvements",
@@ -303,6 +321,12 @@ function basicParseResume(text: string): any {
       company: "Previous Organization", 
       duration: "Prior Experience",
       description: "Managed complex projects and delivered high-quality results within budget and timeline constraints.",
+      core_responsibilities: [
+        "Developing and implementing project management strategies and methodologies",
+        "Collaborating with cross-functional teams to achieve organizational objectives",
+        "Monitoring project timelines and ensuring deliverable quality standards",
+        "Maintaining client relationships and ensuring customer satisfaction"
+      ],
       achievements: [
         "Successfully delivered multiple high-impact projects on time and under budget",
         "Collaborated with diverse teams to achieve organizational objectives and maintain strong client relationships",

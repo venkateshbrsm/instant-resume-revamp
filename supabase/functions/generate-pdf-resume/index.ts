@@ -190,28 +190,36 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-bottom: 15px;
     }
 
-    .achievements-section {
+    .core-responsibilities-section, .achievements-section {
       margin-top: 15px;
     }
 
-    .achievements-title {
+    .section-subtitle {
       font-size: 1em;
       font-weight: 600;
       color: ${theme.primary};
       margin-bottom: 10px;
     }
 
-    .achievements-list {
+    .responsibilities-list, .achievements-list {
       list-style: none;
       padding-left: 0;
     }
 
-    .achievements-list li {
+    .responsibilities-list li, .achievements-list li {
       position: relative;
       padding-left: 20px;
       margin-bottom: 8px;
       color: #666;
       line-height: 1.5;
+    }
+
+    .responsibilities-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: ${theme.secondary};
+      font-weight: bold;
     }
 
     .achievements-list li::before {
@@ -374,9 +382,17 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
               <div class="company">${exp.company || 'Company Name'}</div>
               <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
               ${exp.description ? `<div class="description">${exp.description}</div>` : ''}
+              ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+                <div class="core-responsibilities-section">
+                  <h4 class="section-subtitle">Core Responsibilities:</h4>
+                  <ul class="responsibilities-list">
+                    ${exp.core_responsibilities.map((responsibility: string) => `<li>${responsibility}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
               ${exp.achievements && exp.achievements.length > 0 ? `
                 <div class="achievements-section">
-                  <h4 class="achievements-title">Key Achievements & Impact:</h4>
+                  <h4 class="section-subtitle">Key Achievements & Impact:</h4>
                   <ul class="achievements-list">
                     ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
                   </ul>
@@ -515,28 +531,37 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-bottom: 15px;
     }
 
-    .achievements-section {
+    .core-responsibilities-section, .achievements-section {
       margin-top: 15px;
     }
 
-    .achievements-title {
+    .section-subtitle {
       font-size: 1em;
       font-weight: 600;
       color: ${theme.primary};
       margin-bottom: 10px;
     }
 
-    .achievements-list {
+    .responsibilities-list, .achievements-list {
       list-style: none;
       padding-left: 0;
     }
 
-    .achievements-list li {
+    .responsibilities-list li, .achievements-list li {
       position: relative;
       padding-left: 20px;
       margin-bottom: 8px;
       color: #666;
       line-height: 1.5;
+    }
+
+    .responsibilities-list li::before {
+      content: '○';
+      position: absolute;
+      left: 0;
+      color: ${theme.secondary};
+      font-weight: bold;
+      font-size: 1.2em;
     }
 
     .achievements-list li::before {
@@ -608,9 +633,17 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
           <div class="company">${exp.company || 'Company Name'}</div>
           <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
           ${exp.description ? `<div class="description">${exp.description}</div>` : ''}
+          ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+            <div class="core-responsibilities-section">
+              <h4 class="section-subtitle">Core Responsibilities:</h4>
+              <ul class="responsibilities-list">
+                ${exp.core_responsibilities.map((responsibility: string) => `<li>${responsibility}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
           ${exp.achievements && exp.achievements.length > 0 ? `
             <div class="achievements-section">
-              <h4 class="achievements-title">Key Achievements & Impact:</h4>
+              <h4 class="section-subtitle">Key Achievements & Impact:</h4>
               <ul class="achievements-list">
                 ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
               </ul>
@@ -836,28 +869,36 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       margin-bottom: 15px;
     }
 
-    .achievements-section {
+    .core-responsibilities-section, .achievements-section {
       margin-top: 15px;
     }
 
-    .achievements-title {
+    .section-subtitle {
       font-size: 1em;
       font-weight: 600;
       color: ${theme.primary};
       margin-bottom: 10px;
     }
 
-    .achievements-list {
+    .responsibilities-list, .achievements-list {
       list-style: none;
       padding-left: 0;
     }
 
-    .achievements-list li {
+    .responsibilities-list li, .achievements-list li {
       position: relative;
       padding-left: 20px;
       margin-bottom: 8px;
       color: #666;
       line-height: 1.6;
+    }
+
+    .responsibilities-list li::before {
+      content: '◇';
+      position: absolute;
+      left: 0;
+      color: ${theme.secondary};
+      font-weight: bold;
     }
 
     .achievements-list li::before {
@@ -1020,9 +1061,17 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
               <div class="company">${exp.company || 'Company Name'}</div>
               <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
               ${exp.description ? `<div class="description">${exp.description}</div>` : ''}
+              ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+                <div class="core-responsibilities-section">
+                  <h4 class="section-subtitle">Core Responsibilities:</h4>
+                  <ul class="responsibilities-list">
+                    ${exp.core_responsibilities.map((responsibility: string) => `<li>${responsibility}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
               ${exp.achievements && exp.achievements.length > 0 ? `
                 <div class="achievements-section">
-                  <h4 class="achievements-title">Key Achievements & Impact:</h4>
+                  <h4 class="section-subtitle">Key Achievements & Impact:</h4>
                   <ul class="achievements-list">
                     ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
                   </ul>
