@@ -101,17 +101,16 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
 
   // Auto-enhance after extracting and parsing content
   useEffect(() => {
-    if (parsedData && !enhancedContent && !isEnhancing) {
-      enhanceResume();
-    }
+    // Enhancement removed - will be triggered manually when requested
   }, [parsedData]);
 
-  // Generate preview PDF when enhanced content or template/theme changes
+  // Generate preview PDF when content or template/theme changes
   useEffect(() => {
-    if (enhancedContent && !isGeneratingPreview) {
+    // Use parsed data directly for preview instead of enhanced content
+    if (parsedData && !isGeneratingPreview) {
       generatePreviewPdf();
     }
-  }, [enhancedContent, selectedTemplate, selectedColorTheme]);
+  }, [parsedData, selectedTemplate, selectedColorTheme]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -212,12 +211,13 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
   };
 
   const generatePreviewPdf = async () => {
-    if (!enhancedContent || isGeneratingPreview) return;
+    if (!parsedData || isGeneratingPreview) return;
     
     setIsGeneratingPreview(true);
     
     try {
-      const resumeData = extractResumeDataFromEnhanced(enhancedContent);
+      // Use parsed data directly without enhancement
+      const resumeData = extractResumeDataFromEnhanced(parsedData);
       const pdfBlob = await generateVisualPdf(resumeData, {
         filename: 'preview.pdf',
         templateType: selectedTemplate.layout,
@@ -244,8 +244,8 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
       
       if (session?.user) {
         // User is authenticated, save content for payment
-        if (enhancedContent) {
-          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(enhancedContent));
+        if (parsedData) {
+          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(parsedData));
           localStorage.setItem('docxExtractedTextForPayment', editedContent);
           localStorage.setItem('docxSelectedTemplateForPayment', JSON.stringify(selectedTemplate));
           localStorage.setItem('docxSelectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
@@ -260,9 +260,9 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
         if (editedContent) {
           sessionStorage.setItem('docxExtractedText', editedContent);
         }
-        if (enhancedContent) {
-          sessionStorage.setItem('docxEnhancedContent', JSON.stringify(enhancedContent));
-          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(enhancedContent));
+        if (parsedData) {
+          sessionStorage.setItem('docxEnhancedContent', JSON.stringify(parsedData));
+          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(parsedData));
           localStorage.setItem('docxExtractedTextForPayment', editedContent);
           localStorage.setItem('docxSelectedTemplateForPayment', JSON.stringify(selectedTemplate));
           localStorage.setItem('docxSelectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
@@ -335,7 +335,7 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
           <div className="flex items-center gap-4">
             <Button
               onClick={handlePurchaseClick}
-              disabled={!enhancedContent || isCheckingAuth}
+              disabled={!parsedData || isCheckingAuth}
               className="flex items-center gap-2"
             >
               {isCheckingAuth ? (
@@ -348,8 +348,8 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
           </div>
         </div>
 
-        {/* Enhancement Progress */}
-        {isEnhancing && (
+        {/* Enhancement Progress - Hidden for now */}
+        {false && isEnhancing && (
           <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
@@ -372,12 +372,12 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Enhanced Resume Preview
+                  <FileText className="w-5 h-5 text-primary" />
+                  DOCX Resume Preview
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {enhancedContent ? (
+                {parsedData ? (
                   <div>
                     {/* Template Selector */}
                     <div className="mb-4">
@@ -389,13 +389,13 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
                       />
                     </div>
                     
-                    {/* Enhanced Preview */}
+                    {/* Raw Content Preview using selected template */}
                     <div className="bg-background rounded-lg border p-4">
                       <EditablePreview
-                        enhancedContent={enhancedContent}
+                        enhancedContent={parsedData}
                         selectedTemplate={selectedTemplate}
                         selectedColorTheme={selectedColorTheme}
-                        onContentUpdate={setEnhancedContent}
+                        onContentUpdate={setParsedData}
                       />
                     </div>
                   </div>
@@ -403,7 +403,7 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      Enhancement in progress...
+                      Processing DOCX content...
                     </p>
                   </div>
                 )}
