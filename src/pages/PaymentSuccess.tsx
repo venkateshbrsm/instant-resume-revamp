@@ -229,6 +229,10 @@ export default function PaymentSuccess() {
             
             // Clean up session storage
             sessionStorage.removeItem('canvasPdfBlob');
+            
+            // Delete the original file from Supabase storage after successful download
+            await deleteOriginalFile(paymentId);
+            
             return;
           } catch (error) {
             console.warn('Canvas-based PDF download failed, falling back to server generation:', error);
@@ -246,10 +250,10 @@ export default function PaymentSuccess() {
         let selectedThemeStr = null;
         
         try {
-          // Query the payments table to get the enhanced content
+          // Query the payments table to get the enhanced content and file path
           const { data: paymentData, error: paymentError } = await supabase
             .from('payments')
-            .select('enhanced_content, theme_id')
+            .select('enhanced_content, theme_id, file_path')
             .eq('razorpay_payment_id', paymentId)
             .single();
             
@@ -350,6 +354,10 @@ export default function PaymentSuccess() {
             localStorage.removeItem('selectedColorThemeForPayment');
             localStorage.removeItem('selectedTemplateForPayment');
             localStorage.removeItem('latestEditedContent');
+            
+            // Delete the original file from Supabase storage after successful download
+            await deleteOriginalFile(paymentId);
+            
             return;
           } catch (error) {
             console.error('Error generating visual PDF:', error);
@@ -376,6 +384,46 @@ export default function PaymentSuccess() {
         description: error instanceof Error ? error.message : "Failed to download resume",
         variant: "destructive"
       });
+    }
+  };
+
+  const deleteOriginalFile = async (paymentId: string) => {
+    try {
+      console.log('🗑️ Starting file cleanup process for payment:', paymentId);
+      
+      // Get the file path from the payment record
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('payments')
+        .select('file_path, file_name')
+        .eq('razorpay_payment_id', paymentId)
+        .single();
+
+      if (paymentError || !paymentData?.file_path) {
+        console.warn('Could not retrieve file path for deletion:', paymentError);
+        return;
+      }
+
+      console.log('🗑️ Deleting original file from storage:', paymentData.file_path);
+      
+      // Delete the file from Supabase storage
+      const { error: deleteError } = await supabase.storage
+        .from('resumes')
+        .remove([paymentData.file_path]);
+
+      if (deleteError) {
+        console.error('❌ Failed to delete file from storage:', deleteError);
+        // Don't show error to user as download was successful
+      } else {
+        console.log('✅ Successfully deleted original file from storage:', paymentData.file_name);
+        
+        toast({
+          title: "File Cleanup Complete",
+          description: "Your original file has been securely removed from our servers.",
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error during file cleanup:', error);
+      // Don't show error to user as download was successful
     }
   };
 
