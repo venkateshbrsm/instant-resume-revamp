@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Save, Edit3, Eye, Loader2, Briefcase, GraduationCap, Award, User, MapPin, Phone, Mail } from 'lucide-react';
+import { Save, Edit3, Eye, Loader2, Briefcase, GraduationCap, Award, User, MapPin, Phone, Mail, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { ResumeTemplate } from '@/lib/resumeTemplates';
@@ -147,73 +147,201 @@ export const DocxResumePreview = ({
         </div>
       </div>
 
-      {/* Resume Content */}
-      <div ref={previewRef} className="bg-white rounded-lg shadow-lg p-8 min-h-[600px]">
-        {/* Header */}
-        <div className="text-center mb-8 pb-6" 
-             style={{ borderBottom: `3px solid ${selectedColorTheme.primary}` }}>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
-            {isEditing ? (
-              <Input
-                value={editableData.name}
-                onChange={(e) => handleFieldChange('name', e.target.value)}
-                className="text-center text-3xl font-bold border-none bg-transparent"
-                style={{ color: selectedColorTheme.primary }}
-                placeholder="Your Name"
-              />
-            ) : (
-              editableData.name || "Your Name"
-            )}
-          </h1>
-          
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground flex-wrap">
-            {editableData.email && (
-              <div className="flex items-center gap-1">
-                <Mail className="w-4 h-4" style={{ color: selectedColorTheme.secondary }} />
+      {/* Resume Content - Modern Template Style */}
+      <div ref={previewRef} className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
+        {/* Left Sidebar */}
+        <div 
+          className="w-64 p-6 text-white"
+          style={{
+            background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
+          }}
+        >
+          {/* Sidebar Sections */}
+          <div className="space-y-6">
+            {/* Contact Details */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Contact</h3>
+              </div>
+              <div className="space-y-3 text-sm opacity-90">
+                {editableData.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3 h-3" />
+                    {isEditing ? (
+                      <Input
+                        value={editableData.email}
+                        onChange={(e) => handleFieldChange('email', e.target.value)}
+                        className="border-none bg-transparent text-xs text-white placeholder-white/70"
+                        placeholder="Email"
+                      />
+                    ) : (
+                      <span className="break-all text-xs no-underline">{editableData.email}</span>
+                    )}
+                  </div>
+                )}
+                {editableData.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3 h-3" />
+                    {isEditing ? (
+                      <Input
+                        value={editableData.phone}
+                        onChange={(e) => handleFieldChange('phone', e.target.value)}
+                        className="border-none bg-transparent text-xs text-white placeholder-white/70"
+                        placeholder="Phone"
+                      />
+                    ) : (
+                      <span className="text-xs no-underline">{editableData.phone}</span>
+                    )}
+                  </div>
+                )}
+                {editableData.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3 h-3" />
+                    {isEditing ? (
+                      <Input
+                        value={editableData.location}
+                        onChange={(e) => handleFieldChange('location', e.target.value)}
+                        className="border-none bg-transparent text-xs text-white placeholder-white/70"
+                        placeholder="Location"
+                      />
+                    ) : (
+                      <span className="text-xs">{editableData.location}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Skills */}
+            {editableData.skills && editableData.skills.length > 0 && (
+              <div className="page-break-avoid section">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-semibold text-sm tracking-wide uppercase">Skills</h3>
+                </div>
                 {isEditing ? (
-                  <Input
-                    value={editableData.email}
-                    onChange={(e) => handleFieldChange('email', e.target.value)}
-                    className="border-none bg-transparent text-sm"
-                    placeholder="Email"
+                  <Textarea
+                    value={editableData.skills.join(', ')}
+                    onChange={(e) => {
+                      const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                      handleFieldChange('skills', skills);
+                    }}
+                    className="w-full bg-white/10 text-white placeholder-white/70 border-white/20 text-xs"
+                    rows={4}
+                    placeholder="Enter skills separated by commas"
                   />
                 ) : (
-                  editableData.email
+                  <div className="space-y-2">
+                    {editableData.skills.map((skill: string, index: number) => (
+                      <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                        <span className="font-medium">{skill}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
-            {editableData.phone && (
-              <div className="flex items-center gap-1">
-                <Phone className="w-4 h-4" style={{ color: selectedColorTheme.secondary }} />
+
+            {/* Certifications */}
+            {editableData.certifications && editableData.certifications.length > 0 && (
+              <div className="page-break-avoid section">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-semibold text-sm tracking-wide uppercase">Certifications</h3>
+                </div>
                 {isEditing ? (
-                  <Input
-                    value={editableData.phone}
-                    onChange={(e) => handleFieldChange('phone', e.target.value)}
-                    className="border-none bg-transparent text-sm"
-                    placeholder="Phone"
+                  <Textarea
+                    value={editableData.certifications.join('\n')}
+                    onChange={(e) => {
+                      const certs = e.target.value.split('\n').map(c => c.trim()).filter(c => c);
+                      handleFieldChange('certifications', certs);
+                    }}
+                    className="w-full bg-white/10 text-white placeholder-white/70 border-white/20 text-xs"
+                    rows={3}
+                    placeholder="Enter certifications (one per line)"
                   />
                 ) : (
-                  editableData.phone
+                  <div className="space-y-2 text-xs opacity-90">
+                    {editableData.certifications.map((certification: string, index: number) => (
+                      <div key={index} className="font-medium page-break-avoid">• {certification}</div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
-            {editableData.location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" style={{ color: selectedColorTheme.secondary }} />
-                {isEditing ? (
-                  <Input
-                    value={editableData.location}
-                    onChange={(e) => handleFieldChange('location', e.target.value)}
-                    className="border-none bg-transparent text-sm"
-                    placeholder="Location"
-                  />
-                ) : (
-                  editableData.location
-                )}
+
+            {/* Education */}
+            {editableData.education && editableData.education.length > 0 && (
+              <div className="page-break-avoid section">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-semibold text-sm tracking-wide uppercase">Education</h3>
+                </div>
+                <div className="space-y-3">
+                  {editableData.education.slice(0, 2).map((edu: any, index: number) => (
+                    <div key={index} className="text-xs opacity-90 page-break-avoid education-item">
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Input
+                            value={edu.degree}
+                            onChange={(e) => handleArrayFieldChange('education', index, 'degree', e.target.value)}
+                            className="bg-white/10 text-white placeholder-white/70 border-white/20 text-xs"
+                            placeholder="Degree"
+                          />
+                          <Input
+                            value={edu.institution}
+                            onChange={(e) => handleArrayFieldChange('education', index, 'institution', e.target.value)}
+                            className="bg-white/10 text-white placeholder-white/70 border-white/20 text-xs"
+                            placeholder="Institution"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="font-medium">{edu.degree}</div>
+                          <div className="text-xs opacity-75">{edu.institution}</div>
+                          {edu.duration && edu.duration !== "N/A" && (
+                            <div className="text-xs opacity-75">{edu.duration}</div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              {isEditing ? (
+                <Input
+                  value={editableData.name}
+                  onChange={(e) => handleFieldChange('name', e.target.value)}
+                  className="text-3xl font-bold border-none bg-transparent px-0"
+                  placeholder="Your Name"
+                />
+              ) : (
+                editableData.name || "Your Name"
+              )}
+            </h1>
+            <p className="text-lg text-muted-foreground mb-4">
+              Professional Resume
+            </p>
+          </div>
 
         {/* Professional Summary */}
         {editableData.summary && (
@@ -488,6 +616,7 @@ export const DocxResumePreview = ({
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
