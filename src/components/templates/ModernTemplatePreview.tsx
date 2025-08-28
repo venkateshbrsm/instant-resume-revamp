@@ -205,15 +205,17 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
 
         {/* About Section */}
         <div className="mb-8 page-break-avoid section">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
-            <div 
-              className="w-6 h-6 rounded-full flex items-center justify-center text-white"
-              style={{ backgroundColor: selectedColorTheme.primary }}
-            >
+          <div 
+            className="text-xl font-bold mb-4 flex items-center gap-3 px-4 py-3 rounded-lg text-white"
+            style={{ 
+              background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
+            }}
+          >
+            <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/20">
               <User className="w-3 h-3" />
             </div>
-            About & Professional Summary
-          </h2>
+            PROFESSIONAL SUMMARY
+          </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {enhancedContent.summary}
           </p>
