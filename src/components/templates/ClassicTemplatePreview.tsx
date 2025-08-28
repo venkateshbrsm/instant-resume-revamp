@@ -31,10 +31,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </div>
           </div>
         )}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2 overflow-visible break-words whitespace-normal" style={{ color: selectedColorTheme.primary, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
           {enhancedContent.name}
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
           {enhancedContent.title}
         </p>
         <div className="text-sm text-muted-foreground space-x-4">

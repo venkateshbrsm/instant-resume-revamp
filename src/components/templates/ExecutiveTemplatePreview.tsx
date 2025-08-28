@@ -38,8 +38,8 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                 />
               </div>
             )}
-            <h1 className="text-2xl font-bold mb-2 text-center">{enhancedContent.name}</h1>
-            <p className="text-lg opacity-95 font-medium text-center mb-4">{enhancedContent.title}</p>
+            <h1 className="text-2xl font-bold mb-2 text-center overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{enhancedContent.name}</h1>
+            <p className="text-lg opacity-95 font-medium text-center mb-4 overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{enhancedContent.title}</p>
             
             <div className="space-y-2 text-sm opacity-90">
               <div className="flex items-start gap-2">

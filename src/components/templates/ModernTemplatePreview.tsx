@@ -195,10 +195,10 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       <div className="flex-1 p-4 md:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             {enhancedContent.name}
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground mb-4">
+          <p className="text-base md:text-lg text-muted-foreground mb-4 overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             {enhancedContent.title}
           </p>
         </div>

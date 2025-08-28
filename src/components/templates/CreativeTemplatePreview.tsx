@@ -57,9 +57,9 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   <Palette className="w-8 h-8 text-white" />
                 )}
               </div>
-              <div>
-                <h1 className="text-4xl font-bold print:text-3xl">{enhancedContent.name}</h1>
-                <p className="text-xl opacity-90 print:text-lg">{enhancedContent.title}</p>
+              <div className="overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                <h1 className="text-4xl font-bold print:text-3xl overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{enhancedContent.name}</h1>
+                <p className="text-xl opacity-90 print:text-lg overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{enhancedContent.title}</p>
               </div>
             </div>
             

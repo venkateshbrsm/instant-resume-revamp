@@ -31,10 +31,10 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           )}
           
           <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
+            <h1 className="text-4xl md:text-5xl font-light tracking-wide overflow-visible break-words whitespace-normal" style={{ color: selectedColorTheme.primary, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-xl text-muted-foreground font-light">
+            <p className="text-xl text-muted-foreground font-light overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
               {enhancedContent.title}
             </p>
             
