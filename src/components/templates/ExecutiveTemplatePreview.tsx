@@ -54,17 +54,17 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
           </div>
 
           {/* Core Competencies in Sidebar */}
-          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+          {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
             <div className="mb-8 page-break-avoid skills-section">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Core Competencies
               </h3>
               <div className="space-y-2">
-                {enhancedContent.skills.slice(0, 8).map((skill: string, index: number) => (
+                {enhancedContent.core_technical_skills.slice(0, 8).map((skill: any, index: number) => (
                   <div key={index} className="flex items-center gap-2 skill-item">
                     <div className="w-2 h-2 rounded-full bg-white/80"></div>
-                    <span className="text-sm font-medium">{skill}</span>
+                    <span className="text-sm font-medium">{skill.name}</span>
                   </div>
                 ))}
               </div>
@@ -83,7 +83,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold">
-                  {enhancedContent.skills?.length || 0}
+                  {enhancedContent.core_technical_skills?.length || 0}
                 </div>
                 <p className="text-xs opacity-90">Core Competencies</p>
               </div>
@@ -190,36 +190,28 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                             </div>
                             
                             {/* Core Responsibilities Section */}
-                            {(() => {
-                              const coreResponsibilities = extractCoreResponsibilities(
-                                exp.achievements, 
-                                exp.title, 
-                                'creative', 
-                                index, 
-                                4
-                              );
-                              return coreResponsibilities.length > 0 && (
-                                <div className="mt-5 p-4 rounded-lg bg-blue-50 border-l-3" style={{ borderColor: selectedColorTheme.secondary }}>
-                                  <h5 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4" style={{ color: selectedColorTheme.secondary }} />
-                                    Core Daily Responsibilities
-                                  </h5>
-                                  <div className="space-y-2">
-                                    {coreResponsibilities.map((responsibility: string, respIndex: number) => (
-                                      <div key={respIndex} className="flex items-start gap-2">
-                                        <div 
-                                          className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
-                                          style={{ backgroundColor: selectedColorTheme.secondary }}
-                                        ></div>
-                                        <p className="text-xs leading-relaxed text-gray-700">
-                                          {responsibility}
-                                        </p>
-                                      </div>
-                                    ))}
-                                  </div>
+                            {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                              <div 
+                                className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid"
+                                style={{ 
+                                  backgroundColor: `${selectedColorTheme.primary}08`,
+                                  borderColor: `${selectedColorTheme.primary}20`
+                                }}
+                              >
+                                <h5 className="text-sm font-semibold mb-2 text-foreground">
+                                  Core Responsibilities:
+                                </h5>
+                                <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
+                                  {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                    <p key={idx} className="flex items-start">
+                                      <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                            style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                      {responsibility}
+                                    </p>
+                                  ))}
                                 </div>
-                              );
-                            })()}
+                               </div>
+                             )}
                             
                             {/* Executive Leadership & Strategic Vision */}
                             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>

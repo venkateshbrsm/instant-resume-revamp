@@ -188,18 +188,22 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                  breakInside: 'avoid'
                                }}
                              >
-                               <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
-                                 Core Responsibilities:
-                               </h5>
-                                <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
-                                  {extractCoreResponsibilities(exp.achievements, exp.title || 'Creative Professional', 'creative', index, 4).map((responsibility, idx) => (
-                                    <p key={idx} className="flex items-start">
-                                      <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
-                                            style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                      {responsibility}
-                                    </p>
-                                  ))}
-                               </div>
+                                {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                                  <>
+                                    <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
+                                      Core Responsibilities:
+                                    </h5>
+                                     <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
+                                       {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                         <p key={idx} className="flex items-start">
+                                           <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                                 style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                           {responsibility}
+                                         </p>
+                                       ))}
+                                     </div>
+                                  </>
+                                )}
                              </div>
                           </div>
                         )}
@@ -213,7 +217,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             {/* Creative Sidebar */}
             <div className="space-y-5 print:space-y-4 print:col-span-1">
               {/* Skills as Creative Badges */}
-              {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+              {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
                 <div 
                   className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none"
                   style={{ 
@@ -235,7 +239,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   </div>
                   
                   <div className="flex flex-wrap gap-2 print:gap-1">
-                    {enhancedContent.skills.map((skill: string, index: number) => (
+                    {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
                       <Badge 
                         key={index}
                         variant="outline"
@@ -248,7 +252,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                           overflowWrap: 'break-word'
                         }}
                       >
-                        <span className="block text-center whitespace-normal">{skill}</span>
+                        <span className="block text-center whitespace-normal">{skill.name}</span>
                       </Badge>
                     ))}
                   </div>
@@ -271,7 +275,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 <div className="space-y-4 print:space-y-2">
                   <div>
                     <div className="text-3xl font-bold print:text-2xl" style={{ color: selectedColorTheme.primary }}>
-                      {enhancedContent.skills?.length || 0}
+                      {enhancedContent.core_technical_skills?.length || 0}
                     </div>
                     <p className="text-sm text-muted-foreground print:text-xs">Creative Skills</p>
                   </div>

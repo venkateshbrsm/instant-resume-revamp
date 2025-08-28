@@ -102,23 +102,25 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                       </ul>
                       
                        {/* Job-specific Core Responsibilities */}
-                       <div className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid" style={{ 
-                         backgroundColor: `${selectedColorTheme.primary}05`,
-                         borderColor: `${selectedColorTheme.primary}20`
-                       }}>
-                         <h5 className="text-sm font-semibold mb-2 text-foreground">
-                           Core Responsibilities:
-                         </h5>
-                          <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
-                            {extractCoreResponsibilities(exp.achievements, exp.title || 'Professional', 'classic', index, 4).map((responsibility, idx) => (
-                              <p key={idx} className="flex items-start">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
-                                      style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                {responsibility}
-                              </p>
-                            ))}
+                       {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                         <div className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid" style={{ 
+                           backgroundColor: `${selectedColorTheme.primary}05`,
+                           borderColor: `${selectedColorTheme.primary}20`
+                         }}>
+                           <h5 className="text-sm font-semibold mb-2 text-foreground">
+                             Core Responsibilities:
+                           </h5>
+                            <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
+                              {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                <p key={idx} className="flex items-start">
+                                  <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                        style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                  {responsibility}
+                                </p>
+                              ))}
+                           </div>
                          </div>
-                       </div>
+                       )}
                     </div>
                   )}
                 </div>
@@ -129,7 +131,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
           {/* Core Competencies - Enhanced with Proficiency Levels */}
-          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+          {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
             <div className="page-break-avoid section">
               <h2 
                 className="text-xl font-bold mb-4 pb-2 border-b"
@@ -141,19 +143,19 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                 CORE COMPETENCIES & TECHNICAL SKILLS
               </h2>
               <div className="space-y-3">
-                {enhancedContent.skills.map((skill: string, index: number) => (
+                {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
                   <div key={index} className="flex items-center justify-between page-break-avoid skill-item">
                     <div className="text-sm text-muted-foreground flex items-center">
                       <span className="mr-3 w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                      <span className="font-medium">{skill}</span>
+                      <span className="font-medium">{skill.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      {[...Array(4)].map((_, i) => (
+                      {[...Array(5)].map((_, i) => (
                         <div
                           key={i}
                           className="w-2 h-2 rounded-full"
                           style={{
-                            backgroundColor: i < Math.min(4, 3 + (index % 2)) ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
+                            backgroundColor: (i + 1) * 20 <= skill.proficiency ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
                           }}
                         />
                       ))}

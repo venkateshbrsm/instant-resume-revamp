@@ -66,7 +66,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
           </div>
 
           {/* Core Technical Skills */}
-          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+          {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
             <div className="page-break-avoid section">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -75,13 +75,13 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Core Technical Skills</h3>
               </div>
               <div className="space-y-2">
-                {enhancedContent.skills.map((skill: string, index: number) => (
+                {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
                   <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
                     <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
-                    <span className="font-medium">{skill}</span>
+                    <span className="font-medium">{skill.name}</span>
                     <div className="flex-1 flex justify-end">
                       <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
-                        <div className="h-full bg-white/70 rounded-full" style={{width: `${Math.min(90, 70 + (index * 3))}%`}}></div>
+                        <div className="h-full bg-white/70 rounded-full" style={{width: `${skill.proficiency}%`}}></div>
                       </div>
                     </div>
                   </div>
@@ -234,18 +234,20 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         </ul>
                         
                          {/* Job-specific Core Responsibilities */}
-                         <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid print:break-inside-avoid">
-                           <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
-                            <div className="text-xs opacity-80 leading-relaxed space-y-1">
-                              {extractCoreResponsibilities(exp.achievements, exp.title || 'Modern Professional', 'modern', index, 4).map((responsibility, idx) => (
-                                <div key={idx} className="flex items-start gap-3">
-                                  <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
-                                       style={{ backgroundColor: selectedColorTheme.accent }}></div>
-                                  <span className="text-sm leading-relaxed">{responsibility}</span>
-                                </div>
-                              ))}
+                         {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                           <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid print:break-inside-avoid">
+                             <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
+                              <div className="text-xs opacity-80 leading-relaxed space-y-1">
+                                {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                  <div key={idx} className="flex items-start gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                                         style={{ backgroundColor: selectedColorTheme.accent }}></div>
+                                    <span className="text-sm leading-relaxed">{responsibility}</span>
+                                  </div>
+                                ))}
+                             </div>
                            </div>
-                         </div>
+                         )}
                       </div>
                     )}
                   </div>

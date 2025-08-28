@@ -90,21 +90,23 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                     ))}
                     
                      {/* Job-specific Core Responsibilities */}
-                     <div className="mt-4 p-3 rounded border print:break-inside-avoid" style={{ 
-                       backgroundColor: `${selectedColorTheme.primary}03`,
-                       borderColor: `${selectedColorTheme.primary}15`
-                     }}>
-                       <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
-                        <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
-                          {extractCoreResponsibilities(exp.achievements, exp.title || 'Professional', 'minimalist', index, 3).map((responsibility, idx) => (
-                            <p key={idx} className="flex items-start text-xs text-muted-foreground">
-                              <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
-                                    style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                              {responsibility}
-                            </p>
-                          ))}
+                     {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                       <div className="mt-4 p-3 rounded border print:break-inside-avoid" style={{ 
+                         backgroundColor: `${selectedColorTheme.primary}03`,
+                         borderColor: `${selectedColorTheme.primary}15`
+                       }}>
+                         <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
+                          <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
+                            {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                              <p key={idx} className="flex items-start text-xs text-muted-foreground">
+                                <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
+                                      style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                                {responsibility}
+                              </p>
+                            ))}
+                         </div>
                        </div>
-                     </div>
+                     )}
                   </div>
                 )}
               </div>
@@ -115,7 +117,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
         {/* Skills - Enhanced with Categories */}
-        {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+        {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
               TECHNICAL SKILLS & COMPETENCIES
@@ -125,19 +127,19 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
               <div>
                 <h4 className="text-sm font-medium text-foreground mb-2">Core Technical Skills:</h4>
                 <div className="space-y-2">
-                  {enhancedContent.skills.map((skill: string, index: number) => (
+                  {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
                     <div key={index} className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground font-light">{skill}</p>
+                      <p className="text-sm text-muted-foreground font-light">{skill.name}</p>
                       <div className="flex gap-1">
-                        {[1,2,3,4,5].map(level => (
-                          <div
-                            key={level}
-                            className="w-2 h-2 rounded-full"
-                            style={{
-                              backgroundColor: level <= Math.min(5, 3 + (index % 3)) ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
-                            }}
-                          />
-                        ))}
+                         {[1,2,3,4,5].map(level => (
+                           <div
+                             key={level}
+                             className="w-2 h-2 rounded-full"
+                             style={{
+                               backgroundColor: level * 20 <= skill.proficiency ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
+                             }}
+                           />
+                         ))}
                       </div>
                     </div>
                   ))}
