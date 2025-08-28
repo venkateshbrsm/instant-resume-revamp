@@ -214,15 +214,10 @@ const parseJobBlock = (block: string[]): any => {
   let responsibilities: string[] = [];
   
   let inResponsibilities = false;
-  let companyFound = false;
-  let positionFound = false;
   
   for (let i = 0; i < block.length; i++) {
-    const line = block[i].trim();
+    const line = block[i];
     const lowerLine = line.toLowerCase();
-    
-    // Skip empty lines
-    if (line.length === 0) continue;
     
     // Check if this line indicates start of responsibilities
     if (lowerLine.includes('key achievements') || 
@@ -232,81 +227,57 @@ const parseJobBlock = (block: string[]): any => {
       continue;
     }
     
-    // If we're in responsibilities section, collect all content
+    // If we're in responsibilities section, collect bullet points
     if (inResponsibilities) {
       if (line.match(/^[•\-*]/) || line.match(/^\d+\./) || 
-          line.length > 15) {
+          (line.length > 20 && !hasDatePattern(line))) {
         responsibilities.push(line.replace(/^[•\-*\d\.\s]+/, '').trim());
       }
       continue;
     }
     
-    // First, try to extract date and location info
-    if (hasDatePattern(line) && !duration) {
+    // Try to identify what this line contains
+    if (hasDatePattern(line) && !position && !company) {
+      // This might be a header with dates
       const parsed = extractJobHeaderInfo(line);
       if (parsed.duration) duration = parsed.duration;
       if (parsed.location) location = parsed.location;
-      
-      // Check if this line also contains company info
-      if (parsed.company && !companyFound) {
-        company = parsed.company;
-        companyFound = true;
-      }
-      continue;
-    }
-    
-    // Look for company names - should be UPPERCASE or have company indicators
-    if (!companyFound && (isCompanyName(line) || line.toUpperCase() === line)) {
+      if (parsed.company) company = parsed.company;
+      if (parsed.position) position = parsed.position;
+    } else if (isCompanyName(line) && !company) {
       company = line;
-      companyFound = true;
-      continue;
-    }
-    
-    // Look for job titles - usually mixed case, contains job-related words
-    if (!positionFound && isJobTitle(line)) {
+    } else if (isJobTitle(line) && !position) {
       position = line;
-      positionFound = true;
-      continue;
-    }
-    
-    // If we haven't found position yet and this looks like a descriptive role
-    if (!positionFound && line.length > 10 && line.length < 150 && 
-        !line.match(/^[•\-*]/) && !hasDatePattern(line)) {
-      position = line;
-      positionFound = true;
-      continue;
-    }
-    
-    // Anything else that's not a bullet point might be a responsibility
-    if (line.length > 20 && !hasDatePattern(line)) {
+    } else if (line.length > 30 && !inResponsibilities && i > 0) {
+      // This might be a job description - treat as responsibility
       responsibilities.push(line);
     }
   }
   
-  // Post-processing: If we still don't have clear company/position, try to infer
-  if (!company && !position && block.length > 0) {
-    // Use first meaningful line as position
-    const firstMeaningfulLine = block.find(line => line.length > 5 && !hasDatePattern(line));
-    if (firstMeaningfulLine) {
-      position = firstMeaningfulLine;
+  // If no explicit position found, try to extract from first meaningful line
+  if (!position && block.length > 0) {
+    const firstLine = block[0];
+    if (!hasDatePattern(firstLine) && firstLine.length > 5) {
+      position = firstLine;
     }
   }
   
-  // Ensure we have at least basic info
-  if (!company) company = 'Company';
-  if (!position) position = 'Position';
-  
-  // Clean up responsibilities - remove duplicates and very short ones
-  responsibilities = responsibilities
-    .filter((r, index, arr) => r.length > 10 && arr.indexOf(r) === index)
-    .slice(0, 8); // Limit to 8 responsibilities max
+  // If no company found, try to find it in any line
+  if (!company) {
+    for (const line of block) {
+      if (isCompanyName(line)) {
+        company = line;
+        break;
+      }
+    }
+  }
   
   return {
-    company: company,
-    position: position,
+    company: company || 'Company',
+    position: position || 'Position',
     duration: duration,
     location: location,
-    responsibilities: responsibilities
+    responsibilities: responsibilities.filter(r => r.length > 5)
   };
 };
 
@@ -317,22 +288,16 @@ const hasDatePattern = (line: string): boolean => {
 };
 
 const isCompanyName = (line: string): boolean => {
-  // Enhanced company detection
-  const companyIndicators = [
-    'ltd', 'inc', 'corp', 'company', 'systems', 'technologies', 'solutions', 
-    'services', 'group', 'pvt', 'private', 'limited', 'llc', 'bank', 'networks'
-  ];
-  
-  const lowerLine = line.toLowerCase();
-  const hasCompanyIndicator = companyIndicators.some(indicator => lowerLine.includes(indicator));
-  
-  // Check if it's all uppercase (common for company names in resumes)
-  const isAllCaps = line === line.toUpperCase() && line.length > 3;
-  
-  // Check if it matches company name pattern
-  const hasCompanyPattern = line.match(/^[A-Z][A-Z\s&,.-]+$/);
-  
-  return hasCompanyIndicator || isAllCaps || !!hasCompanyPattern;
+  return !!(line.includes('Ltd') || 
+           line.includes('Inc') || 
+           line.includes('Corp') || 
+           line.includes('Company') ||
+           line.includes('Systems') || 
+           line.includes('Technologies') ||
+           line.includes('Solutions') ||
+           line.includes('Services') ||
+           line.includes('Group') ||
+           line.match(/\b[A-Z][a-z]+\s+[A-Z][a-z]+\s*(Pvt|Private|Limited|LLC)\b/));
 };
 
 const isJobTitle = (line: string): boolean => {
@@ -340,27 +305,11 @@ const isJobTitle = (line: string): boolean => {
     'manager', 'director', 'president', 'vice president', 'associate', 'senior',
     'junior', 'lead', 'head', 'chief', 'officer', 'analyst', 'consultant',
     'specialist', 'coordinator', 'supervisor', 'executive', 'developer',
-    'engineer', 'architect', 'assistant'
+    'engineer', 'architect'
   ];
   
   const lowerLine = line.toLowerCase();
-  
-  // Check for job title keywords
-  const hasJobKeyword = jobTitles.some(title => lowerLine.includes(title));
-  
-  // Check if it looks like a job title (mixed case, reasonable length)
-  const looksLikeTitle = line.length > 5 && line.length < 100 && 
-                        line !== line.toUpperCase() && 
-                        !line.match(/^[•\-*]/);
-  
-  // Common job title patterns
-  const hasJobPattern = !!(
-    line.match(/^[A-Z][a-z]+(\s+[A-Z][a-z]+)*\s*[-–]\s*/) ||
-    line.match(/\b(Head of|Director of|Manager of|Lead)\b/i) ||
-    line.match(/\b(Administration|Management|Facilities|Operations)\b/i)
-  );
-  
-  return (hasJobKeyword && looksLikeTitle) || hasJobPattern;
+  return jobTitles.some(title => lowerLine.includes(title)) && line.length < 100;
 };
 
 const extractJobHeaderInfo = (line: string): any => {
