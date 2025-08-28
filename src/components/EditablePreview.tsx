@@ -315,63 +315,61 @@ export const EditablePreview = ({
         {renderEditableArraySection('Education', 'education', editableData.education || [])}
 
         {/* Skills */}
-        {editableData.skills && editableData.skills.length > 0 && (
+        {editableData.skills && (
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
               Skills
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {editableData.skills.map((skillCategory: any, categoryIndex: number) => (
-                <Card key={categoryIndex} className="p-4">
-                  <h4 className="font-medium mb-2">{skillCategory.category || 'Skills'}</h4>
-                  {isEditing ? (
-                    <Textarea
-                      value={skillCategory.items?.join(', ') || ''}
-                      onChange={(e) => {
-                        console.log('🔍 Skills onChange triggered');
-                        console.log('🔍 Input value:', e.target.value);
-                        console.log('🔍 Current editableData:', editableData);
-                        console.log('🔍 Current skillCategory:', skillCategory);
-                        console.log('🔍 Category index:', categoryIndex);
-                        
-                        try {
-                          setEditableData((prev: any) => {
-                            console.log('🔍 Previous state:', prev);
-                            const updated = { ...prev };
-                            if (!updated.skills) {
-                              console.log('🔍 Creating skills array');
-                              updated.skills = [];
-                            }
-                            if (!updated.skills[categoryIndex]) {
-                              console.log('🔍 Creating skill category at index:', categoryIndex);
-                              updated.skills[categoryIndex] = { category: skillCategory.category, items: [] };
-                            }
-                            const items = e.target.value.split(',').map(item => item.trim()).filter(item => item);
-                            console.log('🔍 Parsed items:', items);
-                            updated.skills[categoryIndex].items = items;
-                            console.log('🔍 Updated state:', updated);
-                            return updated;
-                          });
-                        } catch (error) {
-                          console.error('🚨 Error in skills onChange:', error);
-                        }
-                      }}
-                      className="w-full"
-                      placeholder="Enter skills separated by commas"
-                      rows={2}
-                    />
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {skillCategory.items?.map((skill: string, skillIndex: number) => (
-                        <Badge key={skillIndex} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </Card>
-              ))}
-            </div>
+            {isEditing ? (
+              <Textarea
+                value={(() => {
+                  // Handle different skill formats - convert to comma-separated string
+                  if (Array.isArray(editableData.skills)) {
+                    return editableData.skills.map((skill: any) => {
+                      if (typeof skill === 'string') return skill;
+                      if (skill.items && Array.isArray(skill.items)) return skill.items.join(', ');
+                      return '';
+                    }).filter(s => s).join(', ');
+                  }
+                  return '';
+                })()}
+                onChange={(e) => {
+                  console.log('🔍 Skills onChange - Input value:', e.target.value);
+                  setEditableData((prev: any) => {
+                    const updated = { ...prev };
+                    // Store as simple array of skill strings
+                    const skillsArray = e.target.value.split(',').map(skill => skill.trim()).filter(skill => skill);
+                    updated.skills = skillsArray;
+                    console.log('🔍 Updated skills:', updated.skills);
+                    return updated;
+                  });
+                }}
+                className="w-full"
+                placeholder="Enter skills separated by commas (e.g., JavaScript, React, Node.js, Python)"
+                rows={3}
+              />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  // Handle different skill formats for display
+                  let skillsToDisplay: string[] = [];
+                  if (Array.isArray(editableData.skills)) {
+                    editableData.skills.forEach((skill: any) => {
+                      if (typeof skill === 'string') {
+                        skillsToDisplay.push(skill);
+                      } else if (skill.items && Array.isArray(skill.items)) {
+                        skillsToDisplay.push(...skill.items);
+                      }
+                    });
+                  }
+                  return skillsToDisplay.map((skill: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {skill}
+                    </Badge>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
         )}
 
