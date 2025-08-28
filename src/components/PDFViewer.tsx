@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Configure PDF.js worker - using a more reliable CDN
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+// Disable PDF.js worker to avoid CORS issues - will run on main thread
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
