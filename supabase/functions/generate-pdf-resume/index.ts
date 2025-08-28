@@ -900,9 +900,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   console.log('PDFShift API key length:', pdfShiftApiKey ? pdfShiftApiKey.length : 0);
   
   if (!pdfShiftApiKey) {
-    console.warn('PDFShift API key not found, using jsPDF fallback');
-    const fallbackPdf = await generateFallbackPdf(resumeData, templateId, themeId);
-    return new Uint8Array(fallbackPdf);
+    throw new Error('PDFShift API key not found. Please configure the PDFSHIFT_API_KEY secret.');
   }
 
   try {
@@ -931,11 +929,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     return new Uint8Array(pdfBuffer);
    } catch (error) {
      console.error('Error generating PDF with PDFShift:', error);
-     console.log('Falling back to jsPDF text-based generator');
-     
-     // Use proper jsPDF generator as fallback
-     const fallbackPdf = await generateFallbackPdf(resumeData, templateId, themeId);
-     return new Uint8Array(fallbackPdf);
+     throw new Error(`PDF generation failed: ${error.message}`);
+   }
   }
 }
 
