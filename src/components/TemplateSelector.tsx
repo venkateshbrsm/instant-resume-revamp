@@ -30,7 +30,7 @@ export function TemplateSelector({
         </h4>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-          {resumeTemplates.map((template) => (
+          {resumeTemplates.filter((template) => template.id === 'modern').map((template) => (
             <Card 
               key={template.id}
               className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
