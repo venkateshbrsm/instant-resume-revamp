@@ -14,6 +14,7 @@ import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileT
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
+import { EditablePreview } from "./EditablePreview";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
@@ -31,6 +32,7 @@ interface PreviewSectionProps {
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
   const [activeTab, setActiveTab] = useState("before");
+  const [showEditablePreview, setShowEditablePreview] = useState(false);
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
   const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
@@ -631,76 +633,98 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                        {/* PDF Preview */}
-                        <div className="relative">
-                         <div className="flex items-center justify-between mb-2">
-                           <p className="text-sm text-muted-foreground text-center flex-1">
-                             📄 PDF Preview • This is exactly what you'll receive
-                           </p>
-                           <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                             <DialogTrigger asChild>
-                               <Button variant="outline" size="sm" className="ml-2">
-                                 <Maximize2 className="w-4 h-4" />
-                               </Button>
-                             </DialogTrigger>
-                             <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
-                               <div className="flex items-center justify-between mb-4">
-                                 <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
-                                 <Button 
-                                   variant="outline" 
-                                   size="sm" 
-                                   onClick={() => setIsFullscreen(false)}
-                                 >
-                                   <Minimize2 className="w-4 h-4 mr-2" />
-                                   Exit Fullscreen
-                                 </Button>
-                               </div>
-                               {previewPdfBlob ? (
-                                 <PDFViewer 
-                                   file={previewPdfBlob} 
-                                   className="h-full w-full"
-                                 />
-                               ) : (
-                                 <div className="flex items-center justify-center h-full">
-                                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                   <span className="ml-2">Generating PDF preview...</span>
-                                 </div>
-                               )}
-                             </DialogContent>
-                           </Dialog>
-                         </div>
-                         
-                         {isGeneratingPreview ? (
-                           <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
-                             <div className="text-center space-y-4">
-                               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-                               <div>
-                                 <h3 className="text-lg font-semibold mb-2">Generating PDF Preview</h3>
-                                 <p className="text-muted-foreground">
-                                   Creating your resume PDF with the selected template and colors...
-                                 </p>
-                               </div>
-                             </div>
-                           </div>
-                         ) : previewPdfBlob ? (
-                           <PDFViewer 
-                             file={previewPdfBlob} 
-                             className="h-[600px] w-full"
-                           />
-                         ) : (
-                           <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
-                             <div className="text-center space-y-4">
-                               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
-                               <div>
-                                 <h3 className="text-lg font-semibold mb-2">Preview Unavailable</h3>
-                                 <p className="text-muted-foreground">
-                                   Unable to generate PDF preview. Your resume is ready for purchase.
-                                 </p>
-                               </div>
-                             </div>
-                           </div>
-                         )}
-                       </div>
+                         {/* Tabbed Preview */}
+                         <Tabs defaultValue="pdf" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
+                            <TabsTrigger value="edit">✏️ Edit & Download</TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="pdf" className="space-y-4">
+                            <div className="relative">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm text-muted-foreground text-center flex-1">
+                                  📄 PDF Preview • This is exactly what you'll receive
+                                </p>
+                                <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="ml-2">
+                                      <Maximize2 className="w-4 h-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
+                                    <div className="flex items-center justify-between mb-4">
+                                      <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setIsFullscreen(false)}
+                                      >
+                                        <Minimize2 className="w-4 h-4 mr-2" />
+                                        Exit Fullscreen
+                                      </Button>
+                                    </div>
+                                    {previewPdfBlob ? (
+                                      <PDFViewer 
+                                        file={previewPdfBlob} 
+                                        className="h-full w-full"
+                                      />
+                                    ) : (
+                                      <div className="flex items-center justify-center h-full">
+                                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                        <span className="ml-2">Generating PDF preview...</span>
+                                      </div>
+                                    )}
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
+                              
+                              {isGeneratingPreview ? (
+                                <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
+                                  <div className="text-center space-y-4">
+                                    <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+                                    <div>
+                                      <h3 className="text-lg font-semibold mb-2">Generating PDF Preview</h3>
+                                      <p className="text-muted-foreground">
+                                        Creating your resume PDF with the selected template and colors...
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : previewPdfBlob ? (
+                                <PDFViewer 
+                                  file={previewPdfBlob} 
+                                  className="h-[600px] w-full"
+                                />
+                              ) : (
+                                <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
+                                  <div className="text-center space-y-4">
+                                    <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+                                    <div>
+                                      <h3 className="text-lg font-semibold mb-2">Preview Unavailable</h3>
+                                      <p className="text-muted-foreground">
+                                        Unable to generate PDF preview. Your resume is ready for purchase.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </TabsContent>
+                          
+                          <TabsContent value="edit" className="space-y-4">
+                            <EditablePreview
+                              enhancedContent={enhancedContent}
+                              selectedTemplate={selectedTemplate}
+                              selectedColorTheme={selectedColorTheme}
+                              onContentUpdate={(updatedContent) => {
+                                setEnhancedContent(updatedContent);
+                                // Regenerate preview PDF with updated content
+                                generatePreviewPdf();
+                              }}
+                            />
+                          </TabsContent>
+                        </Tabs>
                     </div>
                   </div>
               ) : (
