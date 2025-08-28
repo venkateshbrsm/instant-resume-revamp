@@ -99,6 +99,7 @@ interface ResumeData {
     company: string;
     duration: string;
     achievements: string[];
+    core_responsibilities?: string[];
   }>;
   skills?: string[];
   education?: Array<{
@@ -359,8 +360,55 @@ async function generateModernPdf(
       }
       mainY += 8;
 
+      // Core Responsibilities
+      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
+        doc.setTextColor(pr, pg, pb);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Core Responsibilities:', mainContentX, mainY);
+        mainY += 6;
+
+        exp.core_responsibilities.forEach((responsibility) => {
+          // Check page break
+          if (mainY > pageHeight - 30) {
+            doc.addPage();
+            // Re-create sidebar on new page
+            for (let i = 0; i < sidebarWidth; i += 2) {
+              const ratio = i / sidebarWidth;
+              const r = Math.round(pr + (ar - pr) * ratio);
+              const g = Math.round(pg + (ag - pg) * ratio);
+              const b = Math.round(pb + (ab - pb) * ratio);
+              
+              doc.setFillColor(r, g, b);
+              doc.rect(i, 0, 2, pageHeight, 'F');
+            }
+            mainY = 20;
+          }
+
+          // Responsibility bullet
+          doc.setFillColor(120, 120, 120);
+          doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
+          
+          doc.setTextColor(100, 100, 100);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          const responsibilityLines = splitTextIntelligently(responsibility, mainContentWidth - 8, doc);
+          responsibilityLines.forEach((line: string, lineIndex: number) => {
+            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
+          });
+          mainY += responsibilityLines.length * 4 + 2;
+        });
+        mainY += 4;
+      }
+
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
+        doc.setTextColor(pr, pg, pb);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Key Achievements:', mainContentX, mainY);
+        mainY += 6;
+
         exp.achievements.forEach((achievement) => {
           // Check page break
           if (mainY > pageHeight - 30) {
@@ -599,6 +647,26 @@ async function generateCreativePdf(
         doc.text(exp.duration, pageWidth - margin - durationWidth + 3, currentY);
       }
       currentY += 8;
+
+      // Core Responsibilities with dots
+      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
+        exp.core_responsibilities.slice(0, 3).forEach((responsibility) => {
+          // Responsibility bullet (circle dot)
+          doc.setFillColor(120, 120, 120);
+          doc.circle(margin + 7, currentY - 1, 1.5, 'F');
+          
+          // Responsibility text
+          doc.setTextColor(100, 100, 100);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          const responsibilityLines = splitTextIntelligently(responsibility, contentWidth - 20, doc);
+          responsibilityLines.forEach((line: string, lineIndex: number) => {
+            doc.text(line, margin + 12, currentY + (lineIndex * 4));
+          });
+          currentY += responsibilityLines.length * 4 + 2;
+        });
+        currentY += 3;
+      }
 
       // Achievements with checkmarks
       if (exp.achievements && exp.achievements.length > 0) {

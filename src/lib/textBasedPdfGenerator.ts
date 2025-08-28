@@ -22,6 +22,7 @@ interface ResumeData {
     company: string;
     duration: string;
     achievements: string[];
+    core_responsibilities?: string[];
   }>;
   skills?: string[];
   education?: Array<{
@@ -311,8 +312,44 @@ async function generateCleanTextPdf(
       }
       currentY += 8;
       
+      // Core Responsibilities
+      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
+        checkPageBreak(10);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(pr, pg, pb);
+        doc.text('Core Responsibilities:', margin, currentY);
+        currentY += 6;
+
+        exp.core_responsibilities.forEach((responsibility) => {
+          checkPageBreak(10);
+          
+          // Simple bullet point
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(60, 60, 60);
+          doc.text('•', margin + 5, currentY);
+          
+          // Responsibility text with intelligent wrapping
+          const lines = splitTextIntelligently(responsibility, contentWidth - 15, doc);
+          lines.forEach((line: string, lineIndex: number) => {
+            if (lineIndex > 0) checkPageBreak(8);
+            doc.text(line, margin + 10, currentY + (lineIndex * lineHeight));
+          });
+          currentY += lines.length * lineHeight + 2;
+        });
+        currentY += 4;
+      }
+      
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
+        checkPageBreak(10);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(pr, pg, pb);
+        doc.text('Key Achievements:', margin, currentY);
+        currentY += 6;
+
         exp.achievements.forEach((achievement) => {
           checkPageBreak(10);
           
