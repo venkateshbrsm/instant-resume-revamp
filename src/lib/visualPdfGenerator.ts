@@ -824,6 +824,7 @@ export async function downloadVisualPdf(
 
 /**
  * Extracts resume data from enhanced content for visual PDF generation
+ * Handles both BasicResumeData (DOCX) and regular enhanced content structures
  */
 export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData {
   console.log('🔍 Extracting resume data from:', enhancedContent);
@@ -840,6 +841,33 @@ export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData 
     return value.filter(item => item !== null && item !== undefined);
   };
   
+  // Check if this is BasicResumeData from DOCX (has specific structure)
+  const isBasicResumeData = enhancedContent.experience && 
+                           enhancedContent.experience[0]?.position && 
+                           enhancedContent.experience[0]?.responsibilities;
+  
+  let experienceData = [];
+  
+  if (isBasicResumeData) {
+    // Handle DOCX BasicResumeData structure
+    console.log('🔍 Processing BasicResumeData (DOCX) structure');
+    experienceData = safeArray(enhancedContent.experience).map((exp: any) => ({
+      title: safeString(exp.position || exp.title, 'Position'),
+      company: safeString(exp.company, 'Company'),
+      duration: safeString(exp.duration, 'Duration'),
+      achievements: safeArray(exp.responsibilities || exp.achievements || []).map((item: any) => safeString(item))
+    }));
+  } else {
+    // Handle regular enhanced content structure
+    console.log('🔍 Processing regular enhanced content structure');
+    experienceData = safeArray(enhancedContent.experience).map((exp: any) => ({
+      title: safeString(exp.title || exp.position, 'Position'),
+      company: safeString(exp.company, 'Company'),
+      duration: safeString(exp.duration, 'Duration'),
+      achievements: safeArray(exp.achievements || exp.responsibilities || []).map((item: any) => safeString(item))
+    }));
+  }
+  
   const extractedData = {
     name: safeString(enhancedContent.name, 'Enhanced Resume'),
     title: safeString(enhancedContent.title, 'Professional'),
@@ -848,12 +876,7 @@ export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData 
     location: safeString(enhancedContent.contact?.location || enhancedContent.location),
     summary: safeString(enhancedContent.summary),
     photo: enhancedContent.profilePhotoUrl || enhancedContent.photo || undefined,
-    experience: safeArray(enhancedContent.experience).map((exp: any) => ({
-      title: safeString(exp.title || exp.position, 'Position'),
-      company: safeString(exp.company, 'Company'),
-      duration: safeString(exp.duration, 'Duration'),
-      achievements: safeArray(exp.achievements || exp.responsibilities || []).map((item: any) => safeString(item))
-    })),
+    experience: experienceData,
     skills: safeArray(enhancedContent.skills).map((skill: any) => safeString(skill)).filter(s => s.length > 0),
     education: safeArray(enhancedContent.education).map((edu: any) => ({
       degree: safeString(edu.degree, 'Degree'),
@@ -865,5 +888,11 @@ export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData 
   };
   
   console.log('🔍 Extracted resume data:', extractedData);
+  console.log('🔍 Experience mapping check:', {
+    originalExperience: enhancedContent.experience?.[0],
+    mappedExperience: extractedData.experience?.[0],
+    isBasicResumeData
+  });
+  
   return extractedData;
 }
