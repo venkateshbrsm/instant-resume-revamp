@@ -166,7 +166,7 @@ CRITICAL WARNING: If you cannot preserve the exact count and structure while enh
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-5-2025-08-07',
+      model: 'gpt-4.1-2025-04-14',
       messages: [
         { 
           role: 'system', 
@@ -177,7 +177,8 @@ CRITICAL WARNING: If you cannot preserve the exact count and structure while enh
           content: prompt 
         }
       ],
-      max_completion_tokens: 4000,
+      max_tokens: 4000,
+      temperature: 0.3,
     }),
   });
 
@@ -188,10 +189,13 @@ CRITICAL WARNING: If you cannot preserve the exact count and structure while enh
   }
 
   const data = await response.json();
-  const enhancedContent = data.choices[0]?.message?.content;
+  console.log('OpenAI response data:', JSON.stringify(data, null, 2));
+  
+  const enhancedContent = data.choices?.[0]?.message?.content;
 
   if (!enhancedContent) {
-    throw new Error('No content received from OpenAI');
+    console.error('No content in OpenAI response:', data);
+    throw new Error('No content received from OpenAI - response may be empty or malformed');
   }
 
   console.log('Raw AI response received, parsing JSON...');
