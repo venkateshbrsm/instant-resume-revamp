@@ -46,13 +46,44 @@ const industryKeywords = {
   ]
 };
 
-// Action verbs that ATS systems favor
+// Specific, results-oriented action verbs that ATS systems favor
 const actionVerbs = [
-  'Developed', 'Implemented', 'Managed', 'Led', 'Created', 'Optimized', 'Increased',
-  'Decreased', 'Improved', 'Streamlined', 'Executed', 'Launched', 'Coordinated',
-  'Collaborated', 'Analyzed', 'Generated', 'Delivered', 'Achieved', 'Exceeded',
-  'Designed', 'Established', 'Built', 'Enhanced', 'Strategized', 'Drove'
+  'Accelerated', 'Amplified', 'Architected', 'Boosted', 'Captured', 'Converted', 'Cultivated',
+  'Delivered', 'Elevated', 'Engineered', 'Expanded', 'Facilitated', 'Generated', 'Maximized',
+  'Mobilized', 'Orchestrated', 'Pioneered', 'Propelled', 'Quadrupled', 'Revolutionized',
+  'Scaled', 'Spearheaded', 'Strengthened', 'Surpassed', 'Transformed', 'Tripled'
 ];
+
+// Quantifiable achievement patterns for better ATS scoring
+const achievementPatterns = {
+  marketing: [
+    'campaign performance by {metric}% through strategic optimization',
+    'lead generation by {metric}% via targeted digital marketing initiatives',
+    'brand awareness resulting in {metric}% increase in organic traffic',
+    'social media engagement by {metric}% across all platforms',
+    'customer acquisition cost by {metric}% while maintaining quality leads',
+    'email campaign open rates to {metric}% above industry standard',
+    'conversion rates by {metric}% through A/B testing and optimization'
+  ],
+  copywriting: [
+    'content engagement rates by {metric}% through compelling copywriting',
+    'website conversion rates by {metric}% via persuasive landing page copy',
+    'click-through rates to {metric}% with optimized email subject lines',
+    'content production efficiency by {metric}% while maintaining quality',
+    'blog traffic by {metric}% through SEO-optimized content creation',
+    'brand consistency across {metric}+ marketing materials and channels',
+    'content marketing ROI by {metric}% through strategic messaging'
+  ],
+  strategy: [
+    'revenue growth by {metric}% through strategic market expansion',
+    'operational efficiency by {metric}% via process optimization',
+    'market penetration in {metric} new segments within first quarter',
+    'partnership portfolio by {metric}% resulting in expanded reach',
+    'client retention rates to {metric}% through strategic relationship management',
+    'project delivery speed by {metric}% while exceeding quality standards',
+    'competitive positioning resulting in {metric}% market share increase'
+  ]
+};
 
 export function optimizeForATS(originalContent: any): ATSOptimizedContent {
   // Extract role type to determine relevant keywords
@@ -161,35 +192,35 @@ function optimizeExperience(experiences: any[], roles: { isMarketing: boolean; i
   return experiences.map((exp, index) => {
     const optimizedAchievements = [];
     
-    // Create role-specific, ATS-friendly achievements
+    // Create role-specific, quantifiable achievements
     if (isMarketing) {
       optimizedAchievements.push(
-        `${getRandomActionVerb()} comprehensive digital marketing campaigns across multiple channels including social media, email marketing, and paid advertising`,
-        `${getRandomActionVerb()} SEO optimization strategies that improved organic search visibility and website traffic through keyword research and content optimization`,
-        `${getRandomActionVerb()} social media marketing initiatives across platforms (Facebook, Instagram, LinkedIn, Twitter) to enhance brand presence and engagement`
+        `${getRandomActionVerb()} ${getQuantifiableAchievement('marketing')}`,
+        `${getRandomActionVerb()} ${getQuantifiableAchievement('marketing')}`,
+        `${getRandomActionVerb()} comprehensive digital marketing campaigns across 5+ channels including Google Ads, Facebook, LinkedIn, and email marketing`
       );
     }
     
     if (isCopywriting) {
       optimizedAchievements.push(
-        `${getRandomActionVerb()} compelling copy for various marketing materials including website content, email campaigns, blog posts, and advertising materials`,
-        `${getRandomActionVerb()} content marketing strategy and editorial calendar to ensure consistent brand messaging across all communication channels`,
-        `${getRandomActionVerb()} UX writing and landing page optimization to improve user experience and conversion rates`
+        `${getRandomActionVerb()} ${getQuantifiableAchievement('copywriting')}`,
+        `${getRandomActionVerb()} ${getQuantifiableAchievement('copywriting')}`,
+        `${getRandomActionVerb()} 50+ pieces of high-converting copy including landing pages, email sequences, and ad creatives`
       );
     }
     
     if (isStrategy) {
       optimizedAchievements.push(
-        `${getRandomActionVerb()} strategic marketing plans and go-to-market strategies in collaboration with cross-functional teams and stakeholders`,
-        `${getRandomActionVerb()} competitive analysis and market research to identify opportunities for business growth and competitive advantage`,
-        `${getRandomActionVerb()} client relationships and partnership development initiatives to expand business opportunities and revenue streams`
+        `${getRandomActionVerb()} ${getQuantifiableAchievement('strategy')}`,
+        `${getRandomActionVerb()} ${getQuantifiableAchievement('strategy')}`,
+        `${getRandomActionVerb()} go-to-market strategies for 3+ product launches resulting in successful market entry`
       );
     }
 
-    // Add general business achievements
+    // Add general quantifiable business achievements
     optimizedAchievements.push(
-      `${getRandomActionVerb()} project management and coordination across multiple initiatives while maintaining quality standards and meeting deadlines`,
-      `${getRandomActionVerb()} with cross-functional teams including design, development, and sales to ensure alignment on business objectives and deliverables`
+      `${getRandomActionVerb()} cross-functional team productivity by 25% through streamlined project management processes`,
+      `${getRandomActionVerb()} client satisfaction scores to 95%+ through proactive communication and quality deliverables`
     );
 
     return {
@@ -199,6 +230,23 @@ function optimizeExperience(experiences: any[], roles: { isMarketing: boolean; i
       achievements: optimizedAchievements.slice(0, 5) // Limit to 5 achievements per role
     };
   });
+}
+
+function getQuantifiableAchievement(role: 'marketing' | 'copywriting' | 'strategy'): string {
+  const patterns = achievementPatterns[role];
+  const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+  
+  // Generate realistic metrics based on role
+  let metric: number;
+  if (role === 'marketing') {
+    metric = Math.floor(Math.random() * 40) + 20; // 20-60% improvements
+  } else if (role === 'copywriting') {
+    metric = Math.floor(Math.random() * 35) + 15; // 15-50% improvements
+  } else {
+    metric = Math.floor(Math.random() * 30) + 10; // 10-40% improvements
+  }
+  
+  return pattern.replace('{metric}', metric.toString());
 }
 
 function getRandomActionVerb(): string {
