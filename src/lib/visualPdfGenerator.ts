@@ -135,7 +135,7 @@ async function generateModernPdf(
   if (resumeData.email) {
     doc.text('EMAIL', 8, sidebarY);
     sidebarY += 4;
-    const emailLines = doc.splitTextToSize(resumeData.email, sidebarWidth - 16);
+    const emailLines = doc.splitTextToSize(resumeData.email, sidebarWidth - 25);
     emailLines.forEach((line: string) => {
       doc.text(line, 8, sidebarY);
       sidebarY += 3.5;
@@ -145,7 +145,7 @@ async function generateModernPdf(
   if (resumeData.phone) {
     doc.text('PHONE', 8, sidebarY);
     sidebarY += 4;
-    const phoneLines = doc.splitTextToSize(resumeData.phone, sidebarWidth - 16);
+    const phoneLines = doc.splitTextToSize(resumeData.phone, sidebarWidth - 25);
     phoneLines.forEach((line: string) => {
       doc.text(line, 8, sidebarY);
       sidebarY += 3.5;
@@ -155,7 +155,7 @@ async function generateModernPdf(
   if (resumeData.location) {
     doc.text('LOCATION', 8, sidebarY);
     sidebarY += 4;
-    const locationLines = doc.splitTextToSize(resumeData.location, sidebarWidth - 16);
+    const locationLines = doc.splitTextToSize(resumeData.location, sidebarWidth - 25);
     locationLines.forEach((line: string) => {
       doc.text(line, 8, sidebarY);
       sidebarY += 3.5;
@@ -174,7 +174,7 @@ async function generateModernPdf(
       // Skill name
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
-      const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
+      const skillLines = doc.splitTextToSize(skill, sidebarWidth - 25);
       doc.text(skillLines[0], 8, sidebarY);
       
       // Progress bar background
@@ -201,12 +201,12 @@ async function generateModernPdf(
     resumeData.education.slice(0, 2).forEach((edu) => {
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
-      const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
+      const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 25);
       doc.text(degreeLines[0], 8, sidebarY);
       sidebarY += 4;
       
       doc.setFont('helvetica', 'normal');
-      const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
+      const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 25);
       doc.text(instLines[0], 8, sidebarY);
       sidebarY += 4;
       
@@ -227,7 +227,12 @@ async function generateModernPdf(
 
   doc.setFontSize(14);
   doc.setFont('helvetica', 'normal');
-  doc.text(resumeData.title, mainContentX, mainY);
+  const titleLines = doc.splitTextToSize(resumeData.title, mainContentWidth - 10);
+  titleLines.forEach((line: string) => {
+    doc.text(line, mainContentX, mainY);
+    mainY += 6;
+  });
+  mainY -= 6;
   mainY += 15;
 
   // Professional Summary section
@@ -245,7 +250,7 @@ async function generateModernPdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
+    const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth - 10);
     summaryLines.forEach((line: string) => {
       doc.text(line, mainContentX, mainY);
       mainY += 4.5;
@@ -274,7 +279,7 @@ async function generateModernPdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 20);
+      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 40);
       titleLines.forEach((line: string) => {
         doc.text(line, mainContentX, mainY);
         mainY += 5;
@@ -284,7 +289,7 @@ async function generateModernPdf(
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 60);
+      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 80);
       companyLines.forEach((line: string) => {
         doc.text(line, mainContentX, mainY);
         mainY += 4;
@@ -329,7 +334,7 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 20);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 35);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 4.5));
           });
@@ -427,7 +432,10 @@ async function generateCreativePdf(
   
   doc.setFontSize(16);
   doc.setFont('helvetica', 'normal');
-  doc.text(resumeData.title, margin + 45, 32);
+  const titleLinesCreative = doc.splitTextToSize(resumeData.title, pageWidth - margin - 90);
+  titleLinesCreative.forEach((line: string, index: number) => {
+    doc.text(line, margin + 45, 32 + (index * 6));
+  });
 
   // Contact info in header (matching preview)
   const contactInfo = [resumeData.email, resumeData.phone].filter(Boolean).join(' • ');
@@ -452,7 +460,7 @@ async function generateCreativePdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
+    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth - 10);
     summaryLines.forEach((line: string) => {
       doc.text(line, margin, currentY);
       currentY += 5;
@@ -491,7 +499,7 @@ async function generateCreativePdf(
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        const skillLines = doc.splitTextToSize(skill, badgeWidth - 4);
+        const skillLines = doc.splitTextToSize(skill, badgeWidth - 8);
         doc.text(skillLines[0], x + 2, currentY);
         
         skillIndex++;
@@ -523,7 +531,7 @@ async function generateCreativePdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 25);
+      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 40);
       titleLines.forEach((line: string) => {
         doc.text(line, margin + 5, currentY);
         currentY += 5;
@@ -533,7 +541,7 @@ async function generateCreativePdf(
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 90);
+      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 110);
       companyLines.forEach((line: string) => {
         doc.text(line, margin + 5, currentY);
         currentY += 4;
@@ -568,7 +576,7 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 25);
+          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 40);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 4.5));
           });
@@ -656,8 +664,12 @@ async function generateClassicPdf(
 
   doc.setFontSize(14);
   doc.setFont('helvetica', 'normal');
-  const titleWidth = doc.getTextWidth(resumeData.title);
-  doc.text(resumeData.title, (pageWidth - titleWidth) / 2, currentY);
+  const titleLinesClassic = doc.splitTextToSize(resumeData.title, contentWidth - 20);
+  titleLinesClassic.forEach((line: string, index: number) => {
+    const lineWidth = doc.getTextWidth(line);
+    doc.text(line, (pageWidth - lineWidth) / 2, currentY + (index * 6));
+  });
+  currentY += (titleLinesClassic.length - 1) * 6;
   currentY += 6;
 
   // Contact info
@@ -697,7 +709,7 @@ async function generateClassicPdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
+    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth - 10);
     summaryLines.forEach((line: string) => {
       doc.text(line, margin, currentY);
       currentY += 5;
@@ -714,7 +726,7 @@ async function generateClassicPdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 10);
+      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 30);
       titleLines.forEach((line: string) => {
         doc.text(line, margin, currentY);
         currentY += 5;
@@ -724,7 +736,7 @@ async function generateClassicPdf(
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 70);
+      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 90);
       companyLines.forEach((line: string) => {
         doc.text(line, margin, currentY);
         currentY += 4;
@@ -749,7 +761,7 @@ async function generateClassicPdf(
           doc.setFont('helvetica', 'normal');
           doc.text('•', margin + 5, currentY);
           
-           const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
+           const achievementLines = doc.splitTextToSize(achievement, contentWidth - 30);
            achievementLines.forEach((line: string, lineIndex: number) => {
              doc.text(line, margin + 10, currentY + (lineIndex * 5));
            });
