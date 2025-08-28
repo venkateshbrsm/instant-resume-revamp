@@ -353,110 +353,100 @@ export const DocxResumePreview = ({
                 
                 <div className="space-y-6">
                   {editableData.experience.map((exp, index) => (
-                    <div key={index} className="border-l-2 pl-6 relative" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                      <div 
-                        className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
-                        style={{ backgroundColor: selectedColorTheme.primary }}
-                      ></div>
-                      
-                      <div className="mb-4">
-                        {/* Job Title - Most Prominent */}
-                        <div className="mb-3">
-                          <h3 className="text-xl font-bold text-foreground mb-1">
-                            {isEditing ? (
-                              <Input
-                                value={exp.position}
-                                onChange={(e) => handleArrayFieldChange('experience', index, 'position', e.target.value)}
-                                className="text-xl font-bold"
-                                placeholder="Job Title"
-                              />
-                            ) : (
-                              exp.position
-                            )}
-                          </h3>
+                    <div key={index} className="mb-6">
+                      {/* Company Name and Dates - Single Line Header */}
+                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/30">
+                        <div className="flex items-center gap-4">
+                          {isEditing ? (
+                            <Input
+                              value={exp.company}
+                              onChange={(e) => handleArrayFieldChange('experience', index, 'company', e.target.value)}
+                              className="text-lg font-bold"
+                              placeholder="Company Name"
+                              style={{ color: selectedColorTheme.primary }}
+                            />
+                          ) : (
+                            <h3 className="text-lg font-bold" style={{ color: selectedColorTheme.primary }}>
+                              {exp.company}
+                            </h3>
+                          )}
                           
-                          {/* Company Name - Styled with primary color */}
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-lg font-semibold" style={{ color: selectedColorTheme.primary }}>
-                              {isEditing ? (
-                                <Input
-                                  value={exp.company}
-                                  onChange={(e) => handleArrayFieldChange('experience', index, 'company', e.target.value)}
-                                  className="text-lg font-semibold"
-                                  placeholder="Company Name"
-                                />
-                              ) : (
-                                exp.company
-                              )}
-                            </p>
-                            
-                            {/* Duration and Location - Smaller, muted */}
-                            <div className="text-right text-sm text-muted-foreground flex-shrink-0 ml-4">
-                              {isEditing ? (
-                                <div className="space-y-1">
-                                  <Input
-                                    value={exp.duration}
-                                    onChange={(e) => handleArrayFieldChange('experience', index, 'duration', e.target.value)}
-                                    className="text-sm"
-                                    placeholder="Duration"
-                                  />
-                                  <Input
-                                    value={exp.location}
-                                    onChange={(e) => handleArrayFieldChange('experience', index, 'location', e.target.value)}
-                                    className="text-sm"
-                                    placeholder="Location"
-                                  />
-                                </div>
-                              ) : (
-                                <>
-                                  {exp.duration && <div className="font-medium">{exp.duration}</div>}
-                                  {exp.location && <div className="italic">{exp.location}</div>}
-                                </>
-                              )}
-                            </div>
-                          </div>
+                          {isEditing ? (
+                            <Input
+                              value={exp.duration}
+                              onChange={(e) => handleArrayFieldChange('experience', index, 'duration', e.target.value)}
+                              className="text-sm font-medium"
+                              placeholder="Duration"
+                            />
+                          ) : (
+                            exp.duration && (
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {exp.duration}
+                              </span>
+                            )
+                          )}
                         </div>
                         
-                        {/* Key Achievements/Responsibilities - Clearly separated */}
-                        {exp.responsibilities && exp.responsibilities.length > 0 && (
-                          <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.primary}05`, border: `1px solid ${selectedColorTheme.primary}15` }}>
-                            <h4 className="text-sm font-semibold mb-3 uppercase tracking-wide" style={{ color: selectedColorTheme.primary }}>
-                              Key Achievements & Responsibilities
-                            </h4>
+                        {exp.location && (
+                          <div className="text-sm text-muted-foreground italic">
                             {isEditing ? (
-                              <Textarea
-                                value={exp.responsibilities.join('\n')}
-                                onChange={(e) => {
-                                  const responsibilities = e.target.value.split('\n').filter(r => r.trim());
-                                  handleArrayFieldChange('experience', index, 'responsibilities', responsibilities);
-                                }}
-                                className="w-full"
-                                rows={4}
-                                placeholder="Enter achievements and responsibilities (one per line)"
+                              <Input
+                                value={exp.location}
+                                onChange={(e) => handleArrayFieldChange('experience', index, 'location', e.target.value)}
+                                className="text-sm"
+                                placeholder="Location"
                               />
                             ) : (
-                              <ul className="space-y-3">
-                                {exp.responsibilities.map((responsibility, respIndex) => (
-                                  <li key={respIndex} className="flex items-start gap-3">
-                                    <div 
-                                      className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 shadow-sm" 
-                                      style={{ 
-                                        backgroundColor: selectedColorTheme.accent,
-                                        color: 'white'
-                                      }}
-                                    >
-                                      <span className="text-xs font-bold">✓</span>
-                                    </div>
-                                    <span className="text-gray-700 leading-relaxed font-medium text-sm">
-                                      {responsibility}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
+                              exp.location
                             )}
                           </div>
                         )}
                       </div>
+                      
+                      {/* Job Position - Secondary */}
+                      {exp.position && (
+                        <div className="mb-3">
+                          {isEditing ? (
+                            <Input
+                              value={exp.position}
+                              onChange={(e) => handleArrayFieldChange('experience', index, 'position', e.target.value)}
+                              className="text-base font-medium"
+                              placeholder="Job Title"
+                            />
+                          ) : (
+                            <p className="text-base font-medium text-foreground/80">{exp.position}</p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Work Experience as Bullet Points */}
+                      {exp.responsibilities && exp.responsibilities.length > 0 && (
+                        <div>
+                          {isEditing ? (
+                            <Textarea
+                              value={exp.responsibilities.join('\n')}
+                              onChange={(e) => {
+                                const responsibilities = e.target.value.split('\n').filter(r => r.trim());
+                                handleArrayFieldChange('experience', index, 'responsibilities', responsibilities);
+                              }}
+                              className="w-full"
+                              rows={4}
+                              placeholder="Enter work experience and achievements (one per line)"
+                            />
+                          ) : (
+                            <ul className="space-y-2 ml-4">
+                              {exp.responsibilities.map((responsibility, respIndex) => (
+                                <li key={respIndex} className="flex items-start gap-2">
+                                  <span className="text-muted-foreground mt-2 text-xs">•</span>
+                                  <span className="text-sm text-foreground leading-relaxed">
+                                    {responsibility}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
