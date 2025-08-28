@@ -7,16 +7,16 @@ const corsHeaders = {
 };
 
 const colorThemes = {
-  navy: { primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
-  charcoal: { primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
-  burgundy: { primary: '#dc2626', secondary: '#ef4444', accent: '#f87171' },
-  forest: { primary: '#22c55e', secondary: '#4ade80', accent: '#86efac' },
-  bronze: { primary: '#eab308', secondary: '#fbbf24', accent: '#fcd34d' },
-  slate: { primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' },
-  emerald: { primary: '#10b981', secondary: '#34d399', accent: '#6ee7b7' },
-  purple: { primary: '#8b5cf6', secondary: '#a78bfa', accent: '#c4b5fd' },
-  rose: { primary: '#f43f5e', secondary: '#fb7185', accent: '#fda4af' },
-  orange: { primary: '#f97316', secondary: '#fb923c', accent: '#fdba74' }
+  navy: { primary: 'hsl(214, 84%, 56%)', secondary: 'hsl(214, 84%, 66%)', accent: 'hsl(142, 76%, 36%)' },
+  charcoal: { primary: 'hsl(215, 14%, 42%)', secondary: 'hsl(215, 20%, 65%)', accent: 'hsl(215, 28%, 83%)' },
+  burgundy: { primary: 'hsl(0, 84%, 60%)', secondary: 'hsl(0, 91%, 71%)', accent: 'hsl(0, 93%, 94%)' },
+  forest: { primary: 'hsl(142, 76%, 36%)', secondary: 'hsl(134, 61%, 41%)', accent: 'hsl(125, 71%, 66%)' },
+  bronze: { primary: 'hsl(45, 93%, 47%)', secondary: 'hsl(48, 96%, 53%)', accent: 'hsl(48, 95%, 76%)' },
+  slate: { primary: 'hsl(215, 16%, 47%)', secondary: 'hsl(214, 20%, 69%)', accent: 'hsl(210, 40%, 98%)' },
+  emerald: { primary: 'hsl(160, 84%, 39%)', secondary: 'hsl(158, 64%, 52%)', accent: 'hsl(152, 76%, 70%)' },
+  purple: { primary: 'hsl(258, 90%, 66%)', secondary: 'hsl(256, 92%, 79%)', accent: 'hsl(252, 94%, 85%)' },
+  rose: { primary: 'hsl(351, 83%, 61%)', secondary: 'hsl(351, 95%, 71%)', accent: 'hsl(351, 95%, 86%)' },
+  orange: { primary: 'hsl(24, 95%, 53%)', secondary: 'hsl(34, 92%, 62%)', accent: 'hsl(43, 96%, 72%)' }
 };
 
 async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'modern', themeId: string = 'navy'): Promise<Uint8Array> {
