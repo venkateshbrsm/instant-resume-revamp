@@ -36,6 +36,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
   const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
+  const [editedContent, setEditedContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStage, setLoadingStage] = useState("Initializing...");
@@ -123,10 +124,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
   // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
-    if (enhancedContent && !isGeneratingPreview) {
+    // Use edited content if available, otherwise use enhanced content
+    const contentToUse = editedContent || enhancedContent;
+    if (contentToUse && !isGeneratingPreview) {
       generatePreviewPdf();
     }
-  }, [enhancedContent, selectedTemplate, selectedColorTheme]);
+  }, [enhancedContent, editedContent, selectedTemplate, selectedColorTheme]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -401,15 +404,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const generatePreviewPdf = async () => {
-    if (!enhancedContent || isGeneratingPreview) return;
+    // Use edited content if available, otherwise use enhanced content
+    const contentToUse = editedContent || enhancedContent;
+    if (!contentToUse || isGeneratingPreview) return;
 
     setIsGeneratingPreview(true);
     
     try {
       console.log('🎨 Generating preview PDF for template:', selectedTemplate.layout);
-      console.log('🎨 Enhanced content preview:', enhancedContent);
+      console.log('🎨 Content preview:', contentToUse);
       
-      const resumeData = extractResumeDataFromEnhanced(enhancedContent);
+      const resumeData = extractResumeDataFromEnhanced(contentToUse);
       console.log('🎨 Extracted resume data:', resumeData);
       
       const pdfBlob = await generateVisualPdf(resumeData, {
@@ -422,7 +427,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       });
       
       setPreviewPdfBlob(pdfBlob);
-      console.log('✅ Preview PDF generated successfully');
+      console.log('✅ Preview PDF generated successfully with', editedContent ? 'edited' : 'enhanced', 'content');
     } catch (error) {
       console.error('❌ Error generating preview PDF:', error);
       console.error('❌ Template type:', selectedTemplate.layout);
@@ -712,18 +717,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                           </TabsContent>
                           
-                          <TabsContent value="edit" className="space-y-4">
-                            <EditablePreview
-                              enhancedContent={enhancedContent}
-                              selectedTemplate={selectedTemplate}
-                              selectedColorTheme={selectedColorTheme}
-                              onContentUpdate={(updatedContent) => {
-                                setEnhancedContent(updatedContent);
-                                // Regenerate preview PDF with updated content
-                                generatePreviewPdf();
-                              }}
-                            />
-                          </TabsContent>
+                           <TabsContent value="edit" className="space-y-4">
+                             <EditablePreview
+                               enhancedContent={enhancedContent}
+                               selectedTemplate={selectedTemplate}
+                               selectedColorTheme={selectedColorTheme}
+                               onContentUpdate={(updatedContent) => {
+                                 setEditedContent(updatedContent);
+                               }}
+                             />
+                           </TabsContent>
                         </Tabs>
                     </div>
                   </div>
