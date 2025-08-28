@@ -240,6 +240,7 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
       if (session?.user) {
         // User is authenticated, save content for payment
         if (parsedData) {
+          console.log('💾 Saving current parsedData for payment (includes edits):', parsedData);
           localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(parsedData));
           localStorage.setItem('docxExtractedTextForPayment', editedContent);
           localStorage.setItem('docxSelectedTemplateForPayment', JSON.stringify(selectedTemplate));
@@ -256,6 +257,7 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
           sessionStorage.setItem('docxExtractedText', editedContent);
         }
         if (parsedData) {
+          console.log('💾 Saving current parsedData for unauthenticated purchase (includes edits):', parsedData);
           sessionStorage.setItem('docxEnhancedContent', JSON.stringify(parsedData));
           localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(parsedData));
           localStorage.setItem('docxExtractedTextForPayment', editedContent);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -64,6 +64,11 @@ export const DocxResumePreview = ({
   const [isSaving, setIsSaving] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // Sync editableData with parsedData changes
+  useEffect(() => {
+    setEditableData(parsedData);
+  }, [parsedData]);
+
   const handleFieldChange = useCallback((field: keyof BasicResumeData, value: any) => {
     setEditableData((prev) => ({
       ...prev,
@@ -88,6 +93,7 @@ export const DocxResumePreview = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      console.log('💾 Saving edited DOCX content:', editableData);
       onContentUpdate(editableData);
       toast.success('Changes saved successfully!');
       setIsEditing(false);
