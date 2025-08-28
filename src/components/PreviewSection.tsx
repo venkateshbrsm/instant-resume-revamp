@@ -486,28 +486,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setEnhancementProgress(30);
       
-      // Convert file to base64 for potential re-extraction in edge function
-      let fileBase64 = '';
-      if (file.name.toLowerCase().endsWith('.docx')) {
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const bytes = new Uint8Array(arrayBuffer);
-          fileBase64 = btoa(String.fromCharCode(...bytes));
-          console.log('File converted to base64, size:', fileBase64.length);
-        } catch (error) {
-          console.warn('Failed to convert file to base64:', error);
-        }
-      }
-      
+      // Call enhance-resume edge function with minimal payload
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
         body: {
-          fileName: file.name,
-          originalText: extractedText,
           extractedText: extractedText,
-          file: fileBase64 || null,
           templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.id,
-          profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
+          themeId: selectedColorTheme.id
         }
       });
 
