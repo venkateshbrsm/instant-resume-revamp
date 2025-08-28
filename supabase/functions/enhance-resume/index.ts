@@ -39,6 +39,8 @@ serve(async (req) => {
     }
 
     console.log('Enhancing resume with AI...');
+    console.log('Using extracted text (length:', extractedText?.length, ')');
+    console.log('Text preview:', extractedText?.substring(0, 200));
     
     // Enhanced text parsing and AI enhancement
     const enhancedResume = await enhanceResumeWithAI(extractedText, openAIApiKey);
@@ -144,7 +146,7 @@ ENHANCEMENT GUIDELINES:
 - Ensure all sections are comprehensive and detailed
 - Focus achievements on quantifiable results and business impact`;
 
-  console.log('Sending request to OpenAI...');
+  console.log('Sending request to OpenAI with model: gpt-4o');
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -152,26 +154,28 @@ ENHANCEMENT GUIDELINES:
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-      body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
-          },
-          { 
-            role: 'user', 
-            content: prompt 
-          }
-        ],
-        max_completion_tokens: 4000,
-      }),
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { 
+          role: 'system', 
+          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
+        },
+        { 
+          role: 'user', 
+          content: prompt 
+        }
+      ],
+      max_tokens: 4000,
+      temperature: 0.7,
+    }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('OpenAI API error:', response.status, errorText);
-    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    console.error('OpenAI API error:', response.status, response.statusText);
+    console.error('Error response body:', errorText);
+    throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
   const data = await response.json();
