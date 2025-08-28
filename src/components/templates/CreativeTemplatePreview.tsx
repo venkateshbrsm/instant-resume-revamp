@@ -271,7 +271,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 >
                   <div className="flex items-center gap-3 mb-4 print:mb-3 print:gap-2">
                     <div 
-                      className="w-10 h-10 rounded-xl flex items-center text-white print:w-8 print:h-8"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white print:w-8 print:h-8"
                       style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
                     >
                       <Brush className="w-5 h-5 print:w-4 print:h-4" />
