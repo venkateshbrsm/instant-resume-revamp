@@ -147,26 +147,9 @@ serve(async (req) => {
                 fileContent = `PDF file: ${paymentRecord.file_name}`;
               }
             } else if (paymentRecord.file_name.toLowerCase().endsWith('.docx')) {
-              // For DOCX files, use mammoth for text extraction
-              try {
-                const arrayBuffer = await fileData.arrayBuffer();
-                
-                // Import mammoth for DOCX text extraction
-                const mammoth = await import('https://cdn.skypack.dev/mammoth@1.4.21');
-                
-                // Extract text from DOCX
-                const result = await mammoth.extractRawText({ arrayBuffer });
-                fileContent = result.value;
-                
-                console.log("DOCX text extracted, length:", fileContent.length);
-                
-                if (fileContent.length < 50) {
-                  fileContent = `DOCX file: ${paymentRecord.file_name}`;
-                }
-              } catch (docxError) {
-                console.error("DOCX extraction error:", docxError);
-                fileContent = `DOCX file: ${paymentRecord.file_name}`;
-              }
+              // For DOCX files, skip extraction in edge function as it's handled on frontend
+              fileContent = `DOCX file: ${paymentRecord.file_name} - Content processed on frontend`;
+              console.log("DOCX file detected, skipping server-side extraction");
             } else {
               // For TXT files or others
               fileContent = await fileData.text();

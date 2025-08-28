@@ -345,6 +345,13 @@ export default function PaymentSuccess() {
           console.log('🔍 Falling back to localStorage...');
           enhancedContentStr2 = localStorage.getItem('enhancedContentForPayment');
           
+          // Check for DOCX-specific storage keys if regular keys not found
+          if (!enhancedContentStr2) {
+            console.log('Regular localStorage empty, checking DOCX-specific keys...');
+            enhancedContentStr2 = localStorage.getItem('docxEnhancedContentForPayment');
+            console.log('Found DOCX enhanced content:', !!enhancedContentStr2);
+          }
+          
           // Fallback to backup storage if main storage is empty
           if (!enhancedContentStr2) {
             console.log('Main localStorage empty, checking backup...');
@@ -352,6 +359,13 @@ export default function PaymentSuccess() {
           }
           
           selectedThemeStr = localStorage.getItem('selectedColorThemeForPayment');
+          
+          // Check for DOCX-specific theme if regular theme not found
+          if (!selectedThemeStr) {
+            console.log('Regular theme not found, checking DOCX-specific theme...');
+            selectedThemeStr = localStorage.getItem('docxSelectedColorThemeForPayment');
+            console.log('Found DOCX theme:', !!selectedThemeStr);
+          }
         }
         
         console.log('🔍 Local storage check:', {
@@ -410,11 +424,16 @@ export default function PaymentSuccess() {
               description: "Your beautifully designed resume has been downloaded - matches the preview exactly!",
             });
             
-            // Clean up local storage
+            // Clean up local storage - including DOCX-specific keys
             localStorage.removeItem('enhancedContentForPayment');
             localStorage.removeItem('selectedColorThemeForPayment');
             localStorage.removeItem('selectedTemplateForPayment');
             localStorage.removeItem('latestEditedContent');
+            // Clean up DOCX-specific keys
+            localStorage.removeItem('docxEnhancedContentForPayment');
+            localStorage.removeItem('docxExtractedTextForPayment');
+            localStorage.removeItem('docxSelectedTemplateForPayment');
+            localStorage.removeItem('docxSelectedColorThemeForPayment');
             return;
           } catch (error) {
             console.error('Error generating visual PDF:', error);
