@@ -48,18 +48,18 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               <h3 className="font-semibold text-sm tracking-wide uppercase">Contact</h3>
             </div>
             <div className="space-y-3 text-sm opacity-90">
-              <div className="flex items-center gap-2">
-                <Mail className="w-3 h-3" />
-                <span className="break-all text-xs no-underline">{enhancedContent.email}</span>
+              <div className="flex items-start gap-2">
+                <Mail className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <span className="break-words text-xs no-underline leading-relaxed">{enhancedContent.email}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-3 h-3" />
-                <span className="text-xs no-underline">{enhancedContent.phone}</span>
+              <div className="flex items-start gap-2">
+                <Phone className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <span className="text-xs no-underline break-words leading-relaxed">{enhancedContent.phone}</span>
               </div>
               {enhancedContent.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-3 h-3" />
-                  <span className="text-xs">{enhancedContent.location}</span>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                  <span className="text-xs break-words leading-relaxed">{enhancedContent.location}</span>
                 </div>
               )}
             </div>
@@ -216,7 +216,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             </div>
             PROFESSIONAL SUMMARY
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-normal">
             {enhancedContent.summary}
           </p>
         </div>
@@ -270,7 +270,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                               <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
                                 <span className="text-white text-xs font-bold">✓</span>
                               </div>
-                              <span className="leading-relaxed font-medium">{achievement}</span>
+                              <span className="leading-relaxed font-medium break-words whitespace-normal">{achievement}</span>
                             </li>
                           ))}
                         </ul>
@@ -284,7 +284,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                                   <div key={idx} className="flex items-start gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
                                          style={{ backgroundColor: selectedColorTheme.accent }}></div>
-                                    <span className="text-sm leading-relaxed">{responsibility}</span>
+                                    <span className="text-sm leading-relaxed break-words whitespace-normal">{responsibility}</span>
                                   </div>
                                 ))}
                              </div>
