@@ -488,6 +488,19 @@ async function generateCreativePdf(
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
+      // Check for page break before each experience
+      if (currentY > pageHeight - 80) {
+        doc.addPage();
+        currentY = 20;
+        
+        // Re-add section header on new page
+        doc.setTextColor(pr, pg, pb);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PROFESSIONAL EXPERIENCE', margin, currentY);
+        currentY += 12;
+      }
+      
       // Experience container background
       doc.setFillColor(pr, pg, pb, 0.05);
       const containerHeight = 30 + (exp.achievements?.length || 0) * 5;
@@ -524,7 +537,12 @@ async function generateCreativePdf(
 
       // Achievements with checkmarks
       if (exp.achievements && exp.achievements.length > 0) {
-        exp.achievements.slice(0, 4).forEach((achievement) => {
+        exp.achievements.forEach((achievement) => {
+          // Check for page break before adding achievement
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            currentY = 20;
+          }
           // Achievement bullet (matching preview)
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 7, currentY - 1, 2, 'F');
@@ -600,6 +618,7 @@ async function generateClassicPdf(
   });
 
   const pageWidth = 210;
+  const pageHeight = 297;
   const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   
@@ -679,6 +698,15 @@ async function generateClassicPdf(
     addSectionHeader('Professional Experience');
     
     resumeData.experience.forEach((exp) => {
+      // Check for page break before each experience
+      if (currentY > pageHeight - 60) {
+        doc.addPage();
+        currentY = 20;
+        
+        // Re-add section header on new page
+        addSectionHeader('Professional Experience');
+      }
+      
       // Job title
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);
