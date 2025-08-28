@@ -429,10 +429,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsGeneratingPreview(true);
     
     try {
-      console.log('🎨 Generating preview PDF for template:', selectedTemplate.layout);
-      console.log('🎨 Content preview - Name:', contentToUse?.name, 'Title:', contentToUse?.title);
-      console.log('🎨 Content preview - Experience items:', contentToUse?.experience?.length || 0);
-      console.log('🎨 Content preview - Skills:', contentToUse?.skills?.length || 0);
+  console.log('🎨 Generating preview PDF for template:', selectedTemplate.layout);
+  console.log('🎨 Content preview - Name:', contentToUse?.name, 'Title:', contentToUse?.title);
+  console.log('🎨 Content preview - Experience items:', contentToUse?.experience?.length || 0);
+  console.log('🎨 Content preview - Skills:', contentToUse?.skills?.length || 0);
+  console.log('🎨 First achievement sample:', contentToUse?.experience?.[0]?.achievements?.[0]);
       
       const resumeData = extractResumeDataFromEnhanced(contentToUse);
       console.log('🎨 Extracted resume data:', resumeData);

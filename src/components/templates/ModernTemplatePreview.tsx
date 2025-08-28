@@ -265,14 +265,17 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                       <div className="mt-4 page-break-avoid">
                         <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
                         <ul className="space-y-3 text-sm text-muted-foreground">
-                          {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="leading-relaxed font-medium break-words">{achievement}</span>
-                            </li>
-                          ))}
+                           {exp.achievements.map((achievement: string, achIndex: number) => (
+                             <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
+                               <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
+                                 <span className="text-white text-xs font-bold">✓</span>
+                               </div>
+                               <span className="leading-relaxed font-medium break-words" 
+                                     onLoad={() => console.log('Achievement text:', achievement)}>
+                                 {achievement}
+                               </span>
+                             </li>
+                           ))}
                         </ul>
                         
                          {/* Job-specific Core Responsibilities */}
