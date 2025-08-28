@@ -72,13 +72,15 @@ ${originalText}
 CRITICAL INSTRUCTIONS:
 1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
 2. Preserve EVERY job position, company, and time period from the original
-3. Expand descriptions to be more comprehensive and achievement-focused
-4. Add relevant industry keywords and ATS-friendly terms for each role
-5. Make each section detailed and professional with specific accomplishments
-6. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
-7. Use strong action verbs and quantifiable achievements where possible
-8. Return ONLY a valid JSON object with the exact structure shown below
-9. MANDATORY: Include ALL work experience entries from the original resume
+3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
+4. Expand descriptions to be more comprehensive and achievement-focused
+5. Add relevant industry keywords and ATS-friendly terms for each role
+6. Make each section detailed and professional with specific accomplishments
+7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
+8. Use strong action verbs and quantifiable achievements where possible
+9. Return ONLY a valid JSON object with the exact structure shown below
+10. MANDATORY: Include ALL work experience entries from the original resume
+11. MANDATORY: Include ALL skills and technical skills from the original resume
 
 REQUIRED JSON STRUCTURE:
 {
