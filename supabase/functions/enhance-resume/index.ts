@@ -70,26 +70,26 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer. Your job is to take the actual content from this resume and reword it to be more ATS-friendly with relevant keywords, while keeping all the real information intact.
+  const prompt = `You are an expert ATS resume optimizer. Take the original resume text and reword it to be ATS-friendly with industry keywords, while preserving all factual information. Each job role must have UNIQUE, role-specific content.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL INSTRUCTIONS:
-1. Use ONLY the actual information provided in the original resume text
-2. DO NOT create fictional jobs, companies, or achievements
-3. Reword the existing content to be more professional and ATS-friendly
-4. Add relevant industry keywords that match the actual roles and skills mentioned
-5. Keep all real job titles, company names, dates, and educational information exactly as provided
-6. Enhance the language but preserve the factual content
-7. Return ONLY a valid JSON object with the exact structure shown below
+CRITICAL RULES:
+1. Use ONLY actual information from the resume - no fictional content
+2. Each job role MUST have completely different, role-specific descriptions
+3. Analyze each actual role and create unique, relevant responsibilities
+4. Use different action verbs and terminology for each position
+5. Keep all real names, companies, dates, and credentials exactly as provided
+6. Focus on what each role actually did based on the resume content
 
-ENHANCEMENT APPROACH:
-- Take actual job responsibilities and rewrite them with stronger action verbs and industry terminology
-- Use the real achievements mentioned but present them more professionally
-- Add relevant keywords for each actual role without changing the core meaning
-- Keep all personal details (name, email, phone, location) exactly as they appear in the original
-- Preserve actual company names, job titles, and dates from the resume
+CONTENT DIVERSITY REQUIREMENTS:
+- Job #1: Focus on leadership and strategic responsibilities if mentioned
+- Job #2: Emphasize technical skills and project management aspects
+- Job #3: Highlight operational efficiency and process improvements
+- Use completely different vocabulary and focus areas for each role
+- NO generic statements that could apply to any job
+- Extract actual specifics from the resume text for each position
 
 REQUIRED JSON STRUCTURE:
 {
@@ -136,14 +136,13 @@ REQUIRED JSON STRUCTURE:
   ]
 }
 
-REWRITING GUIDELINES:
-- Transform "handled customer calls" → "Managed customer inquiries and provided technical support solutions"
-- Transform "worked with team" → "Collaborated with cross-functional teams to deliver project objectives"
-- Transform "used Excel" → "Utilized advanced Excel functions for data analysis and reporting"
-- Add industry keywords that naturally fit the actual role and responsibilities
-- Use stronger action verbs while keeping the core meaning intact
-- Present actual achievements with professional language and metrics if mentioned
-- Ensure all content is factually based on the original resume text`;
+REWRITING EXAMPLES BY ROLE TYPE:
+- Facilities Management: "Managed facilities operations" → "Orchestrated comprehensive facility management operations including space planning, vendor coordination, and regulatory compliance"
+- Corporate Real Estate: "Handled real estate" → "Executed strategic real estate portfolio optimization initiatives, lease negotiations, and property acquisitions"
+- Consulting: "Provided consulting" → "Delivered specialized consulting solutions for operational excellence and business transformation initiatives"
+- Each role should reflect its specific industry terminology and focus areas
+- Use actual metrics, technologies, or achievements mentioned in the resume
+- Make each role sound distinct and specialized based on the actual content`;
 
   console.log('Sending request to OpenAI with model: gpt-4o');
 
@@ -158,7 +157,7 @@ REWRITING GUIDELINES:
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Reword actual resume content to be ATS-friendly without creating fictional information. Always return valid JSON.' 
+          content: 'You are an expert resume optimizer. Create unique, role-specific content for each job by rewording actual resume information. Each position must have distinct responsibilities and achievements. Never repeat generic phrases across different roles. Always return valid JSON.' 
         },
         { 
           role: 'user', 
@@ -166,7 +165,7 @@ REWRITING GUIDELINES:
         }
       ],
       max_tokens: 4000,
-      temperature: 0.3, // Lower temperature for more consistent, factual rewording
+      temperature: 0.5, // Balanced temperature for creativity while maintaining accuracy
     }),
   });
 

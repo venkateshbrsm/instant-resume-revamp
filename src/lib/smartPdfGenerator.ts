@@ -69,9 +69,9 @@ export async function generateSmartPdf(
       console.log(`📐 Calculated optimal scale: ${optimalScale}`);
     }
 
-    // Configure html2pdf with proper page break handling
+    // Configure html2pdf with proper page break handling and text wrapping
     const opt = {
-      margin: [0, 20, 0, 20], // No top/bottom margins, keep left/right margins in mm
+      margin: [5, 15, 5, 15], // Small margins in mm for better content area
       filename: filename,
       image: { 
         type: 'jpeg', 
@@ -85,10 +85,36 @@ export async function generateSmartPdf(
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: Math.round(210 / optimalScale), // A4 width scaled
-        height: Math.round(297 / optimalScale), // A4 height scaled
-        windowWidth: Math.round(210 / optimalScale),
-        windowHeight: Math.round(297 / optimalScale),
+        width: Math.round(180 / optimalScale), // Reduced width to prevent text cutting (A4 width 210mm - margins 30mm = 180mm)
+        height: Math.round(287 / optimalScale), // Reduced height for margins (A4 height 297mm - margins 10mm = 287mm)
+        windowWidth: Math.round(180 / optimalScale),
+        windowHeight: Math.round(287 / optimalScale),
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc: Document) => {
+          // Force text wrapping and prevent overflow
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            * {
+              word-wrap: break-word !important;
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              max-width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            body {
+              max-width: 180mm !important;
+              margin: 0 !important;
+              padding: 5mm !important;
+            }
+            p, div, span, h1, h2, h3, h4, h5, h6, li {
+              word-wrap: break-word !important;
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              hyphens: auto !important;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       },
       jsPDF: { 
         unit: 'mm', 
