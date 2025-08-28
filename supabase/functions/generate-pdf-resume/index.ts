@@ -914,8 +914,6 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
         landscape: false,
         format: 'Letter',
         margin: '0.5in',
-        print_background: true,
-        prefer_css_page_size: false,
         wait_for: 1000,
         sandbox: false
       }),
