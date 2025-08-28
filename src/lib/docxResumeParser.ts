@@ -330,7 +330,7 @@ const parseJobBlock = (block: string[]): any => {
     }
   }
   
-  // Third pass: collect ALL bullet points and content - be maximally inclusive
+  // Third pass: collect only actual job responsibilities - be selective
   for (let i = 0; i < block.length; i++) {
     const line = block[i].trim();
     
@@ -342,34 +342,71 @@ const parseJobBlock = (block: string[]): any => {
       continue;
     }
     
-    // Skip dates only
-    if (hasDatePattern(line) && line.length < 30) {
+    // Skip date-only lines or lines that repeat company info
+    if (hasDatePattern(line) && line.length < 50) {
       continue;
     }
     
-    // Skip very generic company descriptions (but keep specific achievements)
+    // Skip lines that just repeat company name and dates
+    if (line.includes(company) && (hasDatePattern(line) || line.length < 80)) {
+      continue;
+    }
+    
+    // Skip company descriptions and generic info
     if (line.toLowerCase().includes('is a provider of') ||
         line.toLowerCase().includes('delivers global') ||
         line.toLowerCase().includes('tech-driven innovation') ||
         line.toLowerCase().includes('focused in solving') ||
         line.toLowerCase().includes('headquartered in') ||
-        line.toLowerCase().includes('subsidiary of')) {
+        line.toLowerCase().includes('subsidiary of') ||
+        line.toLowerCase().includes('privately owned') ||
+        line.toLowerCase().includes('multinational') ||
+        line.toLowerCase().includes('based in') ||
+        line.toLowerCase().includes('formed from') ||
+        line.toLowerCase().includes('platforms') ||
+        line.toLowerCase().includes('purchase of') ||
+        line.toLowerCase().includes('equity stake') ||
+        line.length > 150) { // Very long lines are usually descriptions
       continue;
     }
     
-    // Collect ALL content that could be responsibilities/achievements
-    // This includes bullet points, descriptions, achievements, etc.
-    if (line.length > 8 && 
+    // Skip lines with date ranges that don't match this job (likely from other experiences)
+    if (duration && hasDatePattern(line)) {
+      const lineHasValidDate = checkDateRelevance(line, duration);
+      if (!lineHasValidDate) {
+        continue;
+      }
+    }
+    
+    // Only collect actual job responsibilities and achievements
+    if (line.length > 15 && 
         !isCompanyName(line) &&
         !line.toLowerCase().includes('position:') &&
         !line.toLowerCase().includes('title:') &&
-        !line.toLowerCase().includes('location:')) {
+        !line.toLowerCase().includes('location:') &&
+        (line.match(/^[•\-*\d\.\s\u2022\u2023\u25E6]/) || // Explicit bullet points
+         line.toLowerCase().includes('manage') ||
+         line.toLowerCase().includes('lead') ||
+         line.toLowerCase().includes('develop') ||
+         line.toLowerCase().includes('handle') ||
+         line.toLowerCase().includes('coordinate') ||
+         line.toLowerCase().includes('implement') ||
+         line.toLowerCase().includes('execute') ||
+         line.toLowerCase().includes('responsibl') ||
+         line.toLowerCase().includes('accountabilit') ||
+         line.toLowerCase().includes('oversee') ||
+         line.toLowerCase().includes('direct') ||
+         line.toLowerCase().includes('establish') ||
+         line.toLowerCase().includes('achieve') ||
+         line.toLowerCase().includes('deliver') ||
+         line.toLowerCase().includes('complete') ||
+         line.toLowerCase().includes('successful'))) {
       
       // Clean the line of bullet markers
       let cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
       
       // Make the bullet point ATS-friendly
-      if (cleanedLine.length > 8) {
+      if (cleanedLine.length > 15) {
         const atsOptimizedLine = makeATSFriendly(cleanedLine);
         responsibilities.push(atsOptimizedLine);
       }
@@ -386,17 +423,32 @@ const parseJobBlock = (block: string[]): any => {
     return null;
   }
   
-  const result = {
-    company: hasValidCompany ? company : '',
-    position: hasValidPosition ? position : '',
-    duration: duration || '',
-    location: location || '',
-    responsibilities: responsibilities.filter(r => r.length > 10)
+  return {
+    company,
+    position,
+    duration,
+    responsibilities
   };
+}
+
+// Helper function to check if a date range is relevant to the current job
+function checkDateRelevance(line: string, jobDuration: string): boolean {
+  const dateMatches = line.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\b/g);
+  if (!dateMatches || dateMatches.length === 0) return true; // No dates found, assume relevant
   
-  console.log('Parsed job result:', result);
-  return result;
-};
+  const jobDates = jobDuration.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\b/g);
+  if (!jobDates || jobDates.length === 0) return true; // No job dates to compare
+  
+  // Extract years from both
+  const lineYears = dateMatches.map(date => parseInt(date.split(' ')[1]));
+  const jobYears = jobDates.map(date => parseInt(date.split(' ')[1]));
+  
+  const minJobYear = Math.min(...jobYears);
+  const maxJobYear = Math.max(...jobYears);
+  
+  // Check if any date in the line falls within the job period (with 1 year buffer)
+  return lineYears.some(year => year >= minJobYear - 1 && year <= maxJobYear + 1);
+}
 
 const isNewJobEntry = (line: string, nextLine: string, currentBlock: string[]): boolean => {
   // Don't start new job entry if current block is too small (less than 3 lines)
