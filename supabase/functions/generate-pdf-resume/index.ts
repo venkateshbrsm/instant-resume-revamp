@@ -892,6 +892,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
   const htmlContent = generateHTML();
   
   console.log(`Generating PDF with PDFShift for template: ${templateId}, theme: ${themeId}`);
+  console.log('Resume data structure:', JSON.stringify(resumeData, null, 2).substring(0, 1000) + '...');
   console.log('HTML content length:', htmlContent.length);
 
   const pdfShiftApiKey = Deno.env.get('PDFSHIFT_API_KEY');
@@ -1300,6 +1301,10 @@ serve(async (req) => {
     }
 
     console.log('Using provided enhanced content directly');
+    console.log('Resume data keys:', Object.keys(resumeData));
+    console.log('Experience entries:', resumeData.experience ? resumeData.experience.length : 0);
+    console.log('Education entries:', resumeData.education ? resumeData.education.length : 0);
+    console.log('Skills count:', resumeData.skills ? resumeData.skills.length : 0);
     
     // Generate PDF
     console.log('Generating PDF with PDFShift...');
