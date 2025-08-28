@@ -10,7 +10,7 @@ import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCir
 import { useToast } from "@/hooks/use-toast";
 import { extractContentFromFile, ExtractedContent } from "@/lib/fileExtractor";
 import { TemplateSelector } from "./TemplateSelector";
-import { EditablePreview } from "./EditablePreview";
+import { DocxResumePreview } from "./DocxResumePreview";
 import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
 import { enhanceResumeWithATS } from "@/lib/atsOptimizer";
@@ -99,19 +99,14 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-enhance after extracting and parsing content
-  useEffect(() => {
-    if (parsedData && !enhancedContent && !isEnhancing) {
-      enhanceResume();
-    }
-  }, [parsedData]);
+  // Don't auto-enhance - show raw content first
 
-  // Generate preview PDF when enhanced content or template/theme changes
+  // Generate preview PDF when parsed data or template/theme changes
   useEffect(() => {
-    if (enhancedContent && !isGeneratingPreview) {
+    if (parsedData && !isGeneratingPreview) {
       generatePreviewPdf();
     }
-  }, [enhancedContent, selectedTemplate, selectedColorTheme]);
+  }, [parsedData, selectedTemplate, selectedColorTheme]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -212,13 +207,13 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
   };
 
   const generatePreviewPdf = async () => {
-    if (!enhancedContent || isGeneratingPreview) return;
+    if (!parsedData || isGeneratingPreview) return;
     
     setIsGeneratingPreview(true);
     
     try {
-      const resumeData = extractResumeDataFromEnhanced(enhancedContent);
-      const pdfBlob = await generateVisualPdf(resumeData, {
+      // Use parsed data directly without enhancement
+      const pdfBlob = await generateVisualPdf(parsedData, {
         filename: 'preview.pdf',
         templateType: selectedTemplate.layout,
         colorTheme: {
@@ -244,8 +239,8 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
       
       if (session?.user) {
         // User is authenticated, save content for payment
-        if (enhancedContent) {
-          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(enhancedContent));
+        if (parsedData) {
+          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(parsedData));
           localStorage.setItem('docxExtractedTextForPayment', editedContent);
           localStorage.setItem('docxSelectedTemplateForPayment', JSON.stringify(selectedTemplate));
           localStorage.setItem('docxSelectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
@@ -260,9 +255,9 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
         if (editedContent) {
           sessionStorage.setItem('docxExtractedText', editedContent);
         }
-        if (enhancedContent) {
-          sessionStorage.setItem('docxEnhancedContent', JSON.stringify(enhancedContent));
-          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(enhancedContent));
+        if (parsedData) {
+          sessionStorage.setItem('docxEnhancedContent', JSON.stringify(parsedData));
+          localStorage.setItem('docxEnhancedContentForPayment', JSON.stringify(parsedData));
           localStorage.setItem('docxExtractedTextForPayment', editedContent);
           localStorage.setItem('docxSelectedTemplateForPayment', JSON.stringify(selectedTemplate));
           localStorage.setItem('docxSelectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
@@ -335,7 +330,7 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
           <div className="flex items-center gap-4">
             <Button
               onClick={handlePurchaseClick}
-              disabled={!enhancedContent || isCheckingAuth}
+              disabled={!parsedData || isCheckingAuth}
               className="flex items-center gap-2"
             >
               {isCheckingAuth ? (
@@ -343,41 +338,24 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
               ) : (
                 <CreditCard className="w-4 h-4" />
               )}
-              Purchase Enhanced Resume
+              Purchase Resume
             </Button>
           </div>
         </div>
 
-        {/* Enhancement Progress */}
-        {isEnhancing && (
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-                  <h3 className="text-lg font-semibold">Enhancing Your DOCX Resume</h3>
-                </div>
-                <Progress value={enhancementProgress} className="w-full max-w-md mx-auto" />
-                <p className="text-sm text-muted-foreground">
-                  Optimizing for ATS systems and professional presentation...
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <div className="max-w-4xl mx-auto">
-          {/* Enhanced Preview */}
+          {/* Resume Preview */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Enhanced Resume Preview
+                  <FileText className="w-5 h-5 text-primary" />
+                  Resume Preview
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {enhancedContent ? (
+                {parsedData ? (
                   <div>
                     {/* Template Selector */}
                     <div className="mb-4">
@@ -389,13 +367,13 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
                       />
                     </div>
                     
-                    {/* Enhanced Preview */}
+                    {/* Resume Preview */}
                     <div className="bg-background rounded-lg border p-4">
-                      <EditablePreview
-                        enhancedContent={enhancedContent}
+                      <DocxResumePreview
+                        parsedData={parsedData}
                         selectedTemplate={selectedTemplate}
                         selectedColorTheme={selectedColorTheme}
-                        onContentUpdate={setEnhancedContent}
+                        onContentUpdate={setParsedData}
                       />
                     </div>
                   </div>
@@ -403,7 +381,7 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      Enhancement in progress...
+                      Loading resume content...
                     </p>
                   </div>
                 )}
