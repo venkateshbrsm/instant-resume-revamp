@@ -342,64 +342,86 @@ const parseJobBlock = (block: string[]): any => {
   for (let i = 0; i < block.length; i++) {
     const line = block[i].trim();
     
-    // Skip company and position lines
-    if (line === company || line === position) {
+    // Skip company and position lines, but be more specific
+    if ((line === company && company.length > 0) || 
+        (line === position && position.length > 0) ||
+        (company && line.includes(company) && line.length < company.length + 20)) {
       continue;
     }
     
-    // Skip company descriptions and metadata
+    // Skip obvious company descriptions and metadata
     if (line.toLowerCase().includes('is a provider of') ||
         line.toLowerCase().includes('delivers global') ||
         line.toLowerCase().includes('tech-driven innovation') ||
         line.toLowerCase().includes('focused in solving') ||
         line.toLowerCase().includes('headquartered in') ||
         line.toLowerCase().includes('subsidiary of') ||
+        line.toLowerCase().includes('is a multinational') ||
+        line.toLowerCase().includes('company established') ||
         line.length > 200) {
       continue;
     }
     
-    // Collect explicit bullet points
+    // Collect explicit bullet points - ALWAYS include these
     if (line.match(/^[•\-*]/) || 
         line.match(/^\d+\./) || 
-        line.match(/^[\u2022\u2023\u25E6]/)) {
+        line.match(/^[\u2022\u2023\u25E6]/) ||
+        line.startsWith('- ') ||
+        line.startsWith('• ')) {
       const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
-      if (cleanedLine.length > 5) {
+      if (cleanedLine.length > 3) { // Reduced minimum length
+        console.log('Found bullet point for', company || position, ':', cleanedLine);
         responsibilities.push(cleanedLine);
       }
+      continue; // Skip other checks for bullet points
     }
+    
     // Collect descriptive sentences and achievements - be more inclusive
-    else if (line.length > 15 && 
-             !hasDatePattern(line) && 
-             !isCompanyName(line) &&
-             !line.toLowerCase().includes('position') &&
-             (line.toLowerCase().includes('manage') ||
-              line.toLowerCase().includes('lead') ||
-              line.toLowerCase().includes('develop') ||
-              line.toLowerCase().includes('handle') ||
-              line.toLowerCase().includes('direct') ||
-              line.toLowerCase().includes('establish') ||
-              line.toLowerCase().includes('enable') ||
-              line.toLowerCase().includes('work') ||
-              line.toLowerCase().includes('coordinate') ||
-              line.toLowerCase().includes('implement') ||
-              line.toLowerCase().includes('deliver') ||
-              line.toLowerCase().includes('execute') ||
-              line.toLowerCase().includes('negotiate') ||
-              line.toLowerCase().includes('oversee') ||
-              line.toLowerCase().includes('transform') ||
-              line.toLowerCase().includes('clear') ||
-              line.toLowerCase().includes('total') ||
-              line.toLowerCase().includes('space') ||
-              line.toLowerCase().includes('portfolio') ||
-              line.toLowerCase().includes('project') ||
-              line.toLowerCase().includes('responsibl') ||
-              line.toLowerCase().includes('accountabilit') ||
-              line.toLowerCase().includes('join') ||
-              line.toLowerCase().includes('transfer') ||
-              line.match(/^\s*[A-Z]/) || // Lines starting with capital letters (likely descriptions)
-              line.includes(':') || // Lines with colons (often descriptions)
-              line.match(/\d+[\s,]/) // Lines with numbers (metrics, sizes, etc.)
-             )) {
+    if (line.length > 10 &&  // Reduced minimum length from 15 to 10
+         !hasDatePattern(line) && 
+         !isCompanyName(line) &&
+         !line.toLowerCase().includes('position') &&
+         // Be more inclusive with responsibility patterns
+         (line.toLowerCase().includes('manage') ||
+          line.toLowerCase().includes('lead') ||
+          line.toLowerCase().includes('develop') ||
+          line.toLowerCase().includes('handle') ||
+          line.toLowerCase().includes('handl') ||
+          line.toLowerCase().includes('direct') ||
+          line.toLowerCase().includes('establish') ||
+          line.toLowerCase().includes('enable') ||
+          line.toLowerCase().includes('work') ||
+          line.toLowerCase().includes('coordinate') ||
+          line.toLowerCase().includes('implement') ||
+          line.toLowerCase().includes('deliver') ||
+          line.toLowerCase().includes('execute') ||
+          line.toLowerCase().includes('negotiate') ||
+          line.toLowerCase().includes('oversee') ||
+          line.toLowerCase().includes('transform') ||
+          line.toLowerCase().includes('clear') ||
+          line.toLowerCase().includes('total') ||
+          line.toLowerCase().includes('space') ||
+          line.toLowerCase().includes('portfolio') ||
+          line.toLowerCase().includes('project') ||
+          line.toLowerCase().includes('responsibl') ||
+          line.toLowerCase().includes('accountabilit') ||
+          line.toLowerCase().includes('join') ||
+          line.toLowerCase().includes('transfer') ||
+          line.toLowerCase().includes('allocat') ||
+          line.toLowerCase().includes('fulfil') ||
+          line.toLowerCase().includes('rationaliz') ||
+          line.toLowerCase().includes('support') ||
+          line.toLowerCase().includes('million') ||
+          line.toLowerCase().includes('employee') ||
+          line.toLowerCase().includes('capacity') ||
+          line.toLowerCase().includes('request') ||
+          line.match(/^\s*[A-Z]/) || // Lines starting with capital letters (likely descriptions)
+          line.includes(':') || // Lines with colons (often descriptions)
+          line.match(/\d+[\s,]/) || // Lines with numbers (metrics, sizes, etc.)
+          line.match(/\d+%/) || // Percentage achievements
+          line.match(/\d+\s*(sq\.?\s?ft|million|thousand|employees?|years?)/i) // Quantified achievements
+         )) {
+      console.log('Found responsibility for', company || position, ':', line);
       responsibilities.push(line);
     }
   }
