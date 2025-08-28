@@ -6,6 +6,7 @@ export interface BasicResumeData {
   phone: string;
   location: string;
   summary: string;
+  totalExperience: number;
   experience: Array<{
     company: string;
     position: string;
@@ -45,6 +46,7 @@ export const parseBasicResumeData = (text: string): BasicResumeData => {
     phone: '',
     location: '',
     summary: '',
+    totalExperience: 0,
     experience: [],
     education: [],
     skills: [],
@@ -67,6 +69,9 @@ export const parseBasicResumeData = (text: string): BasicResumeData => {
   result.certifications = extractCertifications(lines);
   result.projects = extractProjects(lines);
   result.previousEngagements = extractPreviousEngagements(lines);
+  
+  // Calculate total experience
+  result.totalExperience = calculateTotalExperienceFromData(result.experience);
   
   console.log('Parsed resume data:', result);
   return result;
@@ -998,4 +1003,62 @@ const parsePreviousEngagementLine = (line: string): any => {
   }
   
   return null;
+};
+
+const calculateTotalExperienceFromData = (experience: any[]): number => {
+  if (!experience || experience.length === 0) return 0;
+  
+  let totalMonths = 0;
+  
+  experience.forEach((exp) => {
+    if (!exp.duration) return;
+    
+    const duration = exp.duration.toLowerCase();
+    
+    // Parse different date formats
+    const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                       'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    
+    // Extract years and months from duration string
+    const yearMatches = duration.match(/\b\d{4}\b/g);
+    const monthMatches = duration.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/g);
+    
+    if (yearMatches && yearMatches.length >= 2) {
+      // Format: "Jan 2020 - Dec 2022" or "2020 - 2022"
+      const startYear = parseInt(yearMatches[0]);
+      const endYear = parseInt(yearMatches[1]);
+      
+      let startMonth = 0;
+      let endMonth = 11; // Default to December
+      
+      if (monthMatches && monthMatches.length >= 2) {
+        startMonth = monthNames.indexOf(monthMatches[0].substring(0, 3));
+        endMonth = monthNames.indexOf(monthMatches[1].substring(0, 3));
+      } else if (monthMatches && monthMatches.length === 1) {
+        startMonth = monthNames.indexOf(monthMatches[0].substring(0, 3));
+      }
+      
+      const totalJobMonths = (endYear - startYear) * 12 + (endMonth - startMonth) + 1;
+      totalMonths += totalJobMonths;
+      
+    } else if (yearMatches && yearMatches.length === 1) {
+      // Format: "2022 - Present" or similar
+      const startYear = parseInt(yearMatches[0]);
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth();
+      
+      let startMonth = 0;
+      if (monthMatches && monthMatches.length >= 1) {
+        startMonth = monthNames.indexOf(monthMatches[0].substring(0, 3));
+      }
+      
+      if (duration.includes('present') || duration.includes('current')) {
+        const totalJobMonths = (currentYear - startYear) * 12 + (currentMonth - startMonth) + 1;
+        totalMonths += totalJobMonths;
+      }
+    }
+  });
+  
+  // Convert months to years (rounded to 1 decimal place)
+  return Math.round((totalMonths / 12) * 10) / 10;
 };
