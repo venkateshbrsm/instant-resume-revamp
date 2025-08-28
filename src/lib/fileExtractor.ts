@@ -16,7 +16,7 @@ export interface ExtractedContent {
 export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
   const fileType = getFileType(file);
   
-  console.log('Starting enhanced file extraction:', {
+  console.log('🚀 [EXTRACTION] Starting enhanced file extraction:', {
     name: file.name,
     type: file.type,
     size: file.size,
@@ -32,41 +32,58 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
     const photoExtractionPromise = extractPhotosFromFile(file);
 
     if (fileType === 'pdf') {
+      console.log('🔍 [EXTRACTION] Processing as PDF file');
       // For PDFs, extract text and keep original file for visual preview
       text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
     } else if (fileType === 'docx') {
+      console.log('🔍 [EXTRACTION] Processing as DOCX file');
       // For DOCX files, extract text using enhanced server-side processing
       text = await extractTextFromDOCX(file);
       // Create blob URL for DOCX preview (browsers can often display DOCX files)
       pdfUrl = URL.createObjectURL(file);
     } else {
+      console.log('🔍 [EXTRACTION] Processing as text file');
       // For text files, just extract text
       text = await file.text();
     }
+
+    console.log('✅ [EXTRACTION] Text extraction completed, length:', text?.length || 0);
+    console.log('🔍 [EXTRACTION] Text preview (first 200 chars):', text?.substring(0, 200));
 
     // Process photos
     try {
       const photoResult = await photoExtractionPromise;
       if (photoResult.profilePhoto) {
-        console.log('Profile photo found, optimizing...');
+        console.log('📷 [EXTRACTION] Profile photo found, optimizing...');
         const optimizedPhoto = await optimizePhoto(photoResult.profilePhoto);
         profilePhotoUrl = URL.createObjectURL(optimizedPhoto);
-        console.log('Profile photo processed successfully');
+        console.log('✅ [EXTRACTION] Profile photo processed successfully');
+      } else {
+        console.log('📷 [EXTRACTION] No profile photo found');
       }
     } catch (error) {
-      console.warn('Photo extraction failed:', error);
+      console.warn('⚠️ [EXTRACTION] Photo extraction failed:', error);
     }
 
-    return {
+    const result = {
       text,
       pdfUrl,
       profilePhotoUrl,
       originalFile: file,
       fileType
     };
+    
+    console.log('🎉 [EXTRACTION] Complete extraction result:', {
+      textLength: result.text?.length || 0,
+      hasPdfUrl: !!result.pdfUrl,
+      hasProfilePhoto: !!result.profilePhotoUrl,
+      fileType: result.fileType
+    });
+
+    return result;
   } catch (error) {
-    console.error('Error extracting content from file:', error);
+    console.error('💥 [EXTRACTION] Error extracting content from file:', error);
     throw error;
   }
 };
@@ -197,39 +214,44 @@ export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
 };
 
 const extractTextFromDOCX = async (file: File): Promise<string> => {
-  console.log('Extracting text from DOCX using enhanced server-side processing:', file.name, 'Size:', file.size);
+  console.log('🔍 [DOCX] Starting DOCX extraction:', file.name, 'Size:', file.size, 'Type:', file.type);
   
   try {
     // Use server-side edge function for robust DOCX text extraction
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Sending DOCX to server-side processor...');
+    console.log('🔍 [DOCX] Sending DOCX to server-side processor...');
 
     const { data, error } = await supabase.functions.invoke('extract-docx', {
       body: formData,
     });
     
+    console.log('🔍 [DOCX] Edge function response:', { data, error });
+    
     if (error) {
-      console.error('DOCX extraction request failed:', error);
+      console.error('❌ [DOCX] Edge function request failed:', error);
       throw new Error(`DOCX extraction failed: ${error.message}`);
     }
     
     if (!data) {
-      console.error('DOCX extraction request failed: No data returned');
+      console.error('❌ [DOCX] No data returned from edge function');
       throw new Error('DOCX extraction failed: No data returned');
     }
 
+    console.log('🔍 [DOCX] Edge function data structure:', JSON.stringify(data, null, 2));
+
     if (!data.success) {
-      console.error('DOCX extraction failed:', data.error);
+      console.error('❌ [DOCX] Edge function reported failure:', data.error);
       throw new Error(`DOCX extraction failed: ${data.error}`);
     }
 
-    console.log('DOCX extraction completed successfully');
+    console.log('✅ [DOCX] Extraction completed successfully, text length:', data.extractedText?.length || 0);
+    console.log('🔍 [DOCX] First 200 chars:', data.extractedText?.substring(0, 200));
     return data.extractedText || 'Text extracted successfully from DOCX';
 
   } catch (error) {
-    console.error('DOCX processing failed:', error);
+    console.error('💥 [DOCX] Processing failed:', error);
     
     return `📄 DOCX Resume: ${file.name}
 
@@ -241,6 +263,8 @@ File Details:
 ❌ DOCX Processing Error
 
 Unable to process this DOCX file with server-side extraction.
+
+Error: ${error.message}
 
 💡 Try instead:
 • Convert to PDF format from your word processor
