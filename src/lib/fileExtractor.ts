@@ -223,35 +223,53 @@ const extractTextFromDOCX = async (file: File): Promise<string> => {
 
     console.log('🔍 [DOCX] Sending DOCX to server-side processor...');
 
-    const { data, error } = await supabase.functions.invoke('extract-docx', {
+    const response = await supabase.functions.invoke('extract-docx', {
       body: formData,
     });
     
-    console.log('🔍 [DOCX] Edge function response:', { data, error });
+    console.log('🔍 [DOCX] Raw response from supabase.functions.invoke:', response);
+    console.log('🔍 [DOCX] Response data:', response.data);
+    console.log('🔍 [DOCX] Response error:', response.error);
     
-    if (error) {
-      console.error('❌ [DOCX] Edge function request failed:', error);
-      throw new Error(`DOCX extraction failed: ${error.message}`);
+    if (response.error) {
+      console.error('❌ [DOCX] Edge function request failed:', response.error);
+      throw new Error(`DOCX extraction failed: ${response.error.message}`);
     }
     
-    if (!data) {
+    if (!response.data) {
       console.error('❌ [DOCX] No data returned from edge function');
       throw new Error('DOCX extraction failed: No data returned');
     }
 
-    console.log('🔍 [DOCX] Edge function data structure:', JSON.stringify(data, null, 2));
+    const data = response.data;
+    console.log('🔍 [DOCX] Processing response data:', {
+      hasSuccess: 'success' in data,
+      success: data.success,
+      hasExtractedText: 'extractedText' in data,
+      extractedTextType: typeof data.extractedText,
+      extractedTextLength: data.extractedText?.length || 0,
+      keys: Object.keys(data)
+    });
 
     if (!data.success) {
       console.error('❌ [DOCX] Edge function reported failure:', data.error);
-      throw new Error(`DOCX extraction failed: ${data.error}`);
+      throw new Error(`DOCX extraction failed: ${data.error || 'Unknown error'}`);
     }
 
-    console.log('✅ [DOCX] Extraction completed successfully, text length:', data.extractedText?.length || 0);
-    console.log('🔍 [DOCX] First 200 chars:', data.extractedText?.substring(0, 200));
-    return data.extractedText || 'Text extracted successfully from DOCX';
+    const extractedText = data.extractedText || '';
+    console.log('✅ [DOCX] Extraction completed successfully, text length:', extractedText.length);
+    
+    if (extractedText.length < 100) {
+      console.warn('⚠️ [DOCX] Extracted text is very short:', extractedText);
+    } else {
+      console.log('🔍 [DOCX] First 200 chars:', extractedText.substring(0, 200));
+    }
+    
+    return extractedText || 'Text extracted successfully from DOCX';
 
   } catch (error) {
     console.error('💥 [DOCX] Processing failed:', error);
+    console.error('💥 [DOCX] Error stack:', error.stack);
     
     return `📄 DOCX Resume: ${file.name}
 
