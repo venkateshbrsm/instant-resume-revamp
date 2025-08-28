@@ -461,8 +461,59 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
     // Remove bullet points and clean up
     enhanced = enhanced.replace(/^[•\-▪\*]\s*/, '').trim();
     
-    // Skip if too short
-    if (enhanced.length < 10) return enhanced;
+    // Skip if too short or if it looks like company info/description
+    if (enhanced.length < 15) return enhanced;
+    
+    // Skip if it looks like a company name, location, or general description
+    const isCompanyInfo = (
+      enhanced.toLowerCase().includes('pvt ltd') ||
+      enhanced.toLowerCase().includes('inc.') ||
+      enhanced.toLowerCase().includes('corp') ||
+      enhanced.toLowerCase().includes('company') ||
+      enhanced.toLowerCase().includes('organization') ||
+      enhanced.toLowerCase().includes('founded in') ||
+      enhanced.toLowerCase().includes('based in') ||
+      enhanced.toLowerCase().includes('provider of') ||
+      enhanced.toLowerCase().includes('is a ') ||
+      enhanced.toLowerCase().includes('specializes in') ||
+      enhanced.match(/^\w+,\s*\w+,?\s*\d{4}/) || // Location and date pattern
+      enhanced.match(/^\d{4}\s*[-–—]\s*\d{4}/) // Date range at start
+    );
+    
+    if (isCompanyInfo) {
+      return enhanced; // Return as-is for company descriptions
+    }
+    
+    // Only enhance if it looks like an actual responsibility/achievement
+    const isResponsibility = (
+      enhanced.toLowerCase().includes('responsible') ||
+      enhanced.toLowerCase().includes('managed') ||
+      enhanced.toLowerCase().includes('developed') ||
+      enhanced.toLowerCase().includes('implemented') ||
+      enhanced.toLowerCase().includes('worked') ||
+      enhanced.toLowerCase().includes('led') ||
+      enhanced.toLowerCase().includes('handled') ||
+      enhanced.toLowerCase().includes('created') ||
+      enhanced.toLowerCase().includes('improved') ||
+      enhanced.toLowerCase().includes('achieved') ||
+      enhanced.toLowerCase().includes('coordinated') ||
+      enhanced.toLowerCase().includes('oversaw') ||
+      enhanced.toLowerCase().includes('supervised') ||
+      enhanced.toLowerCase().includes('collaborated') ||
+      enhanced.toLowerCase().includes('assisted') ||
+      enhanced.toLowerCase().includes('helped') ||
+      enhanced.toLowerCase().includes('supported') ||
+      enhanced.toLowerCase().includes('maintained') ||
+      enhanced.toLowerCase().includes('ensured') ||
+      enhanced.toLowerCase().includes('performed') ||
+      enhanced.toLowerCase().includes('executed') ||
+      enhanced.toLowerCase().includes('delivered') ||
+      enhanced.match(/^(conducted|organized|planned|analyzed|designed|built|established|initiated|launched)/i)
+    );
+    
+    if (!isResponsibility) {
+      return enhanced; // Return as-is if not clearly a responsibility
+    }
     
     // Convert to sentence case if all caps
     if (enhanced === enhanced.toUpperCase()) {
@@ -476,56 +527,54 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
     );
     
     if (!startsWithActionVerb) {
-      // Try to identify the main action and replace with a stronger verb
+      // Replace weak starts with stronger action verbs
       if (enhanced.toLowerCase().startsWith('responsible for')) {
-        const randomVerb = actionVerbs[Math.floor(Math.random() * actionVerbs.length)];
+        const verbs = ['Managed', 'Oversaw', 'Led', 'Coordinated', 'Supervised'];
+        const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
         enhanced = enhanced.replace(/^responsible for\s*/i, `${randomVerb} `);
       } else if (enhanced.toLowerCase().startsWith('worked on')) {
         enhanced = enhanced.replace(/^worked on\s*/i, 'Collaborated on ');
+      } else if (enhanced.toLowerCase().startsWith('helped with') || enhanced.toLowerCase().startsWith('helped in')) {
+        enhanced = enhanced.replace(/^helped (with|in)\s*/i, 'Facilitated ');  
       } else if (enhanced.toLowerCase().startsWith('helped')) {
-        enhanced = enhanced.replace(/^helped\s*/i, 'Facilitated ');
+        enhanced = enhanced.replace(/^helped\s*/i, 'Assisted in ');
       } else if (enhanced.toLowerCase().startsWith('involved in')) {
         enhanced = enhanced.replace(/^involved in\s*/i, 'Participated in ');
       } else if (enhanced.toLowerCase().startsWith('handled')) {
         enhanced = enhanced.replace(/^handled\s*/i, 'Managed ');
-      } else if (enhanced.toLowerCase().startsWith('did')) {
-        enhanced = enhanced.replace(/^did\s*/i, 'Executed ');
-      } else if (enhanced.toLowerCase().startsWith('made')) {
-        enhanced = enhanced.replace(/^made\s*/i, 'Created ');
+      } else if (enhanced.toLowerCase().startsWith('performed')) {
+        enhanced = enhanced.replace(/^performed\s*/i, 'Executed ');
       } else if (enhanced.toLowerCase().startsWith('took care of')) {
         enhanced = enhanced.replace(/^took care of\s*/i, 'Oversaw ');
       } else if (enhanced.toLowerCase().startsWith('was in charge of')) {
         enhanced = enhanced.replace(/^was in charge of\s*/i, 'Led ');
-      } else {
-        // If no clear pattern, prepend with an appropriate action verb
-        const randomVerb = actionVerbs[Math.floor(Math.random() * actionVerbs.length)];
-        enhanced = `${randomVerb} ${enhanced.toLowerCase()}`;
+      } else if (enhanced.toLowerCase().startsWith('ensured')) {
+        // Keep "ensured" as it's already a good action verb
+      } else if (enhanced.toLowerCase().startsWith('maintained')) {
+        // Keep "maintained" as it's already a good action verb  
+      } else if (enhanced.toLowerCase().startsWith('supported')) {
+        enhanced = enhanced.replace(/^supported\s*/i, 'Provided support for ');
       }
     }
     
     // Ensure proper capitalization
     enhanced = enhanced.charAt(0).toUpperCase() + enhanced.slice(1);
     
-    // Add professional keywords and improvements
+    // Add professional terminology improvements (but keep it natural)
     enhanced = enhanced
       .replace(/\bcustomers?\b/gi, 'clients')
-      .replace(/\bteam members?\b/gi, 'cross-functional teams')
-      .replace(/\bprojects?\b/gi, 'strategic initiatives')
-      .replace(/\bsystems?\b/gi, 'enterprise systems')
-      .replace(/\bprocesses?\b/gi, 'operational processes')
-      .replace(/\bsolutions?\b/gi, 'innovative solutions')
-      .replace(/\bgoals?\b/gi, 'strategic objectives')
-      .replace(/\btasks?\b/gi, 'deliverables')
-      .replace(/\bissues?\b/gi, 'challenges')
-      .replace(/\bproblems?\b/gi, 'complex challenges');
+      .replace(/\bfix(ed|ing)?\b/gi, 'resolve')
+      .replace(/\bproblems?\b/gi, 'challenges')
+      .replace(/\bissues?\b/gi, 'challenges');
     
     // Ensure it ends properly
-    if (!enhanced.endsWith('.') && !enhanced.endsWith(';')) {
+    if (!enhanced.endsWith('.') && !enhanced.endsWith(';') && enhanced.length > 20) {
       enhanced += '.';
     }
     
     return enhanced;
   });
 
-  return enhancedResponsibilities.filter(resp => resp.length > 10);
+  // Filter out very short or empty responsibilities
+  return enhancedResponsibilities.filter(resp => resp && resp.trim().length > 10);
 }
