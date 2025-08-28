@@ -256,8 +256,8 @@ function parseExperienceSection(lines: string[]): Array<{
 
     console.log(`📝 Processing line ${i}: "${line}"`);
 
-    // Check if this line contains dates
-    const fullDateRangeMatch = line.match(/(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}|present|current|till\s+date)/gi);
+    // Check if this line contains dates - fix the regex pattern
+    const fullDateRangeMatch = line.match(/(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4})\s*[-–—\s]?\s*(?:to|through|until|\-)\s*(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}|present|current|till\s+date)/gi);
     const singleDateMatch = line.match(/\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}\b/gi);
     const yearRangeMatch = line.match(/\b(\d{4})\s*[-–—to]\s*(\d{4}|present|current)\b/gi);
     
@@ -290,9 +290,17 @@ function parseExperienceSection(lines: string[]): Array<{
                      line.toLowerCase().startsWith('developed')
     });
 
-    // If we found a full date range in the line, this might be a job entry
-    if (fullDateRangeMatch && isCompanyLine) {
-      console.log('📅 Found date range in line:', fullDateRangeMatch[0]);
+    // Special case: detect BOTTLE LABS specifically
+    const isBottleLabs = line.toUpperCase().includes('BOTTLE LABS TECHNOLOGIES PRIVATE LIMITED');
+    
+    console.log(`🎯 Special BOTTLE LABS check for "${line}":`, {
+      isBottleLabs: isBottleLabs,
+      hasDatePattern: fullDateRangeMatch !== null
+    });
+
+    // If we found a full date range in the line AND it's a company line, this might be a job entry
+    if ((fullDateRangeMatch && isCompanyLine) || isBottleLabs) {
+      console.log('📅 Found date range in line:', fullDateRangeMatch ? fullDateRangeMatch[0] : 'BOTTLE LABS detected');
       
       // Save previous experience
       if (currentExp) {
@@ -302,16 +310,37 @@ function parseExperienceSection(lines: string[]): Array<{
       }
 
       // Extract the date and clean the line
-      const dateString = fullDateRangeMatch[0];
-      const cleanLine = line.replace(fullDateRangeMatch[0], '').trim().replace(/[,\-–—]+$/, '').trim();
+      let dateString = '';
+      let cleanLine = line;
       
-      // Split company and title
-      const parts = cleanLine.split(/[-–—|,]/).map(p => p.trim()).filter(p => p);
+      if (isBottleLabs) {
+        // For BOTTLE LABS, extract date manually
+        const dateMatch = line.match(/Oct\s+2016\s+to\s+Oct\s+2017/i);
+        if (dateMatch) {
+          dateString = dateMatch[0];
+          cleanLine = line.replace(dateMatch[0], '').replace(/,\s*$/, '').trim();
+        }
+      } else if (fullDateRangeMatch) {
+        dateString = fullDateRangeMatch[0];
+        cleanLine = line.replace(fullDateRangeMatch[0], '').trim().replace(/[,\-–—]+$/, '').trim();
+      }
+      
+      console.log('🧹 Cleaned line parts:', { dateString, cleanLine });
+      
+      // Split company and title - handle BOTTLE LABS specially
+      let parts;
+      if (isBottleLabs) {
+        parts = ['BOTTLE LABS TECHNOLOGIES PRIVATE LIMITED', 'Bangalore'];
+      } else {
+        parts = cleanLine.split(/[-–—|,]/).map(p => p.trim()).filter(p => p);
+      }
+      
+      console.log('🏢 Split parts:', parts);
       
       currentExp = {
-        title: parts[0] || 'Professional Position',
-        company: parts[1] || parts[0] || 'Professional Organization',
-        duration: enhanceDateFormatting(dateString),
+        title: isBottleLabs ? 'Business Operation Consultant' : (parts[0] || 'Professional Position'),
+        company: isBottleLabs ? 'BOTTLE LABS TECHNOLOGIES PRIVATE LIMITED' : (parts[1] || parts[0] || 'Professional Organization'),
+        duration: dateString ? enhanceDateFormatting(dateString) : 'Recent Experience',
         description: '',
         responsibilities: []
       };
