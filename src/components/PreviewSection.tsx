@@ -692,6 +692,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                         <PDFViewer 
                                           file={previewPdfBlob} 
                                           className="h-full w-full"
+                                          isFullscreen={true}
                                         />
                                       ) : (
                                         <div className="flex items-center justify-center h-full">

@@ -6,9 +6,10 @@ import { cn } from '@/lib/utils';
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
   className?: string;
+  isFullscreen?: boolean; // Add prop to detect fullscreen mode
 }
 
-export const PDFViewer = ({ file, className }: PDFViewerProps) => {
+export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerProps) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,17 +94,22 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
 
   return (
     <div className={cn("w-full", className)}>
-      {/* Controls */}
-      <div className="flex items-center justify-center mb-4 p-3 bg-muted/50 rounded-lg">
-        <span className="text-sm text-muted-foreground">
-          📄 PDF Preview
-        </span>
-      </div>
+      {/* Controls - Only show if not fullscreen */}
+      {!isFullscreen && (
+        <div className="flex items-center justify-center mb-4 p-3 bg-muted/50 rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            📄 PDF Preview
+          </span>
+        </div>
+      )}
 
       {/* PDF Display */}
       <div 
         className="border rounded-lg bg-background relative"
-        style={{ 
+        style={isFullscreen ? { 
+          height: '100%',
+          width: '100%'
+        } : { 
           height: '70vh',
           minHeight: '500px',
           maxHeight: '800px'
@@ -111,7 +117,7 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
       >
         {pdfUrl ? (
           <iframe
-            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=fit`}
             className="w-full h-full rounded-lg"
             title="PDF Preview"
             style={{ border: 'none' }}
