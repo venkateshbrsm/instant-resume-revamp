@@ -382,19 +382,19 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
               <div class="company">${exp.company || 'Company Name'}</div>
               <div class="date">${exp.duration || exp.dates || 'Duration'}</div>
               ${exp.description ? `<div class="description">${exp.description}</div>` : ''}
-              ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
-                <div class="core-responsibilities-section">
-                  <h4 class="section-subtitle">Core Responsibilities:</h4>
-                  <ul class="responsibilities-list">
-                    ${exp.core_responsibilities.map((responsibility: string) => `<li>${responsibility}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : ''}
               ${exp.achievements && exp.achievements.length > 0 ? `
                 <div class="achievements-section">
                   <h4 class="section-subtitle">Key Achievements & Impact:</h4>
                   <ul class="achievements-list">
                     ${exp.achievements.map((achievement: string) => `<li>${achievement}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+              ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+                <div class="core-responsibilities-section" style="margin-top: 15px; padding: 15px; background: ${theme.accent}10; border-radius: 8px;">
+                  <h4 class="section-subtitle" style="margin-bottom: 10px;">Core Responsibilities:</h4>
+                  <ul class="responsibilities-list">
+                    ${exp.core_responsibilities.map((responsibility: string) => `<li style="margin-bottom: 6px; color: #555;">${responsibility}</li>`).join('')}
                   </ul>
                 </div>
               ` : ''}
