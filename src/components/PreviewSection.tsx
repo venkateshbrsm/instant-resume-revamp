@@ -848,17 +848,42 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          This is your resume content as extracted directly from your uploaded file, formatted with the selected template.
                        </p>
                        
-                       {/* Basic Resume Content */}
-                       <div 
-                         ref={resumeContentRef}
-                         className="bg-white rounded-lg p-4 border shadow-sm"
-                       >
-                         <BasicResumePreview
-                           resumeData={basicResumeData}
-                           selectedColorTheme={selectedColorTheme}
-                           templateLayout={selectedTemplate.layout}
-                         />
-                       </div>
+                        {/* Basic Resume Content */}
+                        <div 
+                          ref={resumeContentRef}
+                          className="bg-white rounded-lg p-4 border shadow-sm"
+                        >
+                          <BasicResumePreview
+                            resumeData={basicResumeData}
+                            selectedColorTheme={selectedColorTheme}
+                            templateLayout={selectedTemplate.layout}
+                          />
+                        </div>
+
+                        {/* Manual Enhancement Trigger */}
+                        <div className="mt-6 text-center">
+                          <Button 
+                            onClick={enhanceResume}
+                            disabled={isEnhancing || !extractedText || extractedText.length < 50}
+                            size="lg"
+                            className="w-full sm:w-auto"
+                          >
+                            {isEnhancing ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Enhancing with AI... {enhancementProgress}%
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Enhance with AI
+                              </>
+                            )}
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Click to enhance your resume with AI-powered improvements
+                          </p>
+                        </div>
                      </div>
                    </div>
                  </div>
