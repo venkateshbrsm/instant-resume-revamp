@@ -135,9 +135,6 @@ export const EditablePreview = ({
                 <>
                   {renderEditableField2('Job Title', item.title, field, 'title', false, index)}
                   {renderEditableField2('Company', item.company, field, 'company', false, index)}
-                  {renderEditableField2('Location', item.location, field, 'location', false, index)}
-                  {renderEditableField2('Duration', item.duration, field, 'duration', false, index)}
-                  {renderEditableField2('Description', item.description, field, 'description', true, index)}
                   {item.achievements && (
                     <div className="mb-3">
                       <label className="text-sm font-medium text-muted-foreground">Achievements</label>
@@ -270,12 +267,6 @@ export const EditablePreview = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            {renderEditableField('Email', editableData.contact?.email, 'contact', 'email')}
-            {renderEditableField('Phone', editableData.contact?.phone, 'contact', 'phone')}
-            {renderEditableField('Location', editableData.contact?.location, 'contact', 'location')}
-            {renderEditableField('LinkedIn', editableData.contact?.linkedin, 'contact', 'linkedin')}
-          </div>
         </div>
 
         {/* Professional Summary */}
