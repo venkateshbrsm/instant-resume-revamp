@@ -227,12 +227,12 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                  CERTIFICATIONS
                </h2>
                <div className="space-y-2">
-                 {enhancedContent.certifications.map((certification: string, index: number) => (
-                   <div key={index} className="text-sm text-muted-foreground flex items-start page-break-avoid">
-                     <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
-                     <span className="font-medium">{certification}</span>
-                   </div>
-                 ))}
+                  {enhancedContent.certifications.map((certification: string, index: number) => (
+                    <div key={index} className="text-sm text-muted-foreground flex items-start page-break-avoid overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                      <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                      <span className="font-medium break-words whitespace-normal">{certification}</span>
+                    </div>
+                  ))}
                </div>
              </div>
            )}
@@ -250,12 +250,12 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                  LANGUAGES
                </h2>
                <div className="space-y-2">
-                 {enhancedContent.languages.map((language: string, index: number) => (
-                   <div key={index} className="text-sm text-muted-foreground flex items-start page-break-avoid">
-                     <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
-                     <span className="font-medium">{language}</span>
-                   </div>
-                 ))}
+                  {enhancedContent.languages.map((language: string, index: number) => (
+                    <div key={index} className="text-sm text-muted-foreground flex items-start page-break-avoid overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                      <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                      <span className="font-medium break-words whitespace-normal">{language}</span>
+                    </div>
+                  ))}
                </div>
              </div>
            )}

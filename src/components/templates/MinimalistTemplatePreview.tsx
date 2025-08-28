@@ -186,13 +186,13 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </h2>
             
             <div className="space-y-2">
-              {enhancedContent.certifications.map((certification: string, index: number) => (
-                <div key={index} className="flex items-start gap-2 text-sm">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
-                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                  <span className="font-light text-muted-foreground">{certification}</span>
-                </div>
-              ))}
+               {enhancedContent.certifications.map((certification: string, index: number) => (
+                 <div key={index} className="flex items-start gap-2 text-sm overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                         style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                   <span className="font-light text-muted-foreground break-words whitespace-normal">{certification}</span>
+                 </div>
+               ))}
             </div>
           </div>
         )}
@@ -205,13 +205,13 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             </h2>
             
             <div className="space-y-2">
-              {enhancedContent.languages.map((language: string, index: number) => (
-                <div key={index} className="flex items-start gap-2 text-sm">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
-                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                  <span className="font-light text-muted-foreground">{language}</span>
-                </div>
-              ))}
+               {enhancedContent.languages.map((language: string, index: number) => (
+                 <div key={index} className="flex items-start gap-2 text-sm overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                         style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                   <span className="font-light text-muted-foreground break-words whitespace-normal">{language}</span>
+                 </div>
+               ))}
             </div>
           </div>
         )}

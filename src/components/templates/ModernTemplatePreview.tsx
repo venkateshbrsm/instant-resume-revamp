@@ -140,11 +140,11 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Language Proficiency</h3>
               </div>
               <div className="space-y-3 text-xs opacity-90">
-                {enhancedContent.languages.map((language: string, index: number) => (
-                  <div key={index} className="flex justify-between items-center page-break-avoid">
-                    <span className="font-medium">{language}</span>
-                  </div>
-                ))}
+                 {enhancedContent.languages.map((language: string, index: number) => (
+                   <div key={index} className="flex justify-between items-center page-break-avoid overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <span className="font-medium break-words whitespace-normal">{language}</span>
+                   </div>
+                 ))}
               </div>
             </div>
           )}
@@ -159,9 +159,9 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <h3 className="font-semibold text-sm tracking-wide uppercase">Certifications</h3>
               </div>
               <div className="space-y-2 text-xs opacity-90">
-                {enhancedContent.certifications.map((certification: string, index: number) => (
-                  <div key={index} className="font-medium page-break-avoid">• {certification}</div>
-                ))}
+                 {enhancedContent.certifications.map((certification: string, index: number) => (
+                   <div key={index} className="font-medium page-break-avoid overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>• {certification}</div>
+                 ))}
               </div>
             </div>
           )}
@@ -248,17 +248,19 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         <h3 className="font-bold text-base md:text-lg text-foreground">{exp.title}</h3>
                         <p className="font-medium text-sm md:text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs px-2 py-1 self-start" 
-                        style={{ 
-                          backgroundColor: `${selectedColorTheme.primary}10`, 
-                          color: selectedColorTheme.primary,
-                          borderColor: `${selectedColorTheme.primary}20`
-                        }}
-                      >
-                        {exp.duration}
-                      </Badge>
+                       <Badge 
+                         variant="outline" 
+                         className="text-xs px-2 py-1 self-start overflow-visible break-words" 
+                         style={{ 
+                           backgroundColor: `${selectedColorTheme.primary}10`, 
+                           color: selectedColorTheme.primary,
+                           borderColor: `${selectedColorTheme.primary}20`,
+                           wordWrap: 'break-word',
+                           overflowWrap: 'break-word'
+                         }}
+                       >
+                         <span className="whitespace-normal">{exp.duration}</span>
+                       </Badge>
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (

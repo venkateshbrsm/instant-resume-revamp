@@ -148,12 +148,12 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                 {exp.company}
                               </p>
                             </div>
-                            <Badge 
-                              className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start"
-                              style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
-                            >
-                              {exp.duration}
-                            </Badge>
+                             <Badge 
+                               className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start overflow-visible break-words"
+                               style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})`, wordWrap: 'break-word', overflowWrap: 'break-word' }}
+                             >
+                               <span className="whitespace-normal">{exp.duration}</span>
+                             </Badge>
                           </div>
                         </div>
                         
