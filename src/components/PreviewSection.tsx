@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
+import { DocxPreviewSection } from "./DocxPreviewSection";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
@@ -31,6 +32,12 @@ interface PreviewSectionProps {
 // Template system now imported from resumeTemplates.ts
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
+  const fileType = getFileType(file);
+  
+  // Route to DOCX-specific preview for DOCX files
+  if (fileType === 'docx') {
+    return <DocxPreviewSection file={file} onPurchase={onPurchase} onBack={onBack} />;
+  }
   const [activeTab, setActiveTab] = useState("before");
   const [showEditablePreview, setShowEditablePreview] = useState(false);
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");

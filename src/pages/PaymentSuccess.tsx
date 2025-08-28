@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Download, Home, Loader2 } from "lucide-react";
+import { generateEnhancedDocx } from "@/lib/docxGenerator";
 // Canvas PDF generator import removed - using stored blob instead
 
 export default function PaymentSuccess() {
@@ -34,7 +35,8 @@ export default function PaymentSuccess() {
       // Set a timeout to prevent infinite loading - extend for PDF processing
       const fileName = searchParams.get('fileName') || '';
       const isPDF = fileName.toLowerCase().endsWith('.pdf');
-      const timeoutDuration = isPDF ? 90000 : 45000; // Increased timeout: 90 seconds for PDFs, 45 for others
+      const isDocx = fileName.toLowerCase().endsWith('.docx');
+      const timeoutDuration = isPDF ? 90000 : (isDocx ? 45000 : 30000); // 90s for PDFs, 45s for DOCX, 30s for others
       
       timeoutId = setTimeout(() => {
         console.warn(`Payment verification timeout after ${timeoutDuration/1000} seconds`);
@@ -193,6 +195,69 @@ export default function PaymentSuccess() {
         title: "Preparing Download",
         description: "Your enhanced resume PDF is being prepared...",
       });
+
+      // Check if this is a DOCX file download
+      const fileName = searchParams.get('fileName') || '';
+      const isDocx = fileName.toLowerCase().endsWith('.docx');
+      
+      if (isDocx) {
+        console.log('Processing DOCX download...');
+        
+        // Get DOCX-specific enhanced content
+        const docxEnhancedContent = localStorage.getItem('docxEnhancedContentForPayment');
+        
+        if (docxEnhancedContent) {
+          try {
+            const parsedContent = JSON.parse(docxEnhancedContent);
+            console.log('Generating enhanced DOCX with content:', parsedContent);
+            
+            toast({
+              title: "Generating Enhanced DOCX",
+              description: "Creating your professionally formatted Word document...",
+            });
+            
+            const docxBlob = await generateEnhancedDocx(parsedContent);
+            
+            // Download the DOCX file
+            const url = URL.createObjectURL(docxBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Enhanced_Resume_${new Date().getTime()}.docx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            toast({
+              title: "DOCX Download Complete!",
+              description: "Your enhanced resume has been downloaded as a Word document.",
+            });
+            
+            // Clean up localStorage
+            localStorage.removeItem('docxEnhancedContentForPayment');
+            localStorage.removeItem('docxExtractedTextForPayment');
+            localStorage.removeItem('docxSelectedTemplateForPayment');
+            localStorage.removeItem('docxSelectedColorThemeForPayment');
+            
+            return;
+          } catch (error) {
+            console.error('DOCX generation failed:', error);
+            toast({
+              title: "DOCX Generation Failed",
+              description: "There was an error generating your DOCX file. Please try again.",
+              variant: "destructive"
+            });
+            return;
+          }
+        } else {
+          toast({
+            title: "No DOCX Content Found",
+            description: "Enhanced DOCX content not found. Please try uploading and enhancing your resume again.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
 
       // Check if we have a pre-generated canvas PDF blob with perfect visual fidelity
       const canvasPdfBlob = sessionStorage.getItem('canvasPdfBlob');
@@ -454,7 +519,10 @@ export default function PaymentSuccess() {
               size="lg"
             >
               <Download className="mr-2 h-4 w-4" />
-              Download Enhanced Resume as PDF
+              {searchParams.get('fileName')?.toLowerCase().endsWith('.docx') ? 
+                'Download Enhanced Resume as DOCX' : 
+                'Download Enhanced Resume as PDF'
+              }
             </Button>
 
             <Button 
