@@ -70,86 +70,80 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer and career consultant. Transform the following resume content into a comprehensive, ATS-friendly, keyword-rich professional resume.
+  const prompt = `You are an expert ATS resume optimizer. Your job is to take the actual content from this resume and reword it to be more ATS-friendly with relevant keywords, while keeping all the real information intact.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
 CRITICAL INSTRUCTIONS:
-1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
-2. Preserve EVERY job position, company, and time period from the original
-3. Create UNIQUE, DIVERSE content for each job - NO REPETITIVE LANGUAGE between positions
-4. Each job must have DISTINCT responsibilities and achievements that reflect the actual role
-5. Extract and preserve ALL skills and technical skills from the original resume
-6. Use the actual extracted content as the foundation - don't create fictional information
-7. Make each job description significantly different from others in language, focus, and responsibilities
-8. Avoid generic phrases like "cross-functional team collaboration" across multiple roles
-9. Return ONLY a valid JSON object with the exact structure shown below
-10. MANDATORY: Each experience entry must be substantially different in content and language
+1. Use ONLY the actual information provided in the original resume text
+2. DO NOT create fictional jobs, companies, or achievements
+3. Reword the existing content to be more professional and ATS-friendly
+4. Add relevant industry keywords that match the actual roles and skills mentioned
+5. Keep all real job titles, company names, dates, and educational information exactly as provided
+6. Enhance the language but preserve the factual content
+7. Return ONLY a valid JSON object with the exact structure shown below
 
-DIVERSITY REQUIREMENTS FOR EXPERIENCE:
-- Use different action verbs for each role (developed, implemented, managed, led, created, optimized, etc.)
-- Focus on role-specific responsibilities (technical for dev roles, creative for marketing, etc.)
-- Vary the achievement metrics and outcomes for each position
-- Use different industry terminology appropriate to each role
-- Ensure no phrases or sentence structures are repeated across jobs
+ENHANCEMENT APPROACH:
+- Take actual job responsibilities and rewrite them with stronger action verbs and industry terminology
+- Use the real achievements mentioned but present them more professionally
+- Add relevant keywords for each actual role without changing the core meaning
+- Keep all personal details (name, email, phone, location) exactly as they appear in the original
+- Preserve actual company names, job titles, and dates from the resume
 
 REQUIRED JSON STRUCTURE:
 {
-  "name": "Full professional name from resume",
-  "title": "Professional title or desired role from resume", 
-  "email": "actual email from resume",
-  "phone": "actual phone number from resume",
-  "location": "actual location from resume",
-  "linkedin": "LinkedIn profile URL if available in resume",
-  "summary": "Comprehensive 4-6 sentence professional summary based on actual experience and skills",
+  "name": "Exact name from the original resume",
+  "title": "Actual professional title or role from resume", 
+  "email": "Exact email address from resume",
+  "phone": "Exact phone number from resume",
+  "location": "Actual location from resume",
+  "linkedin": "Actual LinkedIn URL if mentioned in resume",
+  "summary": "Professional summary based on actual experience and skills mentioned in resume",
   "experience": [
     {
-      "title": "Exact Job Title from Resume",
-      "company": "Exact Company Name from Resume",
-      "duration": "Exact Start Date - End Date from Resume",
-      "description": "Unique 1-2 sentence overview specific to this role's focus and industry",
+      "title": "Exact job title from resume",
+      "company": "Exact company name from resume",
+      "duration": "Exact dates from resume",
+      "description": "ATS-friendly rewrite of actual role description from resume",
       "core_responsibilities": [
-        "Role-specific responsibility with unique language and technical details",
-        "Different responsibility using varied action verbs and industry terms",
-        "Third unique responsibility with distinct focus from other roles"
+        "Reworded version of actual responsibility #1 with ATS keywords",
+        "Reworded version of actual responsibility #2 with industry terms",
+        "Reworded version of actual responsibility #3 with professional language"
       ],
       "achievements": [
-        "Specific achievement with unique metrics and role-appropriate outcomes",
-        "Different accomplishment with varied language and distinct results",
-        "Third achievement with unique phrasing and role-specific impact"
+        "ATS-enhanced version of actual achievement #1 from resume",
+        "Professional rewrite of actual accomplishment #2 from resume",
+        "Keyword-rich version of actual result #3 from resume"
       ]
     }
   ],
   "education": [
     {
-      "degree": "Exact Degree Name from Resume",
-      "institution": "Exact Institution Name from Resume", 
-      "year": "Exact Graduation Year from Resume",
-      "gpa": "GPA if mentioned in resume"
+      "degree": "Exact degree name from resume",
+      "institution": "Exact institution name from resume", 
+      "year": "Exact year/duration from resume",
+      "gpa": "Actual GPA if mentioned in resume"
     }
   ],
-  "skills": ["Extract ALL skills mentioned in original resume - maintain exact list"],
-  "tools": ["Extract ALL tools/technologies mentioned in original resume"],
+  "skills": ["Actual skills from resume with ATS-friendly formatting"],
+  "tools": ["Actual tools/technologies mentioned in resume"],
   "core_technical_skills": [
     {
-      "name": "Technical Skill from Resume",
+      "name": "Actual technical skill from resume",
       "proficiency": 85
     }
   ]
 }
 
-ENHANCEMENT GUIDELINES:
-- Use ONLY information that can be inferred from the original resume text
-- Professional summary should reflect actual experience and skills mentioned
-- Each experience description must be unique - no copy-paste language between jobs
-- Vary sentence structures, vocabulary, and focus areas for each role
-- Core responsibilities should reflect actual job functions with enhanced detail
-- Achievements should be role-specific with realistic metrics
-- Skills and tools must come from the original resume content
-- Add technical skills with proficiency based on experience level shown
-- Ensure all personal information (name, email, phone) matches the original exactly
-- Make content comprehensive but authentic to the original resume`;
+REWRITING GUIDELINES:
+- Transform "handled customer calls" → "Managed customer inquiries and provided technical support solutions"
+- Transform "worked with team" → "Collaborated with cross-functional teams to deliver project objectives"
+- Transform "used Excel" → "Utilized advanced Excel functions for data analysis and reporting"
+- Add industry keywords that naturally fit the actual role and responsibilities
+- Use stronger action verbs while keeping the core meaning intact
+- Present actual achievements with professional language and metrics if mentioned
+- Ensure all content is factually based on the original resume text`;
 
   console.log('Sending request to OpenAI with model: gpt-4o');
 
@@ -164,7 +158,7 @@ ENHANCEMENT GUIDELINES:
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Create unique, diverse content for each job role. Never repeat language or phrases between different positions. Always return valid JSON.' 
+          content: 'You are an expert resume optimizer. Reword actual resume content to be ATS-friendly without creating fictional information. Always return valid JSON.' 
         },
         { 
           role: 'user', 
@@ -172,7 +166,7 @@ ENHANCEMENT GUIDELINES:
         }
       ],
       max_tokens: 4000,
-      temperature: 0.8, // Increased for more creative, diverse content
+      temperature: 0.3, // Lower temperature for more consistent, factual rewording
     }),
   });
 
