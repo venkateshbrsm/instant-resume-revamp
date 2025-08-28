@@ -83,8 +83,8 @@ async function generateModernPdf(
   const pageWidth = 210;
   const pageHeight = 297;
   const sidebarWidth = 70;
-  const mainContentX = sidebarWidth + 5;
-  const mainContentWidth = pageWidth - mainContentX - 15;
+  const mainContentX = sidebarWidth + 8; // More padding from sidebar
+  const mainContentWidth = pageWidth - mainContentX - 10; // Better right margin
   
   // Convert hex colors to RGB
   const hexToRgb = (hex: string) => {
@@ -129,26 +129,35 @@ async function generateModernPdf(
   doc.text('CONTACT', 8, sidebarY);
   sidebarY += 8;
 
-  // Contact details
+  // Contact details with proper text wrapping
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   if (resumeData.email) {
     doc.text('EMAIL', 8, sidebarY);
     sidebarY += 4;
-    doc.text(resumeData.email, 8, sidebarY);
-    sidebarY += 6;
+    const emailLines = doc.splitTextToSize(resumeData.email, sidebarWidth - 16);
+    emailLines.forEach((line: string, index: number) => {
+      doc.text(line, 8, sidebarY + (index * 4));
+    });
+    sidebarY += emailLines.length * 4 + 2;
   }
   if (resumeData.phone) {
     doc.text('PHONE', 8, sidebarY);
     sidebarY += 4;
-    doc.text(resumeData.phone, 8, sidebarY);
-    sidebarY += 6;
+    const phoneLines = doc.splitTextToSize(resumeData.phone, sidebarWidth - 16);
+    phoneLines.forEach((line: string, index: number) => {
+      doc.text(line, 8, sidebarY + (index * 4));
+    });
+    sidebarY += phoneLines.length * 4 + 2;
   }
   if (resumeData.location) {
     doc.text('LOCATION', 8, sidebarY);
     sidebarY += 4;
-    doc.text(resumeData.location, 8, sidebarY);
-    sidebarY += 8;
+    const locationLines = doc.splitTextToSize(resumeData.location, sidebarWidth - 16);
+    locationLines.forEach((line: string, index: number) => {
+      doc.text(line, 8, sidebarY + (index * 4));
+    });
+    sidebarY += locationLines.length * 4 + 4;
   }
 
   // Skills section in sidebar with progress bars
@@ -206,17 +215,25 @@ async function generateModernPdf(
   }
 
   // MAIN CONTENT AREA
-  // Header
+  // Header with proper text wrapping
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text(resumeData.name, mainContentX, mainY);
-  mainY += 8;
+  
+  // Split name into multiple lines if too long
+  const nameLines = doc.splitTextToSize(resumeData.name, mainContentWidth);
+  nameLines.forEach((line: string, index: number) => {
+    doc.text(line, mainContentX, mainY + (index * 8));
+  });
+  mainY += nameLines.length * 8 + 2;
 
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.text(resumeData.title, mainContentX, mainY);
-  mainY += 15;
+  const titleLines = doc.splitTextToSize(resumeData.title, mainContentWidth);
+  titleLines.forEach((line: string, index: number) => {
+    doc.text(line, mainContentX, mainY + (index * 5));
+  });
+  mainY += titleLines.length * 5 + 8;
 
   // Professional Summary section
   if (resumeData.summary) {
@@ -258,28 +275,35 @@ async function generateModernPdf(
       doc.setFillColor(pr, pg, pb);
       doc.circle(mainContentX - 3, mainY - 2, 1.5, 'F');
       
-      // Job title
+      // Job title with wrapping
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.title, mainContentX, mainY);
-      mainY += 5;
+      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 50); // Leave space for duration
+      titleLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, mainContentX, mainY + (lineIndex * 4));
+      });
+      mainY += titleLines.length * 4 + 1;
 
-      // Company and duration
+      // Company name with wrapping
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.company, mainContentX, mainY);
+      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 50);
+      companyLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, mainContentX, mainY + (lineIndex * 4));
+      });
       
-      // Duration badge
+      // Duration badge (positioned on the right)
       if (exp.duration) {
         doc.setFillColor(ar, ag, ab, 0.3);
-        const durationWidth = doc.getTextWidth(exp.duration) + 4;
-        doc.rect(mainContentX + mainContentWidth - durationWidth, mainY - 4, durationWidth, 6, 'F');
+        const durationWidth = doc.getTextWidth(exp.duration) + 6;
+        const badgeX = mainContentX + mainContentWidth - durationWidth;
+        doc.rect(badgeX, mainY - 4, durationWidth, 6, 'F');
         doc.setTextColor(pr, pg, pb);
-        doc.text(exp.duration, mainContentX + mainContentWidth - durationWidth + 2, mainY);
+        doc.text(exp.duration, badgeX + 3, mainY);
       }
-      mainY += 8;
+      mainY += Math.max(companyLines.length * 4, 6) + 4;
 
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
@@ -302,14 +326,16 @@ async function generateModernPdf(
 
           // Achievement bullet
           doc.setFillColor(ar, ag, ab);
-          doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
+          doc.circle(mainContentX + 3, mainY - 1, 0.8, 'F');
           
-          doc.setTextColor(120, 120, 120);
+          doc.setTextColor(60, 60, 60);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
+          
+          // Proper text wrapping for achievements
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 12);
           achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
+            doc.text(line, mainContentX + 8, mainY + (lineIndex * 4));
           });
           mainY += achievementLines.length * 4 + 2;
         });
