@@ -843,41 +843,71 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        onColorThemeChange={setSelectedColorTheme}
                      />
 
-                      {/* Basic Resume Preview with Edit Option */}
+                       {/* Basic Resume Preview with Edit Option */}
                       <Tabs defaultValue="basic" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="grid w-full grid-cols-3">
                           <TabsTrigger value="basic">📄 Basic Preview</TabsTrigger>
+                          {/* Show PDF tab only for PDF files */}
+                          {typeof originalContent === 'object' && originalContent.fileType === 'pdf' && (
+                            <TabsTrigger value="pdf">📋 Original PDF</TabsTrigger>
+                          )}
                           <TabsTrigger value="edit">✏️ Edit Content</TabsTrigger>
                         </TabsList>
                         
-                        <TabsContent value="basic" className="space-y-4">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-5 h-5 text-primary" />
-                              <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
-                            </div>
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                              Content Extracted & ATS Enhanced
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            This is your resume content as extracted from your uploaded file, with ATS-friendly enhancements applied.
-                          </p>
-                          
-                          {/* Basic Resume Content */}
-                          <div 
-                            ref={resumeContentRef}
-                            className="bg-white rounded-lg p-4 border shadow-sm"
-                          >
-                            <BasicResumePreview
-                              resumeData={basicResumeData}
-                              selectedColorTheme={selectedColorTheme}
-                              templateLayout={selectedTemplate.layout}
-                            />
-                          </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="edit" className="space-y-4">
+                         <TabsContent value="basic" className="space-y-4">
+                           <div className="flex items-center justify-between mb-4">
+                             <div className="flex items-center gap-2">
+                               <FileText className="w-5 h-5 text-primary" />
+                               <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
+                             </div>
+                             <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                               Content Extracted & ATS Enhanced
+                             </Badge>
+                           </div>
+                           <p className="text-sm text-muted-foreground mb-4">
+                             This is your resume content as extracted from your uploaded file, with ATS-friendly enhancements applied.
+                           </p>
+                           
+                           {/* Basic Resume Content */}
+                           <div 
+                             ref={resumeContentRef}
+                             className="bg-white rounded-lg p-4 border shadow-sm"
+                           >
+                             <BasicResumePreview
+                               resumeData={basicResumeData}
+                               selectedColorTheme={selectedColorTheme}
+                               templateLayout={selectedTemplate.layout}
+                             />
+                           </div>
+                         </TabsContent>
+                         
+                         {/* PDF Preview Tab - Show original PDF for PDF uploads */}
+                         {typeof originalContent === 'object' && originalContent.fileType === 'pdf' && originalContent.pdfUrl && (
+                           <TabsContent value="pdf" className="space-y-4">
+                             <div className="flex items-center justify-between mb-4">
+                               <div className="flex items-center gap-2">
+                                 <FileText className="w-5 h-5 text-primary" />
+                                 <h3 className="text-lg font-semibold">Original PDF Document</h3>
+                               </div>
+                               <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                 Original File Preview
+                               </Badge>
+                             </div>
+                             <p className="text-sm text-muted-foreground mb-4">
+                               This is your original PDF document. You can view the full document as uploaded.
+                             </p>
+                             
+                             {/* PDF Viewer */}
+                             <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                               <PDFViewer 
+                                 file={originalContent.pdfUrl} 
+                                 className="w-full"
+                               />
+                             </div>
+                           </TabsContent>
+                         )}
+                         
+                         <TabsContent value="edit" className="space-y-4">
                           <EditablePreview
                             enhancedContent={{
                               name: basicResumeData.name,
