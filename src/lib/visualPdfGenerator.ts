@@ -607,6 +607,7 @@ async function generateCreativePdf(
 
   // Professional Experience with enhanced visual style
   if (resumeData.experience && resumeData.experience.length > 0) {
+    console.log(`📊 Processing ${resumeData.experience.length} experience entries for Creative PDF`);
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -614,9 +615,18 @@ async function generateCreativePdf(
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
+      // Check if we need a new page before starting experience
+      if (currentY > pageHeight - 80) {
+        doc.addPage();
+        currentY = 20;
+      }
+
       // Experience container background
       doc.setFillColor(pr, pg, pb, 0.05);
-      const containerHeight = 30 + (exp.achievements?.length || 0) * 5;
+      // Calculate dynamic container height based on all content
+      const responsibilityCount = exp.core_responsibilities?.length || 0;
+      const achievementCount = exp.achievements?.length || 0;
+      const containerHeight = 30 + (responsibilityCount * 6) + (achievementCount * 6);
       doc.roundedRect(margin - 2, currentY - 5, contentWidth + 4, containerHeight, 3, 3, 'F');
       
       // Left border accent
@@ -648,12 +658,18 @@ async function generateCreativePdf(
       }
       currentY += 8;
 
-      // Core Responsibilities with dots
+      // Core Responsibilities with dots - show ALL responsibilities
       if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        exp.core_responsibilities.slice(0, 3).forEach((responsibility) => {
+        exp.core_responsibilities.forEach((responsibility) => {
           // Responsibility bullet (circle dot)
           doc.setFillColor(120, 120, 120);
           doc.circle(margin + 7, currentY - 1, 1.5, 'F');
+          
+          // Check page break before responsibility text
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            currentY = 20;
+          }
           
           // Responsibility text
           doc.setTextColor(100, 100, 100);
@@ -668,9 +684,9 @@ async function generateCreativePdf(
         currentY += 3;
       }
 
-      // Achievements with checkmarks
+      // Achievements with checkmarks - show ALL achievements
       if (exp.achievements && exp.achievements.length > 0) {
-        exp.achievements.slice(0, 4).forEach((achievement) => {
+        exp.achievements.forEach((achievement) => {
           // Achievement bullet (matching preview)
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 7, currentY - 1, 2, 'F');
@@ -678,6 +694,12 @@ async function generateCreativePdf(
           doc.setFontSize(7);
           doc.setFont('helvetica', 'bold');
           doc.text('V', margin + 5.5, currentY + 0.5);
+          
+          // Check page break before achievement text
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            currentY = 20;
+          }
           
           // Achievement text
           doc.setTextColor(120, 120, 120);
