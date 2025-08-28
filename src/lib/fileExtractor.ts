@@ -9,7 +9,7 @@ export interface ExtractedContent {
   pdfUrl?: string; // For visual preview
   profilePhotoUrl?: string; // Profile photo if found
   originalFile: File;
-  fileType: 'pdf' | 'txt';
+  fileType: 'pdf' | 'txt' | 'docx';
 }
 
 // Enhanced function that returns both text and PDF URL for visual preview
@@ -35,6 +35,9 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
       // For PDFs, extract text and keep original file for visual preview
       text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
+    } else if (fileType === 'docx') {
+      // For DOCX files, extract text using mammoth
+      text = await extractTextFromDOCX(file);
     } else {
       // For text files, just extract text
       text = await file.text();
@@ -86,6 +89,10 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     else if (fileType.includes('pdf') || fileName.endsWith('.pdf')) {
       console.log('Processing as PDF file');
       return await extractTextFromPDF(file);
+    }
+    else if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx')) {
+      console.log('Processing as DOCX file');
+      return await extractTextFromDOCX(file);
     }
     else if (fileName.endsWith('.doc')) {
       console.log('Legacy .doc file detected');
@@ -174,13 +181,34 @@ export const formatResumeText = (text: string, fileName: string): string => {
   return text;
 };
 
-export const getFileType = (file: File): 'pdf' | 'txt' => {
+export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
   const fileName = file.name.toLowerCase();
   const fileType = file.type.toLowerCase();
   
   if (fileType.includes('pdf') || fileName.endsWith('.pdf')) {
     return 'pdf';
+  } else if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx')) {
+    return 'docx';
   } else {
     return 'txt';
+  }
+};
+
+const extractTextFromDOCX = async (file: File): Promise<string> => {
+  console.log('Extracting text from DOCX file:', file.name);
+  
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    
+    if (result.messages && result.messages.length > 0) {
+      console.warn('DOCX extraction warnings:', result.messages);
+    }
+    
+    console.log('DOCX extraction completed successfully');
+    return result.value || 'No text content found in DOCX file';
+  } catch (error) {
+    console.error('DOCX extraction failed:', error);
+    throw new Error(`Failed to extract text from DOCX file: ${error.message}`);
   }
 };

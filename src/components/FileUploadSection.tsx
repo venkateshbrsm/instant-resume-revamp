@@ -22,8 +22,9 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     const allowedTypes = [
       'application/pdf',
       'text/plain',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
-    const allowedExtensions = ['.pdf', '.txt'];
+    const allowedExtensions = ['.pdf', '.txt', '.docx'];
     
     // Enhanced security checks
     if (file.size === 0) {
@@ -76,7 +77,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     if (!isValidType || !isValidExtension) {
       toast({
         title: "Invalid file type",
-        description: "Please select a PDF or TXT file.",
+        description: "Please select a PDF, TXT, or DOCX file.",
         variant: "destructive"
       });
       return false;
@@ -137,7 +138,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
             Upload Your Current Resume
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 sm:px-6">
-            Supported formats: PDF, TXT (Max 10MB)
+            Supported formats: PDF, TXT, DOCX (Max 10MB)
           </p>
         </div>
 
@@ -165,7 +166,7 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
                 <input
                   id="file-input"
                   type="file"
-                  accept=".pdf,.txt"
+                  accept=".pdf,.txt,.docx"
                   onChange={handleFileInput}
                   className="hidden"
                 />
