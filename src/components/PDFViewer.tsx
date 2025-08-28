@@ -4,8 +4,12 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Disable PDF.js worker to avoid CORS issues - will run on main thread
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+// Configure PDF.js worker using a proper version-matched CDN
+try {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.js`;
+} catch (e) {
+  console.warn('Failed to set PDF worker, falling back to synchronous mode');
+}
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
