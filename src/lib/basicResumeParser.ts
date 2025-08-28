@@ -153,6 +153,82 @@ export function parseBasicResumeFromText(text: string): BasicResumeData {
   return result;
 }
 
+function enhanceDateFormatting(text: string): string {
+  // Enhanced date pattern matching for professional formatting
+  const datePatterns = [
+    // Match ranges like "2020-2023", "2020 - Present", "Jan 2020 - Dec 2023"
+    /(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})\s*[-–—]\s*(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current)\b/gi,
+    /(\d{1,2}\/\d{4})\s*[-–—]\s*(\d{1,2}\/\d{4}|present|current)\b/gi,
+    /(\d{4})\s*[-–—]\s*(\d{4}|present|current)\b/gi,
+    
+    // Single dates
+    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}\b/gi,
+    /\b\d{1,2}\/\d{4}\b/g,
+    /\b\d{4}\b/g
+  ];
+
+  let enhancedText = text;
+  
+  // Process date ranges first
+  enhancedText = enhancedText.replace(
+    /(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})\s*[-–—]\s*(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current)\b/gi,
+    (match, start, end) => {
+      const formattedStart = formatMonth(start);
+      const formattedEnd = end.toLowerCase() === 'present' || end.toLowerCase() === 'current' ? 'Present' : formatMonth(end);
+      return `${formattedStart} - ${formattedEnd}`;
+    }
+  );
+  
+  enhancedText = enhancedText.replace(
+    /(\d{1,2}\/\d{4})\s*[-–—]\s*(\d{1,2}\/\d{4}|present|current)\b/gi,
+    (match, start, end) => {
+      const formattedStart = formatMonthYear(start);
+      const formattedEnd = end.toLowerCase() === 'present' || end.toLowerCase() === 'current' ? 'Present' : formatMonthYear(end);
+      return `${formattedStart} - ${formattedEnd}`;
+    }
+  );
+  
+  enhancedText = enhancedText.replace(
+    /(\d{4})\s*[-–—]\s*(\d{4}|present|current)\b/gi,
+    (match, start, end) => {
+      const formattedEnd = end.toLowerCase() === 'present' || end.toLowerCase() === 'current' ? 'Present' : end;
+      return `${start} - ${formattedEnd}`;
+    }
+  );
+
+  return enhancedText;
+}
+
+function formatMonth(monthYear: string): string {
+  const months: { [key: string]: string } = {
+    'jan': 'January', 'feb': 'February', 'mar': 'March', 'apr': 'April',
+    'may': 'May', 'jun': 'June', 'jul': 'July', 'aug': 'August',
+    'sep': 'September', 'oct': 'October', 'nov': 'November', 'dec': 'December'
+  };
+  
+  const parts = monthYear.toLowerCase().replace('.', '').split(/\s+/);
+  if (parts.length >= 2) {
+    const month = months[parts[0]] || parts[0];
+    return `${month} ${parts[1]}`;
+  }
+  return monthYear;
+}
+
+function formatMonthYear(monthYear: string): string {
+  const parts = monthYear.split('/');
+  if (parts.length === 2) {
+    const month = parseInt(parts[0]);
+    const year = parts[1];
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    if (month >= 1 && month <= 12) {
+      return `${monthNames[month - 1]} ${year}`;
+    }
+  }
+  return monthYear;
+}
+
 function parseExperienceSection(lines: string[]): Array<{
   title: string;
   company: string;
@@ -186,8 +262,8 @@ function parseExperienceSection(lines: string[]): Array<{
       !line.toLowerCase().startsWith('developed')
     );
 
-    // Look for date patterns to identify position headers
-    const dateMatch = line.match(/(\d{4}|\d{1,2}\/\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);
+    // Enhanced date pattern matching
+    const dateMatch = line.match(/(\d{4}\s*[-–—]\s*(?:\d{4}|present|current))|(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}\s*[-–—]\s*(?:\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current))|(\d{1,2}\/\d{4}\s*[-–—]\s*(?:\d{1,2}\/\d{4}|present|current))|(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})|(\d{1,2}\/\d{4})|(\d{4})/gi);
     
     if ((isJobTitle && dateMatch) || (i === 0 && isJobTitle)) {
       // Save previous experience
@@ -199,26 +275,32 @@ function parseExperienceSection(lines: string[]): Array<{
       // Start new experience
       const parts = line.split(/[-–—|]/).map(p => p.trim());
       
+      // Extract and enhance duration from the line
+      let duration = 'Recent Experience';
+      if (dateMatch && dateMatch[0]) {
+        duration = enhanceDateFormatting(dateMatch[0]);
+      }
+      
       if (parts.length >= 2) {
         currentExp = {
           title: parts[0] || 'Professional Position',
           company: parts[1] || 'Professional Organization',
-          duration: dateMatch ? dateMatch[0] : 'Recent',
+          duration,
           description: '',
           responsibilities: []
         };
       } else {
         currentExp = {
-          title: line,
+          title: line.replace(/\s*\d{4}.*$/g, '').trim() || 'Professional Position',
           company: 'Professional Organization',
-          duration: dateMatch ? dateMatch[0] : 'Recent',
+          duration,
           description: '',
           responsibilities: []
         };
       }
       
       responsibilities = [];
-      console.log('📋 Found job:', currentExp.title, 'at', currentExp.company);
+      console.log('📋 Found job:', currentExp.title, 'at', currentExp.company, 'Duration:', currentExp.duration);
     } else {
       // This is likely a responsibility or description
       if (line.length > 10) {
