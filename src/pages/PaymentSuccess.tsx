@@ -239,16 +239,55 @@ export default function PaymentSuccess() {
           }
         }
         
-        // Use the same visual PDF generator as preview for consistency
-        let enhancedContentStr2 = localStorage.getItem('enhancedContentForPayment');
+        // First try to get enhanced content from database using payment ID
+        console.log('🔍 Attempting to retrieve enhanced content from database...');
         
-        // Fallback to backup storage if main storage is empty
-        if (!enhancedContentStr2) {
-          console.log('Main storage empty, checking backup...');
-          enhancedContentStr2 = localStorage.getItem('latestEditedContent');
+        let enhancedContentStr2 = null;
+        let selectedThemeStr = null;
+        
+        try {
+          // Query the payments table to get the enhanced content
+          const { data: paymentData, error: paymentError } = await supabase
+            .from('payments')
+            .select('enhanced_content, theme_id')
+            .eq('razorpay_payment_id', paymentId)
+            .single();
+            
+          if (paymentError) {
+            console.warn('Could not retrieve from database:', paymentError);
+          } else if (paymentData && paymentData.enhanced_content) {
+            console.log('✅ Retrieved enhanced content from database:', paymentData);
+            enhancedContentStr2 = JSON.stringify(paymentData.enhanced_content);
+            
+            // Create theme object from theme_id
+            const themeMap: any = {
+              'navy': { primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
+              'emerald': { primary: '#10b981', secondary: '#34d399', accent: '#6ee7b7' },
+              'purple': { primary: '#8b5cf6', secondary: '#a78bfa', accent: '#c4b5fd' },
+              'rose': { primary: '#f43f5e', secondary: '#fb7185', accent: '#fda4af' },
+              'amber': { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' }
+            };
+            
+            const themeColors = themeMap[paymentData.theme_id] || themeMap['navy'];
+            selectedThemeStr = JSON.stringify(themeColors);
+          }
+        } catch (dbError) {
+          console.warn('Database query failed:', dbError);
         }
         
-        const selectedThemeStr = localStorage.getItem('selectedColorThemeForPayment');
+        // Fallback to localStorage if database query failed
+        if (!enhancedContentStr2) {
+          console.log('🔍 Falling back to localStorage...');
+          enhancedContentStr2 = localStorage.getItem('enhancedContentForPayment');
+          
+          // Fallback to backup storage if main storage is empty
+          if (!enhancedContentStr2) {
+            console.log('Main localStorage empty, checking backup...');
+            enhancedContentStr2 = localStorage.getItem('latestEditedContent');
+          }
+          
+          selectedThemeStr = localStorage.getItem('selectedColorThemeForPayment');
+        }
         
         console.log('🔍 Local storage check:', {
           hasEnhancedContent: !!enhancedContentStr2,
