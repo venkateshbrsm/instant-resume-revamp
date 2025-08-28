@@ -77,10 +77,11 @@ CRITICAL INSTRUCTIONS:
 5. Add relevant industry keywords and ATS-friendly terms for each role
 6. Make each section detailed and professional with specific accomplishments
 7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
-8. Use strong action verbs and quantifiable achievements where possible
+8. Use strong action verbs and descriptive achievements WITHOUT any numbers, percentages, or metrics
 9. Return ONLY a valid JSON object with the exact structure shown below
 10. MANDATORY: Include ALL work experience entries from the original resume
 11. MANDATORY: Include ALL skills and technical skills from the original resume
+12. CRITICAL: Do NOT include any quantified data (numbers, percentages, amounts) in achievements unless explicitly present in the original resume
 
 REQUIRED JSON STRUCTURE:
 {
@@ -103,9 +104,9 @@ REQUIRED JSON STRUCTURE:
         "Third key responsibility with operational details"
       ],
       "achievements": [
-        "Specific achievement with metrics and impact",
-        "Another key accomplishment with quantifiable results",
-        "Third major contribution with measurable outcomes"
+        "Specific achievement describing impact and outcomes through descriptive text",
+        "Another key accomplishment highlighting professional contribution and value delivered",
+        "Third major contribution showcasing expertise and collaborative efforts"
       ]
     }
   ],
@@ -131,14 +132,14 @@ ENHANCEMENT GUIDELINES:
 - Professional summary should be compelling and keyword-rich
 - Experience descriptions should be brief role overviews (1-2 sentences)
 - Each experience should have 3-5 core responsibilities detailing daily tasks and duties
-- Each experience should have 3-5 specific achievements with metrics and impact
+- Each experience should have 3-5 specific achievements using descriptive text without numbers or metrics
 - Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
 - Extract ALL tools mentioned in original resume as a separate "tools" array
 - Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
 - Expand on responsibilities with action verbs and specific outcomes
 - Make content ATS-friendly with industry standard terminology
 - Ensure all sections are comprehensive and detailed
-- Focus achievements on quantifiable results and business impact`;
+- Focus achievements on impact descriptions and professional contributions without quantification`;
 
   console.log('Sending request to OpenAI...');
 
