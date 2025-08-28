@@ -57,31 +57,31 @@ const actionVerbs = [
 // Quantifiable achievement patterns for better ATS scoring
 const achievementPatterns = {
   marketing: [
-    'campaign performance by {metric}% through strategic optimization',
-    'lead generation by {metric}% via targeted digital marketing initiatives',
-    'brand awareness resulting in {metric}% increase in organic traffic',
-    'social media engagement by {metric}% across all platforms',
-    'customer acquisition cost by {metric}% while maintaining quality leads',
-    'email campaign open rates to {metric}% above industry standard',
-    'conversion rates by {metric}% through A/B testing and optimization'
+    'comprehensive digital marketing campaigns across multiple channels including Google Ads, social media, and email marketing',
+    'brand awareness and market penetration through strategic content marketing and SEO optimization',
+    'lead generation programs that consistently exceeded target goals through multi-channel acquisition strategies',
+    'social media engagement and community building across LinkedIn, Facebook, Instagram, and Twitter platforms',
+    'customer acquisition cost optimization while maintaining high-quality lead generation standards',
+    'email marketing campaigns with compelling subject lines and conversion-focused content',
+    'marketing automation workflows that streamlined lead nurturing and customer onboarding processes'
   ],
   copywriting: [
-    'content engagement rates by {metric}% through compelling copywriting',
-    'website conversion rates by {metric}% via persuasive landing page copy',
-    'click-through rates to {metric}% with optimized email subject lines',
-    'content production efficiency by {metric}% while maintaining quality',
-    'blog traffic by {metric}% through SEO-optimized content creation',
-    'brand consistency across {metric}+ marketing materials and channels',
-    'content marketing ROI by {metric}% through strategic messaging'
+    'high-converting copy for landing pages, email campaigns, and digital advertising materials',
+    'content marketing strategy development including editorial calendars and brand voice guidelines',
+    'website copy optimization that enhanced user experience and supported business objectives',
+    'compelling blog content and thought leadership articles that established industry authority',
+    'persuasive sales copy for product launches and promotional campaigns',
+    'brand messaging consistency across all marketing materials and communication channels',
+    'SEO-optimized content creation that improved organic search visibility and website traffic'
   ],
   strategy: [
-    'revenue growth by {metric}% through strategic market expansion',
-    'operational efficiency by {metric}% via process optimization',
-    'market penetration in {metric} new segments within first quarter',
-    'partnership portfolio by {metric}% resulting in expanded reach',
-    'client retention rates to {metric}% through strategic relationship management',
-    'project delivery speed by {metric}% while exceeding quality standards',
-    'competitive positioning resulting in {metric}% market share increase'
+    'comprehensive business strategies that aligned with organizational goals and market opportunities',
+    'competitive analysis and market research initiatives that informed strategic decision-making',
+    'partnership development programs that expanded market reach and revenue opportunities',
+    'cross-functional collaboration frameworks that improved team efficiency and project outcomes',
+    'client relationship management systems that enhanced satisfaction and retention rates',
+    'go-to-market strategies for new product launches and market expansion initiatives',
+    'process optimization initiatives that streamlined operations and improved team productivity'
   ]
 };
 
@@ -192,35 +192,35 @@ function optimizeExperience(experiences: any[], roles: { isMarketing: boolean; i
   return experiences.map((exp, index) => {
     const optimizedAchievements = [];
     
-    // Create role-specific, quantifiable achievements
+    // Create role-specific achievements with strong action verbs
     if (isMarketing) {
       optimizedAchievements.push(
-        `${getRandomActionVerb()} ${getQuantifiableAchievement('marketing')}`,
-        `${getRandomActionVerb()} ${getQuantifiableAchievement('marketing')}`,
-        `${getRandomActionVerb()} comprehensive digital marketing campaigns across 5+ channels including Google Ads, Facebook, LinkedIn, and email marketing`
+        `${getRandomActionVerb()} ${getAchievementPattern('marketing')}`,
+        `${getRandomActionVerb()} ${getAchievementPattern('marketing')}`,
+        `${getRandomActionVerb()} integrated marketing campaigns that enhanced brand visibility across digital and traditional channels`
       );
     }
     
     if (isCopywriting) {
       optimizedAchievements.push(
-        `${getRandomActionVerb()} ${getQuantifiableAchievement('copywriting')}`,
-        `${getRandomActionVerb()} ${getQuantifiableAchievement('copywriting')}`,
-        `${getRandomActionVerb()} 50+ pieces of high-converting copy including landing pages, email sequences, and ad creatives`
+        `${getRandomActionVerb()} ${getAchievementPattern('copywriting')}`,
+        `${getRandomActionVerb()} ${getAchievementPattern('copywriting')}`,
+        `${getRandomActionVerb()} content libraries and style guides that ensured consistent brand messaging across all touchpoints`
       );
     }
     
     if (isStrategy) {
       optimizedAchievements.push(
-        `${getRandomActionVerb()} ${getQuantifiableAchievement('strategy')}`,
-        `${getRandomActionVerb()} ${getQuantifiableAchievement('strategy')}`,
-        `${getRandomActionVerb()} go-to-market strategies for 3+ product launches resulting in successful market entry`
+        `${getRandomActionVerb()} ${getAchievementPattern('strategy')}`,
+        `${getRandomActionVerb()} ${getAchievementPattern('strategy')}`,
+        `${getRandomActionVerb()} strategic initiatives that drove business growth and competitive advantage in target markets`
       );
     }
 
-    // Add general quantifiable business achievements
+    // Add general business achievements
     optimizedAchievements.push(
-      `${getRandomActionVerb()} cross-functional team productivity by 25% through streamlined project management processes`,
-      `${getRandomActionVerb()} client satisfaction scores to 95%+ through proactive communication and quality deliverables`
+      `${getRandomActionVerb()} cross-functional team collaboration and project coordination to ensure timely delivery of high-quality results`,
+      `${getRandomActionVerb()} client relationships and stakeholder engagement through proactive communication and exceptional service delivery`
     );
 
     return {
@@ -232,21 +232,9 @@ function optimizeExperience(experiences: any[], roles: { isMarketing: boolean; i
   });
 }
 
-function getQuantifiableAchievement(role: 'marketing' | 'copywriting' | 'strategy'): string {
+function getAchievementPattern(role: 'marketing' | 'copywriting' | 'strategy'): string {
   const patterns = achievementPatterns[role];
-  const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-  
-  // Generate realistic metrics based on role
-  let metric: number;
-  if (role === 'marketing') {
-    metric = Math.floor(Math.random() * 40) + 20; // 20-60% improvements
-  } else if (role === 'copywriting') {
-    metric = Math.floor(Math.random() * 35) + 15; // 15-50% improvements
-  } else {
-    metric = Math.floor(Math.random() * 30) + 10; // 10-40% improvements
-  }
-  
-  return pattern.replace('{metric}', metric.toString());
+  return patterns[Math.floor(Math.random() * patterns.length)];
 }
 
 function getRandomActionVerb(): string {
