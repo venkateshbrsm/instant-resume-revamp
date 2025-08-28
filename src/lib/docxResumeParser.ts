@@ -471,7 +471,7 @@ const parseJobBlock = (block: string[]): any => {
     position: hasValidPosition ? position : '',
     duration: duration || '',
     location: location || '',
-    responsibilities: responsibilities.filter(r => r.length > 10)
+    responsibilities: responsibilities.filter(r => r.length > 3) // Keep bullet points, just filter very short ones
   };
   
   console.log('=== JOB PARSING RESULT ===');
