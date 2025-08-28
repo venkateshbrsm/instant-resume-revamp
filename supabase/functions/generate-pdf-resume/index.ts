@@ -914,10 +914,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       body: JSON.stringify({
         source: htmlContent,
         landscape: false,
-        format: 'Letter',
-        margin: '0.5in',
-        wait_for: 1000,
-        sandbox: false
+        format: 'A4',
+        margin: 10
       }),
     });
 
