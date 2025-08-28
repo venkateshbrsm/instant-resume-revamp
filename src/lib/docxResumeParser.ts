@@ -225,37 +225,59 @@ const extractExperience = (lines: string[]): Array<{
   const jobBlocks: string[][] = [];
   let currentBlock: string[] = [];
   
+  console.log('=== EXPERIENCE SECTION ANALYSIS ===');
+  console.log('Total experience lines:', experienceLines.length);
+  console.log('First 10 lines:', experienceLines.slice(0, 10));
+  
   for (let i = 0; i < experienceLines.length; i++) {
     const line = experienceLines[i].trim();
     const nextLine = i + 1 < experienceLines.length ? experienceLines[i + 1].trim() : '';
     
+    console.log(`Line ${i}: "${line}"`);
+    
     if (line.length === 0) {
       // Empty line - potential job separator
+      console.log('Found empty line - potential job separator');
       if (currentBlock.length > 0) {
+        console.log('Pushing job block with', currentBlock.length, 'lines:', currentBlock);
         jobBlocks.push(currentBlock);
         currentBlock = [];
       }
     } else if (currentBlock.length > 0 && isNewJobEntry(line, nextLine, currentBlock)) {
       // Detected start of new job entry
+      console.log('Detected new job entry - pushing previous block:', currentBlock);
       jobBlocks.push(currentBlock);
       currentBlock = [line];
     } else {
+      console.log('Adding line to current block');
       currentBlock.push(line);
     }
   }
   
   // Add the last block if it exists
   if (currentBlock.length > 0) {
+    console.log('Adding final job block:', currentBlock);
     jobBlocks.push(currentBlock);
   }
   
+  console.log('=== TOTAL JOB BLOCKS FOUND ===');
+  console.log('Number of job blocks:', jobBlocks.length);
+  jobBlocks.forEach((block, index) => {
+    console.log(`Block ${index + 1}:`, block);
+  });
+  
   // Process each job block
-  for (const block of jobBlocks) {
+  for (let blockIndex = 0; blockIndex < jobBlocks.length; blockIndex++) {
+    const block = jobBlocks[blockIndex];
     if (block.length === 0) continue;
     
+    console.log(`=== PROCESSING JOB BLOCK ${blockIndex + 1} ===`);
     const job = parseJobBlock(block);
     if (job && (job.position || job.company)) {
+      console.log(`Successfully parsed job ${blockIndex + 1}:`, job);
       experience.push(job);
+    } else {
+      console.log(`Failed to parse job block ${blockIndex + 1}:`, block);
     }
   }
   
