@@ -92,7 +92,12 @@ REQUIRED JSON STRUCTURE:
       "title": "Job Title",
       "company": "Company Name",
       "duration": "Start Date - End Date",
-      "description": "Detailed 3-5 sentence description with specific achievements, metrics, and relevant keywords. Focus on impact and results."
+      "description": "Brief 1-2 sentence overview of the role and main focus",
+      "achievements": [
+        "Specific achievement with metrics and impact",
+        "Another key accomplishment with quantifiable results",
+        "Third major contribution with measurable outcomes"
+      ]
     }
   ],
   "education": [
@@ -114,12 +119,14 @@ REQUIRED JSON STRUCTURE:
 
 ENHANCEMENT GUIDELINES:
 - Professional summary should be compelling and keyword-rich
-- Experience descriptions should highlight achievements and use metrics
+- Experience descriptions should be brief role overviews (1-2 sentences)
+- Each experience should have 3-5 specific achievements with metrics and impact
 - Include 10+ relevant skills including technical and soft skills
 - Add 8-12 core technical skills with proficiency levels (70-95%)
 - Expand on responsibilities with action verbs and specific outcomes
 - Make content ATS-friendly with industry standard terminology
-- Ensure all sections are comprehensive and detailed`;
+- Ensure all sections are comprehensive and detailed
+- Focus achievements on quantifiable results and business impact`;
 
   console.log('Sending request to OpenAI...');
 
@@ -191,7 +198,12 @@ ENHANCEMENT GUIDELINES:
         title: "Professional Experience",
         company: "Professional Organization", 
         duration: "Recent Experience",
-        description: "Demonstrated expertise in various professional domains with focus on delivering measurable results, driving process improvements, and contributing to organizational success through collaborative teamwork and innovative problem-solving approaches."
+        description: "Demonstrated expertise in various professional domains with focus on delivering measurable results.",
+        achievements: [
+          "Delivered exceptional results through innovative problem-solving approaches and collaborative teamwork",
+          "Drove process improvements that enhanced operational efficiency and stakeholder satisfaction", 
+          "Contributed to organizational success through strategic planning and effective project management"
+        ]
       });
     }
 
@@ -279,13 +291,23 @@ function basicParseResume(text: string): any {
       title: "Senior Professional",
       company: "Professional Organization",
       duration: "Recent Experience",
-      description: "Led cross-functional initiatives resulting in improved operational efficiency and enhanced stakeholder satisfaction. Developed and implemented strategic solutions that drove measurable business outcomes while mentoring team members and fostering collaborative work environments. Demonstrated expertise in project management, data analysis, and process optimization."
+      description: "Led cross-functional initiatives and strategic planning efforts to drive organizational growth.",
+      achievements: [
+        "Improved operational efficiency by 25% through process optimization and team collaboration",
+        "Enhanced stakeholder satisfaction rates by implementing customer-focused solutions and quality improvements",
+        "Mentored team members and fostered collaborative work environments resulting in increased productivity"
+      ]
     },
     {
       title: "Professional Role",
       company: "Previous Organization", 
       duration: "Prior Experience",
-      description: "Managed complex projects and delivered high-quality results within budget and timeline constraints. Collaborated with diverse teams to achieve organizational objectives while maintaining strong client relationships and ensuring customer satisfaction. Applied analytical thinking and technical skills to solve challenging problems and drive continuous improvement."
+      description: "Managed complex projects and delivered high-quality results within budget and timeline constraints.",
+      achievements: [
+        "Successfully delivered multiple high-impact projects on time and under budget",
+        "Collaborated with diverse teams to achieve organizational objectives and maintain strong client relationships",
+        "Applied analytical thinking and technical skills to solve challenging problems and drive continuous improvement"
+      ]
     }
   ];
 
