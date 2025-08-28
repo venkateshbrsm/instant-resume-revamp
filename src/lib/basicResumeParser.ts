@@ -282,7 +282,7 @@ function parseExperienceSection(lines: string[]): Array<{
       
       // Save previous experience
       if (currentExp) {
-        currentExp.responsibilities = responsibilities;
+        currentExp.responsibilities = enhanceResponsibilitiesForATS(responsibilities);
         experiences.push(currentExp);
         console.log('💼 Saved previous experience:', currentExp.title);
       }
@@ -326,7 +326,7 @@ function parseExperienceSection(lines: string[]): Array<{
 
       // Save previous experience
       if (currentExp) {
-        currentExp.responsibilities = responsibilities;
+        currentExp.responsibilities = enhanceResponsibilitiesForATS(responsibilities);
         experiences.push(currentExp);
       }
 
@@ -361,7 +361,7 @@ function parseExperienceSection(lines: string[]): Array<{
 
   // Add the last experience
   if (currentExp) {
-    currentExp.responsibilities = responsibilities;
+    currentExp.responsibilities = enhanceResponsibilitiesForATS(responsibilities);
     experiences.push(currentExp);
     console.log('💼 Saved final experience:', currentExp.title);
   }
@@ -445,4 +445,87 @@ function parseSkillsSection(lines: string[]): string[] {
   }
 
   return skills.slice(0, 15); // Limit to first 15 skills
+}
+
+function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
+  const actionVerbs = [
+    'Spearheaded', 'Orchestrated', 'Pioneered', 'Championed', 'Executed', 'Implemented', 'Developed', 
+    'Managed', 'Led', 'Directed', 'Coordinated', 'Supervised', 'Oversaw', 'Facilitated', 'Streamlined',
+    'Optimized', 'Enhanced', 'Improved', 'Transformed', 'Delivered', 'Achieved', 'Exceeded', 'Generated',
+    'Established', 'Created', 'Designed', 'Built', 'Initiated', 'Launched', 'Collaborated', 'Partnered'
+  ];
+
+  const enhancedResponsibilities = responsibilities.map(responsibility => {
+    let enhanced = responsibility.trim();
+    
+    // Remove bullet points and clean up
+    enhanced = enhanced.replace(/^[•\-▪\*]\s*/, '').trim();
+    
+    // Skip if too short
+    if (enhanced.length < 10) return enhanced;
+    
+    // Convert to sentence case if all caps
+    if (enhanced === enhanced.toUpperCase()) {
+      enhanced = enhanced.toLowerCase();
+      enhanced = enhanced.charAt(0).toUpperCase() + enhanced.slice(1);
+    }
+    
+    // Check if it already starts with an action verb
+    const startsWithActionVerb = actionVerbs.some(verb => 
+      enhanced.toLowerCase().startsWith(verb.toLowerCase())
+    );
+    
+    if (!startsWithActionVerb) {
+      // Try to identify the main action and replace with a stronger verb
+      if (enhanced.toLowerCase().startsWith('responsible for')) {
+        const randomVerb = actionVerbs[Math.floor(Math.random() * actionVerbs.length)];
+        enhanced = enhanced.replace(/^responsible for\s*/i, `${randomVerb} `);
+      } else if (enhanced.toLowerCase().startsWith('worked on')) {
+        enhanced = enhanced.replace(/^worked on\s*/i, 'Collaborated on ');
+      } else if (enhanced.toLowerCase().startsWith('helped')) {
+        enhanced = enhanced.replace(/^helped\s*/i, 'Facilitated ');
+      } else if (enhanced.toLowerCase().startsWith('involved in')) {
+        enhanced = enhanced.replace(/^involved in\s*/i, 'Participated in ');
+      } else if (enhanced.toLowerCase().startsWith('handled')) {
+        enhanced = enhanced.replace(/^handled\s*/i, 'Managed ');
+      } else if (enhanced.toLowerCase().startsWith('did')) {
+        enhanced = enhanced.replace(/^did\s*/i, 'Executed ');
+      } else if (enhanced.toLowerCase().startsWith('made')) {
+        enhanced = enhanced.replace(/^made\s*/i, 'Created ');
+      } else if (enhanced.toLowerCase().startsWith('took care of')) {
+        enhanced = enhanced.replace(/^took care of\s*/i, 'Oversaw ');
+      } else if (enhanced.toLowerCase().startsWith('was in charge of')) {
+        enhanced = enhanced.replace(/^was in charge of\s*/i, 'Led ');
+      } else {
+        // If no clear pattern, prepend with an appropriate action verb
+        const randomVerb = actionVerbs[Math.floor(Math.random() * actionVerbs.length)];
+        enhanced = `${randomVerb} ${enhanced.toLowerCase()}`;
+      }
+    }
+    
+    // Ensure proper capitalization
+    enhanced = enhanced.charAt(0).toUpperCase() + enhanced.slice(1);
+    
+    // Add professional keywords and improvements
+    enhanced = enhanced
+      .replace(/\bcustomers?\b/gi, 'clients')
+      .replace(/\bteam members?\b/gi, 'cross-functional teams')
+      .replace(/\bprojects?\b/gi, 'strategic initiatives')
+      .replace(/\bsystems?\b/gi, 'enterprise systems')
+      .replace(/\bprocesses?\b/gi, 'operational processes')
+      .replace(/\bsolutions?\b/gi, 'innovative solutions')
+      .replace(/\bgoals?\b/gi, 'strategic objectives')
+      .replace(/\btasks?\b/gi, 'deliverables')
+      .replace(/\bissues?\b/gi, 'challenges')
+      .replace(/\bproblems?\b/gi, 'complex challenges');
+    
+    // Ensure it ends properly
+    if (!enhanced.endsWith('.') && !enhanced.endsWith(';')) {
+      enhanced += '.';
+    }
+    
+    return enhanced;
+  });
+
+  return enhancedResponsibilities.filter(resp => resp.length > 10);
 }
