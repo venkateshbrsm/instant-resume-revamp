@@ -111,7 +111,7 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
       >
         {pdfUrl ? (
           <iframe
-            src={pdfUrl}
+            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
             className="w-full h-full rounded-lg"
             title="PDF Preview"
             style={{ border: 'none' }}
