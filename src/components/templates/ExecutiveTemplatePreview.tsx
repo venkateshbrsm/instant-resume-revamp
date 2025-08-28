@@ -74,16 +74,16 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
           {/* Tools in Sidebar */}
           {enhancedContent.tools && enhancedContent.tools.length > 0 && (
             <div className="mb-8 page-break-avoid skills-section">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Star className="w-5 h-5" />
-                Tools
-              </h3>
-              <div className="space-y-2">
-                {enhancedContent.tools.slice(0, 6).map((tool: string, index: number) => (
-                  <div key={index} className="flex items-center gap-2 skill-item">
-                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
-                    <span className="text-sm font-medium">{tool}</span>
-                  </div>
+               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                 <Star className="w-5 h-5" />
+                 Tools & Technologies
+               </h3>
+               <div className="space-y-2">
+                 {enhancedContent.tools.map((tool: string, index: number) => (
+                   <div key={index} className="flex items-center gap-2 skill-item">
+                     <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                     <span className="text-sm font-medium">{tool}</span>
+                   </div>
                 ))}
               </div>
             </div>
@@ -125,6 +125,41 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
               </div>
             </div>
           </div>
+          
+          {/* Professional Certifications */}
+          {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+            <div className="mb-8 page-break-avoid">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Award className="w-5 h-5" />
+                Certifications
+              </h3>
+              <div className="space-y-3">
+                {enhancedContent.certifications.map((certification: string, index: number) => (
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 page-break-avoid">
+                    <span className="text-sm font-medium">{certification}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Language Proficiency */}
+          {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+            <div className="mb-8 page-break-avoid">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Languages
+              </h3>
+              <div className="space-y-2">
+                {enhancedContent.languages.map((language: string, index: number) => (
+                  <div key={index} className="flex items-center gap-2 skill-item">
+                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                    <span className="text-sm font-medium">{language}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Education in Sidebar */}
           {enhancedContent.education && enhancedContent.education.length > 0 && (

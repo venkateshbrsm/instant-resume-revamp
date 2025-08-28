@@ -176,6 +176,44 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           </div>
         )}
 
+        {/* Professional Certifications */}
+        {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
+              CERTIFICATIONS
+            </h2>
+            
+            <div className="space-y-2">
+              {enhancedContent.certifications.map((certification: string, index: number) => (
+                <div key={index} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                  <span className="font-light text-muted-foreground">{certification}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Language Proficiency */}
+        {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
+              LANGUAGES
+            </h2>
+            
+            <div className="space-y-2">
+              {enhancedContent.languages.map((language: string, index: number) => (
+                <div key={index} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                  <span className="font-light text-muted-foreground">{language}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Education */}
         {enhancedContent.education && enhancedContent.education.length > 0 && (
           <div className="space-y-4">

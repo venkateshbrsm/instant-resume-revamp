@@ -129,25 +129,25 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
-          {/* Skills */}
-          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
-            <div className="page-break-avoid section">
-              <h2 
-                className="text-xl font-bold mb-4 pb-2 border-b"
-                style={{ 
-                  color: selectedColorTheme.primary,
-                  borderColor: `${selectedColorTheme.primary}30`
-                }}
-              >
-                SKILLS
-              </h2>
-              <div className="grid grid-cols-2 gap-2">
-                {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="skill-item p-2 rounded text-sm" 
-                       style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
-                    • {skill}
-                  </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
+           {/* Skills */}
+           {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+             <div className="page-break-avoid section">
+               <h2 
+                 className="text-xl font-bold mb-4 pb-2 border-b"
+                 style={{ 
+                   color: selectedColorTheme.primary,
+                   borderColor: `${selectedColorTheme.primary}30`
+                 }}
+               >
+                 SKILLS
+               </h2>
+               <div className="grid grid-cols-1 gap-2">
+                 {enhancedContent.skills.map((skill: string, index: number) => (
+                   <div key={index} className="skill-item p-2 rounded text-sm" 
+                        style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
+                     • {skill}
+                   </div>
                 ))}
               </div>
             </div>
@@ -212,33 +212,79 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </div>
           )}
 
-          {/* Education */}
-          {enhancedContent.education && enhancedContent.education.length > 0 && (
-            <div className="page-break-avoid section">
-              <h2 
-                className="text-xl font-bold mb-4 pb-2 border-b"
-                style={{ 
-                  color: selectedColorTheme.primary,
-                  borderColor: `${selectedColorTheme.primary}30`
-                }}
-              >
-                EDUCATION
-              </h2>
-              <div className="space-y-4">
-                {enhancedContent.education.map((edu: any, index: number) => (
-                  <div key={index} className="page-break-avoid education-item">
-                     <h3 className="font-bold text-foreground">{edu.degree}</h3>
-                     <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
-                       {edu.institution}
-                     </p>
-                     {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
-                       <p className="text-sm text-muted-foreground italic">{edu.year}</p>
-                     )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+           {/* Professional Certifications */}
+           {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+             <div className="page-break-avoid section">
+               <h2 
+                 className="text-xl font-bold mb-4 pb-2 border-b"
+                 style={{ 
+                   color: selectedColorTheme.primary,
+                   borderColor: `${selectedColorTheme.primary}30`
+                 }}
+               >
+                 CERTIFICATIONS
+               </h2>
+               <div className="space-y-2">
+                 {enhancedContent.certifications.map((certification: string, index: number) => (
+                   <div key={index} className="text-sm text-muted-foreground flex items-start page-break-avoid">
+                     <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                     <span className="font-medium">{certification}</span>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+
+           {/* Language Proficiency */}
+           {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+             <div className="page-break-avoid section">
+               <h2 
+                 className="text-xl font-bold mb-4 pb-2 border-b"
+                 style={{ 
+                   color: selectedColorTheme.primary,
+                   borderColor: `${selectedColorTheme.primary}30`
+                 }}
+               >
+                 LANGUAGES
+               </h2>
+               <div className="space-y-2">
+                 {enhancedContent.languages.map((language: string, index: number) => (
+                   <div key={index} className="text-sm text-muted-foreground flex items-start page-break-avoid">
+                     <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                     <span className="font-medium">{language}</span>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+
+           {/* Education */}
+           {enhancedContent.education && enhancedContent.education.length > 0 && (
+             <div className="page-break-avoid section">
+               <h2 
+                 className="text-xl font-bold mb-4 pb-2 border-b"
+                 style={{ 
+                   color: selectedColorTheme.primary,
+                   borderColor: `${selectedColorTheme.primary}30`
+                 }}
+               >
+                 EDUCATION
+               </h2>
+               <div className="space-y-4">
+                 {enhancedContent.education.map((edu: any, index: number) => (
+                   <div key={index} className="page-break-avoid education-item">
+                      <h3 className="font-bold text-foreground">{edu.degree}</h3>
+                      <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
+                        {edu.institution}
+                      </p>
+                      {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
+                        <p className="text-sm text-muted-foreground italic">{edu.year}</p>
+                      )}
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
         </div>
       </div>
     </div>

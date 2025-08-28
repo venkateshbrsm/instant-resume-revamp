@@ -345,6 +345,86 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 </div>
               )}
 
+              {/* Professional Certifications */}
+              {enhancedContent.certifications && enhancedContent.certifications.length > 0 && (
+                <div 
+                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                    pageBreakInside: 'avoid',
+                    breakInside: 'avoid'
+                  }}
+                >
+                  <div className="flex items-center gap-3 mb-4 print:mb-3 print:gap-2">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white print:w-8 print:h-8"
+                      style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
+                    >
+                      <Award className="w-5 h-5 print:w-4 print:h-4" />
+                    </div>
+                    <h3 className="text-lg font-bold print:text-base" style={{ color: selectedColorTheme.primary }}>
+                      Certifications
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-3 print:space-y-2">
+                    {enhancedContent.certifications.map((certification: string, index: number) => (
+                      <div 
+                        key={index}
+                        className="p-3 rounded-lg border-2 font-medium text-sm print:p-2 print:text-xs"
+                        style={{ 
+                          borderColor: selectedColorTheme.accent,
+                          color: selectedColorTheme.primary,
+                          background: 'white'
+                        }}
+                      >
+                        <span className="block">{certification}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Language Proficiency */}
+              {enhancedContent.languages && enhancedContent.languages.length > 0 && (
+                <div 
+                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                    pageBreakInside: 'avoid',
+                    breakInside: 'avoid'
+                  }}
+                >
+                  <div className="flex items-center gap-3 mb-4 print:mb-3 print:gap-2">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white print:w-8 print:h-8"
+                      style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
+                    >
+                      <Users className="w-5 h-5 print:w-4 print:h-4" />
+                    </div>
+                    <h3 className="text-lg font-bold print:text-base" style={{ color: selectedColorTheme.primary }}>
+                      Languages
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-3 print:space-y-2">
+                    {enhancedContent.languages.map((language: string, index: number) => (
+                      <div 
+                        key={index}
+                        className="p-3 rounded-lg border-2 font-medium text-sm print:p-2 print:text-xs"
+                        style={{ 
+                          borderColor: selectedColorTheme.accent,
+                          color: selectedColorTheme.primary,
+                          background: 'white'
+                        }}
+                      >
+                        <span className="block">{language}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Creative Stats */}
               <div 
                 className="p-6 rounded-2xl shadow-lg text-center print:p-4 print:shadow-none print:rounded-lg print:break-inside-avoid"
