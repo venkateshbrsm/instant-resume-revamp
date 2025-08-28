@@ -272,7 +272,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                                <div className="w-4 h-4 rounded-full flex items-center justify-center mt-1 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
                                  <span className="text-white text-xs font-bold">✓</span>
                                </div>
-                               <span className="leading-relaxed font-medium break-words text-sm">
+                               <span className="leading-relaxed font-medium text-sm" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
                                  {achievement}
                                </span>
                              </li>
