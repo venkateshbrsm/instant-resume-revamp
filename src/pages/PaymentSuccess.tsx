@@ -250,11 +250,13 @@ export default function PaymentSuccess() {
         
         const selectedThemeStr = localStorage.getItem('selectedColorThemeForPayment');
         
-        console.log('Session storage check:', {
+        console.log('🔍 Local storage check:', {
           hasEnhancedContent: !!enhancedContentStr2,
           hasTheme: !!selectedThemeStr,
           enhancedContentLength: enhancedContentStr2?.length,
-          themeLength: selectedThemeStr?.length
+          themeLength: selectedThemeStr?.length,
+          enhancedContentPreview: enhancedContentStr2?.substring(0, 100),
+          themePreview: selectedThemeStr?.substring(0, 50)
         });
         
         if (enhancedContentStr2 && selectedThemeStr) {

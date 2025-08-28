@@ -240,11 +240,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               sessionStorage.setItem('canvasPdfBlob', base64data);
               
               // Also save other data
-              sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
-              sessionStorage.setItem('extractedTextForPayment', extractedText);
-              console.log('Saving template and theme to sessionStorage for payment:', selectedTemplate, selectedColorTheme);
-              sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
-              sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
+              localStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+              localStorage.setItem('extractedTextForPayment', extractedText);
+              console.log('Saving template and theme to localStorage for payment:', selectedTemplate, selectedColorTheme);
+              localStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+              localStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
               
               onPurchase();
             };
@@ -262,11 +262,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         
         // Fallback: save enhanced content and theme before proceeding with purchase
         if (enhancedContent) {
-          sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
-          sessionStorage.setItem('extractedTextForPayment', extractedText);
-          console.log('Saving template and theme to sessionStorage for payment:', selectedTemplate, selectedColorTheme);
-          sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
-          sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
+          localStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+          localStorage.setItem('extractedTextForPayment', extractedText);
+          console.log('Saving template and theme to localStorage for payment:', selectedTemplate, selectedColorTheme);
+          localStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+          localStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
         }
         onPurchase();
       } else {
@@ -302,11 +302,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               sessionStorage.setItem('canvasPdfBlob', base64data);
               
               sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
-              sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
-              sessionStorage.setItem('extractedTextForPayment', extractedText);
-              console.log('Saving template and theme to sessionStorage for login flow:', selectedTemplate, selectedColorTheme);
-              sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
-              sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
+              localStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+              localStorage.setItem('extractedTextForPayment', extractedText);
+              console.log('Saving template and theme to localStorage for login flow:', selectedTemplate, selectedColorTheme);
+              localStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+              localStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
               
               // Navigate after saving
               navigate('/auth');
@@ -320,11 +320,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
         if (enhancedContent) {
           sessionStorage.setItem('enhancedContent', JSON.stringify(enhancedContent));
-          sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
-          sessionStorage.setItem('extractedTextForPayment', extractedText);
-          console.log('Saving template and theme to sessionStorage for login flow:', selectedTemplate, selectedColorTheme);
-          sessionStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
-          sessionStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
+          localStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+          localStorage.setItem('extractedTextForPayment', extractedText);
+          console.log('Saving template and theme to localStorage for login flow:', selectedTemplate, selectedColorTheme);
+          localStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
+          localStorage.setItem('selectedColorThemeForPayment', JSON.stringify(selectedColorTheme));
         }
         if (originalContent) {
           const contentToStore = typeof originalContent === 'string' ? originalContent : JSON.stringify(originalContent);

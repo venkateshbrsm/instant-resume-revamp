@@ -105,10 +105,10 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled = false, coup
         console.log('File uploaded successfully to:', filePath);
       }
 
-      // Get enhanced content and theme from session storage if available
-      const enhancedContentString = sessionStorage.getItem('enhancedContentForPayment');
-      const extractedTextString = sessionStorage.getItem('extractedTextForPayment');
-      const selectedThemeString = sessionStorage.getItem('selectedColorThemeForPayment');
+      // Get enhanced content and theme from local storage if available
+      const enhancedContentString = localStorage.getItem('enhancedContentForPayment');
+      const extractedTextString = localStorage.getItem('extractedTextForPayment');
+      const selectedThemeString = localStorage.getItem('selectedColorThemeForPayment');
       
       let enhancedContent = null;
       let extractedText = null;
