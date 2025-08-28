@@ -117,7 +117,8 @@ REQUIRED JSON STRUCTURE:
       "gpa": "GPA if available"
     }
   ],
-  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10"],
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10", "skill11", "skill12"],
+  "tools": ["tool1", "tool2", "tool3", "tool4", "tool5", "tool6", "tool7", "tool8", "tool9", "tool10"],
   "core_technical_skills": [
     {
       "name": "Technical Skill Name",
@@ -131,8 +132,9 @@ ENHANCEMENT GUIDELINES:
 - Experience descriptions should be brief role overviews (1-2 sentences)
 - Each experience should have 3-5 core responsibilities detailing daily tasks and duties
 - Each experience should have 3-5 specific achievements with metrics and impact
-- Include 10+ relevant skills including technical and soft skills
-- Add 8-12 core technical skills with proficiency levels (70-95%)
+- Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
+- Extract ALL tools mentioned in original resume as a separate "tools" array
+- Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
 - Expand on responsibilities with action verbs and specific outcomes
 - Make content ATS-friendly with industry standard terminology
 - Ensure all sections are comprehensive and detailed
@@ -198,6 +200,9 @@ ENHANCEMENT GUIDELINES:
     // Ensure arrays exist
     parsedResume.experience = parsedResume.experience || [];
     parsedResume.education = parsedResume.education || [];
+    parsedResume.skills = parsedResume.skills || [];
+    parsedResume.tools = parsedResume.tools || [];
+    parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
     parsedResume.skills = parsedResume.skills || [];
     parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
 

@@ -130,7 +130,53 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
-          {/* Core Competencies - Enhanced with Proficiency Levels */}
+          {/* Skills */}
+          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+            <div className="page-break-avoid section">
+              <h2 
+                className="text-xl font-bold mb-4 pb-2 border-b"
+                style={{ 
+                  color: selectedColorTheme.primary,
+                  borderColor: `${selectedColorTheme.primary}30`
+                }}
+              >
+                SKILLS
+              </h2>
+              <div className="grid grid-cols-2 gap-2">
+                {enhancedContent.skills.map((skill: string, index: number) => (
+                  <div key={index} className="skill-item p-2 rounded text-sm" 
+                       style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
+                    • {skill}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tools */}
+          {enhancedContent.tools && enhancedContent.tools.length > 0 && (
+            <div className="page-break-avoid section">
+              <h2 
+                className="text-xl font-bold mb-4 pb-2 border-b"
+                style={{ 
+                  color: selectedColorTheme.primary,
+                  borderColor: `${selectedColorTheme.primary}30`
+                }}
+              >
+                TOOLS
+              </h2>
+              <div className="grid grid-cols-2 gap-2">
+                {enhancedContent.tools.map((tool: string, index: number) => (
+                  <div key={index} className="skill-item p-2 rounded text-sm" 
+                       style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
+                    • {tool}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Core Skills - Enhanced with Proficiency Levels */}
           {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
             <div className="page-break-avoid section">
               <h2 
@@ -140,7 +186,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   borderColor: `${selectedColorTheme.primary}30`
                 }}
               >
-                CORE COMPETENCIES & TECHNICAL SKILLS
+                CORE SKILLS
               </h2>
               <div className="space-y-3">
                 {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
@@ -162,22 +208,6 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                     </div>
                   </div>
                 ))}
-              </div>
-              
-              {/* Additional Professional Skills */}
-              <div className="mt-6 p-4 rounded-lg border page-break-avoid" style={{
-                backgroundColor: `${selectedColorTheme.primary}05`,
-                borderColor: `${selectedColorTheme.primary}20`
-              }}>
-                <h4 className="text-sm font-semibold mb-2 text-foreground">Additional Professional Competencies:</h4>
-                <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
-                  <div>• Strategic Planning & Analysis</div>
-                  <div>• Team Leadership & Development</div>
-                  <div>• Process Optimization</div>
-                  <div>• Stakeholder Management</div>
-                  <div>• Quality Assurance</div>
-                  <div>• Performance Metrics</div>
-                </div>
               </div>
             </div>
           )}

@@ -378,9 +378,27 @@ export function generateClassicTemplate({ resumeData, theme }: PDFTemplateContex
     </div>
     ` : ''}
 
+    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">SKILLS</h2>
+      <div class="skills-grid">
+        ${resumeData.skills.map((skill: string) => `<div class="skill-item">• ${skill}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${resumeData.tools && resumeData.tools.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">TOOLS</h2>
+      <div class="skills-grid">
+        ${resumeData.tools.map((tool: string) => `<div class="skill-item">• ${tool}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
     ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
     <div class="section">
-      <h2 class="section-title">TECHNICAL SKILLS & COMPETENCIES</h2>
+      <h2 class="section-title">CORE SKILLS</h2>
       <div class="skills-grid">
         ${resumeData.core_technical_skills.map((skill: any) => `<div class="skill-item">• ${skill.name} (${skill.proficiency}%)</div>`).join('')}
       </div>
@@ -850,14 +868,38 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
       </div>
       ` : ''}
 
+      ${resumeData.skills && resumeData.skills.length > 0 ? `
+      <div class="skills-section">
+        <div class="skills-header">
+          <div class="skills-icon">💼</div>
+          <h3 class="skills-title">Skills</h3>
+        </div>
+        <div class="skills-grid">
+          ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      ${resumeData.tools && resumeData.tools.length > 0 ? `
+      <div class="skills-section">
+        <div class="skills-header">
+          <div class="skills-icon">🛠️</div>
+          <h3 class="skills-title">Tools</h3>
+        </div>
+        <div class="skills-grid">
+          ${resumeData.tools.map((tool: string) => `<span class="skill-badge">${tool}</span>`).join('')}
+        </div>
+      </div>
+      ` : ''}
+
       ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
       <div class="skills-section">
         <div class="skills-header">
           <div class="skills-icon">🎨</div>
-          <h3 class="skills-title">Technical Skills & Competencies</h3>
+          <h3 class="skills-title">Core Skills</h3>
         </div>
         <div class="skills-grid">
-          ${resumeData.core_technical_skills.map((skill: any) => `<span class="skill-badge">${skill.name}</span>`).join('')}
+          ${resumeData.core_technical_skills.map((skill: any) => `<span class="skill-badge">${skill.name} (${skill.proficiency}%)</span>`).join('')}
         </div>
       </div>
       ` : ''}
@@ -1007,9 +1049,27 @@ export function generateExecutiveTemplate({ resumeData, theme }: PDFTemplateCont
     </div>
     ` : ''}
 
+    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">SKILLS</h2>
+      <div class="skills-grid">
+        ${resumeData.skills.map((skill: string) => `<div class="skill-item">${skill}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${resumeData.tools && resumeData.tools.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">TOOLS</h2>
+      <div class="skills-grid">
+        ${resumeData.tools.map((tool: string) => `<div class="skill-item">${tool}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
     ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
     <div class="section">
-      <h2 class="section-title">CORE COMPETENCIES</h2>
+      <h2 class="section-title">CORE SKILLS</h2>
       <div class="skills-grid">
         ${resumeData.core_technical_skills.map((skill: any) => `<div class="skill-item">${skill.name} (${skill.proficiency}%)</div>`).join('')}
       </div>
@@ -1139,9 +1199,27 @@ export function generateMinimalistTemplate({ resumeData, theme }: PDFTemplateCon
     </div>
     ` : ''}
 
+    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Skills</h2>
+      <div class="skills-grid">
+        ${resumeData.skills.map((skill: string) => `<div class="skill-item">${skill}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${resumeData.tools && resumeData.tools.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Tools</h2>
+      <div class="skills-grid">
+        ${resumeData.tools.map((tool: string) => `<div class="skill-item">${tool}</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
     ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
     <div class="section">
-      <h2 class="section-title">Technical Skills</h2>
+      <h2 class="section-title">Core Skills</h2>
       <div class="skills-grid">
         ${resumeData.core_technical_skills.map((skill: any) => `<div class="skill-item">${skill.name} — ${skill.proficiency}%</div>`).join('')}
       </div>

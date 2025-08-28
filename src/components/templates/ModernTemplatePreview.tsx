@@ -65,6 +65,46 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             </div>
           </div>
 
+          {/* Skills */}
+          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+            <div className="page-break-avoid section">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <User className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Skills</h3>
+              </div>
+              <div className="space-y-2">
+                {enhancedContent.skills.map((skill: string, index: number) => (
+                  <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                    <span className="font-medium">{skill}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tools */}
+          {enhancedContent.tools && enhancedContent.tools.length > 0 && (
+            <div className="page-break-avoid section">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <Star className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Tools</h3>
+              </div>
+              <div className="space-y-2">
+                {enhancedContent.tools.map((tool: string, index: number) => (
+                  <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                    <span className="font-medium">{tool}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Core Technical Skills */}
           {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
             <div className="page-break-avoid section">
@@ -72,7 +112,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Star className="w-4 h-4" />
                 </div>
-                <h3 className="font-semibold text-sm tracking-wide uppercase">Core Technical Skills</h3>
+                <h3 className="font-semibold text-sm tracking-wide uppercase">Core Skills</h3>
               </div>
               <div className="space-y-2">
                 {enhancedContent.core_technical_skills.map((skill: any, index: number) => (

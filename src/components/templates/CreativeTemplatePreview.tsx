@@ -217,6 +217,92 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             {/* Creative Sidebar */}
             <div className="space-y-5 print:space-y-4 print:col-span-1">
               {/* Skills as Creative Badges */}
+              {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                <div 
+                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none mb-6"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                    pageBreakInside: 'avoid',
+                    breakInside: 'avoid'
+                  }}
+                >
+                  <div className="flex items-center gap-3 mb-4 print:mb-3 print:gap-2">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white print:w-8 print:h-8"
+                      style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
+                    >
+                      <Users className="w-5 h-5 print:w-4 print:h-4" />
+                    </div>
+                    <h3 className="text-lg font-bold print:text-base" style={{ color: selectedColorTheme.primary }}>
+                      Skills
+                    </h3>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 print:gap-1">
+                    {enhancedContent.skills.map((skill: string, index: number) => (
+                      <Badge 
+                        key={index}
+                        variant="outline"
+                        className="px-3 py-2 rounded-lg border-2 font-medium text-xs leading-relaxed break-words hyphens-auto min-h-fit print:px-2 print:py-1 print:text-xs"
+                        style={{ 
+                          borderColor: selectedColorTheme.accent,
+                          color: selectedColorTheme.primary,
+                          background: 'white',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word'
+                        }}
+                      >
+                        <span className="block text-center whitespace-normal">{skill}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tools as Creative Badges */}
+              {enhancedContent.tools && enhancedContent.tools.length > 0 && (
+                <div 
+                  className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none mb-6"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${selectedColorTheme.primary}08, ${selectedColorTheme.accent}15)`,
+                    pageBreakInside: 'avoid',
+                    breakInside: 'avoid'
+                  }}
+                >
+                  <div className="flex items-center gap-3 mb-4 print:mb-3 print:gap-2">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center text-white print:w-8 print:h-8"
+                      style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
+                    >
+                      <Brush className="w-5 h-5 print:w-4 print:h-4" />
+                    </div>
+                    <h3 className="text-lg font-bold print:text-base" style={{ color: selectedColorTheme.primary }}>
+                      Tools
+                    </h3>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 print:gap-1">
+                    {enhancedContent.tools.map((tool: string, index: number) => (
+                      <Badge 
+                        key={index}
+                        variant="outline"
+                        className="px-3 py-2 rounded-lg border-2 font-medium text-xs leading-relaxed break-words hyphens-auto min-h-fit print:px-2 print:py-1 print:text-xs"
+                        style={{ 
+                          borderColor: selectedColorTheme.accent,
+                          color: selectedColorTheme.primary,
+                          background: 'white',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word'
+                        }}
+                      >
+                        <span className="block text-center whitespace-normal">{tool}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Core Skills as Creative Badges */}
               {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
                 <div 
                   className="p-6 rounded-2xl shadow-lg print:shadow-none print:break-inside-avoid print:p-4 print:rounded-lg w-full max-w-none"
@@ -231,10 +317,10 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       className="w-10 h-10 rounded-xl flex items-center justify-center text-white print:w-8 print:h-8"
                       style={{ background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})` }}
                     >
-                      <Brush className="w-5 h-5 print:w-4 print:h-4" />
+                      <Sparkles className="w-5 h-5 print:w-4 print:h-4" />
                     </div>
                     <h3 className="text-lg font-bold print:text-base" style={{ color: selectedColorTheme.primary }}>
-                      Creative Skills
+                      Core Skills
                     </h3>
                   </div>
                   
@@ -252,7 +338,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                           overflowWrap: 'break-word'
                         }}
                       >
-                        <span className="block text-center whitespace-normal">{skill.name}</span>
+                        <span className="block text-center whitespace-normal">{skill.name} ({skill.proficiency}%)</span>
                       </Badge>
                     ))}
                   </div>

@@ -116,50 +116,62 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
-        {/* Skills - Enhanced with Categories */}
-        {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
+        {/* Skills Section */}
+        {(enhancedContent.skills || enhancedContent.tools || enhancedContent.core_technical_skills) && (
           <div className="space-y-4">
             <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
-              TECHNICAL SKILLS & COMPETENCIES
+              SKILLS & TOOLS
             </h2>
             
-            <div className="space-y-3">
-              <div>
-                <h4 className="text-sm font-medium text-foreground mb-2">Core Technical Skills:</h4>
-                <div className="space-y-2">
-                  {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground font-light">{skill.name}</p>
-                      <div className="flex gap-1">
-                         {[1,2,3,4,5].map(level => (
-                           <div
-                             key={level}
-                             className="w-2 h-2 rounded-full"
-                             style={{
-                               backgroundColor: level * 20 <= skill.proficiency ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
-                             }}
-                           />
-                         ))}
+            <div className="space-y-4">
+              {/* Skills */}
+              {enhancedContent.skills && enhancedContent.skills.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-foreground mb-2">Skills:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {enhancedContent.skills.map((skill: string, index: number) => (
+                      <p key={index} className="text-sm text-muted-foreground font-light">• {skill}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tools */}
+              {enhancedContent.tools && enhancedContent.tools.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-foreground mb-2">Tools:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {enhancedContent.tools.map((tool: string, index: number) => (
+                      <p key={index} className="text-sm text-muted-foreground font-light">• {tool}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Core Technical Skills */}
+              {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-foreground mb-2">Core Skills:</h4>
+                  <div className="space-y-2">
+                    {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground font-light">{skill.name}</p>
+                        <div className="flex gap-1">
+                           {[1,2,3,4,5].map(level => (
+                             <div
+                               key={level}
+                               className="w-2 h-2 rounded-full"
+                               style={{
+                                 backgroundColor: level * 20 <= skill.proficiency ? selectedColorTheme.primary : `${selectedColorTheme.primary}20`
+                               }}
+                             />
+                           ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-              
-              <div className="mt-4 p-3 rounded border" style={{
-                backgroundColor: `${selectedColorTheme.primary}03`,
-                borderColor: `${selectedColorTheme.primary}15`
-              }}>
-                <h4 className="text-sm font-medium text-foreground mb-2">Additional Professional Skills:</h4>
-                <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground font-light">
-                  <p>• Project Management & Coordination</p>
-                  <p>• Strategic Planning & Analysis</p>
-                  <p>• Team Leadership & Mentoring</p>
-                  <p>• Process Optimization & Improvement</p>
-                  <p>• Client Relations & Communication</p>
-                  <p>• Quality Assurance & Control</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}

@@ -53,18 +53,54 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
             </div>
           </div>
 
-          {/* Core Competencies in Sidebar */}
-          {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
+          {/* Skills in Sidebar */}
+          {enhancedContent.skills && enhancedContent.skills.length > 0 && (
             <div className="mb-8 page-break-avoid skills-section">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Core Competencies
+                Skills
+              </h3>
+              <div className="space-y-2">
+                {enhancedContent.skills.slice(0, 6).map((skill: string, index: number) => (
+                  <div key={index} className="flex items-center gap-2 skill-item">
+                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                    <span className="text-sm font-medium">{skill}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tools in Sidebar */}
+          {enhancedContent.tools && enhancedContent.tools.length > 0 && (
+            <div className="mb-8 page-break-avoid skills-section">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Tools
+              </h3>
+              <div className="space-y-2">
+                {enhancedContent.tools.slice(0, 6).map((tool: string, index: number) => (
+                  <div key={index} className="flex items-center gap-2 skill-item">
+                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                    <span className="text-sm font-medium">{tool}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Core Technical Skills in Sidebar */}
+          {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
+            <div className="mb-8 page-break-avoid skills-section">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                Core Skills
               </h3>
               <div className="space-y-2">
                 {enhancedContent.core_technical_skills.slice(0, 8).map((skill: any, index: number) => (
                   <div key={index} className="flex items-center gap-2 skill-item">
                     <div className="w-2 h-2 rounded-full bg-white/80"></div>
-                    <span className="text-sm font-medium">{skill.name}</span>
+                    <span className="text-sm font-medium">{skill.name} ({skill.proficiency}%)</span>
                   </div>
                 ))}
               </div>
