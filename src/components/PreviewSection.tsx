@@ -486,14 +486,39 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setEnhancementProgress(30);
       
-      // Call enhance-resume edge function with minimal payload
-      const { data, error } = await supabase.functions.invoke('enhance-resume', {
-        body: {
-          extractedText: extractedText,
-          templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.id
+      // Call enhance-resume edge function with retry logic
+      let data, error;
+      let retryCount = 0;
+      const maxRetries = 2;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          const response = await supabase.functions.invoke('enhance-resume', {
+            body: {
+              extractedText: extractedText,
+              templateId: selectedTemplate.id,
+              themeId: selectedColorTheme.id
+            }
+          });
+          
+          data = response.data;
+          error = response.error;
+          
+          // If successful or if it's an application error (not network), break
+          if (!error || !error.message?.includes('Failed to send a request')) {
+            break;
+          }
+        } catch (networkError) {
+          console.log(`Network attempt ${retryCount + 1} failed:`, networkError);
+          error = networkError;
         }
-      });
+        
+        retryCount++;
+        if (retryCount <= maxRetries) {
+          console.log(`Retrying request... (${retryCount}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        }
+      }
 
       setEnhancementProgress(70);
       await new Promise(resolve => setTimeout(resolve, 300));
