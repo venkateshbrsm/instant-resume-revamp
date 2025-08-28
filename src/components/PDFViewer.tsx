@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PDFViewerProps {
-  file: File | string; // File object or URL
+  file: File | string | Blob; // File object, URL, or Blob
   className?: string;
 }
 
@@ -62,7 +62,7 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
         const response = await fetch(file);
         pdfData = await response.arrayBuffer();
       } else {
-        // File object provided
+        // File or Blob object provided
         pdfData = await file.arrayBuffer();
       }
 

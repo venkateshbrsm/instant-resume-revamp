@@ -13,11 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
-import { ModernTemplatePreview } from "./templates/ModernTemplatePreview";
-import { ClassicTemplatePreview } from "./templates/ClassicTemplatePreview";
-import { CreativeTemplatePreview } from "./templates/CreativeTemplatePreview";
-import { ExecutiveTemplatePreview } from "./templates/ExecutiveTemplatePreview";
-import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
+import { PDFViewer } from "./PDFViewer";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
@@ -49,6 +45,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [selectedColorTheme, setSelectedColorTheme] = useState(getDefaultTemplate().colorThemes[0]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [previewPdfBlob, setPreviewPdfBlob] = useState<Blob | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -120,6 +118,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       enhanceResume();
     }
   }, [extractedText]);
+
+  // Generate preview PDF when enhanced content or template/theme changes
+  useEffect(() => {
+    if (enhancedContent && !isGeneratingPreview) {
+      generatePreviewPdf();
+    }
+  }, [enhancedContent, selectedTemplate, selectedColorTheme]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -393,6 +398,38 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   };
 
+  const generatePreviewPdf = async () => {
+    if (!enhancedContent || isGeneratingPreview) return;
+
+    setIsGeneratingPreview(true);
+    
+    try {
+      console.log('🎨 Generating preview PDF...');
+      
+      const resumeData = extractResumeDataFromEnhanced(enhancedContent);
+      const pdfBlob = await generateVisualPdf(resumeData, {
+        templateType: selectedTemplate.layout,
+        colorTheme: {
+          primary: selectedColorTheme.primary,
+          secondary: selectedColorTheme.secondary,
+          accent: selectedColorTheme.accent
+        }
+      });
+      
+      setPreviewPdfBlob(pdfBlob);
+      console.log('✅ Preview PDF generated successfully');
+    } catch (error) {
+      console.error('Error generating preview PDF:', error);
+      toast({
+        title: "Preview Error",
+        description: "Failed to generate PDF preview. Using fallback display.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
+
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
       console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
@@ -587,105 +624,76 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         onColorThemeChange={setSelectedColorTheme}
                       />
 
-                      {/* Scrollable Template Preview - Printer Friendly */}
-                      <div className="relative">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-muted-foreground text-center flex-1">
-                            📄 Scroll to view full resume • Use mouse wheel or drag scrollbars
-                          </p>
-                          <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="ml-2">
-                                <Maximize2 className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
-                              <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold">Resume Preview - Fullscreen</h2>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => setIsFullscreen(false)}
-                                >
-                                  <Minimize2 className="w-4 h-4 mr-2" />
-                                  Exit Fullscreen
-                                </Button>
-                              </div>
-                              <ScrollArea className="h-full w-full border rounded-lg">
-                                <div className="resume-preview w-[210mm] mx-auto p-4 bg-white" style={{ minHeight: '297mm' }}>
-                                  {selectedTemplate.id === 'modern' && (
-                                    <ModernTemplatePreview 
-                                      enhancedContent={enhancedContent}
-                                      selectedColorTheme={selectedColorTheme}
-                                    />
-                                  )}
-                                  {selectedTemplate.id === 'classic' && (
-                                    <ClassicTemplatePreview 
-                                      enhancedContent={enhancedContent}
-                                      selectedColorTheme={selectedColorTheme}
-                                    />
-                                  )}
-                                  {selectedTemplate.id === 'creative' && (
-                                    <CreativeTemplatePreview 
-                                      enhancedContent={enhancedContent}
-                                      selectedColorTheme={selectedColorTheme}
-                                    />
-                                  )}
-                                  {selectedTemplate.id === 'executive' && (
-                                    <ExecutiveTemplatePreview 
-                                      enhancedContent={enhancedContent}
-                                      selectedColorTheme={selectedColorTheme}
-                                    />
-                                  )}
-                                  {selectedTemplate.id === 'minimalist' && (
-                                    <MinimalistTemplatePreview 
-                                      enhancedContent={enhancedContent}
-                                      selectedColorTheme={selectedColorTheme}
-                                    />
-                                  )}
-                                </div>
-                                <ScrollBar orientation="horizontal" />
-                              </ScrollArea>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
-                        <ScrollArea className="h-[600px] w-full border rounded-lg shadow-inner">
-                          <div ref={resumeContentRef} className="resume-preview min-w-[210mm] w-[210mm] mx-auto p-4 bg-white print:p-0 print:shadow-none print:min-w-full print:w-full"
-                               style={{ minHeight: '297mm' }}>
-                          {selectedTemplate.id === 'modern' && (
-                            <ModernTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'classic' && (
-                            <ClassicTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'creative' && (
-                            <CreativeTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'executive' && (
-                            <ExecutiveTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          {selectedTemplate.id === 'minimalist' && (
-                            <MinimalistTemplatePreview 
-                              enhancedContent={enhancedContent}
-                              selectedColorTheme={selectedColorTheme}
-                            />
-                          )}
-                          </div>
-                          <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                      </div>
+                       {/* PDF Preview */}
+                       <div className="relative">
+                         <div className="flex items-center justify-between mb-2">
+                           <p className="text-sm text-muted-foreground text-center flex-1">
+                             📄 PDF Preview • This is exactly what you'll receive
+                           </p>
+                           <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+                             <DialogTrigger asChild>
+                               <Button variant="outline" size="sm" className="ml-2">
+                                 <Maximize2 className="w-4 h-4" />
+                               </Button>
+                             </DialogTrigger>
+                             <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
+                               <div className="flex items-center justify-between mb-4">
+                                 <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
+                                 <Button 
+                                   variant="outline" 
+                                   size="sm" 
+                                   onClick={() => setIsFullscreen(false)}
+                                 >
+                                   <Minimize2 className="w-4 h-4 mr-2" />
+                                   Exit Fullscreen
+                                 </Button>
+                               </div>
+                               {previewPdfBlob ? (
+                                 <PDFViewer 
+                                   file={previewPdfBlob} 
+                                   className="h-full w-full"
+                                 />
+                               ) : (
+                                 <div className="flex items-center justify-center h-full">
+                                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                   <span className="ml-2">Generating PDF preview...</span>
+                                 </div>
+                               )}
+                             </DialogContent>
+                           </Dialog>
+                         </div>
+                         
+                         {isGeneratingPreview ? (
+                           <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
+                             <div className="text-center space-y-4">
+                               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+                               <div>
+                                 <h3 className="text-lg font-semibold mb-2">Generating PDF Preview</h3>
+                                 <p className="text-muted-foreground">
+                                   Creating your resume PDF with the selected template and colors...
+                                 </p>
+                               </div>
+                             </div>
+                           </div>
+                         ) : previewPdfBlob ? (
+                           <PDFViewer 
+                             file={previewPdfBlob} 
+                             className="h-[600px] w-full"
+                           />
+                         ) : (
+                           <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
+                             <div className="text-center space-y-4">
+                               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+                               <div>
+                                 <h3 className="text-lg font-semibold mb-2">Preview Unavailable</h3>
+                                 <p className="text-muted-foreground">
+                                   Unable to generate PDF preview. Your resume is ready for purchase.
+                                 </p>
+                               </div>
+                             </div>
+                           </div>
+                         )}
+                       </div>
                     </div>
                   </div>
               ) : (
