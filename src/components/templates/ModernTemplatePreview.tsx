@@ -16,18 +16,18 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex flex-col md:flex-row min-h-[600px]">
       {/* Left Sidebar */}
       <div 
-        className="w-64 p-6 text-white"
+        className="w-full md:w-64 p-4 md:p-6 text-white"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
       >
         {/* Profile Photo - Only show if photo exists */}
         {enhancedContent.photo && (
-          <div className="text-center mb-6">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden">
+          <div className="text-center mb-4 md:mb-6">
+            <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full overflow-hidden">
               <img 
                 src={enhancedContent.photo} 
                 alt={enhancedContent.name}
@@ -38,7 +38,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         )}
 
         {/* Sidebar Sections */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4 md:gap-0">
           {/* Contact Details */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -192,31 +192,31 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
             {enhancedContent.name}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className="text-base md:text-lg text-muted-foreground mb-4">
             {enhancedContent.title}
           </p>
         </div>
 
         {/* About Section */}
-        <div className="mb-8 page-break-avoid section">
+        <div className="mb-6 md:mb-8 page-break-avoid section">
           <div 
-            className="text-xl font-bold mb-4 flex items-center gap-3 px-4 py-3 rounded-lg text-white"
+            className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg text-white"
             style={{ 
               background: `linear-gradient(135deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
             }}
           >
-            <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/20">
+            <div className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center bg-white/20">
               <User className="w-3 h-3" />
             </div>
-            PROFESSIONAL SUMMARY
+            <span className="text-sm md:text-base">PROFESSIONAL SUMMARY</span>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-normal">
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed break-words whitespace-normal">
             {enhancedContent.summary}
           </p>
         </div>
@@ -224,33 +224,33 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         {/* Work Experience */}
         {enhancedContent.experience && enhancedContent.experience.length > 0 && (
           <div className="page-break-before section">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-3" style={{ color: selectedColorTheme.primary }}>
+            <h2 className="text-lg md:text-xl font-bold mb-4 md:mb-6 flex items-center gap-2 md:gap-3" style={{ color: selectedColorTheme.primary }}>
               <div 
-                className="w-6 h-6 rounded-full flex items-center justify-center text-white"
+                className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-white"
                 style={{ backgroundColor: selectedColorTheme.primary }}
               >
                 <Briefcase className="w-3 h-3" />
               </div>
-              Work & Related Experience
+              <span className="text-sm md:text-base">Work & Related Experience</span>
             </h2>
             
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-2 pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                <div key={index} className="border-l-2 pl-4 md:pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div 
                     className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
                     style={{ backgroundColor: selectedColorTheme.primary }}
                   ></div>
                   
                   <div className="mb-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-bold text-lg text-foreground">{exp.title}</h3>
-                        <p className="font-medium text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-base md:text-lg text-foreground">{exp.title}</h3>
+                        <p className="font-medium text-sm md:text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                       </div>
                       <Badge 
                         variant="outline" 
-                        className="text-xs px-2 py-1" 
+                        className="text-xs px-2 py-1 self-start" 
                         style={{ 
                           backgroundColor: `${selectedColorTheme.primary}10`, 
                           color: selectedColorTheme.primary,
