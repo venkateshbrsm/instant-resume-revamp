@@ -483,90 +483,99 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
       enhanced = enhanced.charAt(0).toUpperCase() + enhanced.slice(1);
     }
     
-    // More aggressive ATS-friendly rewriting
+    // More intelligent ATS-friendly rewriting that preserves meaning
     const needsActionVerb = !actionVerbs.some(verb => 
       enhanced.toLowerCase().startsWith(verb.toLowerCase())
     );
     
     if (needsActionVerb) {
-      // Replace weak starts with stronger action verbs
+      // Replace weak starts with contextually appropriate stronger action verbs
       if (enhanced.toLowerCase().startsWith('responsible for')) {
-        const verbs = ['Orchestrated', 'Spearheaded', 'Managed', 'Led', 'Supervised', 'Coordinated'];
-        const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
-        enhanced = enhanced.replace(/^responsible for\s*/i, `${randomVerb} `);
+        // Choose verb based on context
+        let verb = 'Managed';
+        if (enhanced.toLowerCase().includes('team') || enhanced.toLowerCase().includes('staff')) {
+          verb = 'Led';
+        } else if (enhanced.toLowerCase().includes('project') || enhanced.toLowerCase().includes('initiative')) {
+          verb = 'Spearheaded';
+        } else if (enhanced.toLowerCase().includes('process') || enhanced.toLowerCase().includes('system')) {
+          verb = 'Oversaw';
+        }
+        enhanced = enhanced.replace(/^responsible for\s*/i, `${verb} `);
       } else if (enhanced.toLowerCase().startsWith('worked on') || enhanced.toLowerCase().startsWith('worked with')) {
-        enhanced = enhanced.replace(/^worked (on|with)\s*/i, 'Collaborated on ');
+        let replacement = 'Collaborated on';
+        if (enhanced.toLowerCase().includes('develop') || enhanced.toLowerCase().includes('creat')) {
+          replacement = 'Contributed to';
+        } else if (enhanced.toLowerCase().includes('improv') || enhanced.toLowerCase().includes('enhanc')) {
+          replacement = 'Participated in';
+        }
+        enhanced = enhanced.replace(/^worked (on|with)\s*/i, `${replacement} `);
       } else if (enhanced.toLowerCase().startsWith('helped with') || enhanced.toLowerCase().startsWith('helped in')) {
-        enhanced = enhanced.replace(/^helped (with|in)\s*/i, 'Facilitated ');  
+        enhanced = enhanced.replace(/^helped (with|in)\s*/i, 'Supported ');  
       } else if (enhanced.toLowerCase().startsWith('helped')) {
         enhanced = enhanced.replace(/^helped\s*/i, 'Assisted with ');
       } else if (enhanced.toLowerCase().startsWith('involved in')) {
-        enhanced = enhanced.replace(/^involved in\s*/i, 'Participated in ');
+        enhanced = enhanced.replace(/^involved in\s*/i, 'Contributed to ');
       } else if (enhanced.toLowerCase().startsWith('handled')) {
-        enhanced = enhanced.replace(/^handled\s*/i, 'Managed ');
+        let replacement = 'Managed';
+        if (enhanced.toLowerCase().includes('customer') || enhanced.toLowerCase().includes('client')) {
+          replacement = 'Coordinated';
+        } else if (enhanced.toLowerCase().includes('issue') || enhanced.toLowerCase().includes('problem')) {
+          replacement = 'Resolved';
+        }
+        enhanced = enhanced.replace(/^handled\s*/i, `${replacement} `);
       } else if (enhanced.toLowerCase().startsWith('performed')) {
-        enhanced = enhanced.replace(/^performed\s*/i, 'Executed ');
+        let replacement = 'Executed';
+        if (enhanced.toLowerCase().includes('analysis') || enhanced.toLowerCase().includes('research')) {
+          replacement = 'Conducted';
+        } else if (enhanced.toLowerCase().includes('test') || enhanced.toLowerCase().includes('quality')) {
+          replacement = 'Performed';
+        }
+        enhanced = enhanced.replace(/^performed\s*/i, `${replacement} `);
       } else if (enhanced.toLowerCase().startsWith('took care of')) {
-        enhanced = enhanced.replace(/^took care of\s*/i, 'Oversaw ');
+        enhanced = enhanced.replace(/^took care of\s*/i, 'Managed ');
       } else if (enhanced.toLowerCase().startsWith('was in charge of')) {
-        enhanced = enhanced.replace(/^was in charge of\s*/i, 'Led ');
+        enhanced = enhanced.replace(/^was in charge of\s*/i, 'Supervised ');
       } else if (enhanced.toLowerCase().startsWith('supported')) {
-        enhanced = enhanced.replace(/^supported\s*/i, 'Facilitated ');
+        let replacement = 'Supported';
+        if (enhanced.toLowerCase().includes('team') || enhanced.toLowerCase().includes('department')) {
+          replacement = 'Collaborated with';
+        } else if (enhanced.toLowerCase().includes('project') || enhanced.toLowerCase().includes('initiative')) {
+          replacement = 'Contributed to';
+        }
+        enhanced = enhanced.replace(/^supported\s*/i, `${replacement} `);
       } else if (enhanced.toLowerCase().startsWith('assisted')) {
-        enhanced = enhanced.replace(/^assisted\s*/i, 'Collaborated in ');
+        enhanced = enhanced.replace(/^assisted\s*/i, 'Supported ');
       } else if (enhanced.toLowerCase().startsWith('participated')) {
-        enhanced = enhanced.replace(/^participated\s*/i, 'Contributed to ');
+        enhanced = enhanced.replace(/^participated\s*/i, 'Engaged in ');
       } else if (enhanced.toLowerCase().startsWith('contributed')) {
-        enhanced = enhanced.replace(/^contributed\s*/i, 'Delivered ');
+        // Keep as is - already strong
       } else if (enhanced.toLowerCase().startsWith('completed')) {
-        enhanced = enhanced.replace(/^completed\s*/i, 'Accomplished ');
+        enhanced = enhanced.replace(/^completed\s*/i, 'Delivered ');
       } else if (enhanced.toLowerCase().startsWith('conducted')) {
-        enhanced = enhanced.replace(/^conducted\s*/i, 'Orchestrated ');
+        // Keep as is - already strong
       } else if (enhanced.toLowerCase().startsWith('organized')) {
-        enhanced = enhanced.replace(/^organized\s*/i, 'Streamlined ');
+        // Keep as is - already strong
       } else if (enhanced.toLowerCase().startsWith('monitored')) {
-        enhanced = enhanced.replace(/^monitored\s*/i, 'Oversaw ');
+        enhanced = enhanced.replace(/^monitored\s*/i, 'Tracked and analyzed ');
       } else if (enhanced.toLowerCase().startsWith('reviewed')) {
-        enhanced = enhanced.replace(/^reviewed\s*/i, 'Analyzed ');
+        enhanced = enhanced.replace(/^reviewed\s*/i, 'Evaluated ');
       } else if (enhanced.toLowerCase().startsWith('updated')) {
-        enhanced = enhanced.replace(/^updated\s*/i, 'Enhanced ');
+        enhanced = enhanced.replace(/^updated\s*/i, 'Modernized ');
       } else if (enhanced.toLowerCase().startsWith('prepared')) {
         enhanced = enhanced.replace(/^prepared\s*/i, 'Developed ');
-      } else if (enhanced.toLowerCase().startsWith('coordinated')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('managed')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('developed')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('implemented')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('created')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('designed')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('established')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('improved')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('enhanced')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('optimized')) {
-        // Keep as is - already strong
-      } else if (enhanced.toLowerCase().startsWith('streamlined')) {
-        // Keep as is - already strong
       } else if (enhanced.toLowerCase().startsWith('maintained')) {
-        enhanced = enhanced.replace(/^maintained\s*/i, 'Sustained ');
+        // Context-aware replacement
+        if (enhanced.toLowerCase().includes('relationship') || enhanced.toLowerCase().includes('contact')) {
+          enhanced = enhanced.replace(/^maintained\s*/i, 'Cultivated ');
+        } else if (enhanced.toLowerCase().includes('system') || enhanced.toLowerCase().includes('database')) {
+          enhanced = enhanced.replace(/^maintained\s*/i, 'Administered ');
+        } else {
+          enhanced = enhanced.replace(/^maintained\s*/i, 'Sustained ');
+        }
       } else if (enhanced.toLowerCase().startsWith('ensured')) {
         enhanced = enhanced.replace(/^ensured\s*/i, 'Guaranteed ');
-      } else {
-        // For any other case, try to add a strong action verb at the beginning
-        const defaultVerbs = ['Executed', 'Delivered', 'Accomplished', 'Achieved', 'Implemented'];
-        const randomVerb = defaultVerbs[Math.floor(Math.random() * defaultVerbs.length)];
-        // Only add if it doesn't already start with a verb-like word
-        if (!enhanced.match(/^[A-Z][a-z]+(ed|ing|s)\s/)) {
-          enhanced = `${randomVerb} ${enhanced.toLowerCase()}`;
-        }
       }
+      // Don't add random verbs to phrases that already make sense
     }
     
     // Ensure proper capitalization
