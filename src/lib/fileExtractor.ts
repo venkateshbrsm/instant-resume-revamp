@@ -36,10 +36,8 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
       text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
     } else if (fileType === 'docx') {
-      // For DOCX files, extract text and create preview URL
+      // For DOCX files, extract text using enhanced server-side processing
       text = await extractTextFromDOCX(file);
-      // Create blob URL for DOCX preview (similar to PDF)
-      pdfUrl = URL.createObjectURL(file);
     } else {
       // For text files, just extract text
       text = await file.text();
@@ -197,91 +195,56 @@ export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
 };
 
 const extractTextFromDOCX = async (file: File): Promise<string> => {
-  console.log('Extracting text from DOCX using mammoth:', file.name, 'Size:', file.size);
+  console.log('Extracting text from DOCX using enhanced server-side processing:', file.name, 'Size:', file.size);
   
   try {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    
-    if (result.messages && result.messages.length > 0) {
-      console.warn('DOCX extraction warnings:', result.messages);
-    }
-    
-    console.log('Mammoth extraction completed');
-    console.log('Raw text length:', result.value?.length || 0);
-    console.log('Sample text (first 200 chars):', result.value?.substring(0, 200));
-    
-    if (!result.value || result.value.trim().length < 10) {
-      console.log('Mammoth extraction yielded minimal content, trying edge function...');
-      
-      // Fallback to edge function if mammoth fails
-      const formData = new FormData();
-      formData.append('file', file);
+    // Use server-side edge function for robust DOCX text extraction
+    const formData = new FormData();
+    formData.append('file', file);
 
-      const { data, error } = await supabase.functions.invoke('extract-docx', {
-        body: formData,
-      });
-      
-      if (error) {
-        console.error('Edge function fallback failed:', error);
-      } else if (data?.success && data?.extractedText) {
-        console.log('Edge function fallback successful, text length:', data.extractedText.length);
-        return data.extractedText;
-      }
+    console.log('Sending DOCX to server-side processor...');
+
+    const { data, error } = await supabase.functions.invoke('extract-docx', {
+      body: formData,
+    });
+    
+    if (error) {
+      console.error('DOCX extraction request failed:', error);
+      throw new Error(`DOCX extraction failed: ${error.message}`);
     }
     
-    const extractedText = result.value || '';
+    if (!data) {
+      console.error('DOCX extraction request failed: No data returned');
+      throw new Error('DOCX extraction failed: No data returned');
+    }
+
+    if (!data.success) {
+      console.error('DOCX extraction failed:', data.error);
+      throw new Error(`DOCX extraction failed: ${data.error}`);
+    }
+
+    console.log('DOCX extraction completed successfully');
+    return data.extractedText || 'Text extracted successfully from DOCX';
+
+  } catch (error) {
+    console.error('DOCX processing failed:', error);
     
-    // If we still have very little content, provide a meaningful response
-    if (extractedText.trim().length < 10) {
-      return `📄 Resume Document: ${file.name}
+    return `📄 DOCX Resume: ${file.name}
 
 File Details:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
-- Processed: ${new Date().toLocaleString()}
+- Uploaded: ${new Date().toLocaleString()}
 
-⚠️ Text Extraction Notice
-The document was processed but yielded limited extractable text. This can happen with:
-• Complex formatting or embedded images
-• Protected or encrypted documents  
-• Non-standard DOCX structure
+❌ DOCX Processing Error
 
-💡 For Better Results:
-• Try saving as a simpler Word document
-• Convert to PDF format
-• Ensure the document contains readable text
+Unable to process this DOCX file with server-side extraction.
 
-The AI enhancement will still work with the document structure and attempt to create a professional resume based on common resume patterns.`;
-    }
-    
-    console.log('DOCX extraction successful, final text length:', extractedText.length);
-    return extractedText;
+💡 Try instead:
+• Convert to PDF format from your word processor
+• Use a different DOCX file
+• Ensure the file isn't corrupted or password-protected
 
-  } catch (error) {
-    console.error('DOCX extraction failed:', error);
-    
-    return `📄 Resume Processing Error: ${file.name}
-
-Error Details: ${error.message}
-
-File Information:
-- Size: ${(file.size / 1024).toFixed(1)} KB
-- Type: ${file.type}
-
-❌ Document Processing Failed
-
-This can occur due to:
-• Corrupted DOCX file
-• Unsupported document format
-• Complex document structure
-
-🔧 Troubleshooting Steps:
-1. Try re-saving the document in Word
-2. Convert to PDF format for better compatibility
-3. Ensure the file isn't password protected
-4. Use a simpler document template
-
-Please try uploading a different version of your resume or convert to PDF format.`;
+The resume enhancement will still attempt to process the document.`;
   }
 };
