@@ -179,6 +179,20 @@ export function generateModernTemplate({ resumeData, theme }: PDFTemplateContext
                 <li class="achievement">Collaborated effectively with cross-functional teams to achieve strategic objectives</li>
               </ul>
               `}
+              
+              ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+              <div style="margin-top: 8pt; padding: 6pt; background: ${theme.primary}03; border-radius: 4pt; border: 1pt solid ${theme.primary}15;">
+                <div style="font-size: 9pt; font-weight: 600; margin-bottom: 4pt; color: #1a202c;">Core Responsibilities:</div>
+                <div style="font-size: 8pt; line-height: 1.4; color: #2d3748;">
+                  ${exp.core_responsibilities.map((responsibility: string) => `
+                    <div style="margin-bottom: 2pt; display: flex; align-items: flex-start;">
+                      <span style="color: ${theme.primary}; margin-right: 4pt;">•</span>
+                      <span>${responsibility}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              ` : ''}
             </div>
             `).join('')}
           </div>
@@ -189,8 +203,8 @@ export function generateModernTemplate({ resumeData, theme }: PDFTemplateContext
       <div class="sidebar">
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-            <div class="stat-label">Total Skills</div>
+            <div class="stat-number">${resumeData.core_technical_skills ? resumeData.core_technical_skills.length : '12'}</div>
+            <div class="stat-label">Technical Skills</div>
           </div>
           <div class="stat-item" style="background: ${theme.accent}08;">
             <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
@@ -201,23 +215,20 @@ export function generateModernTemplate({ resumeData, theme }: PDFTemplateContext
         <div class="skills-section">
           <div class="section-header">
             <div class="section-icon">⚡</div>
-            <h3 class="section-title">Skills Proficiency</h3>
+            <h3 class="section-title">Technical Skills & Competencies</h3>
           </div>
-          ${resumeData.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0 ? 
-            resumeData.skills.slice(0, 6).map((skill: string) => {
-              const proficiency = generateSkillProficiency(skill);
-              return `
+          ${resumeData.core_technical_skills && Array.isArray(resumeData.core_technical_skills) && resumeData.core_technical_skills.length > 0 ? 
+            resumeData.core_technical_skills.map((skill: any) => `
               <div class="skill-item">
                 <div class="skill-header">
-                  <span class="skill-name">${skill}</span>
-                  <span class="skill-percentage">${Math.round(proficiency)}%</span>
+                  <span class="skill-name">${skill.name}</span>
+                  <span class="skill-percentage">${skill.proficiency}%</span>
                 </div>
                 <div class="skill-bar">
-                  <div class="skill-progress" style="width: ${proficiency}%"></div>
+                  <div class="skill-progress" style="width: ${skill.proficiency}%"></div>
                 </div>
               </div>
-              `;
-            }).join('') :
+              `).join('') :
             `
             <div class="skill-item">
               <div class="skill-header">
@@ -351,16 +362,27 @@ export function generateClassicTemplate({ resumeData, theme }: PDFTemplateContex
           <li class="achievement">Demonstrated strong leadership and collaboration skills</li>
         </ul>
         `}
+        
+        ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+        <div style="margin-top: 8pt; padding: 6pt; background: ${theme.primary}08; border-radius: 4pt; border-left: 2pt solid ${theme.primary};">
+          <div style="font-size: 9pt; font-weight: 600; margin-bottom: 4pt; color: ${theme.primary};">Core Responsibilities:</div>
+          <div style="font-size: 8pt; line-height: 1.4; color: #2d3748;">
+            ${exp.core_responsibilities.map((responsibility: string) => `
+              <div style="margin-bottom: 2pt;">• ${responsibility}</div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
       </div>
       `).join('')}
     </div>
     ` : ''}
 
-    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
     <div class="section">
-      <h2 class="section-title">CORE COMPETENCIES</h2>
+      <h2 class="section-title">TECHNICAL SKILLS & COMPETENCIES</h2>
       <div class="skills-grid">
-        ${resumeData.skills.map((skill: string) => `<div class="skill-item">• ${skill}</div>`).join('')}
+        ${resumeData.core_technical_skills.map((skill: any) => `<div class="skill-item">• ${skill.name} (${skill.proficiency}%)</div>`).join('')}
       </div>
     </div>
     ` : ''}
@@ -809,19 +831,33 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
             <li class="achievement">Collaborated effectively with cross-functional teams to achieve project goals</li>
           </ul>
           `}
+          
+          ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+          <div style="margin-top: 8pt; padding: 6pt; background: rgba(255,255,255,0.7); border-radius: 4pt; border-left: 2pt solid ${theme.accent};">
+            <div style="font-size: 9pt; font-weight: 600; margin-bottom: 4pt; color: ${theme.primary};">Core Responsibilities:</div>
+            <div style="font-size: 8pt; line-height: 1.4; color: #2d3748;">
+              ${exp.core_responsibilities.slice(0, 4).map((responsibility: string) => `
+                <div style="margin-bottom: 2pt; display: flex; align-items: flex-start;">
+                  <span style="color: ${theme.accent}; margin-right: 4pt; font-weight: bold;">•</span>
+                  <span>${responsibility}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          ` : ''}
         </div>
         `).join('')}
       </div>
       ` : ''}
 
-      ${resumeData.skills && resumeData.skills.length > 0 ? `
+      ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
       <div class="skills-section">
         <div class="skills-header">
           <div class="skills-icon">🎨</div>
-          <h3 class="skills-title">Creative Skills</h3>
+          <h3 class="skills-title">Technical Skills & Competencies</h3>
         </div>
         <div class="skills-grid">
-          ${resumeData.skills.map((skill: string) => `<span class="skill-badge">${skill}</span>`).join('')}
+          ${resumeData.core_technical_skills.map((skill: any) => `<span class="skill-badge">${skill.name}</span>`).join('')}
         </div>
       </div>
       ` : ''}
@@ -833,8 +869,8 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
         </div>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-number">${resumeData.skills ? resumeData.skills.length : '12'}</div>
-            <div class="stat-label">Creative Skills</div>
+            <div class="stat-number">${resumeData.core_technical_skills ? resumeData.core_technical_skills.length : '12'}</div>
+            <div class="stat-label">Technical Skills</div>
           </div>
           <div class="stat-item">
             <div class="stat-number" style="color: ${theme.accent};">${resumeData.experience ? resumeData.experience.length : '3'}</div>
@@ -865,11 +901,268 @@ export function generateCreativeTemplate({ resumeData, theme }: PDFTemplateConte
 }
 
 export function generateExecutiveTemplate({ resumeData, theme }: PDFTemplateContext): string {
-  return generateClassicTemplate({ resumeData, theme }); // Placeholder - use classic for now
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Resume - ${resumeData.name}</title>
+  <style>
+    @page { size: A4; margin: 0.5in; }
+    * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none !important; }
+    
+    body {
+      font-family: 'Times New Roman', 'Georgia', serif;
+      line-height: 1.5; color: #1a202c; background: white;
+      font-size: 11pt; width: 100%; min-height: auto;
+    }
+    
+    .container { background: white; width: 100%; max-width: none; }
+    
+    .header {
+      background: linear-gradient(135deg, ${theme.primary}, ${theme.accent});
+      color: white; padding: 20pt; text-align: center;
+      margin-bottom: 20pt;
+    }
+    
+    .header h1 { font-size: 28pt; font-weight: 700; margin-bottom: 8pt; }
+    .header .title { font-size: 16pt; margin-bottom: 12pt; font-weight: 500; }
+    .header .contact { font-size: 11pt; }
+    
+    .section { margin-bottom: 24pt; break-inside: avoid; }
+    .section-title { 
+      font-size: 16pt; font-weight: 700; color: ${theme.primary}; 
+      margin-bottom: 12pt; padding-bottom: 4pt; 
+      border-bottom: 1pt solid ${theme.primary}30;
+    }
+    
+    .summary { font-size: 12pt; line-height: 1.6; color: #2c3e50; text-align: justify; }
+    
+    .experience-item { margin-bottom: 16pt; break-inside: avoid; }
+    .experience-header { margin-bottom: 8pt; }
+    .experience-title { font-size: 14pt; font-weight: 700; color: #2c3e50; }
+    .experience-company { font-size: 12pt; font-weight: 600; color: ${theme.primary}; margin-bottom: 4pt; }
+    .experience-duration { font-size: 10pt; color: #7f8c8d; font-style: italic; }
+    
+    .achievements { margin-top: 8pt; padding-left: 20pt; }
+    .achievement { margin-bottom: 4pt; font-size: 11pt; line-height: 1.5; }
+    
+    .skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8pt; }
+    .skill-item { font-size: 11pt; color: #2c3e50; padding: 4pt; background: ${theme.primary}08; border-radius: 4pt; }
+    
+    .education-item { margin-bottom: 12pt; break-inside: avoid; }
+    .education-degree { font-weight: 700; color: #2c3e50; font-size: 12pt; }
+    .education-institution { font-weight: 600; color: ${theme.primary}; font-size: 11pt; }
+    .education-year { font-size: 10pt; color: #7f8c8d; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${resumeData.name || 'Enhanced Resume'}</h1>
+      <div class="title">${resumeData.title || 'Executive Professional'}</div>
+      <div class="contact">
+        ${resumeData.email || 'email@example.com'} | ${resumeData.phone || '+1 (555) 123-4567'} | ${resumeData.location || 'City, Country'}
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">EXECUTIVE SUMMARY</h2>
+      <p class="summary">${resumeData.summary || 'Experienced executive leader with a proven track record of driving organizational growth and operational excellence through strategic vision and effective leadership.'}</p>
+    </div>
+
+    ${resumeData.experience && resumeData.experience.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">LEADERSHIP EXPERIENCE</h2>
+      ${resumeData.experience.map((exp: any) => `
+      <div class="experience-item">
+        <div class="experience-header">
+          <div class="experience-title">${exp.title || 'Position Title'}</div>
+          <div class="experience-company">${exp.company || 'Company Name'}</div>
+          <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+        </div>
+        ${exp.achievements && exp.achievements.length > 0 ? `
+        <ul class="achievements">
+          ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+        </ul>
+        ` : `
+        <ul class="achievements">
+          <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
+          <li class="achievement">Led strategic initiatives and organizational transformations</li>
+        </ul>
+        `}
+        
+        ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+        <div style="margin-top: 8pt; padding: 6pt; background: ${theme.primary}08; border-radius: 4pt; border-left: 2pt solid ${theme.primary};">
+          <div style="font-size: 9pt; font-weight: 600; margin-bottom: 4pt; color: ${theme.primary};">Core Responsibilities:</div>
+          <div style="font-size: 8pt; line-height: 1.4; color: #2d3748;">
+            ${exp.core_responsibilities.map((responsibility: string) => `
+              <div style="margin-bottom: 2pt;">• ${responsibility}</div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+      </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">CORE COMPETENCIES</h2>
+      <div class="skills-grid">
+        ${resumeData.core_technical_skills.map((skill: any) => `<div class="skill-item">${skill.name} (${skill.proficiency}%)</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${resumeData.education && resumeData.education.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">EDUCATION</h2>
+      ${resumeData.education.map((edu: any) => `
+       <div class="education-item">
+         <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+         <div class="education-institution">${edu.institution || 'University Name'}</div>
+         ${edu.year && edu.year !== 'N/A' && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+       </div>
+      `).join('')}
+    </div>
+    ` : ''}
+  </div>
+</body>
+</html>`;
 }
 
 export function generateMinimalistTemplate({ resumeData, theme }: PDFTemplateContext): string {
-  return generateClassicTemplate({ resumeData, theme }); // Placeholder - use classic for now
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Resume - ${resumeData.name}</title>
+  <style>
+    @page { size: A4; margin: 0.6in; }
+    * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none !important; }
+    
+    body {
+      font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+      line-height: 1.4; color: #1a202c; background: white;
+      font-size: 10pt; width: 100%; min-height: auto;
+    }
+    
+    .container { background: white; width: 100%; max-width: none; }
+    
+    .header {
+      text-align: left; padding: 0 0 20pt 0; border-bottom: 1pt solid ${theme.primary}20;
+      margin-bottom: 20pt;
+    }
+    
+    .header h1 { font-size: 32pt; font-weight: 300; margin-bottom: 8pt; color: ${theme.primary}; letter-spacing: -0.5pt; }
+    .header .title { font-size: 16pt; margin-bottom: 12pt; color: #2c3e50; font-weight: 300; }
+    .header .contact { font-size: 10pt; color: #6b7280; }
+    
+    .section { margin-bottom: 24pt; break-inside: avoid; }
+    .section-title { 
+      font-size: 14pt; font-weight: 500; color: ${theme.primary}; 
+      margin-bottom: 12pt; letter-spacing: 1pt; text-transform: uppercase;
+    }
+    
+    .summary { font-size: 11pt; line-height: 1.6; color: #2c3e50; }
+    
+    .experience-item { margin-bottom: 16pt; break-inside: avoid; }
+    .experience-header { margin-bottom: 8pt; }
+    .experience-title { font-size: 13pt; font-weight: 500; color: #1a202c; }
+    .experience-company { font-size: 11pt; font-weight: 400; color: ${theme.primary}; margin-bottom: 4pt; }
+    .experience-duration { font-size: 9pt; color: #6b7280; }
+    
+    .achievements { margin-top: 8pt; list-style: none; }
+    .achievement { margin-bottom: 4pt; font-size: 10pt; line-height: 1.5; position: relative; padding-left: 12pt; }
+    .achievement::before { content: '•'; color: ${theme.primary}; position: absolute; left: 0; }
+    
+    .skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8pt; }
+    .skill-item { font-size: 10pt; color: #2c3e50; padding: 6pt 0; border-bottom: 1pt solid ${theme.primary}10; }
+    
+    .education-item { margin-bottom: 12pt; break-inside: avoid; }
+    .education-degree { font-weight: 500; color: #1a202c; font-size: 11pt; }
+    .education-institution { font-weight: 400; color: ${theme.primary}; font-size: 10pt; }
+    .education-year { font-size: 9pt; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${resumeData.name || 'Enhanced Resume'}</h1>
+      <div class="title">${resumeData.title || 'Professional'}</div>
+      <div class="contact">
+        ${resumeData.email || 'email@example.com'} • ${resumeData.phone || '+1 (555) 123-4567'} • ${resumeData.location || 'City, Country'}
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Professional Summary</h2>
+      <p class="summary">${resumeData.summary || 'Dynamic and results-driven professional with extensive experience in delivering innovative solutions and driving organizational success.'}</p>
+    </div>
+
+    ${resumeData.experience && resumeData.experience.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Professional Experience</h2>
+      ${resumeData.experience.map((exp: any) => `
+      <div class="experience-item">
+        <div class="experience-header">
+          <div class="experience-title">${exp.title || 'Position Title'}</div>
+          <div class="experience-company">${exp.company || 'Company Name'}</div>
+          <div class="experience-duration">${exp.duration || 'Date Range'}</div>
+        </div>
+        ${exp.achievements && exp.achievements.length > 0 ? `
+        <ul class="achievements">
+          ${exp.achievements.map((achievement: string) => `<li class="achievement">${achievement}</li>`).join('')}
+        </ul>
+        ` : `
+        <ul class="achievements">
+          <li class="achievement">Delivered exceptional results and exceeded performance expectations</li>
+          <li class="achievement">Collaborated effectively with cross-functional teams</li>
+        </ul>
+        `}
+        
+        ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+        <div style="margin-top: 8pt; padding: 6pt; background: ${theme.primary}03; border-radius: 4pt; border-left: 2pt solid ${theme.primary};">
+          <div style="font-size: 9pt; font-weight: 500; margin-bottom: 4pt; color: ${theme.primary};">Core Responsibilities:</div>
+          <div style="font-size: 8pt; line-height: 1.4; color: #2d3748;">
+            ${exp.core_responsibilities.map((responsibility: string) => `
+              <div style="margin-bottom: 2pt;">• ${responsibility}</div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+      </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Technical Skills</h2>
+      <div class="skills-grid">
+        ${resumeData.core_technical_skills.map((skill: any) => `<div class="skill-item">${skill.name} — ${skill.proficiency}%</div>`).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${resumeData.education && resumeData.education.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Education</h2>
+      ${resumeData.education.map((edu: any) => `
+       <div class="education-item">
+         <div class="education-degree">${edu.degree || 'Bachelor\'s Degree'}</div>
+         <div class="education-institution">${edu.institution || 'University Name'}</div>
+         ${edu.year && edu.year !== 'N/A' && edu.year !== 'Year not specified' ? `<div class="education-year">${edu.year}</div>` : ''}
+       </div>
+      `).join('')}
+    </div>
+    ` : ''}
+  </div>
+</body>
+</html>`;
 }
 
 export const templateGenerators = {
