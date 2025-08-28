@@ -287,7 +287,7 @@ const parseJobBlock = (block: string[]): any => {
     }
   }
   
-  // Third pass: collect responsibilities
+  // Third pass: collect responsibilities - be more inclusive
   for (let i = 0; i < block.length; i++) {
     const line = block[i].trim();
     
@@ -296,29 +296,60 @@ const parseJobBlock = (block: string[]): any => {
       continue;
     }
     
-    // Collect responsibilities - explicit bullets or descriptive sentences
+    // Skip company descriptions and metadata
+    if (line.toLowerCase().includes('is a provider of') ||
+        line.toLowerCase().includes('delivers global') ||
+        line.toLowerCase().includes('tech-driven innovation') ||
+        line.toLowerCase().includes('focused in solving') ||
+        line.toLowerCase().includes('headquartered in') ||
+        line.toLowerCase().includes('subsidiary of') ||
+        line.length > 200) {
+      continue;
+    }
+    
+    // Collect explicit bullet points
     if (line.match(/^[•\-*]/) || 
         line.match(/^\d+\./) || 
-        line.match(/^[\u2022\u2023\u25E6]/) ||
-        (line.length > 20 && 
-         !hasDatePattern(line) && 
-         !isCompanyName(line) &&
-         (line.toLowerCase().includes('handling') ||
-          line.toLowerCase().includes('developed') ||
-          line.toLowerCase().includes('managed') ||
-          line.toLowerCase().includes('led') ||
-          line.toLowerCase().includes('established') ||
-          line.toLowerCase().includes('enabled') ||
-          line.toLowerCase().includes('worked') ||
-          line.toLowerCase().includes('directed') ||
-          line.toLowerCase().includes('negotiated') ||
-          line.toLowerCase().includes('space') ||
-          line.toLowerCase().includes('portfolio')))) {
-      
+        line.match(/^[\u2022\u2023\u25E6]/)) {
       const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
-      if (cleanedLine.length > 10) {
+      if (cleanedLine.length > 5) {
         responsibilities.push(cleanedLine);
       }
+    }
+    // Collect descriptive sentences and achievements - be more inclusive
+    else if (line.length > 15 && 
+             !hasDatePattern(line) && 
+             !isCompanyName(line) &&
+             !line.toLowerCase().includes('position') &&
+             (line.toLowerCase().includes('manage') ||
+              line.toLowerCase().includes('lead') ||
+              line.toLowerCase().includes('develop') ||
+              line.toLowerCase().includes('handle') ||
+              line.toLowerCase().includes('direct') ||
+              line.toLowerCase().includes('establish') ||
+              line.toLowerCase().includes('enable') ||
+              line.toLowerCase().includes('work') ||
+              line.toLowerCase().includes('coordinate') ||
+              line.toLowerCase().includes('implement') ||
+              line.toLowerCase().includes('deliver') ||
+              line.toLowerCase().includes('execute') ||
+              line.toLowerCase().includes('negotiate') ||
+              line.toLowerCase().includes('oversee') ||
+              line.toLowerCase().includes('transform') ||
+              line.toLowerCase().includes('clear') ||
+              line.toLowerCase().includes('total') ||
+              line.toLowerCase().includes('space') ||
+              line.toLowerCase().includes('portfolio') ||
+              line.toLowerCase().includes('project') ||
+              line.toLowerCase().includes('responsibl') ||
+              line.toLowerCase().includes('accountabilit') ||
+              line.toLowerCase().includes('join') ||
+              line.toLowerCase().includes('transfer') ||
+              line.match(/^\s*[A-Z]/) || // Lines starting with capital letters (likely descriptions)
+              line.includes(':') || // Lines with colons (often descriptions)
+              line.match(/\d+[\s,]/) // Lines with numbers (metrics, sizes, etc.)
+             )) {
+      responsibilities.push(line);
     }
   }
   
