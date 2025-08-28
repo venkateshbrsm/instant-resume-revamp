@@ -189,6 +189,32 @@ ENHANCEMENT GUIDELINES:
     } else if (cleanedContent.startsWith('```')) {
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
+    
+    // Check if the JSON appears to be truncated by looking for incomplete structures
+    const openBraces = (cleanedContent.match(/{/g) || []).length;
+    const closeBraces = (cleanedContent.match(/}/g) || []).length;
+    const openBrackets = (cleanedContent.match(/\[/g) || []).length;
+    const closeBrackets = (cleanedContent.match(/\]/g) || []).length;
+    
+    // If JSON appears truncated, try to fix common truncation issues
+    if (openBraces !== closeBraces || openBrackets !== closeBrackets) {
+      console.log('JSON appears truncated, attempting to fix...');
+      
+      // Try to close unclosed structures with limits to prevent infinite loops
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (openBraces > (cleanedContent.match(/}/g) || []).length && attempts < maxAttempts) {
+        cleanedContent += '}';
+        attempts++;
+      }
+      
+      attempts = 0;
+      while (openBrackets > (cleanedContent.match(/\]/g) || []).length && attempts < maxAttempts) {
+        cleanedContent += ']';
+        attempts++;
+      }
+    }
 
     const parsedResume = JSON.parse(cleanedContent);
     
