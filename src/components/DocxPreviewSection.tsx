@@ -222,24 +222,23 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
       setEditedContent(extractedContent.text);
       
       setLoadingProgress(70);
-      setLoadingStage("Parsing resume structure...");
+      setLoadingStage("Processing with AI...");
       
-      // Parse the basic resume data for enhancement
-      const basicData = parseBasicResumeData(extractedContent.text);
-      setParsedData(basicData);
+      // Enhanced processing: GPT enhancement + ATS optimization
+      await enhanceResumeContent(extractedContent.text);
       
       setLoadingProgress(100);
       setLoadingStage("Complete!");
       
       toast({
-        title: "DOCX Processed",
-        description: "Resume content extracted and parsed successfully.",
+        title: "DOCX Processed & Enhanced",
+        description: "Resume content extracted and enhanced with AI successfully.",
       });
       
     } catch (error) {
       console.error('Error extracting DOCX content:', error);
       toast({
-        title: "Extraction Error",
+        title: "Processing Error",
         description: "There was an issue processing your DOCX file. Please try again.",
         variant: "destructive",
       });
@@ -292,13 +291,83 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
     }
   };
 
+  const enhanceResumeContent = async (extractedText: string) => {
+    if (!extractedText || extractedText.length < 50) {
+      console.log('Insufficient text for GPT enhancement, applying ATS optimization only');
+      const basicData = parseBasicResumeData(extractedText);
+      const atsOptimized = enhanceResumeWithATS(basicData);
+      setParsedData(atsOptimized);
+      setEnhancedContent(atsOptimized);
+      return;
+    }
+
+    try {
+      console.log('🚀 Starting GPT + ATS enhancement for DOCX file');
+      console.log('Content length:', extractedText.length);
+      
+      // Convert file to base64 for the edge function
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const fileBase64 = btoa(String.fromCharCode(...bytes));
+      
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          fileName: file.name,
+          originalText: extractedText,
+          extractedText: extractedText,
+          file: fileBase64,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          profilePhotoUrl: extractedContent?.profilePhotoUrl
+        }
+      });
+
+      if (error) {
+        console.error('❌ GPT Enhancement failed for DOCX:', error);
+        throw new Error(`GPT Enhancement failed: ${error.message}`);
+      }
+
+      if (data.success && data.enhancedResume) {
+        console.log('✅ GPT Enhancement successful, applying ATS optimization');
+        // Apply ATS optimization to the GPT-enhanced resume
+        const atsOptimizedContent = enhanceResumeWithATS(data.enhancedResume);
+        setParsedData(atsOptimizedContent);
+        setEnhancedContent(atsOptimizedContent);
+        
+        toast({
+          title: "Full Enhancement Complete!",
+          description: "Your DOCX resume has been enhanced with GPT + ATS optimization.",
+        });
+      } else {
+        throw new Error('Invalid GPT enhancement response');
+      }
+    } catch (error) {
+      console.error('❌ GPT enhancement failed, falling back to ATS-only enhancement:', error);
+      
+      // Fallback: Apply ATS optimization to basic parsed data
+      const basicData = parseBasicResumeData(extractedText);
+      const atsOptimized = enhanceResumeWithATS(basicData);
+      setParsedData(atsOptimized);
+      setEnhancedContent(atsOptimized);
+      
+      toast({
+        title: "Enhancement Error - Using Fallback",
+        description: `GPT enhancement failed: ${error.message}. Applied ATS optimization instead.`,
+        variant: "destructive",
+      });
+      
+      // Re-throw to show the user why GPT enhancement failed
+      throw error;
+    }
+  };
+
   const generatePreviewPdf = async () => {
     if (!parsedData || isGeneratingPreview) return;
     
     setIsGeneratingPreview(true);
     
     try {
-      // Use parsed data directly without enhancement
+      // Use enhanced data (either GPT + ATS or ATS-only)
       const pdfBlob = await generateVisualPdf(parsedData, {
         filename: 'preview.pdf',
         templateType: selectedTemplate.layout,
@@ -368,16 +437,28 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
     setIsCheckingAuth(false);
   };
 
-  const handleSaveEdits = () => {
+  const handleSaveEdits = async () => {
     setIsEditing(false);
-    // Re-parse the edited content
-    const updatedData = parseBasicResumeData(editedContent);
-    setParsedData(updatedData);
     
-    toast({
-      title: "Edits Saved",
-      description: "Your changes have been saved and will be applied to the enhanced version.",
-    });
+    try {
+      // Re-enhance the edited content with GPT + ATS
+      await enhanceResumeContent(editedContent);
+      
+      toast({
+        title: "Edits Saved & Enhanced",
+        description: "Your changes have been saved and enhanced with AI.",
+      });
+    } catch (error) {
+      // If enhancement fails, at least apply basic parsing
+      const updatedData = parseBasicResumeData(editedContent);
+      setParsedData(updatedData);
+      
+      toast({
+        title: "Edits Saved",
+        description: "Your changes have been saved. Enhancement may have failed - check the errors above.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
