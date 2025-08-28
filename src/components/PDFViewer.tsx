@@ -94,23 +94,10 @@ export const PDFViewer = ({ file, className }: PDFViewerProps) => {
   return (
     <div className={cn("w-full", className)}>
       {/* Controls */}
-      <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            📄 PDF Preview
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button onClick={handleDownload} variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Download
-          </Button>
-          <Button onClick={openInNewTab} variant="outline" size="sm">
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open
-          </Button>
-        </div>
+      <div className="flex items-center justify-center mb-4 p-3 bg-muted/50 rounded-lg">
+        <span className="text-sm text-muted-foreground">
+          📄 PDF Preview
+        </span>
       </div>
 
       {/* PDF Display */}
