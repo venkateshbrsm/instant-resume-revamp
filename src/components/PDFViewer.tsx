@@ -119,49 +119,26 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         }}
       >
         {pdfUrl ? (
-          <>
-            {/* Try iframe first */}
-            <iframe
-              src={isFullscreen 
-                ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH` 
-                : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=fit`
-              }
-              className={cn(
-                "rounded-lg",
-                isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
-              )}
-              title="PDF Preview"
-              style={{ 
-                border: 'none',
-                ...(isFullscreen && {
-                  transform: 'scale(1)',
-                  transformOrigin: 'top left',
-                  width: '100%',
-                  height: '100%'
-                })
-              }}
-              onError={() => {
-                // If iframe fails, try using object as fallback
-                console.log('Iframe failed, trying object fallback');
-              }}
-            />
-            {/* Fallback object tag - hidden by default, shown if iframe fails */}
-            <object
-              data={pdfUrl}
-              type="application/pdf"
-              className="w-full h-full rounded-lg hidden"
-              style={{ border: 'none' }}
-              id="pdf-object-fallback"
-            >
-              {/* Embed as final fallback */}
-              <embed
-                src={pdfUrl}
-                type="application/pdf"
-                className="w-full h-full rounded-lg"
-                style={{ border: 'none' }}
-              />
-            </object>
-          </>
+          <iframe
+            src={isFullscreen 
+              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH` 
+              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=fit`
+            }
+            className={cn(
+              "rounded-lg",
+              isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+            )}
+            title="PDF Preview"
+            style={{ 
+              border: 'none',
+              ...(isFullscreen && {
+                transform: 'scale(1)',
+                transformOrigin: 'top left',
+                width: '100%',
+                height: '100%'
+              })
+            }}
+          />
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-muted-foreground">Unable to display PDF</p>

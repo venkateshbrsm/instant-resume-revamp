@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
-import { DocxPreviewSection } from "./DocxPreviewSection";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
@@ -32,12 +31,6 @@ interface PreviewSectionProps {
 // Template system now imported from resumeTemplates.ts
 
 export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps) {
-  const fileType = getFileType(file);
-  
-  // Route to DOCX-specific preview for DOCX files
-  if (fileType === 'docx') {
-    return <DocxPreviewSection file={file} onPurchase={onPurchase} onBack={onBack} />;
-  }
   const [activeTab, setActiveTab] = useState("before");
   const [showEditablePreview, setShowEditablePreview] = useState(false);
   const [originalContent, setOriginalContent] = useState<string | ExtractedContent>("");
@@ -62,129 +55,39 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Generate unique file identifier based on file content and metadata
-  const generateFileId = async (file: File): Promise<string> => {
-    const buffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return `${file.name}-${file.size}-${file.lastModified}-${hashHex.substring(0, 16)}`;
-  };
-
-  // Complete cache clearing function
-  const clearAllCaches = () => {
-    console.log('🧹 Performing complete cache clear...');
+  useEffect(() => {
+    // Check if we're returning from login and restore state
+    const storedExtractedText = sessionStorage.getItem('extractedText');
+    const storedEnhancedContent = sessionStorage.getItem('enhancedContent');
+    const storedOriginalContent = sessionStorage.getItem('originalContent');
     
-    // Clear all sessionStorage
-    const sessionKeys = Object.keys(sessionStorage);
-    sessionKeys.forEach(key => {
-      if (key.includes('extractedText') || key.includes('enhancedContent') || 
-          key.includes('originalContent') || key.includes('lastProcessedFile')) {
-        sessionStorage.removeItem(key);
-      }
-    });
-    
-    // Clear all localStorage related to resume processing
-    const localKeys = Object.keys(localStorage);
-    localKeys.forEach(key => {
-      if (key.includes('enhancedContent') || key.includes('extractedText') || 
-          key.includes('selectedTemplate') || key.includes('selectedColorTheme') || 
-          key.includes('latestEditedContent') || key.includes('ForPayment')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Revoke any existing blob URLs to prevent memory leaks
-    if (previewPdfBlob) {
-      URL.revokeObjectURL(URL.createObjectURL(previewPdfBlob));
+    if (storedExtractedText) {
+      setExtractedText(storedExtractedText);
+      sessionStorage.removeItem('extractedText');
     }
     
-    // Reset all component state
-    setExtractedText("");
-    setEnhancedContent(null);
-    setEditedContent(null);
-    setOriginalContent("");
-    setPreviewPdfBlob(null);
-    setActiveTab("before");
-    setIsEnhancing(false);
-    setIsGeneratingPdf(false);
-    setIsGeneratingPreview(false);
-  };
-
-  useEffect(() => {
-    const processFile = async () => {
-      if (!file) return;
-
-      console.log('🔄 PreviewSection: Processing file:', file.name);
-      
-      // Generate unique file identifier based on content hash
-      const currentFileId = await generateFileId(file);
-      const lastProcessedFile = sessionStorage.getItem('lastProcessedFile');
-      
-      console.log('📁 Current file ID:', currentFileId);
-      console.log('📁 Last processed file ID:', lastProcessedFile);
-      
-      // Check if this is a new file or returning from payment/auth
-      const isNewFile = lastProcessedFile !== currentFileId;
-      const isReturningFromAuth = sessionStorage.getItem('attemptingPurchase') === 'true' ||
-                                  sessionStorage.getItem('returnToPreview') === 'true';
-
-      if (isNewFile && !isReturningFromAuth) {
-        console.log('🆕 New file detected - performing complete reset');
-        
-        // Complete cache and state reset for new file
-        clearAllCaches();
-        
-        // Update file tracking AFTER clearing
-        sessionStorage.setItem('lastProcessedFile', currentFileId);
-        console.log('✅ File tracking updated to:', currentFileId);
-        
-        // Always extract content for new file
-        console.log('🚀 Starting fresh extraction for new file...');
-        extractFileContent();
-      } else if (isReturningFromAuth) {
-        console.log('🔙 Returning from auth - restoring state');
-        
-        // Check if we're returning from login and restore state
-        const storedExtractedText = sessionStorage.getItem('extractedText');
-        const storedEnhancedContent = sessionStorage.getItem('enhancedContent');
-        const storedOriginalContent = sessionStorage.getItem('originalContent');
-        
-        if (storedExtractedText) {
-          setExtractedText(storedExtractedText);
-          sessionStorage.removeItem('extractedText');
-        }
-        
-        if (storedEnhancedContent) {
-          try {
-            setEnhancedContent(JSON.parse(storedEnhancedContent));
-            sessionStorage.removeItem('enhancedContent');
-          } catch (error) {
-            console.error('Error parsing stored enhanced content:', error);
-          }
-        }
-        
-        if (storedOriginalContent) {
-          setOriginalContent(storedOriginalContent);
-          sessionStorage.removeItem('originalContent');
-        }
-        
-        // Only extract file content if we don't have stored content
-        if (!storedExtractedText || !storedOriginalContent) {
-          extractFileContent();
-        } else {
-          setIsLoading(false);
-        }
-      } else {
-        console.log('🔄 Same file - using existing state');
-        // Same file, don't re-extract
-        setIsLoading(false);
+    if (storedEnhancedContent) {
+      try {
+        setEnhancedContent(JSON.parse(storedEnhancedContent));
+        sessionStorage.removeItem('enhancedContent');
+      } catch (error) {
+        console.error('Error parsing stored enhanced content:', error);
       }
-      
-      checkAuth();
-    };
-
-    processFile();
+    }
+    
+    if (storedOriginalContent) {
+      setOriginalContent(storedOriginalContent);
+      sessionStorage.removeItem('originalContent');
+    }
+    
+    // Only extract file content if we don't have stored content
+    if (!storedExtractedText || !storedOriginalContent) {
+      extractFileContent();
+    } else {
+      setIsLoading(false);
+    }
+    
+    checkAuth();
   }, [file]);
 
   useEffect(() => {

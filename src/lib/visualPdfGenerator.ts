@@ -83,8 +83,8 @@ async function generateModernPdf(
   const pageWidth = 210;
   const pageHeight = 297;
   const sidebarWidth = 70;
-  const mainContentX = sidebarWidth + 8; // More padding from sidebar
-  const mainContentWidth = pageWidth - mainContentX - 10; // Better right margin
+  const mainContentX = sidebarWidth + 5;
+  const mainContentWidth = pageWidth - mainContentX - 15;
   
   // Convert hex colors to RGB
   const hexToRgb = (hex: string) => {
@@ -129,35 +129,26 @@ async function generateModernPdf(
   doc.text('CONTACT', 8, sidebarY);
   sidebarY += 8;
 
-  // Contact details with proper text wrapping
+  // Contact details
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   if (resumeData.email) {
     doc.text('EMAIL', 8, sidebarY);
     sidebarY += 4;
-    const emailLines = doc.splitTextToSize(resumeData.email, sidebarWidth - 16);
-    emailLines.forEach((line: string, index: number) => {
-      doc.text(line, 8, sidebarY + (index * 4));
-    });
-    sidebarY += emailLines.length * 4 + 2;
+    doc.text(resumeData.email, 8, sidebarY);
+    sidebarY += 6;
   }
   if (resumeData.phone) {
     doc.text('PHONE', 8, sidebarY);
     sidebarY += 4;
-    const phoneLines = doc.splitTextToSize(resumeData.phone, sidebarWidth - 16);
-    phoneLines.forEach((line: string, index: number) => {
-      doc.text(line, 8, sidebarY + (index * 4));
-    });
-    sidebarY += phoneLines.length * 4 + 2;
+    doc.text(resumeData.phone, 8, sidebarY);
+    sidebarY += 6;
   }
   if (resumeData.location) {
     doc.text('LOCATION', 8, sidebarY);
     sidebarY += 4;
-    const locationLines = doc.splitTextToSize(resumeData.location, sidebarWidth - 16);
-    locationLines.forEach((line: string, index: number) => {
-      doc.text(line, 8, sidebarY + (index * 4));
-    });
-    sidebarY += locationLines.length * 4 + 4;
+    doc.text(resumeData.location, 8, sidebarY);
+    sidebarY += 8;
   }
 
   // Skills section in sidebar with progress bars
@@ -215,25 +206,17 @@ async function generateModernPdf(
   }
 
   // MAIN CONTENT AREA
-  // Header with proper text wrapping
+  // Header
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  
-  // Split name into multiple lines if too long
-  const nameLines = doc.splitTextToSize(resumeData.name, mainContentWidth);
-  nameLines.forEach((line: string, index: number) => {
-    doc.text(line, mainContentX, mainY + (index * 8));
-  });
-  mainY += nameLines.length * 8 + 2;
+  doc.text(resumeData.name, mainContentX, mainY);
+  mainY += 8;
 
-  doc.setFontSize(12);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'normal');
-  const titleLines = doc.splitTextToSize(resumeData.title, mainContentWidth);
-  titleLines.forEach((line: string, index: number) => {
-    doc.text(line, mainContentX, mainY + (index * 5));
-  });
-  mainY += titleLines.length * 5 + 8;
+  doc.text(resumeData.title, mainContentX, mainY);
+  mainY += 15;
 
   // Professional Summary section
   if (resumeData.summary) {
@@ -275,35 +258,28 @@ async function generateModernPdf(
       doc.setFillColor(pr, pg, pb);
       doc.circle(mainContentX - 3, mainY - 2, 1.5, 'F');
       
-      // Job title with wrapping
+      // Job title
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 50); // Leave space for duration
-      titleLines.forEach((line: string, lineIndex: number) => {
-        doc.text(line, mainContentX, mainY + (lineIndex * 4));
-      });
-      mainY += titleLines.length * 4 + 1;
+      doc.text(exp.title, mainContentX, mainY);
+      mainY += 5;
 
-      // Company name with wrapping
+      // Company and duration
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 50);
-      companyLines.forEach((line: string, lineIndex: number) => {
-        doc.text(line, mainContentX, mainY + (lineIndex * 4));
-      });
+      doc.text(exp.company, mainContentX, mainY);
       
-      // Duration badge (positioned on the right)
+      // Duration badge
       if (exp.duration) {
         doc.setFillColor(ar, ag, ab, 0.3);
-        const durationWidth = doc.getTextWidth(exp.duration) + 6;
-        const badgeX = mainContentX + mainContentWidth - durationWidth;
-        doc.rect(badgeX, mainY - 4, durationWidth, 6, 'F');
+        const durationWidth = doc.getTextWidth(exp.duration) + 4;
+        doc.rect(mainContentX + mainContentWidth - durationWidth, mainY - 4, durationWidth, 6, 'F');
         doc.setTextColor(pr, pg, pb);
-        doc.text(exp.duration, badgeX + 3, mainY);
+        doc.text(exp.duration, mainContentX + mainContentWidth - durationWidth + 2, mainY);
       }
-      mainY += Math.max(companyLines.length * 4, 6) + 4;
+      mainY += 8;
 
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
@@ -326,16 +302,14 @@ async function generateModernPdf(
 
           // Achievement bullet
           doc.setFillColor(ar, ag, ab);
-          doc.circle(mainContentX + 3, mainY - 1, 0.8, 'F');
+          doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
           
-          doc.setTextColor(60, 60, 60);
+          doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          
-          // Proper text wrapping for achievements
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 12);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
           achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 8, mainY + (lineIndex * 4));
+            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
           });
           mainY += achievementLines.length * 4 + 2;
         });
@@ -824,75 +798,25 @@ export async function downloadVisualPdf(
 
 /**
  * Extracts resume data from enhanced content for visual PDF generation
- * Handles both BasicResumeData (DOCX) and regular enhanced content structures
  */
 export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData {
   console.log('🔍 Extracting resume data from:', enhancedContent);
   
-  // Helper function to safely get string values
-  const safeString = (value: any, fallback: string = ''): string => {
-    if (value === null || value === undefined) return fallback;
-    return String(value).trim();
-  };
-  
-  // Helper function to safely get array values
-  const safeArray = (value: any): any[] => {
-    if (!Array.isArray(value)) return [];
-    return value.filter(item => item !== null && item !== undefined);
-  };
-  
-  // Check if this is BasicResumeData from DOCX (has specific structure)
-  const isBasicResumeData = enhancedContent.experience && 
-                           enhancedContent.experience[0]?.position && 
-                           enhancedContent.experience[0]?.responsibilities;
-  
-  let experienceData = [];
-  
-  if (isBasicResumeData) {
-    // Handle DOCX BasicResumeData structure
-    console.log('🔍 Processing BasicResumeData (DOCX) structure');
-    experienceData = safeArray(enhancedContent.experience).map((exp: any) => ({
-      title: safeString(exp.position || exp.title, 'Position'),
-      company: safeString(exp.company, 'Company'),
-      duration: safeString(exp.duration, 'Duration'),
-      achievements: safeArray(exp.responsibilities || exp.achievements || []).map((item: any) => safeString(item))
-    }));
-  } else {
-    // Handle regular enhanced content structure
-    console.log('🔍 Processing regular enhanced content structure');
-    experienceData = safeArray(enhancedContent.experience).map((exp: any) => ({
-      title: safeString(exp.title || exp.position, 'Position'),
-      company: safeString(exp.company, 'Company'),
-      duration: safeString(exp.duration, 'Duration'),
-      achievements: safeArray(exp.achievements || exp.responsibilities || []).map((item: any) => safeString(item))
-    }));
-  }
-  
   const extractedData = {
-    name: safeString(enhancedContent.name, 'Enhanced Resume'),
-    title: safeString(enhancedContent.title, 'Professional'),
-    email: safeString(enhancedContent.contact?.email || enhancedContent.email),
-    phone: safeString(enhancedContent.contact?.phone || enhancedContent.phone),
-    location: safeString(enhancedContent.contact?.location || enhancedContent.location),
-    summary: safeString(enhancedContent.summary),
+    name: enhancedContent.name || 'Enhanced Resume',
+    title: enhancedContent.title || 'Professional',
+    email: enhancedContent.contact?.email || enhancedContent.email || '',
+    phone: enhancedContent.contact?.phone || enhancedContent.phone || '',
+    location: enhancedContent.contact?.location || enhancedContent.location || '',
+    summary: enhancedContent.summary || '',
     photo: enhancedContent.profilePhotoUrl || enhancedContent.photo || undefined,
-    experience: experienceData,
-    skills: safeArray(enhancedContent.skills).map((skill: any) => safeString(skill)).filter(s => s.length > 0),
-    education: safeArray(enhancedContent.education).map((edu: any) => ({
-      degree: safeString(edu.degree, 'Degree'),
-      institution: safeString(edu.institution, 'Institution'),
-      year: safeString(edu.year || edu.duration, 'Year')
-    })),
-    certifications: safeArray(enhancedContent.certifications).map((cert: any) => safeString(cert)).filter(c => c.length > 0),
-    languages: safeArray(enhancedContent.languages).map((lang: any) => safeString(lang)).filter(l => l.length > 0)
+    experience: enhancedContent.experience || [],
+    skills: enhancedContent.skills || [],
+    education: enhancedContent.education || [],
+    certifications: enhancedContent.certifications || [],
+    languages: enhancedContent.languages || []
   };
   
   console.log('🔍 Extracted resume data:', extractedData);
-  console.log('🔍 Experience mapping check:', {
-    originalExperience: enhancedContent.experience?.[0],
-    mappedExperience: extractedData.experience?.[0],
-    isBasicResumeData
-  });
-  
   return extractedData;
 }
