@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
-import { TemplateRenderer } from "./TemplateRenderer";
 import { PDFViewer } from "./PDFViewer";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { toast } from "sonner";
@@ -631,28 +630,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onTemplateChange={setSelectedTemplate}
                          onColorThemeChange={setSelectedColorTheme}
                        />
-
-                       {/* Template Preview */}
-                       <div className="mb-6">
-                         <div className="flex items-center justify-between mb-4">
-                           <h4 className="text-lg font-semibold">Resume Preview</h4>
-                           <Badge variant="secondary" className="text-xs">
-                             Live Preview • {selectedTemplate.name}
-                           </Badge>
-                         </div>
-                         <div className="border rounded-lg overflow-hidden bg-white shadow-lg">
-                           <div 
-                             ref={resumeContentRef}
-                             className="transform-gpu print:transform-none"
-                           >
-                             <TemplateRenderer
-                               selectedTemplate={selectedTemplate}
-                               enhancedContent={enhancedContent}
-                               selectedColorTheme={selectedColorTheme}
-                             />
-                           </div>
-                         </div>
-                       </div>
 
                         {/* PDF Preview */}
                         <div className="relative">
