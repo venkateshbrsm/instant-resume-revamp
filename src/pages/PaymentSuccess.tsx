@@ -239,198 +239,71 @@ export default function PaymentSuccess() {
           }
         }
         
-        // Server-side PDF generation (fallback or main method)
+        // Use the same visual PDF generator as preview for consistency
         const enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
         const selectedThemeStr = sessionStorage.getItem('selectedThemeForPayment');
-        const pendingFileStr = sessionStorage.getItem('pendingFile');
         
-        console.log('Session storage contents:', {
-          hasEnhancedContent: !!enhancedContentStr2,
-          hasTheme: !!selectedThemeStr,
-          hasPendingFile: !!pendingFileStr
-        });
-        
-        let requestBody: any = { paymentId };
-
-        // If we have session storage data, use it directly
-        if (enhancedContentStr2) {
+        if (enhancedContentStr2 && selectedThemeStr) {
           try {
             const enhancedContent = JSON.parse(enhancedContentStr2);
+            const selectedTheme = JSON.parse(selectedThemeStr);
             
-            // Parse theme data
-            let themeId = 'navy';
-            if (selectedThemeStr) {
-              try {
-                const themeData = JSON.parse(selectedThemeStr);
-                themeId = themeData.id || 'navy';
-              } catch (e) {
-                console.warn('Failed to parse theme data, using default');
-              }
-            }
+            // Import the visual PDF generator
+            const { generateVisualPdf, extractResumeDataFromEnhanced } = await import("@/lib/visualPdfGenerator");
             
-            // Parse file name
-            let fileName = 'resume';
-            if (pendingFileStr) {
-              try {
-                const pendingFile = JSON.parse(pendingFileStr);
-                fileName = pendingFile.name || 'resume';
-              } catch (e) {
-                console.warn('Failed to parse pending file data, using default');
-              }
-            }
-            
-            requestBody = {
-              paymentId, // Still include for logging
-              enhancedContent,
-              themeId,
-              fileName
-            };
-            
-            console.log('Using session storage data for PDF generation:', {
-              hasContent: true,
-              themeId,
-              fileName
+            toast({
+              title: "Generating Visual PDF",
+              description: "Creating a beautiful PDF that matches your preview...",
             });
-          } catch (e) {
-            console.warn('Failed to parse session storage content, falling back to payment ID');
-          }
-        } else {
-          console.log('No session storage data found, checking database for enhanced content...');
-          console.log('Looking for payment with razorpay_payment_id:', paymentId);
-          
-          // Fallback: Try to get enhanced content from database using payment ID
-          try {
-            const { data: paymentData, error: paymentError } = await supabase
-              .from('payments')
-              .select('enhanced_content, theme_id, file_name')
-              .eq('razorpay_payment_id', paymentId)
-              .maybeSingle();
-              
-              
-            console.log('Database query result:', paymentData, 'Error:', paymentError);
             
-            if (!paymentError && paymentData && paymentData.enhanced_content) {
-              console.log('Retrieved enhanced content from database for payment:', paymentId);
-              requestBody = {
-                paymentId,
-                enhancedContent: paymentData.enhanced_content,
-                themeId: paymentData.theme_id || 'navy',
-                fileName: paymentData.file_name || 'resume',
-                hasEnhancedContent: true
-              };
-            } else {
-              console.log('No enhanced content found in database for payment:', paymentId, 'Error:', paymentError);
-              requestBody = {
-                paymentId,
-                hasEnhancedContent: false,
-                themeId: 'navy',
-                fileName: `Enhanced_Resume_${new Date().getTime()}`
-              };
-            }
-          } catch (dbError) {
-            console.warn('Failed to retrieve enhanced content from database:', dbError);
-            requestBody = {
-              paymentId,
-              hasEnhancedContent: false,
-              themeId: 'navy',
-              fileName: `Enhanced_Resume_${new Date().getTime()}`
-            };
-          }
-        }
-
-        const { data, error } = await supabase.functions.invoke('generate-pdf-resume', {
-          body: requestBody
-        });
-        
-        if (error) {
-          throw new Error(error.message || 'PDF generation failed');
-        }
-        
-        if (!data) {
-          throw new Error('PDF generation failed: No data returned');
-        }
-
-        // Handle different response formats
-        let blob: Blob;
-        
-        if (data instanceof Blob) {
-          blob = data;
-        } else if (data instanceof ArrayBuffer) {
-          // Detect if it's text content (fallback mode)
-          const uint8Array = new Uint8Array(data);
-          const firstChars = new TextDecoder().decode(uint8Array.slice(0, 20));
-          
-          if (firstChars.includes('ENHANCED RESUME')) {
-            blob = new Blob([data], { type: 'text/plain' });
-            const filename = `Enhanced_Resume_${new Date().getTime()}.txt`;
+            // Use the same visual PDF generator as preview
+            const resumeData = extractResumeDataFromEnhanced(enhancedContent);
+            const pdfBlob = await generateVisualPdf(resumeData, {
+              templateType: 'modern', // Always use modern template as we filtered others
+              colorTheme: {
+                primary: selectedTheme.primary,
+                secondary: selectedTheme.secondary,
+                accent: selectedTheme.accent
+              },
+              filename: `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`
+            });
             
-            // Create download link for text file
-            const url = URL.createObjectURL(blob);
+            // Create download link
+            const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = filename;
+            link.download = `Enhanced_Resume_${enhancedContent.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
+
             toast({
-              title: "Text Resume Downloaded",
-              description: "Your enhanced resume has been downloaded as a text file (PDF service temporarily unavailable).",
+              title: "Visual PDF Downloaded! 🎨",
+              description: "Your beautifully designed resume has been downloaded - matches the preview exactly!",
             });
+            
+            // Clean up session storage
+            sessionStorage.removeItem('enhancedContentForPayment');
+            sessionStorage.removeItem('selectedThemeForPayment');
+            sessionStorage.removeItem('pendingFile');
             return;
-          } else {
-            blob = new Blob([data], { type: 'application/pdf' });
-          }
-        } else if (typeof data === 'string') {
-          try {
-            // Try to decode base64
-            const binaryString = atob(data);
-            const arrayBuffer = new ArrayBuffer(binaryString.length);
-            const uint8Array = new Uint8Array(arrayBuffer);
-            for (let i = 0; i < binaryString.length; i++) {
-              uint8Array[i] = binaryString.charCodeAt(i);
-            }
-            blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-          } catch (base64Error) {
-            // If base64 decode fails, treat as plain text
-            blob = new Blob([data], { type: 'text/plain' });
-            const filename = `Enhanced_Resume_${new Date().getTime()}.txt`;
-            
-            // Create download link for text file
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
+          } catch (error) {
+            console.error('Error generating visual PDF:', error);
             toast({
-              title: "Text Resume Downloaded",
-              description: "Your enhanced resume has been downloaded as a text file.",
+              title: "Error",
+              description: "Failed to generate PDF. Please try again.",
+              variant: "destructive",
             });
             return;
           }
-        } else {
-          throw new Error('Unexpected data format from PDF generation');
         }
-        const filename = `Enhanced_Resume_${new Date().getTime()}.pdf`;
         
-        // Create download link
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
+        // If no session data, show error
         toast({
-          title: "Download Started",
-          description: "Your enhanced resume PDF is being downloaded.",
+          title: "Error",
+          description: "Resume data not found. Please go back and try the process again.",
+          variant: "destructive",
         });
         
     } catch (error) {
