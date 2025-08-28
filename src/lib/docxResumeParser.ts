@@ -218,10 +218,11 @@ const parseJobBlock = (block: string[]): any => {
   let location = '';
   let responsibilities: string[] = [];
   
-  let headerProcessed = false;
+  console.log('Parsing job block:', block);
   
+  // Enhanced parsing strategy - look at the entire block structure
   for (let i = 0; i < block.length; i++) {
-    const line = block[i];
+    const line = block[i].trim();
     const lowerLine = line.toLowerCase();
     
     // Skip explicit section headers
@@ -231,78 +232,101 @@ const parseJobBlock = (block: string[]): any => {
       continue;
     }
     
-    // Process header information first (first 2-3 lines typically contain job info)
-    if (!headerProcessed && i < 3) {
-      if (hasDatePattern(line)) {
-        // This line contains dates - extract all info from it
-        const parsed = extractJobHeaderInfo(line);
-        if (parsed.duration) duration = parsed.duration;
-        if (parsed.location) location = parsed.location;
-        if (parsed.company) company = parsed.company;
-        if (parsed.position) position = parsed.position;
-        headerProcessed = true;
-        continue;
-      } else if (isCompanyName(line) && !company) {
-        company = line;
-        continue;
-      } else if (isJobTitle(line) && !position) {
-        position = line;
-        continue;
-      } else if (i === 0 && line.length > 5 && !line.match(/^[•\-*]/)) {
-        // First line is likely position if not a bullet point
-        position = line;
-        continue;
-      } else if (i === 1 && line.length > 5 && !line.match(/^[•\-*]/)) {
-        // Second line might be company if first was position
-        if (position && !company) {
-          company = line;
-          continue;
-        }
-      }
-    }
-    
-    // Collect all bullet points and descriptive text as responsibilities
+    // Handle bullet points and responsibilities
     if (line.match(/^[•\-*]/) || line.match(/^\d+\./) || line.match(/^[\u2022\u2023\u25E6]/)) {
-      // Explicit bullet points
       const cleanedLine = line.replace(/^[•\-*\d\.\s\u2022\u2023\u25E6]+/, '').trim();
       if (cleanedLine.length > 5) {
         responsibilities.push(cleanedLine);
       }
-    } else if (line.length > 15 && 
-               !hasDatePattern(line) && 
-               !isCompanyName(line) && 
-               !isJobTitle(line) &&
-               i > 0) {
-      // Long descriptive lines that are likely responsibilities
-      responsibilities.push(line.trim());
+      continue;
+    }
+    
+    // Parse header information
+    if (hasDatePattern(line)) {
+      // Extract duration from this line
+      const extractedDuration = extractDurationFromLine(line);
+      if (extractedDuration) {
+        duration = extractedDuration;
+      }
+      
+      // Extract location if present
+      const extractedLocation = extractLocationFromLine(line);
+      if (extractedLocation) {
+        location = extractedLocation;
+      }
+      
+      // Remove date and location to see if there's company/position info
+      let remainingText = line;
+      if (extractedDuration) {
+        remainingText = remainingText.replace(extractedDuration, '').trim();
+        // Also remove individual date components
+        remainingText = remainingText.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi, '').trim();
+        remainingText = remainingText.replace(/\b\d{4}\b/g, '').trim();
+        remainingText = remainingText.replace(/\s*-\s*to\s*-\s*/gi, '').trim();
+        remainingText = remainingText.replace(/\s*-\s*to\s*/gi, '').trim();
+        remainingText = remainingText.replace(/^-+|to|-+$/gi, '').trim();
+      }
+      if (extractedLocation) {
+        remainingText = remainingText.replace(extractedLocation, '').trim();
+      }
+      
+      // Clean up remaining text
+      remainingText = remainingText.replace(/^[-,\s]+|[-,\s]+$/g, '').trim();
+      
+      if (remainingText.length > 3 && !company) {
+        company = remainingText;
+      }
+    } else if (isCompanyName(line) && !company) {
+      company = line;
+    } else if (isJobTitle(line) && !position) {
+      position = line;
+    } else if (line.length > 10 && !line.match(/^[•\-*]/) && i < 3) {
+      // Early lines that might contain job info
+      if (!position && !isCompanyName(line)) {
+        position = line;
+      } else if (!company && isCompanyName(line)) {
+        company = line;
+      } else if (line.length > 15 && !position && !company) {
+        // This might be descriptive text - use as responsibility
+        responsibilities.push(line);
+      }
+    } else if (line.length > 15 && i > 2) {
+      // Later lines are likely responsibilities
+      responsibilities.push(line);
     }
   }
   
-  // If no explicit position found, try to extract from first meaningful line
-  if (!position && block.length > 0) {
-    const firstLine = block[0];
-    if (!hasDatePattern(firstLine) && firstLine.length > 5) {
-      position = firstLine;
-    }
-  }
-  
-  // If no company found, try to find it in any line
-  if (!company) {
+  // Post-processing to ensure we have meaningful data
+  if (!company && block.length > 0) {
+    // Look for any line that might be a company
     for (const line of block) {
-      if (isCompanyName(line)) {
+      if (isCompanyName(line) || (line.includes(',') && line.length > 10)) {
         company = line;
         break;
       }
     }
   }
   
-  return {
+  if (!position && block.length > 0) {
+    // Look for any line that might be a position
+    for (const line of block) {
+      if (!isCompanyName(line) && !hasDatePattern(line) && line.length > 5 && line.length < 100) {
+        position = line;
+        break;
+      }
+    }
+  }
+  
+  const result = {
     company: company || 'Company',
     position: position || 'Position',
-    duration: duration,
-    location: location,
+    duration: duration || '',
+    location: location || '',
     responsibilities: responsibilities.filter(r => r.length > 5)
   };
+  
+  console.log('Parsed job result:', result);
+  return result;
 };
 
 const isNewJobEntry = (line: string, nextLine: string, currentBlock: string[]): boolean => {
