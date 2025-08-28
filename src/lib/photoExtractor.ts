@@ -1,4 +1,5 @@
 import * as mammoth from 'mammoth';
+import { supabase } from "@/integrations/supabase/client";
 // AI dependencies removed to optimize build
 
 export interface ExtractedPhoto {
@@ -227,12 +228,73 @@ export const extractPhotosFromFile = async (file: File): Promise<PhotoExtraction
   try {
     if (fileType.endsWith('.pdf')) {
       return await extractImagesFromPDF(file);
+    } else if (fileType.endsWith('.docx')) {
+      // For DOCX files, use the same extraction logic via edge function
+      return await extractImagesFromDOCX(file);
     } else {
       console.log('File type does not support image extraction');
       return { photos: [] };
     }
   } catch (error) {
     console.error('Photo extraction failed:', error);
+    return { photos: [] };
+  }
+};
+
+// Extract images from DOCX files using edge function
+const extractImagesFromDOCX = async (file: File): Promise<PhotoExtractionResult> => {
+  console.log('Extracting images from DOCX file:', file.name);
+  
+  try {
+    // Use the process-resume-photos edge function which handles both PDF and DOCX
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const { data, error } = await supabase.functions.invoke('process-resume-photos', {
+      body: formData,
+    });
+    
+    if (error) {
+      console.error('DOCX photo extraction failed:', error);
+      return { photos: [] };
+    }
+    
+    if (data && data.photos && data.photos.length > 0) {
+      console.log(`Successfully extracted ${data.photos.length} photos from DOCX`);
+      
+      // Convert base64 data URLs to ExtractedPhoto objects
+      const photos = await Promise.all(
+        data.photos.map(async (photoData: any, index: number): Promise<ExtractedPhoto | null> => {
+          try {
+            const response = await fetch(photoData.data_url);
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            
+            return {
+              blob,
+              url,
+              type: index === 0 ? 'profile' : 'other',
+              confidence: 0.8
+            };
+          } catch (error) {
+            console.warn('Failed to convert photo data URL to blob:', error);
+            return null;
+          }
+        })
+      );
+      
+      const validPhotos = photos.filter(photo => photo !== null) as ExtractedPhoto[];
+      
+      return {
+        photos: validPhotos,
+        profilePhoto: validPhotos.length > 0 ? validPhotos[0] : undefined
+      };
+    }
+    
+    return { photos: [] };
+    
+  } catch (error) {
+    console.error('DOCX photo extraction error:', error);
     return { photos: [] };
   }
 };

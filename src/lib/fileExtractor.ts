@@ -36,8 +36,10 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
       text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
     } else if (fileType === 'docx') {
-      // For DOCX files, extract text using mammoth
+      // For DOCX files, extract text and create preview URL
       text = await extractTextFromDOCX(file);
+      // Create blob URL for DOCX preview (similar to PDF)
+      pdfUrl = URL.createObjectURL(file);
     } else {
       // For text files, just extract text
       text = await file.text();
