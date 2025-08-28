@@ -1338,19 +1338,23 @@ serve(async (req) => {
     
     console.log(`PDF generated successfully from direct content, size: ${pdfBytes.length} bytes`);
 
-    // Check if we got text fallback (when API key is missing)
-    const isTextFallback = pdfBytes.length < 10000 && 
-      new TextDecoder().decode(pdfBytes.slice(0, 100)).includes('ENHANCED RESUME');
+    // Check if we got a valid PDF by looking at the PDF magic number
+    const pdfHeader = new Uint8Array(pdfBytes.slice(0, 4));
+    const isPDF = pdfHeader[0] === 0x25 && pdfHeader[1] === 0x50 && pdfHeader[2] === 0x44 && pdfHeader[3] === 0x46; // %PDF
     
-    if (isTextFallback) {
-      const cleanFilename = sanitizeFilename(fileName);
-      return new Response(pdfBytes, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/plain',
-          'Content-Disposition': `attachment; filename="${cleanFilename}.txt"`,
-        },
-      });
+    if (!isPDF && pdfBytes.length < 50000) {
+      // This might be a text fallback, check if it contains text content
+      const content = new TextDecoder().decode(pdfBytes.slice(0, 200));
+      if (content.includes('ENHANCED RESUME') || content.includes('ERROR') || content.includes('<!DOCTYPE')) {
+        const cleanFilename = sanitizeFilename(fileName);
+        return new Response(pdfBytes, {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'text/plain',
+            'Content-Disposition': `attachment; filename="${cleanFilename}.txt"`,
+          },
+        });
+      }
     }
 
     const cleanFilename = sanitizeFilename(fileName);
