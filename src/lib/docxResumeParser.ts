@@ -170,12 +170,13 @@ const extractExperience = (lines: string[]): Array<{
   
   const experienceLines = lines.slice(experienceStart, experienceEnd);
   
-  // Group consecutive lines into job blocks
+  // Group consecutive lines into job blocks with better separation logic
   const jobBlocks: string[][] = [];
   let currentBlock: string[] = [];
   
   for (let i = 0; i < experienceLines.length; i++) {
     const line = experienceLines[i].trim();
+    const nextLine = i + 1 < experienceLines.length ? experienceLines[i + 1].trim() : '';
     
     if (line.length === 0) {
       // Empty line - potential job separator
@@ -183,6 +184,10 @@ const extractExperience = (lines: string[]): Array<{
         jobBlocks.push(currentBlock);
         currentBlock = [];
       }
+    } else if (currentBlock.length > 0 && isNewJobEntry(line, nextLine, currentBlock)) {
+      // Detected start of new job entry
+      jobBlocks.push(currentBlock);
+      currentBlock = [line];
     } else {
       currentBlock.push(line);
     }
@@ -298,6 +303,38 @@ const parseJobBlock = (block: string[]): any => {
     location: location,
     responsibilities: responsibilities.filter(r => r.length > 5)
   };
+};
+
+const isNewJobEntry = (line: string, nextLine: string, currentBlock: string[]): boolean => {
+  // Don't start new job entry if current block is too small (less than 3 lines)
+  if (currentBlock.length < 3) return false;
+  
+  // Strong indicators of new job entry
+  const lineHasDatePattern = hasDatePattern(line);
+  const hasCompanyPattern = isCompanyName(line);
+  const hasJobTitlePattern = isJobTitle(line);
+  
+  // Check if line looks like a job header with dates
+  if (lineHasDatePattern && (line.includes(' at ') || line.includes(' | ') || line.includes(' - '))) {
+    return true;
+  }
+  
+  // Check if line is a company name followed by a job title
+  if (hasCompanyPattern && nextLine && isJobTitle(nextLine)) {
+    return true;
+  }
+  
+  // Check if line is a job title and we already have substantial content in current block
+  if (hasJobTitlePattern && currentBlock.length > 5) {
+    return true;
+  }
+  
+  // Check if line contains a year pattern and looks like start of job entry
+  if (line.match(/\b\d{4}\b/) && line.length > 20 && !line.match(/^[•\-*]/)) {
+    return true;
+  }
+  
+  return false;
 };
 
 const hasDatePattern = (line: string): boolean => {
