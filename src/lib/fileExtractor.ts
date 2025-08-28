@@ -16,11 +16,12 @@ export interface ExtractedContent {
 export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
   const fileType = getFileType(file);
   
-  console.log('Starting enhanced file extraction:', {
+  console.log('🔍 Starting enhanced file extraction:', {
     name: file.name,
     type: file.type,
     size: file.size,
-    detectedType: fileType
+    detectedType: fileType,
+    timestamp: new Date().toISOString()
   });
 
   try {
@@ -114,7 +115,12 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using Adobe PDF Services:', file.name, 'Size:', file.size);
+  console.log('📄 Extracting text from PDF using Adobe PDF Services:', {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    timestamp: new Date().toISOString()
+  });
   
   try {
     // Use Adobe PDF Services to extract text from PDF

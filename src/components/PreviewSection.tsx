@@ -70,6 +70,27 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     console.log('🔄 PreviewSection: Processing file:', currentFileId);
     console.log('📁 Last processed file:', lastProcessedFile);
     
+    // Debug: Log all current storage contents
+    console.log('📦 Current sessionStorage contents:');
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      const value = sessionStorage.getItem(key);
+      console.log(`  ${key}:`, value?.substring(0, 100) + (value?.length > 100 ? '...' : ''));
+    }
+    
+    console.log('📦 Current localStorage contents:');
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      const value = localStorage.getItem(key);
+      console.log(`  ${key}:`, value?.substring(0, 100) + (value?.length > 100 ? '...' : ''));
+    }
+    
+    console.log('📦 Current component state:');
+    console.log('  extractedText length:', extractedText?.length || 0);
+    console.log('  enhancedContent exists:', !!enhancedContent);
+    console.log('  editedContent exists:', !!editedContent);
+    console.log('  originalContent exists:', !!originalContent);
+    
     // Check if this is a new file or returning from payment/auth
     const isNewFile = lastProcessedFile !== currentFileId;
     const isReturningFromAuth = sessionStorage.getItem('attemptingPurchase') === 'true' || 
@@ -79,29 +100,43 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('🆕 New file detected - clearing all caches');
       
       // Clear sessionStorage for new file
+      console.log('🧹 Clearing sessionStorage...');
       sessionStorage.removeItem('extractedText');
       sessionStorage.removeItem('enhancedContent');
       sessionStorage.removeItem('originalContent');
       
       // Clear localStorage payment cache for new file (but preserve if returning from auth)
+      console.log('🧹 Clearing localStorage payment cache...');
       localStorage.removeItem('enhancedContentForPayment');
       localStorage.removeItem('extractedTextForPayment');
       localStorage.removeItem('selectedTemplateForPayment');
       localStorage.removeItem('selectedColorThemeForPayment');
       localStorage.removeItem('latestEditedContent');
       
+      // Clear any blob URLs to prevent memory leaks
+      console.log('🧹 Clearing blob URLs...');
+      if (previewPdfBlob) {
+        URL.revokeObjectURL(URL.createObjectURL(previewPdfBlob));
+      }
+      
       // Reset all state for new file
+      console.log('🔄 Resetting component state...');
       setExtractedText("");
       setEnhancedContent(null);
       setEditedContent(null);
       setOriginalContent("");
       setPreviewPdfBlob(null);
       setActiveTab("before");
+      setIsEnhancing(false);
+      setIsGeneratingPdf(false);
+      setIsGeneratingPreview(false);
       
       // Update file tracking
       sessionStorage.setItem('lastProcessedFile', currentFileId);
+      console.log('✅ File tracking updated to:', currentFileId);
       
       // Always extract content for new file
+      console.log('🚀 Starting extraction for new file...');
       extractFileContent();
     } else if (isReturningFromAuth) {
       console.log('🔙 Returning from auth - restoring state');
