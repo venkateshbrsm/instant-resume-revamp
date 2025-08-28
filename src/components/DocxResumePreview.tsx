@@ -375,9 +375,9 @@ export const DocxResumePreview = ({
                             )}
                           </h3>
                           
-                          {/* Company Name - Styled with accent color */}
+                          {/* Company Name - Styled with primary color */}
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-lg font-semibold" style={{ color: selectedColorTheme.accent }}>
+                            <p className="text-lg font-semibold" style={{ color: selectedColorTheme.primary }}>
                               {isEditing ? (
                                 <Input
                                   value={exp.company}
