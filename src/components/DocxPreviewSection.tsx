@@ -366,81 +366,8 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Panel - Original Content */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Original DOCX Content
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="basic">Basic Preview</TabsTrigger>
-                    <TabsTrigger value="edit">Edit Content</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="basic" className="mt-4">
-                    <div className="bg-muted/50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                      <pre className="whitespace-pre-wrap text-sm font-mono">
-                        {extractedContent?.text || "Loading content..."}
-                      </pre>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="edit" className="mt-4">
-                    <div className="space-y-4">
-                      {!isEditing ? (
-                        <div>
-                          <div className="bg-muted/50 rounded-lg p-4 max-h-64 overflow-y-auto mb-4">
-                            <pre className="whitespace-pre-wrap text-sm font-mono">
-                              {editedContent}
-                            </pre>
-                          </div>
-                          <Button 
-                            onClick={() => setIsEditing(true)}
-                            className="flex items-center gap-2"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                            Edit Content
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <Textarea
-                            value={editedContent}
-                            onChange={(e) => setEditedContent(e.target.value)}
-                            className="min-h-64 font-mono text-sm"
-                            placeholder="Edit your resume content here..."
-                          />
-                          <div className="flex gap-2">
-                            <Button onClick={handleSaveEdits}>
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Save Changes
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setIsEditing(false);
-                                setEditedContent(extractedContent?.text || "");
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Panel - Enhanced Preview */}
+        <div className="max-w-4xl mx-auto">
+          {/* Enhanced Preview */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
