@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Save, Download, Edit3, Eye, Loader2 } from 'lucide-react';
+import { Save, Edit3, Eye, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { generateVisualPdf, extractResumeDataFromEnhanced } from '@/lib/visualPdfGenerator';
@@ -28,7 +28,6 @@ export const EditablePreview = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(enhancedContent);
   const [isSaving, setIsSaving] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Debug log when component renders
@@ -83,41 +82,6 @@ export const EditablePreview = ({
     }
   };
 
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    try {
-      console.log('🔍 Downloading with current editable data:', editableData);
-      
-      // Use the current editable data for PDF generation
-      const resumeData = extractResumeDataFromEnhanced(editableData);
-      const pdfBlob = await generateVisualPdf(resumeData, {
-        templateType: selectedTemplate.layout,
-        colorTheme: {
-          primary: selectedColorTheme.primary,
-          secondary: selectedColorTheme.secondary,
-          accent: selectedColorTheme.accent
-        },
-        filename: `Edited_Resume_${editableData.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`
-      });
-      
-      // Create download link
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Edited_Resume_${editableData.name?.replace(/[^a-zA-Z0-9]/g, '_') || 'Resume'}_${new Date().getTime()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast.success('Resume downloaded successfully!');
-    } catch (error) {
-      console.error('Error downloading resume:', error);
-      toast.error('Failed to download resume. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   const renderEditableField = (label: string, value: string, field: string, nestedField?: string, isTextarea: boolean = false) => {
     const actualValue = nestedField ? editableData[field]?.[nestedField] || '' : editableData[field] || '';
@@ -276,20 +240,6 @@ export const EditablePreview = ({
               Edit
             </Button>
           )}
-          
-          <Button 
-            onClick={handleDownload} 
-            variant="default" 
-            size="sm"
-            disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4 mr-2" />
-            )}
-            Download PDF
-          </Button>
         </div>
       </div>
 
