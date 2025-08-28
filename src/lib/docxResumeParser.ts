@@ -170,35 +170,144 @@ const extractExperience = (lines: string[]): Array<{
   
   const experienceLines = lines.slice(experienceStart, experienceEnd);
   
-  // Parse individual job entries
+  // Improved parsing - look for patterns more carefully
   let currentJob: any = null;
   let responsibilities: string[] = [];
+  let currentDescription: string[] = [];
   
-  for (const line of experienceLines) {
-    // Check if this looks like a job header (company/position line)
-    if (isJobHeader(line)) {
+  for (let i = 0; i < experienceLines.length; i++) {
+    const line = experienceLines[i];
+    const nextLine = i < experienceLines.length - 1 ? experienceLines[i + 1] : '';
+    
+    // Check if this is a strong job header indicator (has dates and company-like structure)
+    if (isStrongJobHeader(line, nextLine)) {
       // Save previous job if exists
       if (currentJob) {
+        // Combine description lines into responsibilities if no explicit responsibilities found
+        if (responsibilities.length === 0 && currentDescription.length > 0) {
+          responsibilities = currentDescription.filter(desc => desc.length > 10);
+        }
         currentJob.responsibilities = responsibilities;
         experience.push(currentJob);
       }
       
       // Start new job
-      const jobInfo = parseJobHeader(line);
+      const jobInfo = parseJobHeader(line, nextLine);
       currentJob = jobInfo;
       responsibilities = [];
+      currentDescription = [];
+      
+      // Skip the next line if it was part of the job header
+      if (nextLine && isCompanyOrPositionLine(nextLine)) {
+        i++; // Skip next line as it's part of current job header
+      }
     } else if (currentJob && isResponsibility(line)) {
-      responsibilities.push(line);
+      responsibilities.push(line.replace(/^[•\-*]\s*/, '').trim());
+    } else if (currentJob && line.length > 10 && !isJobHeader(line)) {
+      // This might be part of job description
+      currentDescription.push(line);
     }
   }
   
   // Add last job
   if (currentJob) {
+    if (responsibilities.length === 0 && currentDescription.length > 0) {
+      responsibilities = currentDescription.filter(desc => desc.length > 10);
+    }
     currentJob.responsibilities = responsibilities;
     experience.push(currentJob);
   }
   
   return experience;
+};
+
+const isStrongJobHeader = (line: string, nextLine: string): boolean => {
+  // Look for lines that contain dates (strong indicator of job header)
+  const hasDate = !!line.match(/\b\d{4}\b/) || !!line.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+  
+  // Or lines that look like "Position at Company" or "Company | Position"
+  const hasJobPattern = line.includes(' at ') || line.includes(' | ') || line.includes(' - ');
+  
+  // Or if current line is a location/date and next line is company
+  const isLocationDateLine = (line.match(/^[A-Za-z\s,]+\s+\d{4}/) || line.match(/[A-Z][a-z]+\s+\d{4}/)) && 
+                              nextLine && nextLine.length > 5 && !nextLine.match(/^[•\-*]/);
+  
+  return hasDate || (hasJobPattern && line.length > 10) || isLocationDateLine;
+};
+
+const isCompanyOrPositionLine = (line: string): boolean => {
+  // Check if line looks like a company name or position
+  const matchesPattern = !!line.match(/^[A-Z][a-z]+(\s+[A-Z][a-z]+)*$/);
+  return line.length > 5 && 
+         !line.match(/^[•\-*]/) && 
+         !line.match(/^\d/) && 
+         (line.includes('Ltd') || line.includes('Inc') || line.includes('Corp') || 
+          line.includes('Systems') || line.includes('Technologies') || 
+          matchesPattern);
+};
+
+const parseJobHeader = (line: string, nextLine: string = ''): any => {
+  let company = '';
+  let position = '';
+  let duration = '';
+  let location = '';
+  
+  // Extract dates first
+  const dateMatches = line.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi);
+  if (dateMatches && dateMatches.length >= 1) {
+    if (dateMatches.length >= 2) {
+      duration = `${dateMatches[0]} - ${dateMatches[1]}`;
+    } else {
+      duration = `${dateMatches[0]} - Present`;
+    }
+  } else {
+    // Try to extract year ranges
+    const yearMatches = line.match(/\b\d{4}\b/g);
+    if (yearMatches && yearMatches.length >= 2) {
+      duration = `${yearMatches[0]} - ${yearMatches[1]}`;
+    } else if (yearMatches && yearMatches.length === 1) {
+      duration = `${yearMatches[0]} - Present`;
+    }
+  }
+  
+  // Extract location (usually at the beginning with date)
+  const locationMatch = line.match(/^([A-Za-z\s,]+?)\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{4})/i);
+  if (locationMatch) {
+    location = locationMatch[1].trim();
+  }
+  
+  // Parse company and position
+  if (line.includes(' | ')) {
+    const parts = line.split(' | ');
+    company = parts[0].replace(location, '').replace(duration, '').trim();
+    position = parts[1].replace(duration, '').trim();
+  } else if (line.includes(' at ')) {
+    const parts = line.split(' at ');
+    position = parts[0].replace(location, '').replace(duration, '').trim();
+    company = parts[1].replace(duration, '').trim();
+  } else if (nextLine && isCompanyOrPositionLine(nextLine)) {
+    // Current line might be location + date, next line is company
+    company = nextLine.trim();
+    // Position will be extracted from subsequent lines or left empty
+  } else {
+    // Try to extract from the remaining text after removing location and date
+    let remainingText = line.replace(location, '').replace(duration, '').trim();
+    // Remove date patterns
+    remainingText = remainingText.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\b/gi, '').trim();
+    remainingText = remainingText.replace(/\b\d{4}\b/g, '').trim();
+    remainingText = remainingText.replace(/^[-\s]+|[-\s]+$/g, '').trim();
+    
+    if (remainingText.length > 0) {
+      company = remainingText;
+    }
+  }
+  
+  return {
+    company: company || 'Company',
+    position: position || 'Position',
+    duration: duration,
+    location: location
+  };
 };
 
 const isJobHeader = (line: string): boolean => {
@@ -211,17 +320,6 @@ const isJobHeader = (line: string): boolean => {
           line.includes(' at '));
 };
 
-const parseJobHeader = (line: string): any => {
-  // Parse job header to extract company, position, duration, location
-  const parts = line.split(/[|,\-–]/).map(p => p.trim());
-  
-  return {
-    company: parts[0] || '',
-    position: parts[1] || '',
-    duration: extractDurationFromLine(line),
-    location: extractLocationFromLine(line),
-  };
-};
 
 const extractDurationFromLine = (line: string): string => {
   const datePattern = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}/gi;
