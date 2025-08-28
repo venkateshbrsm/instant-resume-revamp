@@ -16,7 +16,7 @@ import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
 import { EditablePreview } from "./EditablePreview";
 import { BasicResumePreview } from "./BasicResumePreview";
-import { parseBasicResumeFromText, BasicResumeData } from "@/lib/basicResumeParser";
+import { parseBasicResumeFromText, BasicResumeData, enhanceResponsibilitiesForATS } from "@/lib/basicResumeParser";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
@@ -122,8 +122,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     if (extractedText && extractedText.length > 0 && !basicResumeData) {
       console.log('🔍 Parsing basic resume data from extracted text...');
       const parsedData = parseBasicResumeFromText(extractedText);
-      setBasicResumeData(parsedData);
-      console.log('✅ Basic resume data parsed:', parsedData);
+      
+      // Apply ATS enhancement to the parsed data
+      const enhancedData = {
+        ...parsedData,
+        experience: parsedData.experience.map(exp => ({
+          ...exp,
+          responsibilities: enhanceResponsibilitiesForATS(exp.responsibilities)
+        }))
+      };
+      
+      setBasicResumeData(enhancedData);
+      console.log('✅ Basic resume data parsed and ATS-enhanced:', enhancedData);
     }
   }, [extractedText]);
 
@@ -833,33 +843,92 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        onColorThemeChange={setSelectedColorTheme}
                      />
 
-                     {/* Basic Resume Preview */}
-                     <div className="mt-6">
-                       <div className="flex items-center justify-between mb-4">
-                         <div className="flex items-center gap-2">
-                           <FileText className="w-5 h-5 text-primary" />
-                           <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
-                         </div>
-                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                           Content Extracted & Formatted
-                         </Badge>
-                       </div>
-                       <p className="text-sm text-muted-foreground mb-4">
-                         This is your resume content as extracted directly from your uploaded file, formatted with the selected template.
-                       </p>
-                       
-                       {/* Basic Resume Content */}
-                       <div 
-                         ref={resumeContentRef}
-                         className="bg-white rounded-lg p-4 border shadow-sm"
-                       >
-                         <BasicResumePreview
-                           resumeData={basicResumeData}
-                           selectedColorTheme={selectedColorTheme}
-                           templateLayout={selectedTemplate.layout}
-                         />
-                       </div>
-                     </div>
+                      {/* Basic Resume Preview with Edit Option */}
+                      <Tabs defaultValue="basic" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="basic">📄 Basic Preview</TabsTrigger>
+                          <TabsTrigger value="edit">✏️ Edit Content</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="basic" className="space-y-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-5 h-5 text-primary" />
+                              <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
+                            </div>
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                              Content Extracted & ATS Enhanced
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            This is your resume content as extracted from your uploaded file, with ATS-friendly enhancements applied.
+                          </p>
+                          
+                          {/* Basic Resume Content */}
+                          <div 
+                            ref={resumeContentRef}
+                            className="bg-white rounded-lg p-4 border shadow-sm"
+                          >
+                            <BasicResumePreview
+                              resumeData={basicResumeData}
+                              selectedColorTheme={selectedColorTheme}
+                              templateLayout={selectedTemplate.layout}
+                            />
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="edit" className="space-y-4">
+                          <EditablePreview
+                            enhancedContent={{
+                              name: basicResumeData.name,
+                              title: basicResumeData.title,
+                              email: basicResumeData.email,
+                              phone: basicResumeData.phone,
+                              location: basicResumeData.location,
+                              summary: basicResumeData.summary,
+                              experience: basicResumeData.experience.map(exp => ({
+                                title: exp.title,
+                                company: exp.company,
+                                duration: exp.duration,
+                                description: exp.description,
+                                core_responsibilities: exp.responsibilities,
+                                achievements: []
+                              })),
+                              education: basicResumeData.education,
+                              skills: basicResumeData.skills,
+                              tools: [],
+                              core_technical_skills: basicResumeData.skills.map(skill => ({ name: skill, proficiency: 85 }))
+                            }}
+                            selectedTemplate={selectedTemplate}
+                            selectedColorTheme={selectedColorTheme}
+                            onContentUpdate={(updatedContent) => {
+                              console.log('DOCX content updated from EditablePreview:', updatedContent);
+                              setEditedContent(updatedContent);
+                              // Update basic resume data structure for consistency
+                              if (updatedContent) {
+                                const updatedBasicData: BasicResumeData = {
+                                  name: updatedContent.name || '',
+                                  title: updatedContent.title || '',
+                                  email: updatedContent.email || '',
+                                  phone: updatedContent.phone || '',
+                                  location: updatedContent.location || '',
+                                  summary: updatedContent.summary || '',
+                                  experience: updatedContent.experience?.map(exp => ({
+                                    title: exp.title || '',
+                                    company: exp.company || '',
+                                    duration: exp.duration || '',
+                                    description: exp.description || '',
+                                    responsibilities: exp.core_responsibilities || []
+                                  })) || [],
+                                  education: updatedContent.education || [],
+                                  skills: updatedContent.skills || []
+                                };
+                                setBasicResumeData(updatedBasicData);
+                              }
+                            }}
+                          />
+                        </TabsContent>
+                      </Tabs>
                    </div>
                  </div>
                 ) : (
@@ -923,19 +992,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                 size="xl" 
                 onClick={handlePurchaseClick}
                 className="w-full"
-                disabled={!enhancedContent || isCheckingAuth}
+                disabled={(!enhancedContent && !basicResumeData) || isCheckingAuth}
               >
                 <CreditCard className="w-5 h-5 mr-2" />
-                {isCheckingAuth ? 'Checking authentication...' : 
-                 !enhancedContent ? 'Processing Enhancement...' :
+                 {isCheckingAuth ? 'Checking authentication...' : 
+                 (!enhancedContent && !basicResumeData) ? 'Processing Content...' :
                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
               </Button>
               
               
               <p className="text-xs text-muted-foreground">
-                {enhancedContent 
+                {(enhancedContent || basicResumeData)
                   ? 'Secure payment • Download the enhanced version immediately' 
-                  : 'Enhancement in progress • Payment will be enabled once complete'
+                  : 'Content processing • Payment will be enabled once complete'
                 }
               </p>
             </div>

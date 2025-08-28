@@ -261,6 +261,11 @@ function parseExperienceSection(lines: string[]): Array<{
     const singleDateMatch = line.match(/\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}\b/gi);
     const yearRangeMatch = line.match(/\b(\d{4})\s*[-–—to]\s*(\d{4}|present|current)\b/gi);
     
+    console.log(`📅 Date matches for "${line}":`, {
+      fullDateRangeMatch: fullDateRangeMatch,
+      singleDateMatch: singleDateMatch,
+      yearRangeMatch: yearRangeMatch
+    });
     // Check if this looks like a company/job title line
     const isCompanyLine = (
       line.length > 5 && 
@@ -275,6 +280,15 @@ function parseExperienceSection(lines: string[]): Array<{
       !line.toLowerCase().startsWith('led') &&
       !line.toLowerCase().includes('key responsibilities')
     );
+    
+    console.log(`🏢 Is company line check for "${line}":`, {
+      isCompanyLine: isCompanyLine,
+      length: line.length,
+      startsWithBullet: line.startsWith('•') || line.startsWith('-') || line.startsWith('▪'),
+      hasActionWords: line.toLowerCase().startsWith('responsible') || 
+                     line.toLowerCase().startsWith('managed') || 
+                     line.toLowerCase().startsWith('developed')
+    });
 
     // If we found a full date range in the line, this might be a job entry
     if (fullDateRangeMatch && isCompanyLine) {
@@ -599,3 +613,6 @@ function enhanceResponsibilitiesForATS(responsibilities: string[]): string[] {
   // Filter out very short or empty responsibilities
   return enhancedResponsibilities.filter(resp => resp && resp.trim().length > 10);
 }
+
+// Export the function for use in other components
+export { enhanceResponsibilitiesForATS };
