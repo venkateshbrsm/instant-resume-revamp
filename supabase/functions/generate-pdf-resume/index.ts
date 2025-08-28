@@ -283,9 +283,23 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     
     <div class="main-content">
       <div class="left-column">
-        ${resumeData.skills && resumeData.skills.length > 0 ? `
+        ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
         <div class="section">
-          <h2 class="section-title">Skills</h2>
+          <h2 class="section-title">Core Technical Skills</h2>
+          <div class="skills-grid">
+            ${resumeData.core_technical_skills.slice(0, 10).map((skill: any) => `
+              <div class="skill-item">
+                <div class="skill-name">${skill.name}</div>
+                <div class="skill-bar">
+                  <div class="skill-progress" style="width: ${skill.proficiency || generateSkillProficiency(skill.name)}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : resumeData.skills && resumeData.skills.length > 0 ? `
+        <div class="section">
+          <h2 class="section-title">Core Technical Skills</h2>
           <div class="skills-grid">
             ${resumeData.skills.slice(0, 8).map((skill: string) => `
               <div class="skill-item">
@@ -538,7 +552,16 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     </div>
     ` : ''}
     
-    ${resumeData.skills && resumeData.skills.length > 0 ? `
+    ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Core Technical Skills</h2>
+      <div class="skills-list">
+        ${resumeData.core_technical_skills.map((skill: any) => `
+          <span class="skill-tag">${skill.name} (${skill.proficiency || 85}%)</span>
+        `).join('')}
+      </div>
+    </div>
+    ` : resumeData.skills && resumeData.skills.length > 0 ? `
     <div class="section">
       <h2 class="section-title">Skills</h2>
       <div class="skills-list">
@@ -819,9 +842,23 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     
     <div class="main-content">
       <div class="left-column">
-        ${resumeData.skills && resumeData.skills.length > 0 ? `
+        ${resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0 ? `
         <div class="section">
-          <h2 class="section-title">Skills</h2>
+          <h2 class="section-title">Core Technical Skills</h2>
+          <div class="skills-container">
+            ${resumeData.core_technical_skills.slice(0, 10).map((skill: any) => `
+              <div class="skill-item">
+                <div class="skill-name">${skill.name}</div>
+                <div class="skill-bar">
+                  <div class="skill-progress" style="width: ${skill.proficiency || generateSkillProficiency(skill.name)}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : resumeData.skills && resumeData.skills.length > 0 ? `
+        <div class="section">
+          <h2 class="section-title">Core Technical Skills</h2>
           <div class="skills-container">
             ${resumeData.skills.slice(0, 8).map((skill: string) => `
               <div class="skill-item">

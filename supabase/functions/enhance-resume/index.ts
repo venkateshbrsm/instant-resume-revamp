@@ -103,13 +103,20 @@ REQUIRED JSON STRUCTURE:
       "gpa": "GPA if available"
     }
   ],
-  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10"]
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10"],
+  "core_technical_skills": [
+    {
+      "name": "Technical Skill Name",
+      "proficiency": 85
+    }
+  ]
 }
 
 ENHANCEMENT GUIDELINES:
 - Professional summary should be compelling and keyword-rich
 - Experience descriptions should highlight achievements and use metrics
 - Include 10+ relevant skills including technical and soft skills
+- Add 8-12 core technical skills with proficiency levels (70-95%)
 - Expand on responsibilities with action verbs and specific outcomes
 - Make content ATS-friendly with industry standard terminology
 - Ensure all sections are comprehensive and detailed`;
@@ -176,6 +183,7 @@ ENHANCEMENT GUIDELINES:
     parsedResume.experience = parsedResume.experience || [];
     parsedResume.education = parsedResume.education || [];
     parsedResume.skills = parsedResume.skills || [];
+    parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
 
     // Add some fallback data if sections are empty
     if (parsedResume.experience.length === 0) {
@@ -192,6 +200,21 @@ ENHANCEMENT GUIDELINES:
         "Project Management", "Problem Solving", "Team Collaboration", "Communication",
         "Data Analysis", "Process Improvement", "Leadership", "Strategic Planning",
         "Customer Service", "Technical Skills", "Microsoft Office", "Adaptability"
+      ];
+    }
+
+    if (parsedResume.core_technical_skills.length === 0) {
+      parsedResume.core_technical_skills = [
+        { "name": "Digital Marketing", "proficiency": 92 },
+        { "name": "Content Strategy", "proficiency": 88 },
+        { "name": "SEO Optimization", "proficiency": 85 },
+        { "name": "SEM Management", "proficiency": 83 },
+        { "name": "Social Media Marketing", "proficiency": 90 },
+        { "name": "Brand Development", "proficiency": 87 },
+        { "name": "Market Research", "proficiency": 84 },
+        { "name": "Campaign Management", "proficiency": 91 },
+        { "name": "Google Analytics", "proficiency": 89 },
+        { "name": "Google Ads", "proficiency": 86 }
       ];
     }
 
@@ -281,6 +304,20 @@ function basicParseResume(text: string): any {
     "Team Leadership", "Communication", "Process Improvement", "Customer Service",
     "Technical Skills", "Microsoft Office", "Analytical Thinking", "Adaptability",
     "Time Management", "Quality Assurance", "Stakeholder Management", "Innovation"
+  ];
+
+  // Add core technical skills with proficiency
+  content.core_technical_skills = [
+    { "name": "Project Management", "proficiency": 88 },
+    { "name": "Strategic Planning", "proficiency": 92 },
+    { "name": "Data Analysis", "proficiency": 85 },
+    { "name": "Problem Solving", "proficiency": 90 },
+    { "name": "Team Leadership", "proficiency": 87 },
+    { "name": "Communication", "proficiency": 93 },
+    { "name": "Process Improvement", "proficiency": 84 },
+    { "name": "Technical Skills", "proficiency": 82 },
+    { "name": "Microsoft Office", "proficiency": 89 },
+    { "name": "Quality Assurance", "proficiency": 86 }
   ];
 
   return content;
