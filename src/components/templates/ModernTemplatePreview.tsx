@@ -76,10 +76,10 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               </div>
               <div className="space-y-2">
                 {enhancedContent.skills.map((skill: string, index: number) => (
-                  <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
-                    <span className="font-medium">{skill}</span>
-                  </div>
+                   <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                     <span className="font-medium break-words whitespace-normal">{skill}</span>
+                   </div>
                 ))}
               </div>
             </div>
@@ -96,10 +96,10 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               </div>
               <div className="space-y-2">
                 {enhancedContent.tools.map((tool: string, index: number) => (
-                  <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
-                    <span className="font-medium">{tool}</span>
-                  </div>
+                   <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                     <span className="font-medium break-words whitespace-normal">{tool}</span>
+                   </div>
                 ))}
               </div>
             </div>
@@ -116,15 +116,15 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               </div>
               <div className="space-y-2">
                 {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
-                  <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
-                    <span className="font-medium">{skill.name}</span>
-                    <div className="flex-1 flex justify-end">
-                      <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
-                        <div className="h-full bg-white/70 rounded-full" style={{width: `${skill.proficiency}%`}}></div>
-                      </div>
-                    </div>
-                  </div>
+                   <div key={index} className="text-xs opacity-90 flex items-center gap-2 page-break-avoid skill-item overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                     <span className="font-medium break-words whitespace-normal">{skill.name}</span>
+                     <div className="flex-1 flex justify-end">
+                       <div className="w-16 h-1 bg-white/20 rounded-full overflow-visible">
+                         <div className="h-full bg-white/70 rounded-full" style={{width: `${skill.proficiency}%`}}></div>
+                       </div>
+                     </div>
+                   </div>
                 ))}
               </div>
             </div>
@@ -236,11 +236,11 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
             
             <div className="space-y-4 md:space-y-6">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-2 pl-4 md:pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                  <div 
-                    className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
-                    style={{ backgroundColor: selectedColorTheme.primary }}
-                  ></div>
+                 <div key={index} className="border-l-2 pl-4 md:pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6 overflow-visible" style={{ borderColor: `${selectedColorTheme.primary}20`, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                   <div 
+                     className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
+                     style={{ backgroundColor: selectedColorTheme.primary }}
+                   ></div>
                   
                   <div className="mb-4">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
@@ -266,29 +266,29 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
                         <ul className="space-y-3 text-sm text-muted-foreground">
                           {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="leading-relaxed font-medium break-words whitespace-normal">{achievement}</span>
-                            </li>
+                             <li key={achIndex} className="flex items-start gap-3 page-break-avoid overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                               <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
+                                 <span className="text-white text-xs font-bold">✓</span>
+                               </div>
+                               <span className="leading-relaxed font-medium break-words whitespace-normal">{achievement}</span>
+                             </li>
                           ))}
                         </ul>
                         
                          {/* Job-specific Core Responsibilities */}
                          {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                           <div className="mt-4 p-3 rounded-lg bg-white border border-gray-100 page-break-avoid print:break-inside-avoid">
-                             <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
-                              <div className="text-xs opacity-80 leading-relaxed space-y-1">
-                                {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                  <div key={idx} className="flex items-start gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
-                                         style={{ backgroundColor: selectedColorTheme.accent }}></div>
-                                    <span className="text-sm leading-relaxed break-words whitespace-normal">{responsibility}</span>
-                                  </div>
-                                ))}
-                             </div>
-                           </div>
+                            <div className="mt-4 p-3 rounded-lg bg-white border border-gray-100 page-break-avoid print:break-inside-avoid overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                              <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
+                               <div className="text-xs opacity-80 leading-relaxed space-y-1">
+                                 {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                   <div key={idx} className="flex items-start gap-3 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                                     <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                                          style={{ backgroundColor: selectedColorTheme.accent }}></div>
+                                     <span className="text-sm leading-relaxed break-words whitespace-normal">{responsibility}</span>
+                                   </div>
+                                 ))}
+                              </div>
+                            </div>
                          )}
                       </div>
                     )}

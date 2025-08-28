@@ -128,16 +128,18 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                   
                   <div className="space-y-8 print:space-y-6">
                     {enhancedContent.experience.map((exp: any, index: number) => (
-                       <div 
-                         key={index} 
-                         className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg print:break-inside-avoid print:mb-6"
-                        style={{ 
-                          background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
-                          borderColor: selectedColorTheme.accent,
-                          pageBreakInside: 'avoid',
-                          breakInside: 'avoid'
-                        }}
-                      >
+                        <div 
+                          key={index} 
+                          className="relative p-6 rounded-2xl border-l-4 shadow-md print:break-inside-avoid print:page-break-inside-avoid print:shadow-none print:border-l-2 print:p-4 print:mb-8 print:rounded-lg print:break-inside-avoid print:mb-6 overflow-visible"
+                         style={{ 
+                           background: `linear-gradient(135deg, ${selectedColorTheme.primary}05, ${selectedColorTheme.accent}10)`,
+                           borderColor: selectedColorTheme.accent,
+                           pageBreakInside: 'avoid',
+                           breakInside: 'avoid',
+                           wordWrap: 'break-word',
+                           overflowWrap: 'break-word'
+                         }}
+                       >
                         <div className="flex flex-col gap-4 mb-6 print:mb-4">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2">
                             <div>
@@ -164,19 +166,19 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                               Key Achievements & Quantifiable Impact:
                             </h4>
                             {exp.achievements.map((achievement: string, achIndex: number) => (
-                              <div 
-                                key={achIndex} 
-                                className="flex items-start gap-3 print:gap-2 print:break-inside-avoid overflow-hidden" 
-                                style={{ pageBreakInside: 'avoid' }}
-                              >
-                                <div 
-                                  className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
-                                  style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
-                                >
-                                  <span className="text-white text-xs font-bold">V</span>
-                                </div>
-                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1">{achievement}</p>
-                              </div>
+                               <div 
+                                 key={achIndex} 
+                                 className="flex items-start gap-3 print:gap-2 print:break-inside-avoid overflow-visible" 
+                                 style={{ pageBreakInside: 'avoid', wordWrap: 'break-word', overflowWrap: 'break-word' }}
+                               >
+                                 <div 
+                                   className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 print:w-4 print:h-4"
+                                   style={{ background: `linear-gradient(135deg, ${selectedColorTheme.accent}, ${selectedColorTheme.primary})` }}
+                                 >
+                                   <span className="text-white text-xs font-bold">V</span>
+                                 </div>
+                                 <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1 whitespace-normal">{achievement}</p>
+                               </div>
                             ))}
                             
                              {/* Job-specific Core Responsibilities */}

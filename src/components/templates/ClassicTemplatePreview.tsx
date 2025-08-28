@@ -77,14 +77,14 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
             </h2>
             <div className="space-y-8">
               {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-4 pl-6 page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                  <div className="mb-4">
-                    <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
-                    <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
-                      {exp.company}
-                    </p>
-                    <p className="text-sm text-muted-foreground italic">{exp.duration}</p>
-                  </div>
+                 <div key={index} className="border-l-4 pl-6 page-break-avoid experience-item print:break-inside-avoid print:mb-6 overflow-visible" style={{ borderColor: `${selectedColorTheme.primary}20`, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                   <div className="mb-4 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <h3 className="text-lg font-bold text-foreground break-words whitespace-normal">{exp.title}</h3>
+                     <p className="text-base font-semibold break-words whitespace-normal" style={{ color: selectedColorTheme.primary }}>
+                       {exp.company}
+                     </p>
+                     <p className="text-sm text-muted-foreground italic break-words whitespace-normal">{exp.duration}</p>
+                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
                     <div className="page-break-avoid">
@@ -94,33 +94,35 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                       </h4>
                       <ul className="space-y-3">
                         {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start page-break-avoid">
-                            <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
-                            <span className="font-medium break-words whitespace-normal">{achievement}</span>
-                          </li>
+                           <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start page-break-avoid overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                             <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
+                             <span className="font-medium break-words whitespace-normal">{achievement}</span>
+                           </li>
                         ))}
                       </ul>
                       
                        {/* Job-specific Core Responsibilities */}
-                       {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                         <div className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid" style={{ 
-                           backgroundColor: `${selectedColorTheme.primary}05`,
-                           borderColor: `${selectedColorTheme.primary}20`
-                         }}>
-                           <h5 className="text-sm font-semibold mb-2 text-foreground">
-                             Core Responsibilities:
-                           </h5>
-                            <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
-                              {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                <p key={idx} className="flex items-start">
-                                  <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
-                                        style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                  <span className="break-words whitespace-normal">{responsibility}</span>
-                                </p>
-                              ))}
-                           </div>
-                         </div>
-                       )}
+                        {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                          <div className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid overflow-visible" style={{ 
+                            backgroundColor: `${selectedColorTheme.primary}05`,
+                            borderColor: `${selectedColorTheme.primary}20`,
+                            wordWrap: 'break-word',
+                            overflowWrap: 'break-word'
+                          }}>
+                            <h5 className="text-sm font-semibold mb-2 text-foreground">
+                              Core Responsibilities:
+                            </h5>
+                             <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
+                               {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                 <p key={idx} className="flex items-start overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                                   <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                         style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                   <span className="break-words whitespace-normal">{responsibility}</span>
+                                 </p>
+                               ))}
+                            </div>
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>
@@ -144,9 +146,9 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                </h2>
                <div className="grid grid-cols-1 gap-2">
                  {enhancedContent.skills.map((skill: string, index: number) => (
-                   <div key={index} className="skill-item p-2 rounded text-sm" 
-                        style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
-                     • {skill}
+                   <div key={index} className="skill-item p-2 rounded text-sm overflow-visible" 
+                        style={{ backgroundColor: `${selectedColorTheme.primary}08`, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <span className="break-words whitespace-normal">• {skill}</span>
                    </div>
                 ))}
               </div>
@@ -167,10 +169,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               </h2>
               <div className="grid grid-cols-2 gap-2">
                 {enhancedContent.tools.map((tool: string, index: number) => (
-                  <div key={index} className="skill-item p-2 rounded text-sm" 
-                       style={{ backgroundColor: `${selectedColorTheme.primary}08` }}>
-                    • {tool}
-                  </div>
+                   <div key={index} className="skill-item p-2 rounded text-sm overflow-visible" 
+                        style={{ backgroundColor: `${selectedColorTheme.primary}08`, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <span className="break-words whitespace-normal">• {tool}</span>
+                   </div>
                 ))}
               </div>
             </div>

@@ -222,14 +222,14 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                   
                   <div className="space-y-8">
                     {enhancedContent.experience.map((exp: any, index: number) => (
-                      <div key={index} className="bg-white p-6 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-8" style={{ borderColor: selectedColorTheme.accent }} data-experience>
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-600 mb-1">{exp.title}</h3>
-                            <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
-                              {exp.company}
-                            </p>
-                          </div>
+                       <div key={index} className="bg-white p-6 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-8 overflow-visible" style={{ borderColor: selectedColorTheme.accent, wordWrap: 'break-word', overflowWrap: 'break-word' }} data-experience>
+                         <div className="flex justify-between items-start mb-4 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                           <div className="overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                             <h3 className="text-lg font-bold text-gray-600 mb-1 break-words whitespace-normal">{exp.title}</h3>
+                             <p className="text-base font-semibold break-words whitespace-normal" style={{ color: selectedColorTheme.primary }}>
+                               {exp.company}
+                             </p>
+                           </div>
                           <Badge 
                             className="px-3 py-1 text-white text-xs"
                             style={{ backgroundColor: selectedColorTheme.primary }}
@@ -246,42 +246,44 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                             </h4>
                             <div className="space-y-3">
                               {exp.achievements.map((achievement: string, achIndex: number) => (
-                                <div key={achIndex} className="flex items-start gap-3 overflow-hidden">
-                                  <div 
-                                    className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
-                                    style={{ backgroundColor: selectedColorTheme.accent }}
-                                  >
-                                    <span className="text-white text-xs">•</span>
-                                  </div>
-                                  <p className="text-sm leading-relaxed text-gray-600 font-medium break-words min-w-0 flex-1">
-                                    {achievement}
-                                  </p>
-                                </div>
+                                 <div key={achIndex} className="flex items-start gap-3 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                                   <div 
+                                     className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                                     style={{ backgroundColor: selectedColorTheme.accent }}
+                                   >
+                                     <span className="text-white text-xs">•</span>
+                                   </div>
+                                   <p className="text-sm leading-relaxed text-gray-600 font-medium break-words min-w-0 flex-1 whitespace-normal">
+                                     {achievement}
+                                   </p>
+                                 </div>
                               ))}
                             </div>
                             
                             {/* Core Responsibilities Section */}
                             {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                              <div 
-                                className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid"
-                                style={{ 
-                                  backgroundColor: `${selectedColorTheme.primary}08`,
-                                  borderColor: `${selectedColorTheme.primary}20`
-                                }}
-                              >
-                                <h5 className="text-sm font-semibold mb-2 text-foreground">
-                                  Core Responsibilities:
-                                </h5>
-                                <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
-                                  {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                     <p key={idx} className="flex items-start">
-                                       <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
-                                             style={{ backgroundColor: selectedColorTheme.accent }}></span>
-                                       <span className="break-words whitespace-normal">{responsibility}</span>
-                                     </p>
-                                  ))}
+                               <div 
+                                 className="mt-4 p-4 rounded-lg border page-break-avoid print:break-inside-avoid overflow-visible"
+                                 style={{ 
+                                   backgroundColor: `${selectedColorTheme.primary}08`,
+                                   borderColor: `${selectedColorTheme.primary}20`,
+                                   wordWrap: 'break-word',
+                                   overflowWrap: 'break-word'
+                                 }}
+                               >
+                                 <h5 className="text-sm font-semibold mb-2 text-foreground">
+                                   Core Responsibilities:
+                                 </h5>
+                                 <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
+                                   {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                      <p key={idx} className="flex items-start overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                                        <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
+                                              style={{ backgroundColor: selectedColorTheme.accent }}></span>
+                                        <span className="break-words whitespace-normal">{responsibility}</span>
+                                      </p>
+                                   ))}
+                                 </div>
                                 </div>
-                               </div>
                              )}
                             
                             {/* Executive Leadership & Strategic Vision */}

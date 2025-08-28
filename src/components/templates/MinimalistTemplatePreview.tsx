@@ -66,16 +66,16 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
           
           <div className="space-y-8">
             {enhancedContent.experience.map((exp: any, index: number) => (
-              <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
-                  <div>
-                    <h3 className="text-lg font-medium text-foreground">{exp.title}</h3>
-                    <p className="text-base font-light" style={{ color: selectedColorTheme.primary }}>
-                      {exp.company}
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground font-light">{exp.duration}</p>
-                </div>
+               <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                 <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2 overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                   <div className="overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                     <h3 className="text-lg font-medium text-foreground break-words whitespace-normal">{exp.title}</h3>
+                     <p className="text-base font-light break-words whitespace-normal" style={{ color: selectedColorTheme.primary }}>
+                       {exp.company}
+                     </p>
+                   </div>
+                   <p className="text-sm text-muted-foreground font-light break-words whitespace-normal">{exp.duration}</p>
+                 </div>
                 
                 {exp.achievements && exp.achievements.length > 0 && (
                   <div className="pl-4 space-y-3 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
@@ -91,14 +91,16 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                     
                      {/* Job-specific Core Responsibilities */}
                      {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                       <div className="mt-4 p-3 rounded border print:break-inside-avoid" style={{ 
+                       <div className="mt-4 p-3 rounded border print:break-inside-avoid overflow-visible" style={{ 
                          backgroundColor: `${selectedColorTheme.primary}03`,
-                         borderColor: `${selectedColorTheme.primary}15`
+                         borderColor: `${selectedColorTheme.primary}15`,
+                         wordWrap: 'break-word',
+                         overflowWrap: 'break-word'
                        }}>
                          <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
                           <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
                             {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                               <p key={idx} className="flex items-start text-xs text-muted-foreground">
+                               <p key={idx} className="flex items-start text-xs text-muted-foreground overflow-visible" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
                                  <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
                                        style={{ backgroundColor: selectedColorTheme.primary }}></span>
                                  <span className="break-words whitespace-normal">{responsibility}</span>
