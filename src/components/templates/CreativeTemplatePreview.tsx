@@ -97,7 +97,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                 <h2 className="text-2xl font-bold mb-3 print:text-xl print:mb-2" style={{ color: selectedColorTheme.primary }}>
                   Creative Vision
                 </h2>
-                <p className="text-base leading-relaxed text-muted-foreground print:text-sm print:leading-normal">
+                <p className="text-base leading-relaxed print:text-sm print:leading-normal" style={{ color: selectedColorTheme.accent }}>
                   {enhancedContent.summary}
                 </p>
               </div>
@@ -140,12 +140,12 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       >
                         <div className="flex flex-col gap-4 mb-6 print:mb-4">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2">
-                            <div>
-                              <h3 className="text-xl font-bold text-foreground print:text-lg">{exp.title}</h3>
-                              <p className="text-lg font-semibold print:text-base" style={{ color: selectedColorTheme.accent }}>
-                                {exp.company}
-                              </p>
-                            </div>
+                             <div>
+                               <h3 className="text-xl font-bold print:text-lg" style={{ color: selectedColorTheme.primary }}>{exp.title}</h3>
+                               <p className="text-lg font-semibold print:text-base" style={{ color: selectedColorTheme.accent }}>
+                                 {exp.company}
+                               </p>
+                             </div>
                             <Badge 
                               className="px-4 py-2 rounded-full text-white shadow-md print:px-3 print:py-1 print:shadow-none print:text-xs print:self-start"
                               style={{ background: `linear-gradient(135deg, ${selectedColorTheme.secondary}, ${selectedColorTheme.accent})` }}
@@ -175,7 +175,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                 >
                                   <span className="text-white text-xs font-bold">V</span>
                                 </div>
-                                <p className="text-sm leading-relaxed text-muted-foreground print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1">{achievement}</p>
+                                <p className="text-sm leading-relaxed print:text-xs print:leading-normal font-medium break-words min-w-0 flex-1" style={{ color: selectedColorTheme.primary }}>{achievement}</p>
                               </div>
                             ))}
                             
@@ -193,7 +193,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                                     <h5 className="text-sm font-semibold mb-2 print:text-xs print:mb-1" style={{ color: selectedColorTheme.primary }}>
                                       Core Responsibilities:
                                     </h5>
-                                     <div className="text-xs leading-relaxed text-muted-foreground print:text-xs space-y-1">
+                                     <div className="text-xs leading-relaxed print:text-xs space-y-1" style={{ color: selectedColorTheme.accent }}>
                                        {exp.core_responsibilities.map((responsibility: string, idx: number) => (
                                          <p key={idx} className="flex items-start">
                                            <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 

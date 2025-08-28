@@ -164,7 +164,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
               </h2>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border-l-4" style={{ borderColor: selectedColorTheme.primary }}>
-              <p className="text-sm leading-relaxed text-gray-700">
+              <p className="text-sm leading-relaxed" style={{ color: selectedColorTheme.accent }}>
                 {enhancedContent.summary}
               </p>
             </div>
@@ -189,12 +189,12 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                     {enhancedContent.experience.map((exp: any, index: number) => (
                       <div key={index} className="bg-white p-6 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-8" style={{ borderColor: selectedColorTheme.accent }} data-experience>
                         <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">{exp.title}</h3>
-                            <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
-                              {exp.company}
-                            </p>
-                          </div>
+                           <div>
+                             <h3 className="text-lg font-bold mb-1" style={{ color: selectedColorTheme.primary }}>{exp.title}</h3>
+                             <p className="text-base font-semibold" style={{ color: selectedColorTheme.accent }}>
+                               {exp.company}
+                             </p>
+                           </div>
                           <Badge 
                             className="px-3 py-1 text-white text-xs"
                             style={{ backgroundColor: selectedColorTheme.primary }}
@@ -205,7 +205,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                         
                         {exp.achievements && exp.achievements.length > 0 && (
                           <div className="page-break-avoid">
-                            <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                            <h4 className="font-semibold flex items-center gap-2 mb-4" style={{ color: selectedColorTheme.primary }}>
                               <Star className="w-4 h-4" style={{ color: selectedColorTheme.accent }} />
                               Strategic Achievements & Leadership Impact
                             </h4>
@@ -218,9 +218,9 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                                   >
                                     <span className="text-white text-xs">•</span>
                                   </div>
-                                  <p className="text-sm leading-relaxed text-gray-600 font-medium break-words min-w-0 flex-1">
-                                    {achievement}
-                                  </p>
+                                   <p className="text-sm leading-relaxed font-medium break-words min-w-0 flex-1" style={{ color: selectedColorTheme.primary }}>
+                                     {achievement}
+                                   </p>
                                 </div>
                               ))}
                             </div>
@@ -234,10 +234,10 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                                   borderColor: `${selectedColorTheme.primary}20`
                                 }}
                               >
-                                <h5 className="text-sm font-semibold mb-2 text-foreground">
-                                  Core Responsibilities:
-                                </h5>
-                                <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
+                                 <h5 className="text-sm font-semibold mb-2" style={{ color: selectedColorTheme.primary }}>
+                                   Core Responsibilities:
+                                 </h5>
+                                 <div className="text-xs leading-relaxed space-y-1" style={{ color: selectedColorTheme.accent }}>
                                   {exp.core_responsibilities.map((responsibility: string, idx: number) => (
                                     <p key={idx} className="flex items-start">
                                       <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
@@ -250,12 +250,12 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                              )}
                             
                             {/* Executive Leadership & Strategic Vision */}
-                            <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
-                              <h5 className="font-semibold text-gray-900 mb-2 text-sm">Executive Leadership & Strategic Vision:</h5>
-                              <p className="text-xs leading-relaxed text-gray-600">
-                                {extractLeadershipLearnings(exp.achievements, exp.title, exp.company, index)}
-                              </p>
-                            </div>
+                             <div className="mt-5 p-4 rounded-lg bg-gray-50 border-l-3" style={{ borderColor: selectedColorTheme.primary }}>
+                               <h5 className="font-semibold mb-2 text-sm" style={{ color: selectedColorTheme.primary }}>Executive Leadership & Strategic Vision:</h5>
+                               <p className="text-xs leading-relaxed" style={{ color: selectedColorTheme.accent }}>
+                                 {extractLeadershipLearnings(exp.achievements, exp.title, exp.company, index)}
+                               </p>
+                             </div>
                           </div>
                         )}
                       </div>

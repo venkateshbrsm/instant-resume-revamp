@@ -34,11 +34,11 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             <h1 className="text-4xl md:text-5xl font-light tracking-wide" style={{ color: selectedColorTheme.primary }}>
               {enhancedContent.name}
             </h1>
-            <p className="text-xl text-muted-foreground font-light">
+            <p className="text-xl font-light" style={{ color: selectedColorTheme.accent }}>
               {enhancedContent.title}
             </p>
             
-            <div className="flex flex-wrap gap-4 sm:gap-8 text-sm text-muted-foreground font-light pt-2">
+            <div className="flex flex-wrap gap-4 sm:gap-8 text-sm font-light pt-2" style={{ color: selectedColorTheme.accent }}>
               <span className="break-all no-underline">{enhancedContent.email}</span>
               <span className="no-underline">{enhancedContent.phone}</span>
               <span>{enhancedContent.location}</span>
@@ -52,7 +52,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         <h2 className="text-lg font-medium tracking-wide" style={{ color: selectedColorTheme.primary }}>
           PROFESSIONAL SUMMARY
         </h2>
-        <p className="text-base leading-relaxed text-muted-foreground font-light max-w-4xl">
+        <p className="text-base leading-relaxed font-light max-w-4xl" style={{ color: selectedColorTheme.accent }}>
           {enhancedContent.summary}
         </p>
       </div>
@@ -69,21 +69,21 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
               <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
                   <div>
-                    <h3 className="text-lg font-medium text-foreground">{exp.title}</h3>
+                    <h3 className="text-lg font-medium" style={{ color: selectedColorTheme.primary }}>{exp.title}</h3>
                     <p className="text-base font-light" style={{ color: selectedColorTheme.primary }}>
                       {exp.company}
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground font-light">{exp.duration}</p>
+                  <p className="text-sm font-light" style={{ color: selectedColorTheme.accent }}>{exp.duration}</p>
                 </div>
                 
                 {exp.achievements && exp.achievements.length > 0 && (
                   <div className="pl-4 space-y-3 border-l print:keep-together" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                    <h4 className="text-sm font-medium text-foreground mb-2">
+                    <h4 className="text-sm font-medium mb-2" style={{ color: selectedColorTheme.primary }}>
                       Key Achievements & Measurable Impact:
                     </h4>
                     {exp.achievements.map((achievement: string, achIndex: number) => (
-                      <p key={achIndex} className="text-sm leading-relaxed text-muted-foreground font-light">
+                      <p key={achIndex} className="text-sm leading-relaxed font-light" style={{ color: selectedColorTheme.primary }}>
                         <span className="mr-2" style={{ color: selectedColorTheme.primary }}>•</span>
                         {achievement}
                       </p>
@@ -95,10 +95,10 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
                          backgroundColor: `${selectedColorTheme.primary}03`,
                          borderColor: `${selectedColorTheme.primary}15`
                        }}>
-                         <h5 className="text-xs font-medium mb-2 text-foreground">Core Responsibilities:</h5>
-                          <div className="text-xs leading-relaxed text-muted-foreground font-light space-y-1">
+                          <h5 className="text-xs font-medium mb-2" style={{ color: selectedColorTheme.primary }}>Core Responsibilities:</h5>
+                           <div className="text-xs leading-relaxed font-light space-y-1" style={{ color: selectedColorTheme.accent }}>
                             {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                              <p key={idx} className="flex items-start text-xs text-muted-foreground">
+                              <p key={idx} className="flex items-start text-xs" style={{ color: selectedColorTheme.accent }}>
                                 <span className="inline-block w-1 h-1 rounded-full mr-2 mt-2 flex-shrink-0" 
                                       style={{ backgroundColor: selectedColorTheme.primary }}></span>
                                 {responsibility}
@@ -127,10 +127,10 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
               {/* Skills */}
               {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-foreground mb-2">Skills:</h4>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: selectedColorTheme.primary }}>Skills:</h4>
                   <div className="grid grid-cols-2 gap-2">
                     {enhancedContent.skills.map((skill: string, index: number) => (
-                      <p key={index} className="text-sm text-muted-foreground font-light">• {skill}</p>
+                      <p key={index} className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>• {skill}</p>
                     ))}
                   </div>
                 </div>
@@ -139,10 +139,10 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
               {/* Tools */}
               {enhancedContent.tools && enhancedContent.tools.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-foreground mb-2">Tools:</h4>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: selectedColorTheme.primary }}>Tools:</h4>
                   <div className="grid grid-cols-2 gap-2">
                     {enhancedContent.tools.map((tool: string, index: number) => (
-                      <p key={index} className="text-sm text-muted-foreground font-light">• {tool}</p>
+                      <p key={index} className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>• {tool}</p>
                     ))}
                   </div>
                 </div>
@@ -151,11 +151,11 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
               {/* Core Technical Skills */}
               {enhancedContent.core_technical_skills && enhancedContent.core_technical_skills.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-foreground mb-2">Core Skills:</h4>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: selectedColorTheme.primary }}>Core Skills:</h4>
                   <div className="space-y-2">
                     {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
                       <div key={index} className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground font-light">{skill.name}</p>
+                        <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>{skill.name}</p>
                         <div className="flex gap-1">
                            {[1,2,3,4,5].map(level => (
                              <div
@@ -186,12 +186,12 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             <div className="space-y-4">
               {enhancedContent.education.map((edu: any, index: number) => (
                 <div key={index} className="space-y-1">
-                   <h3 className="text-base font-medium text-foreground">{edu.degree}</h3>
+                   <h3 className="text-base font-medium" style={{ color: selectedColorTheme.primary }}>{edu.degree}</h3>
                    <p className="text-sm font-light" style={{ color: selectedColorTheme.primary }}>
                      {edu.institution}
                    </p>
                    {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
-                     <p className="text-sm text-muted-foreground font-light">{edu.year}</p>
+                     <p className="text-sm font-light" style={{ color: selectedColorTheme.accent }}>{edu.year}</p>
                    )}
                 </div>
               ))}
