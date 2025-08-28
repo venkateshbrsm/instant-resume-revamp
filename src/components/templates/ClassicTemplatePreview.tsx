@@ -34,10 +34,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
           {enhancedContent.name}
         </h1>
-        <p className="text-lg md:text-xl mb-4 font-medium" style={{ color: selectedColorTheme.accent }}>
+        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
           {enhancedContent.title}
         </p>
-        <div className="text-sm space-x-4" style={{ color: selectedColorTheme.accent }}>
+        <div className="text-sm text-muted-foreground space-x-4">
           <span className="no-underline">{enhancedContent.email}</span>
           <span>•</span>
           <span className="no-underline">{enhancedContent.phone}</span>
@@ -58,7 +58,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           >
             PROFESSIONAL SUMMARY
           </h2>
-          <p className="text-base leading-relaxed text-justify" style={{ color: selectedColorTheme.accent }}>
+          <p className="text-base leading-relaxed text-muted-foreground text-justify">
             {enhancedContent.summary}
           </p>
         </div>
@@ -79,22 +79,22 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               {enhancedContent.experience.map((exp: any, index: number) => (
                 <div key={index} className="border-l-4 pl-6 page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-4">
-                    <h3 className="text-lg font-bold" style={{ color: selectedColorTheme.primary }}>{exp.title}</h3>
+                    <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
                     <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
                       {exp.company}
                     </p>
-                    <p className="text-sm italic" style={{ color: selectedColorTheme.accent }}>{exp.duration}</p>
+                    <p className="text-sm text-muted-foreground italic">{exp.duration}</p>
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
                     <div className="page-break-avoid">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: selectedColorTheme.primary }}>
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
                         Key Achievements & Quantifiable Results:
                       </h4>
                       <ul className="space-y-3">
                         {exp.achievements.map((achievement: string, achIndex: number) => (
-                          <li key={achIndex} className="text-sm leading-relaxed flex items-start page-break-avoid" style={{ color: selectedColorTheme.primary }}>
+                          <li key={achIndex} className="text-sm leading-relaxed text-muted-foreground flex items-start page-break-avoid">
                             <span className="mr-3 mt-1 text-base font-bold" style={{ color: selectedColorTheme.primary }}>•</span>
                             <span className="font-medium">{achievement}</span>
                           </li>
@@ -107,10 +107,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                            backgroundColor: `${selectedColorTheme.primary}05`,
                            borderColor: `${selectedColorTheme.primary}20`
                          }}>
-                            <h5 className="text-sm font-semibold mb-2" style={{ color: selectedColorTheme.primary }}>
-                              Core Responsibilities:
-                            </h5>
-                             <div className="text-xs leading-relaxed space-y-1" style={{ color: selectedColorTheme.accent }}>
+                           <h5 className="text-sm font-semibold mb-2 text-foreground">
+                             Core Responsibilities:
+                           </h5>
+                            <div className="text-xs leading-relaxed text-muted-foreground space-y-1">
                               {exp.core_responsibilities.map((responsibility: string, idx: number) => (
                                 <p key={idx} className="flex items-start">
                                   <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 mt-1.5 flex-shrink-0" 
@@ -191,10 +191,10 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               <div className="space-y-3">
                 {enhancedContent.core_technical_skills.map((skill: any, index: number) => (
                   <div key={index} className="flex items-center justify-between page-break-avoid skill-item">
-                   <div className="text-sm flex items-center" style={{ color: selectedColorTheme.primary }}>
-                     <span className="mr-3 w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
-                     <span className="font-medium">{skill.name}</span>
-                   </div>
+                    <div className="text-sm text-muted-foreground flex items-center">
+                      <span className="mr-3 w-2 h-2 rounded-full" style={{ backgroundColor: selectedColorTheme.primary }}></span>
+                      <span className="font-medium">{skill.name}</span>
+                    </div>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <div
@@ -227,12 +227,12 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               <div className="space-y-4">
                 {enhancedContent.education.map((edu: any, index: number) => (
                   <div key={index} className="page-break-avoid education-item">
-                     <h3 className="font-bold" style={{ color: selectedColorTheme.primary }}>{edu.degree}</h3>
-                     <p className="font-semibold" style={{ color: selectedColorTheme.accent }}>
+                     <h3 className="font-bold text-foreground">{edu.degree}</h3>
+                     <p className="font-semibold" style={{ color: selectedColorTheme.primary }}>
                        {edu.institution}
                      </p>
                      {edu.year && edu.year !== "N/A" && edu.year !== "Year not specified" && (
-                       <p className="text-sm italic" style={{ color: selectedColorTheme.accent }}>{edu.year}</p>
+                       <p className="text-sm text-muted-foreground italic">{edu.year}</p>
                      )}
                   </div>
                 ))}
