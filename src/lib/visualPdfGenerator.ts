@@ -10,82 +10,6 @@ export interface VisualPdfOptions {
   };
 }
 
-// Intelligent text splitting that preserves word boundaries and handles special characters
-function splitTextIntelligently(text: string, maxWidth: number, pdfDoc: any): string[] {
-  if (!text) return [''];
-  
-  // Handle very short texts that don't need splitting
-  if (pdfDoc.getTextWidth(text) <= maxWidth) {
-    return [text];
-  }
-  
-  const words = text.split(/(\s+)/); // Split on whitespace but keep separators
-  const lines: string[] = [];
-  let currentLine = '';
-  
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    const testLine = currentLine + word;
-    const testWidth = pdfDoc.getTextWidth(testLine);
-    
-    if (testWidth <= maxWidth) {
-      currentLine = testLine;
-    } else {
-      // If current line has content, save it
-      if (currentLine.trim()) {
-        lines.push(currentLine.trim());
-        currentLine = word;
-      } else {
-        // Handle very long single words by breaking them
-        const brokenWord = breakLongWord(word, maxWidth, pdfDoc);
-        lines.push(...brokenWord.slice(0, -1));
-        currentLine = brokenWord[brokenWord.length - 1] || '';
-      }
-    }
-  }
-  
-  // Add remaining text
-  if (currentLine.trim()) {
-    lines.push(currentLine.trim());
-  }
-  
-  return lines.length > 0 ? lines : [''];
-}
-
-// Break very long words that exceed line width
-function breakLongWord(word: string, maxWidth: number, pdfDoc: any): string[] {
-  if (pdfDoc.getTextWidth(word) <= maxWidth) {
-    return [word];
-  }
-  
-  const result: string[] = [];
-  let currentPart = '';
-  
-  for (let i = 0; i < word.length; i++) {
-    const char = word[i];
-    const testPart = currentPart + char;
-    
-    if (pdfDoc.getTextWidth(testPart) <= maxWidth) {
-      currentPart = testPart;
-    } else {
-      if (currentPart) {
-        result.push(currentPart);
-        currentPart = char;
-      } else {
-        // Even single character is too wide, force it
-        result.push(char);
-        currentPart = '';
-      }
-    }
-  }
-  
-  if (currentPart) {
-    result.push(currentPart);
-  }
-  
-  return result;
-}
-
 interface ResumeData {
   name: string;
   title: string;
@@ -99,7 +23,6 @@ interface ResumeData {
     company: string;
     duration: string;
     achievements: string[];
-    core_responsibilities?: string[];
   }>;
   skills?: string[];
   education?: Array<{
@@ -228,34 +151,32 @@ async function generateModernPdf(
     sidebarY += 8;
   }
 
-    // Skills section in sidebar with progress bars
-    if (resumeData.skills && resumeData.skills.length > 0) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CORE SKILLS', 8, sidebarY);
-      sidebarY += 8;
+  // Skills section in sidebar with progress bars
+  if (resumeData.skills && resumeData.skills.length > 0) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CORE SKILLS', 8, sidebarY);
+    sidebarY += 8;
 
-      resumeData.skills.slice(0, 8).forEach((skill, index) => {
-        // Skill name with intelligent wrapping
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        const skillLines = splitTextIntelligently(skill, sidebarWidth - 16, doc);
-        
-        // Only show first line in sidebar to maintain layout
-        doc.text(skillLines[0], 8, sidebarY);
-        
-        // Progress bar background
-        doc.setFillColor(255, 255, 255, 0.3);
-        doc.rect(8, sidebarY + 2, sidebarWidth - 16, 2, 'F');
-        
-        // Progress bar fill
-        doc.setFillColor(255, 255, 255, 0.8);
-        const progressWidth = (sidebarWidth - 16) * (0.7 + (index * 0.03));
-        doc.rect(8, sidebarY + 2, progressWidth, 2, 'F');
-        
-        sidebarY += 8;
-      });
-    }
+    resumeData.skills.slice(0, 8).forEach((skill, index) => {
+      // Skill name
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
+      doc.text(skillLines[0], 8, sidebarY);
+      
+      // Progress bar background
+      doc.setFillColor(255, 255, 255, 0.3);
+      doc.rect(8, sidebarY + 2, sidebarWidth - 16, 2, 'F');
+      
+      // Progress bar fill
+      doc.setFillColor(255, 255, 255, 0.8);
+      const progressWidth = (sidebarWidth - 16) * (0.7 + (index * 0.03));
+      doc.rect(8, sidebarY + 2, progressWidth, 2, 'F');
+      
+      sidebarY += 8;
+    });
+  }
 
   // Education in sidebar
   if (resumeData.education && resumeData.education.length > 0) {
@@ -268,12 +189,12 @@ async function generateModernPdf(
     resumeData.education.slice(0, 2).forEach((edu) => {
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
-      const degreeLines = splitTextIntelligently(edu.degree, sidebarWidth - 16, doc);
+      const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
       doc.text(degreeLines[0], 8, sidebarY);
       sidebarY += 4;
       
       doc.setFont('helvetica', 'normal');
-      const instLines = splitTextIntelligently(edu.institution, sidebarWidth - 16, doc);
+      const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
       doc.text(instLines[0], 8, sidebarY);
       sidebarY += 4;
       
@@ -312,7 +233,7 @@ async function generateModernPdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = splitTextIntelligently(resumeData.summary, mainContentWidth, doc);
+    const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
     summaryLines.forEach((line: string) => {
       doc.text(line, mainContentX, mainY);
       mainY += 4.5;
@@ -360,55 +281,8 @@ async function generateModernPdf(
       }
       mainY += 8;
 
-      // Core Responsibilities
-      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Core Responsibilities:', mainContentX, mainY);
-        mainY += 6;
-
-        exp.core_responsibilities.forEach((responsibility) => {
-          // Check page break
-          if (mainY > pageHeight - 30) {
-            doc.addPage();
-            // Re-create sidebar on new page
-            for (let i = 0; i < sidebarWidth; i += 2) {
-              const ratio = i / sidebarWidth;
-              const r = Math.round(pr + (ar - pr) * ratio);
-              const g = Math.round(pg + (ag - pg) * ratio);
-              const b = Math.round(pb + (ab - pb) * ratio);
-              
-              doc.setFillColor(r, g, b);
-              doc.rect(i, 0, 2, pageHeight, 'F');
-            }
-            mainY = 20;
-          }
-
-          // Responsibility bullet
-          doc.setFillColor(120, 120, 120);
-          doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
-          
-          doc.setTextColor(100, 100, 100);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          const responsibilityLines = splitTextIntelligently(responsibility, mainContentWidth - 8, doc);
-          responsibilityLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
-          });
-          mainY += responsibilityLines.length * 4 + 2;
-        });
-        mainY += 4;
-      }
-
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Key Achievements:', mainContentX, mainY);
-        mainY += 6;
-
         exp.achievements.forEach((achievement) => {
           // Check page break
           if (mainY > pageHeight - 30) {
@@ -433,7 +307,7 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = splitTextIntelligently(achievement, mainContentWidth - 8, doc);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
           });
@@ -556,7 +430,7 @@ async function generateCreativePdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = splitTextIntelligently(resumeData.summary, contentWidth, doc);
+    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
     summaryLines.forEach((line: string) => {
       doc.text(line, margin, currentY);
       currentY += 5;
@@ -595,7 +469,7 @@ async function generateCreativePdf(
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        const skillLines = splitTextIntelligently(skill, badgeWidth - 4, doc);
+        const skillLines = doc.splitTextToSize(skill, badgeWidth - 4);
         doc.text(skillLines[0], x + 2, currentY);
         
         skillIndex++;
@@ -607,7 +481,6 @@ async function generateCreativePdf(
 
   // Professional Experience with enhanced visual style
   if (resumeData.experience && resumeData.experience.length > 0) {
-    console.log(`📊 Processing ${resumeData.experience.length} experience entries for Creative PDF`);
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -615,18 +488,9 @@ async function generateCreativePdf(
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
-      // Check if we need a new page before starting experience
-      if (currentY > pageHeight - 80) {
-        doc.addPage();
-        currentY = 20;
-      }
-
       // Experience container background
       doc.setFillColor(pr, pg, pb, 0.05);
-      // Calculate dynamic container height based on all content
-      const responsibilityCount = exp.core_responsibilities?.length || 0;
-      const achievementCount = exp.achievements?.length || 0;
-      const containerHeight = 30 + (responsibilityCount * 6) + (achievementCount * 6);
+      const containerHeight = 30 + (exp.achievements?.length || 0) * 5;
       doc.roundedRect(margin - 2, currentY - 5, contentWidth + 4, containerHeight, 3, 3, 'F');
       
       // Left border accent
@@ -658,35 +522,9 @@ async function generateCreativePdf(
       }
       currentY += 8;
 
-      // Core Responsibilities with dots - show ALL responsibilities
-      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        exp.core_responsibilities.forEach((responsibility) => {
-          // Responsibility bullet (circle dot)
-          doc.setFillColor(120, 120, 120);
-          doc.circle(margin + 7, currentY - 1, 1.5, 'F');
-          
-          // Check page break before responsibility text
-          if (currentY > pageHeight - 40) {
-            doc.addPage();
-            currentY = 20;
-          }
-          
-          // Responsibility text
-          doc.setTextColor(100, 100, 100);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          const responsibilityLines = splitTextIntelligently(responsibility, contentWidth - 20, doc);
-          responsibilityLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 12, currentY + (lineIndex * 4));
-          });
-          currentY += responsibilityLines.length * 4 + 2;
-        });
-        currentY += 3;
-      }
-
-      // Achievements with checkmarks - show ALL achievements
+      // Achievements with checkmarks
       if (exp.achievements && exp.achievements.length > 0) {
-        exp.achievements.forEach((achievement) => {
+        exp.achievements.slice(0, 4).forEach((achievement) => {
           // Achievement bullet (matching preview)
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 7, currentY - 1, 2, 'F');
@@ -695,17 +533,11 @@ async function generateCreativePdf(
           doc.setFont('helvetica', 'bold');
           doc.text('V', margin + 5.5, currentY + 0.5);
           
-          // Check page break before achievement text
-          if (currentY > pageHeight - 40) {
-            doc.addPage();
-            currentY = 20;
-          }
-          
           // Achievement text
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = splitTextIntelligently(achievement, contentWidth - 20, doc);
+          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 4));
           });
@@ -834,7 +666,7 @@ async function generateClassicPdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = splitTextIntelligently(resumeData.summary, contentWidth, doc);
+    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
     summaryLines.forEach((line: string) => {
       doc.text(line, margin, currentY);
       currentY += 5;
@@ -876,7 +708,7 @@ async function generateClassicPdf(
           doc.setFont('helvetica', 'normal');
           doc.text('•', margin + 5, currentY);
           
-          const achievementLines = splitTextIntelligently(achievement, contentWidth - 10, doc);
+          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 10);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 10, currentY + (lineIndex * 5));
           });

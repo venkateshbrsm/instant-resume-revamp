@@ -22,7 +22,6 @@ interface ResumeData {
     company: string;
     duration: string;
     achievements: string[];
-    core_responsibilities?: string[];
   }>;
   skills?: string[];
   education?: Array<{
@@ -127,96 +126,18 @@ async function generateCleanTextPdf(
     currentY += lineHeight + 4;
   };
 
-  // Enhanced text wrapping with better line breaking
-  const addWrappedText = (text: string, x: number, fontSize: number = 10, fontWeight: string = 'normal', color: number[] = [60, 60, 60], maxWidth?: number) => {
+  // Helper function to add wrapped text
+  const addWrappedText = (text: string, x: number, fontSize: number = 10, fontWeight: string = 'normal', color: number[] = [60, 60, 60]) => {
     doc.setFontSize(fontSize);
     doc.setFont('helvetica', fontWeight);
     doc.setTextColor(color[0], color[1], color[2]);
     
-    const textWidth = maxWidth || (contentWidth - (x - margin));
-    const lines = splitTextIntelligently(text, textWidth, doc);
-    
+    const lines = doc.splitTextToSize(text, contentWidth - (x - margin));
     lines.forEach((line: string) => {
       checkPageBreak(8);
       doc.text(line, x, currentY);
       currentY += lineHeight;
     });
-  };
-
-  // Intelligent text splitting that preserves word boundaries and handles special characters
-  const splitTextIntelligently = (text: string, maxWidth: number, pdfDoc: any): string[] => {
-    if (!text) return [''];
-    
-    // Handle very short texts that don't need splitting
-    if (pdfDoc.getTextWidth(text) <= maxWidth) {
-      return [text];
-    }
-    
-    const words = text.split(/(\s+)/); // Split on whitespace but keep separators
-    const lines: string[] = [];
-    let currentLine = '';
-    
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine + word;
-      const testWidth = pdfDoc.getTextWidth(testLine);
-      
-      if (testWidth <= maxWidth) {
-        currentLine = testLine;
-      } else {
-        // If current line has content, save it
-        if (currentLine.trim()) {
-          lines.push(currentLine.trim());
-          currentLine = word;
-        } else {
-          // Handle very long single words by breaking them
-          const brokenWord = breakLongWord(word, maxWidth, pdfDoc);
-          lines.push(...brokenWord.slice(0, -1));
-          currentLine = brokenWord[brokenWord.length - 1] || '';
-        }
-      }
-    }
-    
-    // Add remaining text
-    if (currentLine.trim()) {
-      lines.push(currentLine.trim());
-    }
-    
-    return lines.length > 0 ? lines : [''];
-  };
-
-  // Break very long words that exceed line width
-  const breakLongWord = (word: string, maxWidth: number, pdfDoc: any): string[] => {
-    if (pdfDoc.getTextWidth(word) <= maxWidth) {
-      return [word];
-    }
-    
-    const result: string[] = [];
-    let currentPart = '';
-    
-    for (let i = 0; i < word.length; i++) {
-      const char = word[i];
-      const testPart = currentPart + char;
-      
-      if (pdfDoc.getTextWidth(testPart) <= maxWidth) {
-        currentPart = testPart;
-      } else {
-        if (currentPart) {
-          result.push(currentPart);
-          currentPart = char;
-        } else {
-          // Even single character is too wide, force it
-          result.push(char);
-          currentPart = '';
-        }
-      }
-    }
-    
-    if (currentPart) {
-      result.push(currentPart);
-    }
-    
-    return result;
   };
 
   // HEADER SECTION
@@ -312,44 +233,8 @@ async function generateCleanTextPdf(
       }
       currentY += 8;
       
-      // Core Responsibilities
-      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        checkPageBreak(10);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(pr, pg, pb);
-        doc.text('Core Responsibilities:', margin, currentY);
-        currentY += 6;
-
-        exp.core_responsibilities.forEach((responsibility) => {
-          checkPageBreak(10);
-          
-          // Simple bullet point
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(60, 60, 60);
-          doc.text('•', margin + 5, currentY);
-          
-          // Responsibility text with intelligent wrapping
-          const lines = splitTextIntelligently(responsibility, contentWidth - 15, doc);
-          lines.forEach((line: string, lineIndex: number) => {
-            if (lineIndex > 0) checkPageBreak(8);
-            doc.text(line, margin + 10, currentY + (lineIndex * lineHeight));
-          });
-          currentY += lines.length * lineHeight + 2;
-        });
-        currentY += 4;
-      }
-      
       // Achievements
       if (exp.achievements && exp.achievements.length > 0) {
-        checkPageBreak(10);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(pr, pg, pb);
-        doc.text('Key Achievements:', margin, currentY);
-        currentY += 6;
-
         exp.achievements.forEach((achievement) => {
           checkPageBreak(10);
           
@@ -359,8 +244,8 @@ async function generateCleanTextPdf(
           doc.setTextColor(60, 60, 60);
           doc.text('•', margin + 5, currentY);
           
-          // Achievement text with intelligent wrapping
-          const lines = splitTextIntelligently(achievement, contentWidth - 15, doc);
+          // Achievement text
+          const lines = doc.splitTextToSize(achievement, contentWidth - 15);
           lines.forEach((line: string, lineIndex: number) => {
             if (lineIndex > 0) checkPageBreak(8);
             doc.text(line, margin + 10, currentY + (lineIndex * lineHeight));

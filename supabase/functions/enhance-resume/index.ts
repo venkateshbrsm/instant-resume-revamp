@@ -64,98 +64,81 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer and career consultant. Your ONLY task is to reword existing content to be more ATS-friendly and keyword-rich. You MUST NOT change the structure, count, or organization of any content.
+  const prompt = `You are an expert ATS resume optimizer and career consultant. Transform the following resume content into a comprehensive, ATS-friendly, keyword-rich professional resume.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL PRESERVATION RULES - FAILURE TO FOLLOW WILL RESULT IN REJECTION:
-1. PRESERVE EXACT COUNT: Count every work experience entry in the original resume and include EXACTLY the same number
-2. PRESERVE EXACT SENTENCES: For each work experience, count every bullet point/sentence in the original and rewrite EXACTLY the same number
-3. PRESERVE STRUCTURE: Keep the same job titles, companies, and date ranges as the original
-4. PRESERVE MEANING: Each rewritten sentence must convey the same core meaning as the original
-5. ONLY ENHANCE LANGUAGE: Your job is ONLY to make the language more ATS-friendly and professional
-
-WORK EXPERIENCE ENHANCEMENT PROCESS:
-For each work experience entry:
-1. COUNT the original bullet points/achievements/sentences
-2. REWRITE each one individually to be more ATS-friendly
-3. ENSURE you have the EXACT same count of enhanced sentences
-4. DO NOT combine, split, or omit any original sentences
-5. DO NOT add new sentences beyond what exists in the original
-
-ENHANCEMENT TRANSFORMATION EXAMPLES:
-Original: "Helped customers with inquiries"
-Enhanced: "Provided exceptional customer service and technical support to resolve client inquiries, ensuring satisfaction and retention through proactive communication and problem-solving expertise"
-
-Original: "Managed social media accounts"
-Enhanced: "Orchestrated comprehensive social media marketing strategies across Facebook, Instagram, LinkedIn, and Twitter platforms, driving engagement and brand awareness through content creation and community management"
-
-Original: "Worked with team on projects"
-Enhanced: "Collaborated with cross-functional teams utilizing Agile methodologies and project management tools to deliver high-quality results within budget and timeline constraints"
-
-STRICT COUNTING REQUIREMENTS:
-- If original has 3 work experiences → output EXACTLY 3 work experiences
-- If original work experience has 4 bullet points → output EXACTLY 4 enhanced bullet points
-- If original work experience has 2 sentences → output EXACTLY 2 enhanced sentences
-- NO EXCEPTIONS - maintain exact numerical parity
+CRITICAL INSTRUCTIONS:
+1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
+2. Preserve EVERY job position, company, and time period from the original
+3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
+4. Expand descriptions to be more comprehensive and achievement-focused
+5. Add relevant industry keywords and ATS-friendly terms for each role
+6. Make each section detailed and professional with specific accomplishments
+7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
+8. Use strong action verbs and quantifiable achievements where possible
+9. Return ONLY a valid JSON object with the exact structure shown below
+10. MANDATORY: Include ALL work experience entries from the original resume
+11. MANDATORY: Include ALL skills and technical skills from the original resume
 
 REQUIRED JSON STRUCTURE:
 {
-  "name": "Full professional name from original",
-  "title": "Professional title from original or enhanced version", 
-  "email": "email from original",
-  "phone": "phone from original",
-  "location": "location from original",
-  "linkedin": "LinkedIn profile URL if available in original",
-  "summary": "Enhanced professional summary with keywords (2-4 sentences)",
+  "name": "Full professional name",
+  "title": "Professional title or desired role", 
+  "email": "email@example.com",
+  "phone": "phone number",
+  "location": "City, State/Country",
+  "linkedin": "LinkedIn profile URL if available",
+  "summary": "Comprehensive 4-6 sentence professional summary with keywords and achievements",
   "experience": [
     {
-      "title": "EXACT job title from original",
-      "company": "EXACT company name from original",
-      "duration": "EXACT date range from original",
-      "description": "Brief enhanced overview (1-2 sentences)",
+      "title": "Job Title",
+      "company": "Company Name",
+      "duration": "Start Date - End Date",
+      "description": "Brief 1-2 sentence overview of the role and main focus",
       "core_responsibilities": [
-        "Enhanced version of original responsibility 1 with ATS keywords",
-        "Enhanced version of original responsibility 2 with metrics and action verbs",
-        "Enhanced version of original responsibility 3 with industry terminology"
+        "Primary responsibility with detailed description",
+        "Secondary responsibility with specific tasks and duties",
+        "Third key responsibility with operational details"
       ],
       "achievements": [
-        "Enhanced version of original achievement 1 with quantifiable impact",
-        "Enhanced version of original achievement 2 with business value",
-        "Enhanced version of original achievement 3 with professional terminology"
+        "Specific achievement with metrics and impact",
+        "Another key accomplishment with quantifiable results",
+        "Third major contribution with measurable outcomes"
       ]
     }
   ],
   "education": [
     {
-      "degree": "EXACT degree from original",
-      "institution": "EXACT institution from original", 
-      "year": "EXACT year from original",
-      "gpa": "GPA if available in original"
+      "degree": "Degree Name",
+      "institution": "Institution Name", 
+      "year": "Graduation Year or Duration",
+      "gpa": "GPA if available"
     }
   ],
-  "skills": ["enhanced skill list based on original skills"],
-  "tools": ["tools mentioned in original resume"],
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10", "skill11", "skill12"],
+  "tools": ["tool1", "tool2", "tool3", "tool4", "tool5", "tool6", "tool7", "tool8", "tool9", "tool10"],
   "core_technical_skills": [
     {
-      "name": "Technical skill from original or related",
+      "name": "Technical Skill Name",
       "proficiency": 85
     }
   ]
 }
 
-VERIFICATION CHECKLIST BEFORE RESPONDING:
-□ Counted original work experiences and matched exactly
-□ Counted sentences/bullets in each work experience and matched exactly  
-□ Preserved all job titles, companies, and dates from original
-□ Enhanced language for ATS without changing core meaning
-□ Used strong action verbs and industry keywords
-□ Maintained professional tone throughout
-□ Included quantifiable metrics where appropriate
-□ Ensured JSON structure is valid and complete
-
-CRITICAL WARNING: If you cannot preserve the exact count and structure while enhancing the language, respond with an error rather than changing the count. The user needs EXACTLY the same structure with better wording, not restructured content.`;
+ENHANCEMENT GUIDELINES:
+- Professional summary should be compelling and keyword-rich
+- Experience descriptions should be brief role overviews (1-2 sentences)
+- Each experience should have 3-5 core responsibilities detailing daily tasks and duties
+- Each experience should have 3-5 specific achievements with metrics and impact
+- Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
+- Extract ALL tools mentioned in original resume as a separate "tools" array
+- Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
+- Expand on responsibilities with action verbs and specific outcomes
+- Make content ATS-friendly with industry standard terminology
+- Ensure all sections are comprehensive and detailed
+- Focus achievements on quantifiable results and business impact`;
 
   console.log('Sending request to OpenAI...');
 
@@ -166,19 +149,18 @@ CRITICAL WARNING: If you cannot preserve the exact count and structure while enh
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4.1-2025-04-14',
+      model: 'gpt-4o',
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Your task is to enhance language for ATS compatibility while preserving EXACT structure and count. Always return valid JSON with identical structure to original but improved wording. CRITICAL: Count original sentences and match exactly - do not add, remove, or combine sentences.' 
+          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
         },
         { 
           role: 'user', 
           content: prompt 
         }
       ],
-      max_tokens: 4000,
-      temperature: 0.3,
+      max_completion_tokens: 4000,
     }),
   });
 
@@ -189,13 +171,10 @@ CRITICAL WARNING: If you cannot preserve the exact count and structure while enh
   }
 
   const data = await response.json();
-  console.log('OpenAI response data:', JSON.stringify(data, null, 2));
-  
-  const enhancedContent = data.choices?.[0]?.message?.content;
+  const enhancedContent = data.choices[0]?.message?.content;
 
   if (!enhancedContent) {
-    console.error('No content in OpenAI response:', data);
-    throw new Error('No content received from OpenAI - response may be empty or malformed');
+    throw new Error('No content received from OpenAI');
   }
 
   console.log('Raw AI response received, parsing JSON...');
@@ -233,17 +212,17 @@ CRITICAL WARNING: If you cannot preserve the exact count and structure while enh
         title: "Professional Experience",
         company: "Professional Organization", 
         duration: "Recent Experience",
-        description: "Demonstrated expertise in various professional domains with focus on delivering measurable results through strategic planning and cross-functional collaboration.",
+        description: "Demonstrated expertise in various professional domains with focus on delivering measurable results.",
         core_responsibilities: [
-          "Orchestrated comprehensive training programs for new team members on industry-specific procedures, compliance standards, and advanced software tools while maintaining quality assurance protocols",
-          "Spearheaded daily operational management of strategic business initiatives, project coordination, and stakeholder communication to ensure alignment with organizational objectives and KPI achievement",
-          "Facilitated executive-level team meetings, progress tracking systems, and status reporting mechanisms while implementing project management methodologies and continuous improvement processes",
-          "Coordinated cross-departmental activities, resource allocation, and timeline management while sharing critical project updates and strategic insights with key stakeholders"
+          "Training new team members on specific procedures and tools",
+          "Managing daily operations related to business initiatives and objectives",
+          "Participating in team meetings and updating progress status",
+          "Attending departmental meetings and sharing project updates"
         ],
         achievements: [
-          "Accelerated exceptional business results through innovative problem-solving approaches, data-driven decision making, and collaborative teamwork that enhanced operational efficiency by 25% and stakeholder satisfaction rates",
-          "Amplified process improvements and workflow optimization initiatives that streamlined organizational operations, reduced costs, and improved team productivity through strategic planning and technology integration", 
-          "Elevated organizational success metrics through comprehensive strategic planning, effective project management, and cross-functional leadership that resulted in measurable business growth and competitive advantage"
+          "Delivered exceptional results through innovative problem-solving approaches and collaborative teamwork",
+          "Drove process improvements that enhanced operational efficiency and stakeholder satisfaction", 
+          "Contributed to organizational success through strategic planning and effective project management"
         ]
       });
     }
@@ -332,34 +311,34 @@ function basicParseResume(text: string): any {
       title: "Senior Professional",
       company: "Professional Organization",
       duration: "Recent Experience",
-      description: "Orchestrated cross-functional initiatives and strategic planning efforts to drive organizational growth through data-driven decision making and stakeholder engagement.",
+      description: "Led cross-functional initiatives and strategic planning efforts to drive organizational growth.",
       core_responsibilities: [
-        "Architected comprehensive training programs for new team members on industry-specific procedures, compliance frameworks, and organizational tools while implementing quality assurance and performance tracking systems",
-        "Spearheaded daily operational management of strategic initiatives, resource allocation, and business objectives through advanced project management methodologies and stakeholder coordination",
-        "Facilitated high-level leadership meetings, strategic planning sessions, and project progress reporting while maintaining executive communication and organizational alignment",
-        "Orchestrated departmental activities, cross-functional collaboration, and critical project updates through effective communication channels and strategic planning frameworks"
+        "Training new team members on specific procedures and organizational tools",
+        "Managing daily operations related to strategic initiatives and business objectives",
+        "Participating in leadership meetings and updating project progress status",
+        "Coordinating departmental activities and sharing critical project updates"
       ],
       achievements: [
-        "Accelerated operational efficiency by 25% through comprehensive process optimization, team collaboration frameworks, and strategic workflow improvements that enhanced organizational productivity and stakeholder satisfaction",
-        "Amplified stakeholder satisfaction rates by implementing customer-focused solutions, quality improvement initiatives, and service delivery excellence that resulted in measurable business growth and retention",
-        "Elevated team performance and fostered collaborative work environments through strategic mentorship programs, professional development initiatives, and leadership excellence that increased productivity by 30%"
+        "Improved operational efficiency by 25% through process optimization and team collaboration",
+        "Enhanced stakeholder satisfaction rates by implementing customer-focused solutions and quality improvements",
+        "Mentored team members and fostered collaborative work environments resulting in increased productivity"
       ]
     },
     {
       title: "Professional Role",
       company: "Previous Organization", 
       duration: "Prior Experience",
-      description: "Architected complex project management strategies and delivered high-quality results within budget constraints and timeline optimization through strategic planning and resource management.",
+      description: "Managed complex projects and delivered high-quality results within budget and timeline constraints.",
       core_responsibilities: [
-        "Spearheaded development and implementation of comprehensive project management strategies, methodologies, and frameworks while utilizing industry-standard tools and best practices for optimal resource allocation",
-        "Orchestrated cross-functional team collaboration initiatives across multiple departments to achieve organizational objectives through strategic communication, stakeholder alignment, and performance optimization",
-        "Facilitated project timeline monitoring, quality assurance protocols, and deliverable excellence standards while implementing risk management and continuous improvement processes",
-        "Cultivated client relationships and customer satisfaction programs through proactive communication, service delivery excellence, and strategic account management initiatives"
+        "Developing and implementing project management strategies and methodologies",
+        "Collaborating with cross-functional teams to achieve organizational objectives",
+        "Monitoring project timelines and ensuring deliverable quality standards",
+        "Maintaining client relationships and ensuring customer satisfaction"
       ],
       achievements: [
-        "Accelerated delivery of multiple high-impact projects on time and under budget through strategic planning, resource optimization, and stakeholder management excellence that resulted in 95% client satisfaction rates",
-        "Amplified cross-functional collaboration and organizational objectives achievement through innovative teamwork frameworks, communication strategies, and relationship building that enhanced operational efficiency by 20%",
-        "Revolutionized analytical thinking and technical problem-solving approaches while driving continuous improvement initiatives that solved challenging business problems and optimized organizational performance"
+        "Successfully delivered multiple high-impact projects on time and under budget",
+        "Collaborated with diverse teams to achieve organizational objectives and maintain strong client relationships",
+        "Applied analytical thinking and technical skills to solve challenging problems and drive continuous improvement"
       ]
     }
   ];
