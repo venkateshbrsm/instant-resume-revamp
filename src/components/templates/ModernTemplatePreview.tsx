@@ -16,10 +16,10 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-visible border border-border/50 print:shadow-none print:border-0 print:rounded-none print:max-w-none print:w-full print:m-0 print:min-h-0 flex flex-col md:flex-row min-h-[600px] print:flex-row" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+    <div className="bg-white rounded-xl shadow-lg overflow-visible border border-border/50 print:shadow-none print:border-0 flex flex-col md:flex-row min-h-[600px]" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
       {/* Left Sidebar */}
       <div 
-        className="w-full md:w-64 print:w-1/3 p-4 md:p-6 print:p-3 text-white print:break-inside-avoid"
+        className="w-full md:w-64 p-4 md:p-6 text-white"
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
@@ -192,7 +192,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-4 md:p-6 lg:p-8 print:p-3 print:w-2/3">
+      <div className="flex-1 p-4 md:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 overflow-visible break-words whitespace-normal" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
