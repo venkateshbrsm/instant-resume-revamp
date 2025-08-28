@@ -859,31 +859,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             templateLayout={selectedTemplate.layout}
                           />
                         </div>
-
-                        {/* Manual Enhancement Trigger */}
-                        <div className="mt-6 text-center">
-                          <Button 
-                            onClick={enhanceResume}
-                            disabled={isEnhancing || !extractedText || extractedText.length < 50}
-                            size="lg"
-                            className="w-full sm:w-auto"
-                          >
-                            {isEnhancing ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Enhancing with AI... {enhancementProgress}%
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles className="w-4 h-4 mr-2" />
-                                Enhance with AI
-                              </>
-                            )}
-                          </Button>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Click to enhance your resume with AI-powered improvements
-                          </p>
-                        </div>
                      </div>
                    </div>
                  </div>
@@ -943,25 +918,25 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             </div>
             
             <div className="space-y-3 mb-6">
-              <Button 
-                variant="success" 
-                size="xl" 
-                onClick={handlePurchaseClick}
-                className="w-full"
-                disabled={!enhancedContent || isCheckingAuth}
-              >
-                <CreditCard className="w-5 h-5 mr-2" />
-                {isCheckingAuth ? 'Checking authentication...' : 
-                 !enhancedContent ? 'Processing Enhancement...' :
-                 user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
-              </Button>
-              
-              
-              <p className="text-xs text-muted-foreground">
-                {enhancedContent 
-                  ? 'Secure payment • Download the enhanced version immediately' 
-                  : 'Enhancement in progress • Payment will be enabled once complete'
-                }
+               <Button 
+                 variant="success" 
+                 size="xl" 
+                 onClick={handlePurchaseClick}
+                 className="w-full"
+                 disabled={(!enhancedContent && !basicResumeData) || isCheckingAuth}
+               >
+                 <CreditCard className="w-5 h-5 mr-2" />
+                 {isCheckingAuth ? 'Checking authentication...' : 
+                  (!enhancedContent && !basicResumeData) ? 'Processing...' :
+                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
+               </Button>
+               
+               
+               <p className="text-xs text-muted-foreground">
+                 {(enhancedContent || basicResumeData)
+                   ? 'Secure payment • Download the enhanced version immediately' 
+                   : 'Processing content • Payment will be enabled once complete'
+                 }
               </p>
             </div>
 
