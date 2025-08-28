@@ -17,6 +17,29 @@ interface DocxResumePreviewProps {
   className?: string;
 }
 
+// Helper function to format phone number
+const formatPhoneNumber = (phone: string) => {
+  if (!phone) return phone;
+  
+  // Remove all non-digit characters first
+  const digitsOnly = phone.replace(/\D/g, '');
+  
+  // If it starts with 91 (India code) and has 12 digits total, format as +91-XXXXXXXXXX
+  if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
+    const countryCode = digitsOnly.slice(0, 2);
+    const number = digitsOnly.slice(2);
+    return `+${countryCode}-${number}`;
+  }
+  
+  // If it's 10 digits, assume it's Indian number without country code
+  if (digitsOnly.length === 10) {
+    return `+91-${digitsOnly}`;
+  }
+  
+  // Otherwise return as is
+  return phone;
+};
+
 export const DocxResumePreview = ({ 
   parsedData, 
   selectedTemplate, 
@@ -166,7 +189,7 @@ export const DocxResumePreview = ({
                           placeholder="Phone"
                         />
                       ) : (
-                        <span className="text-xs no-underline">{editableData.phone}</span>
+                        <span className="text-xs no-underline">{formatPhoneNumber(editableData.phone)}</span>
                       )}
                     </div>
                   )}
