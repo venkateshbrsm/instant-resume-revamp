@@ -64,100 +64,98 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer and career consultant. Transform the following resume content into a comprehensive, ATS-friendly, keyword-rich professional resume with special focus on enhancing work experience descriptions.
+  const prompt = `You are an expert ATS resume optimizer and career consultant. Your ONLY task is to reword existing content to be more ATS-friendly and keyword-rich. You MUST NOT change the structure, count, or organization of any content.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL INSTRUCTIONS FOR WORK EXPERIENCE ENHANCEMENT:
-1. For EACH work experience bullet point/achievement, rewrite it to be more ATS-friendly and keyword-rich
-2. MAINTAIN THE EXACT SAME NUMBER of sentences/bullet points as the original
-3. DO NOT reduce or combine sentences - each original sentence should become one enhanced sentence
-4. Add industry-specific keywords and action verbs to each description
-5. Include quantifiable metrics where appropriate (percentages, numbers, timeframes)
-6. Use ATS-friendly terminology and eliminate generic language
-7. Start each bullet point with strong action verbs (Accelerated, Amplified, Architected, Boosted, etc.)
-8. Include relevant technical skills and tools naturally within descriptions
-9. Focus on results, impact, and business value in each rewritten sentence
-10. Preserve the original meaning while making it more professional and keyword-rich
+CRITICAL PRESERVATION RULES - FAILURE TO FOLLOW WILL RESULT IN REJECTION:
+1. PRESERVE EXACT COUNT: Count every work experience entry in the original resume and include EXACTLY the same number
+2. PRESERVE EXACT SENTENCES: For each work experience, count every bullet point/sentence in the original and rewrite EXACTLY the same number
+3. PRESERVE STRUCTURE: Keep the same job titles, companies, and date ranges as the original
+4. PRESERVE MEANING: Each rewritten sentence must convey the same core meaning as the original
+5. ONLY ENHANCE LANGUAGE: Your job is ONLY to make the language more ATS-friendly and professional
 
-WORK EXPERIENCE ENHANCEMENT GUIDELINES:
-- Transform "Helped with marketing" → "Accelerated digital marketing initiatives across multiple channels including social media, email campaigns, and content marketing, resulting in enhanced brand visibility and customer engagement"
-- Transform "Managed projects" → "Orchestrated cross-functional project management using Agile methodologies and project management tools, ensuring on-time delivery and stakeholder satisfaction"
-- Transform "Worked with team" → "Collaborated with cross-functional teams including design, development, and marketing departments to streamline workflows and optimize operational efficiency"
-- Transform "Created content" → "Developed comprehensive content marketing strategies including blog posts, social media content, and email campaigns that increased organic traffic and lead generation"
+WORK EXPERIENCE ENHANCEMENT PROCESS:
+For each work experience entry:
+1. COUNT the original bullet points/achievements/sentences
+2. REWRITE each one individually to be more ATS-friendly
+3. ENSURE you have the EXACT same count of enhanced sentences
+4. DO NOT combine, split, or omit any original sentences
+5. DO NOT add new sentences beyond what exists in the original
 
-GENERAL INSTRUCTIONS:
-1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
-2. Preserve EVERY job position, company, and time period from the original
-3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. Expand descriptions to be more comprehensive and achievement-focused
-5. Add relevant industry keywords and ATS-friendly terms for each role
-6. Make each section detailed and professional with specific accomplishments
-7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
-8. Use strong action verbs and quantifiable achievements where possible
-9. Return ONLY a valid JSON object with the exact structure shown below
-10. MANDATORY: Include ALL work experience entries from the original resume
-11. MANDATORY: Include ALL skills and technical skills from the original resume
+ENHANCEMENT TRANSFORMATION EXAMPLES:
+Original: "Helped customers with inquiries"
+Enhanced: "Provided exceptional customer service and technical support to resolve client inquiries, ensuring satisfaction and retention through proactive communication and problem-solving expertise"
+
+Original: "Managed social media accounts"
+Enhanced: "Orchestrated comprehensive social media marketing strategies across Facebook, Instagram, LinkedIn, and Twitter platforms, driving engagement and brand awareness through content creation and community management"
+
+Original: "Worked with team on projects"
+Enhanced: "Collaborated with cross-functional teams utilizing Agile methodologies and project management tools to deliver high-quality results within budget and timeline constraints"
+
+STRICT COUNTING REQUIREMENTS:
+- If original has 3 work experiences → output EXACTLY 3 work experiences
+- If original work experience has 4 bullet points → output EXACTLY 4 enhanced bullet points
+- If original work experience has 2 sentences → output EXACTLY 2 enhanced sentences
+- NO EXCEPTIONS - maintain exact numerical parity
 
 REQUIRED JSON STRUCTURE:
 {
-  "name": "Full professional name",
-  "title": "Professional title or desired role", 
-  "email": "email@example.com",
-  "phone": "phone number",
-  "location": "City, State/Country",
-  "linkedin": "LinkedIn profile URL if available",
-  "summary": "Comprehensive 4-6 sentence professional summary with keywords and achievements",
+  "name": "Full professional name from original",
+  "title": "Professional title from original or enhanced version", 
+  "email": "email from original",
+  "phone": "phone from original",
+  "location": "location from original",
+  "linkedin": "LinkedIn profile URL if available in original",
+  "summary": "Enhanced professional summary with keywords (2-4 sentences)",
   "experience": [
     {
-      "title": "Job Title",
-      "company": "Company Name",
-      "duration": "Start Date - End Date",
-      "description": "Brief 1-2 sentence overview of the role and main focus",
+      "title": "EXACT job title from original",
+      "company": "EXACT company name from original",
+      "duration": "EXACT date range from original",
+      "description": "Brief enhanced overview (1-2 sentences)",
       "core_responsibilities": [
-        "Primary responsibility with detailed description including specific tools, methodologies, and stakeholder interactions",
-        "Secondary responsibility with comprehensive task breakdown and measurable outcomes",
-        "Third key responsibility with operational details and cross-functional collaboration elements"
+        "Enhanced version of original responsibility 1 with ATS keywords",
+        "Enhanced version of original responsibility 2 with metrics and action verbs",
+        "Enhanced version of original responsibility 3 with industry terminology"
       ],
       "achievements": [
-        "Specific achievement with ATS-friendly keywords, metrics, impact, and business value - rewritten from original but maintaining meaning",
-        "Another key accomplishment with quantifiable results, industry terminology, and technical skills integration",
-        "Third major contribution with measurable outcomes, strategic impact, and professional development elements"
+        "Enhanced version of original achievement 1 with quantifiable impact",
+        "Enhanced version of original achievement 2 with business value",
+        "Enhanced version of original achievement 3 with professional terminology"
       ]
     }
   ],
   "education": [
     {
-      "degree": "Degree Name",
-      "institution": "Institution Name", 
-      "year": "Graduation Year or Duration",
-      "gpa": "GPA if available"
+      "degree": "EXACT degree from original",
+      "institution": "EXACT institution from original", 
+      "year": "EXACT year from original",
+      "gpa": "GPA if available in original"
     }
   ],
-  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10", "skill11", "skill12"],
-  "tools": ["tool1", "tool2", "tool3", "tool4", "tool5", "tool6", "tool7", "tool8", "tool9", "tool10"],
+  "skills": ["enhanced skill list based on original skills"],
+  "tools": ["tools mentioned in original resume"],
   "core_technical_skills": [
     {
-      "name": "Technical Skill Name",
+      "name": "Technical skill from original or related",
       "proficiency": 85
     }
   ]
 }
 
-ENHANCEMENT GUIDELINES:
-- Professional summary should be compelling and keyword-rich
-- Experience descriptions should be brief role overviews (1-2 sentences)
-- Each experience should have 3-5 core responsibilities detailing daily tasks and duties with ATS keywords
-- Each experience should have 3-5 specific achievements with metrics, impact, and enhanced language
-- Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
-- Extract ALL tools mentioned in original resume as a separate "tools" array
-- Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
-- Expand on responsibilities with action verbs and specific outcomes
-- Make content ATS-friendly with industry standard terminology
-- Ensure all sections are comprehensive and detailed
-- Focus achievements on quantifiable results and business impact
-- CRITICAL: Rewrite every sentence in work experience to be more ATS-friendly and keyword-rich while maintaining the same number of sentences`;
+VERIFICATION CHECKLIST BEFORE RESPONDING:
+□ Counted original work experiences and matched exactly
+□ Counted sentences/bullets in each work experience and matched exactly  
+□ Preserved all job titles, companies, and dates from original
+□ Enhanced language for ATS without changing core meaning
+□ Used strong action verbs and industry keywords
+□ Maintained professional tone throughout
+□ Included quantifiable metrics where appropriate
+□ Ensured JSON structure is valid and complete
+
+CRITICAL WARNING: If you cannot preserve the exact count and structure while enhancing the language, respond with an error rather than changing the count. The user needs EXACTLY the same structure with better wording, not restructured content.`;
 
   console.log('Sending request to OpenAI...');
 
@@ -168,11 +166,11 @@ ENHANCEMENT GUIDELINES:
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: 'gpt-5-2025-08-07',
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
+          content: 'You are an expert resume optimizer. Your task is to enhance language for ATS compatibility while preserving EXACT structure and count. Always return valid JSON with identical structure to original but improved wording. CRITICAL: Count original sentences and match exactly - do not add, remove, or combine sentences.' 
         },
         { 
           role: 'user', 
