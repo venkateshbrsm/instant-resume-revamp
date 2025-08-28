@@ -69,14 +69,16 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string): Promis
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-INSTRUCTIONS:
-1. Extract and enhance ALL information from the original resume
-2. Expand descriptions to be more comprehensive and achievement-focused
-3. Add relevant industry keywords and ATS-friendly terms
-4. Make each section detailed and professional
-5. Ensure content is 2-3 times longer than the original while maintaining accuracy
-6. Use strong action verbs and quantifiable achievements where possible
-7. Return ONLY a valid JSON object with the exact structure shown below
+CRITICAL INSTRUCTIONS:
+1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
+2. Preserve EVERY job position, company, and time period from the original
+3. Expand descriptions to be more comprehensive and achievement-focused
+4. Add relevant industry keywords and ATS-friendly terms for each role
+5. Make each section detailed and professional with specific accomplishments
+6. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
+7. Use strong action verbs and quantifiable achievements where possible
+8. Return ONLY a valid JSON object with the exact structure shown below
+9. MANDATORY: Include ALL work experience entries from the original resume
 
 REQUIRED JSON STRUCTURE:
 {
@@ -154,8 +156,7 @@ ENHANCEMENT GUIDELINES:
           content: prompt 
         }
       ],
-      temperature: 0.7,
-      max_tokens: 2500,
+      max_completion_tokens: 4000,
     }),
   });
 
