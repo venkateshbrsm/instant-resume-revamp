@@ -274,7 +274,7 @@ async function generateModernPdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 10);
+      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 20);
       titleLines.forEach((line: string) => {
         doc.text(line, mainContentX, mainY);
         mainY += 5;
@@ -284,20 +284,22 @@ async function generateModernPdf(
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 50);
+      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 60);
       companyLines.forEach((line: string) => {
         doc.text(line, mainContentX, mainY);
         mainY += 4;
       });
-      mainY -= 4; // Adjust for last company line
       
-      // Duration badge
+      // Duration badge - position based on actual company text height
       if (exp.duration) {
+        const currentMainY = mainY - (companyLines.length * 4) + 4; // Reset to first company line
         doc.setFillColor(ar, ag, ab, 0.3);
-        const durationWidth = doc.getTextWidth(exp.duration) + 4;
-        doc.rect(mainContentX + mainContentWidth - durationWidth, mainY - 4, durationWidth, 6, 'F');
+        const durationWidth = Math.min(doc.getTextWidth(exp.duration) + 4, 40);
+        doc.rect(mainContentX + mainContentWidth - durationWidth, currentMainY - 4, durationWidth, 6, 'F');
         doc.setTextColor(pr, pg, pb);
-        doc.text(exp.duration, mainContentX + mainContentWidth - durationWidth + 2, mainY);
+        doc.setFontSize(9);
+        const durationLines = doc.splitTextToSize(exp.duration, durationWidth - 2);
+        doc.text(durationLines[0], mainContentX + mainContentWidth - durationWidth + 2, currentMainY);
       }
       mainY += 8;
 
@@ -327,7 +329,7 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 12);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 20);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 4.5));
           });
@@ -521,7 +523,7 @@ async function generateCreativePdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 15);
+      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 25);
       titleLines.forEach((line: string) => {
         doc.text(line, margin + 5, currentY);
         currentY += 5;
@@ -531,22 +533,23 @@ async function generateCreativePdf(
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 80);
+      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 90);
       companyLines.forEach((line: string) => {
         doc.text(line, margin + 5, currentY);
         currentY += 4;
       });
-      currentY -= 4; // Adjust for last company line
-
-      // Duration badge
+      
+      // Duration badge - position based on actual company text
       if (exp.duration) {
+        const currentDurationY = currentY - (companyLines.length * 4) + 4;
         doc.setFillColor(ar, ag, ab);
-        const durationWidth = doc.getTextWidth(exp.duration) + 6;
-        doc.roundedRect(pageWidth - margin - durationWidth, currentY - 4, durationWidth, 6, 2, 2, 'F');
+        const durationWidth = Math.min(doc.getTextWidth(exp.duration) + 6, 50);
+        doc.roundedRect(pageWidth - margin - durationWidth, currentDurationY - 4, durationWidth, 6, 2, 2, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.text(exp.duration, pageWidth - margin - durationWidth + 3, currentY);
+        const durationLines = doc.splitTextToSize(exp.duration, durationWidth - 4);
+        doc.text(durationLines[0], pageWidth - margin - durationWidth + 3, currentDurationY);
       }
       currentY += 8;
 
@@ -721,18 +724,20 @@ async function generateClassicPdf(
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 60);
+      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 70);
       companyLines.forEach((line: string) => {
         doc.text(line, margin, currentY);
         currentY += 4;
       });
-      currentY -= 4; // Adjust for last company line
       
+      // Duration badge - positioned properly
       if (exp.duration) {
-        const durationWidth = doc.getTextWidth(exp.duration);
+        const currentDurationY = currentY - (companyLines.length * 4) + 4;
+        const durationLines = doc.splitTextToSize(exp.duration, 45);
+        const durationWidth = Math.max(doc.getTextWidth(durationLines[0]), 30);
         doc.setTextColor(100, 100, 100);
         doc.setFont('helvetica', 'italic');
-        doc.text(exp.duration, pageWidth - margin - durationWidth, currentY);
+        doc.text(durationLines[0], pageWidth - margin - durationWidth, currentDurationY);
       }
       currentY += 7;
 
@@ -744,11 +749,11 @@ async function generateClassicPdf(
           doc.setFont('helvetica', 'normal');
           doc.text('•', margin + 5, currentY);
           
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 15);
-          achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 10, currentY + (lineIndex * 5));
-          });
-          currentY += achievementLines.length * 5 + 3;
+           const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
+           achievementLines.forEach((line: string, lineIndex: number) => {
+             doc.text(line, margin + 10, currentY + (lineIndex * 5));
+           });
+           currentY += achievementLines.length * 5 + 3;
         });
       }
       currentY += 8;
