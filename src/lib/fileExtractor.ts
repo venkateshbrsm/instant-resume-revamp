@@ -1,10 +1,8 @@
 import * as mammoth from 'mammoth';
 import { supabase } from "@/integrations/supabase/client";
-import * as pdfjsLib from 'pdfjs-dist';
+// Note: PDF.js import removed to avoid worker configuration issues
+// PDF text extraction now handled by backend services
 import { extractPhotosFromFile, optimizePhoto } from './photoExtractor';
-
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export interface ExtractedContent {
   text: string;
