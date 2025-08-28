@@ -31,6 +31,10 @@ export const EditablePreview = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // Debug log when component renders
+  console.log('🔍 EditablePreview render - editableData:', editableData);
+  console.log('🔍 EditablePreview render - enhancedContent:', enhancedContent);
+
   const handleFieldChange = useCallback((field: string, value: any, nestedField?: string) => {
     setEditableData((prev: any) => {
       const updated = { ...prev };
@@ -324,16 +328,33 @@ export const EditablePreview = ({
                     <Textarea
                       value={skillCategory.items?.join(', ') || ''}
                       onChange={(e) => {
-                        setEditableData((prev: any) => {
-                          const updated = { ...prev };
-                          if (!updated.skills) updated.skills = [];
-                          if (!updated.skills[categoryIndex]) {
-                            updated.skills[categoryIndex] = { category: skillCategory.category, items: [] };
-                          }
-                          const items = e.target.value.split(',').map(item => item.trim()).filter(item => item);
-                          updated.skills[categoryIndex].items = items;
-                          return updated;
-                        });
+                        console.log('🔍 Skills onChange triggered');
+                        console.log('🔍 Input value:', e.target.value);
+                        console.log('🔍 Current editableData:', editableData);
+                        console.log('🔍 Current skillCategory:', skillCategory);
+                        console.log('🔍 Category index:', categoryIndex);
+                        
+                        try {
+                          setEditableData((prev: any) => {
+                            console.log('🔍 Previous state:', prev);
+                            const updated = { ...prev };
+                            if (!updated.skills) {
+                              console.log('🔍 Creating skills array');
+                              updated.skills = [];
+                            }
+                            if (!updated.skills[categoryIndex]) {
+                              console.log('🔍 Creating skill category at index:', categoryIndex);
+                              updated.skills[categoryIndex] = { category: skillCategory.category, items: [] };
+                            }
+                            const items = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                            console.log('🔍 Parsed items:', items);
+                            updated.skills[categoryIndex].items = items;
+                            console.log('🔍 Updated state:', updated);
+                            return updated;
+                          });
+                        } catch (error) {
+                          console.error('🚨 Error in skills onChange:', error);
+                        }
                       }}
                       className="w-full"
                       placeholder="Enter skills separated by commas"
