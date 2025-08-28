@@ -135,20 +135,32 @@ async function generateModernPdf(
   if (resumeData.email) {
     doc.text('EMAIL', 8, sidebarY);
     sidebarY += 4;
-    doc.text(resumeData.email, 8, sidebarY);
-    sidebarY += 6;
+    const emailLines = doc.splitTextToSize(resumeData.email, sidebarWidth - 16);
+    emailLines.forEach((line: string) => {
+      doc.text(line, 8, sidebarY);
+      sidebarY += 3.5;
+    });
+    sidebarY += 3;
   }
   if (resumeData.phone) {
     doc.text('PHONE', 8, sidebarY);
     sidebarY += 4;
-    doc.text(resumeData.phone, 8, sidebarY);
-    sidebarY += 6;
+    const phoneLines = doc.splitTextToSize(resumeData.phone, sidebarWidth - 16);
+    phoneLines.forEach((line: string) => {
+      doc.text(line, 8, sidebarY);
+      sidebarY += 3.5;
+    });
+    sidebarY += 3;
   }
   if (resumeData.location) {
     doc.text('LOCATION', 8, sidebarY);
     sidebarY += 4;
-    doc.text(resumeData.location, 8, sidebarY);
-    sidebarY += 8;
+    const locationLines = doc.splitTextToSize(resumeData.location, sidebarWidth - 16);
+    locationLines.forEach((line: string) => {
+      doc.text(line, 8, sidebarY);
+      sidebarY += 3.5;
+    });
+    sidebarY += 5;
   }
 
   // Skills section in sidebar with progress bars
@@ -262,14 +274,22 @@ async function generateModernPdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.title, mainContentX, mainY);
-      mainY += 5;
+      const titleLines = doc.splitTextToSize(exp.title, mainContentWidth - 10);
+      titleLines.forEach((line: string) => {
+        doc.text(line, mainContentX, mainY);
+        mainY += 5;
+      });
 
       // Company and duration
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.company, mainContentX, mainY);
+      const companyLines = doc.splitTextToSize(exp.company, mainContentWidth - 50);
+      companyLines.forEach((line: string) => {
+        doc.text(line, mainContentX, mainY);
+        mainY += 4;
+      });
+      mainY -= 4; // Adjust for last company line
       
       // Duration badge
       if (exp.duration) {
@@ -307,11 +327,11 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 12);
           achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
+            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4.5));
           });
-          mainY += achievementLines.length * 4 + 2;
+          mainY += achievementLines.length * 4.5 + 3;
         });
       }
       
@@ -501,14 +521,22 @@ async function generateCreativePdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.title, margin + 5, currentY);
-      currentY += 5;
+      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 15);
+      titleLines.forEach((line: string) => {
+        doc.text(line, margin + 5, currentY);
+        currentY += 5;
+      });
 
       // Company
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.company, margin + 5, currentY);
+      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 80);
+      companyLines.forEach((line: string) => {
+        doc.text(line, margin + 5, currentY);
+        currentY += 4;
+      });
+      currentY -= 4; // Adjust for last company line
 
       // Duration badge
       if (exp.duration) {
@@ -537,11 +565,11 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
+          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 25);
           achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 12, currentY + (lineIndex * 4));
+            doc.text(line, margin + 12, currentY + (lineIndex * 4.5));
           });
-          currentY += achievementLines.length * 4 + 2;
+          currentY += achievementLines.length * 4.5 + 3;
         });
       }
 
@@ -683,14 +711,22 @@ async function generateClassicPdf(
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.title, margin, currentY);
-      currentY += 5;
+      const titleLines = doc.splitTextToSize(exp.title, contentWidth - 10);
+      titleLines.forEach((line: string) => {
+        doc.text(line, margin, currentY);
+        currentY += 5;
+      });
 
       // Company and duration
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text(exp.company, margin, currentY);
+      const companyLines = doc.splitTextToSize(exp.company, contentWidth - 60);
+      companyLines.forEach((line: string) => {
+        doc.text(line, margin, currentY);
+        currentY += 4;
+      });
+      currentY -= 4; // Adjust for last company line
       
       if (exp.duration) {
         const durationWidth = doc.getTextWidth(exp.duration);
@@ -708,11 +744,11 @@ async function generateClassicPdf(
           doc.setFont('helvetica', 'normal');
           doc.text('•', margin + 5, currentY);
           
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 10);
+          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 15);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 10, currentY + (lineIndex * 5));
           });
-          currentY += achievementLines.length * 5 + 2;
+          currentY += achievementLines.length * 5 + 3;
         });
       }
       currentY += 8;
