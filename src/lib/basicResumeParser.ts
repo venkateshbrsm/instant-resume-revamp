@@ -244,68 +244,118 @@ function parseExperienceSection(lines: string[]): Array<{
     responsibilities: string[];
   }> = [];
 
+  console.log('🔍 Parsing experience section with lines:', lines);
+
   let currentExp: any = null;
   let responsibilities: string[] = [];
+  let lookingForDates = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    // Check if this looks like a job title or company (often in caps or at start of section)
-    const isJobTitle = (
+    console.log(`📝 Processing line ${i}: "${line}"`);
+
+    // Check if this line contains dates
+    const fullDateRangeMatch = line.match(/(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current|till\s+date)/gi);
+    const singleDateMatch = line.match(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}\b/gi);
+    const yearRangeMatch = line.match(/\b(\d{4})\s*[-–—to]\s*(\d{4}|present|current)\b/gi);
+    
+    // Check if this looks like a company/job title line
+    const isCompanyLine = (
       line.length > 5 && 
-      line.length < 100 && 
+      line.length < 150 &&
       !line.startsWith('•') && 
       !line.startsWith('-') &&
+      !line.startsWith('▪') &&
       !line.toLowerCase().startsWith('responsible') &&
       !line.toLowerCase().startsWith('managed') &&
-      !line.toLowerCase().startsWith('developed')
+      !line.toLowerCase().startsWith('developed') &&
+      !line.toLowerCase().startsWith('achieved') &&
+      !line.toLowerCase().startsWith('led') &&
+      !line.toLowerCase().includes('key responsibilities')
     );
 
-    // Enhanced date pattern matching
-    const dateMatch = line.match(/(\d{4}\s*[-–—]\s*(?:\d{4}|present|current))|(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}\s*[-–—]\s*(?:\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current))|(\d{1,2}\/\d{4}\s*[-–—]\s*(?:\d{1,2}\/\d{4}|present|current))|(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})|(\d{1,2}\/\d{4})|(\d{4})/gi);
-    
-    if ((isJobTitle && dateMatch) || (i === 0 && isJobTitle)) {
+    // If we found a full date range in the line, this might be a job entry
+    if (fullDateRangeMatch && isCompanyLine) {
+      console.log('📅 Found date range in line:', fullDateRangeMatch[0]);
+      
+      // Save previous experience
+      if (currentExp) {
+        currentExp.responsibilities = responsibilities;
+        experiences.push(currentExp);
+        console.log('💼 Saved previous experience:', currentExp.title);
+      }
+
+      // Extract the date and clean the line
+      const dateString = fullDateRangeMatch[0];
+      const cleanLine = line.replace(fullDateRangeMatch[0], '').trim().replace(/[,\-–—]+$/, '').trim();
+      
+      // Split company and title
+      const parts = cleanLine.split(/[-–—|,]/).map(p => p.trim()).filter(p => p);
+      
+      currentExp = {
+        title: parts[0] || 'Professional Position',
+        company: parts[1] || parts[0] || 'Professional Organization',
+        duration: enhanceDateFormatting(dateString),
+        description: '',
+        responsibilities: []
+      };
+      
+      responsibilities = [];
+      lookingForDates = false;
+      console.log('🏢 Created new experience:', currentExp);
+    }
+    // If this looks like a job/company line but no dates, look for dates in next lines
+    else if (isCompanyLine && !currentExp) {
+      console.log('🏢 Found potential job line without dates');
+      
+      // Look ahead for dates in the next few lines
+      let foundDate = null;
+      for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+        const nextLine = lines[j].trim();
+        const nextDateMatch = nextLine.match(/(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current|till\s+date)/gi) ||
+                            nextLine.match(/\b(\d{4})\s*[-–—to]\s*(\d{4}|present|current)\b/gi);
+        
+        if (nextDateMatch) {
+          foundDate = nextDateMatch[0];
+          console.log('📅 Found date in next line:', foundDate);
+          break;
+        }
+      }
+
       // Save previous experience
       if (currentExp) {
         currentExp.responsibilities = responsibilities;
         experiences.push(currentExp);
       }
 
-      // Start new experience
-      const parts = line.split(/[-–—|]/).map(p => p.trim());
+      // Parse the current line
+      const parts = line.split(/[-–—|,]/).map(p => p.trim()).filter(p => p);
       
-      // Extract and enhance duration from the line
-      let duration = 'Recent Experience';
-      if (dateMatch && dateMatch[0]) {
-        duration = enhanceDateFormatting(dateMatch[0]);
-      }
-      
-      if (parts.length >= 2) {
-        currentExp = {
-          title: parts[0] || 'Professional Position',
-          company: parts[1] || 'Professional Organization',
-          duration,
-          description: '',
-          responsibilities: []
-        };
-      } else {
-        currentExp = {
-          title: line.replace(/\s*\d{4}.*$/g, '').trim() || 'Professional Position',
-          company: 'Professional Organization',
-          duration,
-          description: '',
-          responsibilities: []
-        };
-      }
+      currentExp = {
+        title: parts[0] || 'Professional Position',
+        company: parts[1] || parts[0] || 'Professional Organization', 
+        duration: foundDate ? enhanceDateFormatting(foundDate) : 'Recent Experience',
+        description: '',
+        responsibilities: []
+      };
       
       responsibilities = [];
-      console.log('📋 Found job:', currentExp.title, 'at', currentExp.company, 'Duration:', currentExp.duration);
-    } else {
-      // This is likely a responsibility or description
-      if (line.length > 10) {
-        responsibilities.push(line);
-      }
+      lookingForDates = !foundDate;
+      console.log('🏢 Created new experience (looking for dates):', currentExp);
+    }
+    // If we're looking for dates and find them
+    else if (lookingForDates && currentExp && (fullDateRangeMatch || yearRangeMatch)) {
+      const dateString = fullDateRangeMatch ? fullDateRangeMatch[0] : yearRangeMatch![0];
+      currentExp.duration = enhanceDateFormatting(dateString);
+      lookingForDates = false;
+      console.log('📅 Updated duration for current experience:', currentExp.duration);
+    }
+    // This is likely a responsibility or description
+    else if (currentExp && line.length > 10) {
+      responsibilities.push(line);
+      console.log('📋 Added responsibility:', line.substring(0, 50) + '...');
     }
   }
 
@@ -313,10 +363,12 @@ function parseExperienceSection(lines: string[]): Array<{
   if (currentExp) {
     currentExp.responsibilities = responsibilities;
     experiences.push(currentExp);
+    console.log('💼 Saved final experience:', currentExp.title);
   }
 
   // If no structured experiences found, create a generic one from all content
   if (experiences.length === 0 && lines.length > 0) {
+    console.log('⚠️ No structured experiences found, creating generic one');
     experiences.push({
       title: 'Professional Experience',
       company: 'Professional Organization',
@@ -325,6 +377,11 @@ function parseExperienceSection(lines: string[]): Array<{
       responsibilities: lines.slice(0, 5)
     });
   }
+
+  console.log('✅ Final parsed experiences:', experiences.length);
+  experiences.forEach(exp => {
+    console.log(`- ${exp.title} at ${exp.company} (${exp.duration})`);
+  });
 
   return experiences;
 }
