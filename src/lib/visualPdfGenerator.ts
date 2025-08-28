@@ -163,7 +163,9 @@ async function generateModernPdf(
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
-      doc.text(skillLines[0], 8, sidebarY);
+      skillLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, 8, sidebarY + (lineIndex * 3));
+      });
       
       // Progress bar background
       doc.setFillColor(255, 255, 255, 0.3);
@@ -174,7 +176,7 @@ async function generateModernPdf(
       const progressWidth = (sidebarWidth - 16) * (0.7 + (index * 0.03));
       doc.rect(8, sidebarY + 2, progressWidth, 2, 'F');
       
-      sidebarY += 8;
+      sidebarY += 6 + (skillLines.length * 3);
     });
   }
 
@@ -190,13 +192,17 @@ async function generateModernPdf(
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
       const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
-      doc.text(degreeLines[0], 8, sidebarY);
-      sidebarY += 4;
+      degreeLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, 8, sidebarY + (lineIndex * 3));
+      });
+      sidebarY += degreeLines.length * 3 + 1;
       
       doc.setFont('helvetica', 'normal');
       const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
-      doc.text(instLines[0], 8, sidebarY);
-      sidebarY += 4;
+      instLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, 8, sidebarY + (lineIndex * 3));
+      });
+      sidebarY += instLines.length * 3 + 1;
       
       if (edu.year && edu.year !== 'N/A') {
         doc.text(edu.year, 8, sidebarY);
@@ -452,6 +458,8 @@ async function generateCreativePdf(
     let skillIndex = 0;
 
     for (let i = 0; i < Math.ceil(resumeData.skills.length / skillsPerRow); i++) {
+      let maxLinesInRow = 1; // Track the tallest skill badge in this row
+      
       for (let j = 0; j < skillsPerRow && skillIndex < resumeData.skills.length; j++) {
         const skill = resumeData.skills[skillIndex];
         const x = margin + (j * badgeWidth);
@@ -470,11 +478,16 @@ async function generateCreativePdf(
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
         const skillLines = doc.splitTextToSize(skill, badgeWidth - 4);
-        doc.text(skillLines[0], x + 2, currentY);
+        skillLines.forEach((line: string, lineIndex: number) => {
+          doc.text(line, x + 2, currentY + (lineIndex * 3));
+        });
+        
+        // Update maxLinesInRow if this skill has more lines
+        maxLinesInRow = Math.max(maxLinesInRow, skillLines.length);
         
         skillIndex++;
       }
-      currentY += 12;
+      currentY += 8 + (maxLinesInRow * 3);
     }
     currentY += 5;
   }
