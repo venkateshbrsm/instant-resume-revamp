@@ -243,22 +243,24 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                   ></div>
                   
                   <div className="mb-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-bold text-lg text-foreground">{exp.title}</h3>
-                        <p className="font-medium text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
+                    <div className="flex justify-between items-start mb-3 gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg text-foreground leading-tight">{exp.title}</h3>
+                        <p className="font-medium text-base mt-1" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs px-2 py-1" 
-                        style={{ 
-                          backgroundColor: `${selectedColorTheme.primary}10`, 
-                          color: selectedColorTheme.primary,
-                          borderColor: `${selectedColorTheme.primary}20`
-                        }}
-                      >
-                        {exp.duration}
-                      </Badge>
+                      <div className="flex-shrink-0">
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs px-3 py-1.5 font-medium" 
+                          style={{ 
+                            backgroundColor: `${selectedColorTheme.primary}10`, 
+                            color: selectedColorTheme.primary,
+                            borderColor: `${selectedColorTheme.primary}30`
+                          }}
+                        >
+                          {exp.duration}
+                        </Badge>
+                      </div>
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
@@ -267,11 +269,10 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         <ul className="space-y-3 text-sm text-muted-foreground">
                            {exp.achievements.map((achievement: string, achIndex: number) => (
                              <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
-                               <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
+                               <div className="w-4 h-4 rounded-full flex items-center justify-center mt-1 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
                                  <span className="text-white text-xs font-bold">✓</span>
                                </div>
-                               <span className="leading-relaxed font-medium break-words" 
-                                     onLoad={() => console.log('Achievement text:', achievement)}>
+                               <span className="leading-relaxed font-medium break-words text-sm">
                                  {achievement}
                                </span>
                              </li>
@@ -280,12 +281,12 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         
                          {/* Job-specific Core Responsibilities */}
                          {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                           <div className="mt-4 p-3 rounded-lg bg-white border border-gray-100 page-break-avoid print:break-inside-avoid">
-                             <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
-                              <div className="text-xs opacity-80 leading-relaxed space-y-1">
+                           <div className="mt-5 p-4 rounded-lg bg-gray-50 border border-gray-200 page-break-avoid print:break-inside-avoid">
+                             <h5 className="text-sm font-semibold mb-3 opacity-90">Core Responsibilities:</h5>
+                              <div className="text-sm opacity-80 leading-relaxed space-y-2">
                                 {exp.core_responsibilities.map((responsibility: string, idx: number) => (
                                   <div key={idx} className="flex items-start gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                                    <div className="w-1.5 h-1.5 rounded-full mt-2.5 flex-shrink-0" 
                                          style={{ backgroundColor: selectedColorTheme.accent }}></div>
                                     <span className="text-sm leading-relaxed break-words">{responsibility}</span>
                                   </div>
