@@ -545,6 +545,92 @@ export const DocxResumePreview = ({
                 </div>
               </div>
             )}
+
+            {/* Previous Engagements */}
+            {editableData.previousEngagements && editableData.previousEngagements.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-6">
+                  <Briefcase className="w-5 h-5" style={{ color: selectedColorTheme.primary }} />
+                  <h2 className="text-xl font-semibold" style={{ color: selectedColorTheme.primary }}>
+                    Previous Engagements
+                  </h2>
+                  <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${selectedColorTheme.primary}, transparent)` }}></div>
+                </div>
+                
+                <div className="space-y-4">
+                  {editableData.previousEngagements.map((engagement, index) => (
+                    <div key={index} className="border-l-4 pl-4 py-2" style={{ borderColor: selectedColorTheme.primary + '30' }}>
+                      {/* Position and Company */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {isEditing ? (
+                            <Input
+                              value={engagement.position}
+                              onChange={(e) => handleArrayFieldChange('previousEngagements', index, 'position', e.target.value)}
+                              className="font-semibold text-base"
+                              placeholder="Position"
+                              style={{ color: selectedColorTheme.primary }}
+                            />
+                          ) : (
+                            <h3 className="font-semibold text-base" style={{ color: selectedColorTheme.primary }}>
+                              {engagement.position}
+                            </h3>
+                          )}
+                          
+                          {engagement.company && (
+                            <>
+                              <span className="text-muted-foreground">at</span>
+                              {isEditing ? (
+                                <Input
+                                  value={engagement.company}
+                                  onChange={(e) => handleArrayFieldChange('previousEngagements', index, 'company', e.target.value)}
+                                  className="text-sm font-medium"
+                                  placeholder="Company"
+                                />
+                              ) : (
+                                <span className="text-sm font-medium text-foreground">{engagement.company}</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        
+                        {engagement.duration && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {isEditing ? (
+                              <Input
+                                value={engagement.duration}
+                                onChange={(e) => handleArrayFieldChange('previousEngagements', index, 'duration', e.target.value)}
+                                className="text-xs"
+                                placeholder="Duration"
+                              />
+                            ) : (
+                              <span>{engagement.duration}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Location */}
+                      {engagement.location && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <MapPin className="w-3 h-3" />
+                          {isEditing ? (
+                            <Input
+                              value={engagement.location}
+                              onChange={(e) => handleArrayFieldChange('previousEngagements', index, 'location', e.target.value)}
+                              className="text-xs"
+                              placeholder="Location"
+                            />
+                          ) : (
+                            <span>{engagement.location}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

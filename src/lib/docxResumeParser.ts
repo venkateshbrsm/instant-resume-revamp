@@ -26,6 +26,12 @@ export interface BasicResumeData {
     description: string;
     technologies: string[];
   }>;
+  previousEngagements: Array<{
+    position: string;
+    company: string;
+    location: string;
+    duration: string;
+  }>;
 }
 
 export const parseBasicResumeData = (text: string): BasicResumeData => {
@@ -43,7 +49,8 @@ export const parseBasicResumeData = (text: string): BasicResumeData => {
     education: [],
     skills: [],
     certifications: [],
-    projects: []
+    projects: [],
+    previousEngagements: []
   };
 
   // Extract basic contact information
@@ -59,6 +66,7 @@ export const parseBasicResumeData = (text: string): BasicResumeData => {
   result.skills = extractSkills(lines);
   result.certifications = extractCertifications(lines);
   result.projects = extractProjects(lines);
+  result.previousEngagements = extractPreviousEngagements(lines);
   
   console.log('Parsed resume data:', result);
   return result;
@@ -826,4 +834,130 @@ const extractProjects = (lines: string[]): Array<{
   }
   
   return projects;
+};
+
+const extractPreviousEngagements = (lines: string[]): Array<{
+  position: string;
+  company: string;
+  location: string;
+  duration: string;
+}> => {
+  const previousEngagements = [];
+  const engagementKeywords = ['previous engagements', 'previous experience', 'prior engagements', 'past engagements'];
+  let engagementStart = -1;
+  let engagementEnd = -1;
+  
+  // Find previous engagements section
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].toLowerCase();
+    if (engagementKeywords.some(keyword => line.includes(keyword)) && line.length < 100) {
+      engagementStart = i + 1;
+      break;
+    }
+  }
+  
+  if (engagementStart === -1) return previousEngagements;
+  
+  // Find end of previous engagements section
+  const nextSectionKeywords = ['awards', 'languages', 'references', 'interests', 'hobbies'];
+  for (let i = engagementStart; i < lines.length; i++) {
+    const line = lines[i].toLowerCase();
+    if (nextSectionKeywords.some(keyword => line.includes(keyword)) && line.length < 50) {
+      engagementEnd = i;
+      break;
+    }
+  }
+  
+  if (engagementEnd === -1) engagementEnd = lines.length;
+  
+  const engagementLines = lines.slice(engagementStart, engagementEnd);
+  
+  // Parse previous engagements entries
+  for (const line of engagementLines) {
+    if (line.length > 10 && (line.includes('→') || line.includes('--') || line.includes('Manager') || line.includes('Asst'))) {
+      const engagement = parsePreviousEngagementLine(line);
+      if (engagement) {
+        previousEngagements.push(engagement);
+      }
+    }
+  }
+  
+  return previousEngagements;
+};
+
+const parsePreviousEngagementLine = (line: string): any => {
+  // Handle format like: "→ Manager--Infrastructure-&-Facilities,-Sykes-Enterprises-(India)-Pvt.-Ltd.,-Bangalore,-Mar-2004—Jan-2005"
+  let cleanLine = line.replace(/^[→•\-*\s]+/, '').trim();
+  
+  // Extract duration first (pattern like Mar-2004—Jan-2005 or May-1993—Jun-1997)
+  const durationPattern = /([A-Za-z]{3}-\d{4})[—\-]([A-Za-z]{3}-\d{4})/;
+  const durationMatch = cleanLine.match(durationPattern);
+  let duration = '';
+  
+  if (durationMatch) {
+    duration = `${durationMatch[1]} - ${durationMatch[2]}`;
+    cleanLine = cleanLine.replace(durationPattern, '').trim();
+  }
+  
+  // Remove trailing commas and clean up
+  cleanLine = cleanLine.replace(/,$/, '').trim();
+  
+  // Split by commas to get components
+  const parts = cleanLine.split(',').map(part => part.trim()).filter(part => part.length > 0);
+  
+  if (parts.length < 2) return null;
+  
+  // Extract position (usually contains -- or specific job titles)
+  let position = '';
+  let company = '';
+  let location = '';
+  
+  // Find position (usually the first part with -- or job title keywords)
+  const positionIndex = parts.findIndex(part => 
+    part.includes('--') || 
+    part.toLowerCase().includes('manager') || 
+    part.toLowerCase().includes('executive') || 
+    part.toLowerCase().includes('asst') ||
+    part.toLowerCase().includes('assistant')
+  );
+  
+  if (positionIndex !== -1) {
+    position = parts[positionIndex].replace(/--/g, ' - ').trim();
+    
+    // Remaining parts are company and location
+    const remainingParts = [...parts];
+    remainingParts.splice(positionIndex, 1);
+    
+    // Last part is usually location if it's a single word/city
+    if (remainingParts.length > 0) {
+      const lastPart = remainingParts[remainingParts.length - 1];
+      if (lastPart.length < 20 && !lastPart.includes('Ltd') && !lastPart.includes('Inc')) {
+        location = lastPart;
+        remainingParts.pop();
+      }
+    }
+    
+    // Remaining parts form the company name
+    company = remainingParts.join(', ').replace(/\-/g, ' ').trim();
+  }
+  
+  // Fallback parsing if specific pattern not found
+  if (!position && parts.length >= 2) {
+    position = parts[0];
+    company = parts[1];
+    if (parts.length > 2) {
+      location = parts[2];
+    }
+  }
+  
+  if (position && company) {
+    return {
+      position: position.trim(),
+      company: company.trim(),
+      location: location.trim(),
+      duration: duration
+    };
+  }
+  
+  return null;
 };
