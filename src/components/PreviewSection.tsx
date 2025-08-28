@@ -675,8 +675,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                       <Maximize2 className="w-4 h-4" />
                                     </Button>
                                   </DialogTrigger>
-                                  <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
-                                    <div className="flex items-center justify-between mb-4">
+                                  <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
+                                    <div className="flex items-center justify-between p-4 border-b">
                                       <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
                                       <Button 
                                         variant="outline" 
@@ -687,17 +687,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                         Exit Fullscreen
                                       </Button>
                                     </div>
-                                    {previewPdfBlob ? (
-                                      <PDFViewer 
-                                        file={previewPdfBlob} 
-                                        className="h-full w-full"
-                                      />
-                                    ) : (
-                                      <div className="flex items-center justify-center h-full">
-                                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                        <span className="ml-2">Generating PDF preview...</span>
-                                      </div>
-                                    )}
+                                    <div className="flex-1 overflow-hidden">
+                                      {previewPdfBlob ? (
+                                        <PDFViewer 
+                                          file={previewPdfBlob} 
+                                          className="h-full w-full"
+                                        />
+                                      ) : (
+                                        <div className="flex items-center justify-center h-full">
+                                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                          <span className="ml-2">Generating PDF preview...</span>
+                                        </div>
+                                      )}
+                                    </div>
                                   </DialogContent>
                                 </Dialog>
                               </div>
