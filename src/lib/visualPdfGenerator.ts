@@ -802,19 +802,40 @@ export async function downloadVisualPdf(
 export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData {
   console.log('🔍 Extracting resume data from:', enhancedContent);
   
+  // Helper function to safely get string values
+  const safeString = (value: any, fallback: string = ''): string => {
+    if (value === null || value === undefined) return fallback;
+    return String(value).trim();
+  };
+  
+  // Helper function to safely get array values
+  const safeArray = (value: any): any[] => {
+    if (!Array.isArray(value)) return [];
+    return value.filter(item => item !== null && item !== undefined);
+  };
+  
   const extractedData = {
-    name: enhancedContent.name || 'Enhanced Resume',
-    title: enhancedContent.title || 'Professional',
-    email: enhancedContent.contact?.email || enhancedContent.email || '',
-    phone: enhancedContent.contact?.phone || enhancedContent.phone || '',
-    location: enhancedContent.contact?.location || enhancedContent.location || '',
-    summary: enhancedContent.summary || '',
+    name: safeString(enhancedContent.name, 'Enhanced Resume'),
+    title: safeString(enhancedContent.title, 'Professional'),
+    email: safeString(enhancedContent.contact?.email || enhancedContent.email),
+    phone: safeString(enhancedContent.contact?.phone || enhancedContent.phone),
+    location: safeString(enhancedContent.contact?.location || enhancedContent.location),
+    summary: safeString(enhancedContent.summary),
     photo: enhancedContent.profilePhotoUrl || enhancedContent.photo || undefined,
-    experience: enhancedContent.experience || [],
-    skills: enhancedContent.skills || [],
-    education: enhancedContent.education || [],
-    certifications: enhancedContent.certifications || [],
-    languages: enhancedContent.languages || []
+    experience: safeArray(enhancedContent.experience).map((exp: any) => ({
+      title: safeString(exp.title || exp.position, 'Position'),
+      company: safeString(exp.company, 'Company'),
+      duration: safeString(exp.duration, 'Duration'),
+      achievements: safeArray(exp.achievements || exp.responsibilities || []).map((item: any) => safeString(item))
+    })),
+    skills: safeArray(enhancedContent.skills).map((skill: any) => safeString(skill)).filter(s => s.length > 0),
+    education: safeArray(enhancedContent.education).map((edu: any) => ({
+      degree: safeString(edu.degree, 'Degree'),
+      institution: safeString(edu.institution, 'Institution'),
+      year: safeString(edu.year || edu.duration, 'Year')
+    })),
+    certifications: safeArray(enhancedContent.certifications).map((cert: any) => safeString(cert)).filter(c => c.length > 0),
+    languages: safeArray(enhancedContent.languages).map((lang: any) => safeString(lang)).filter(l => l.length > 0)
   };
   
   console.log('🔍 Extracted resume data:', extractedData);
