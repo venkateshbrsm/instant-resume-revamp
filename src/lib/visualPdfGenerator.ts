@@ -159,11 +159,15 @@ async function generateModernPdf(
     sidebarY += 8;
 
     resumeData.skills.slice(0, 8).forEach((skill, index) => {
-      // Skill name
+      // Skill name with proper wrapping
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
-      doc.text(skillLines[0], 8, sidebarY);
+      skillLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, 8, sidebarY + (lineIndex * 3));
+      });
+      const skillHeight = Math.max(3, skillLines.length * 3);
+      sidebarY += skillHeight;
       
       // Progress bar background
       doc.setFillColor(255, 255, 255, 0.3);
@@ -190,13 +194,17 @@ async function generateModernPdf(
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
       const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
-      doc.text(degreeLines[0], 8, sidebarY);
-      sidebarY += 4;
+      degreeLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, 8, sidebarY + (lineIndex * 3));
+      });
+      sidebarY += Math.max(4, degreeLines.length * 3);
       
       doc.setFont('helvetica', 'normal');
       const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
-      doc.text(instLines[0], 8, sidebarY);
-      sidebarY += 4;
+      instLines.forEach((line: string, lineIndex: number) => {
+        doc.text(line, 8, sidebarY + (lineIndex * 3));
+      });
+      sidebarY += Math.max(4, instLines.length * 3);
       
       if (edu.year && edu.year !== 'N/A') {
         doc.text(edu.year, 8, sidebarY);
@@ -470,7 +478,9 @@ async function generateCreativePdf(
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
         const skillLines = doc.splitTextToSize(skill, badgeWidth - 4);
-        doc.text(skillLines[0], x + 2, currentY);
+        skillLines.forEach((line: string, lineIndex: number) => {
+          doc.text(line, x + 2, currentY + (lineIndex * 3));
+        });
         
         skillIndex++;
       }
