@@ -385,17 +385,17 @@ async function generateCreativePdf(
 
   // Geometric shapes in header with white transparency
   doc.setFillColor(255, 255, 255);
-  doc.setGState({ opacity: 0.2 });
+  doc.setDrawColor(255, 255, 255);
+  
+  // Create circles and shapes with reduced opacity by using lighter colors instead
+  doc.setFillColor(255, 255, 255, 0.3); // Use alpha parameter instead of setGState
   doc.circle(25, 20, 10, 'F');
   doc.rect(pageWidth - 35, 15, 15, 15, 'F');
   doc.circle(pageWidth / 4, 35, 5, 'F');
-  doc.setGState({ opacity: 1 }); // Reset opacity
 
   // Profile photo area (matching preview)
-  doc.setFillColor(255, 255, 255);
-  doc.setGState({ opacity: 0.2 });
+  doc.setFillColor(255, 255, 255, 0.3); // Use alpha parameter instead of setGState
   doc.circle(margin + 25, 25, 12, 'F');
-  doc.setGState({ opacity: 1 });
 
   // Header text (matching preview layout)
   doc.setTextColor(255, 255, 255);
@@ -417,10 +417,8 @@ async function generateCreativePdf(
   currentY = headerHeight + 15;
 
   // Creative Vision section with light background (no black)
-  doc.setFillColor(pr, pg, pb);
-  doc.setGState({ opacity: 0.05 });
+  doc.setFillColor(pr, pg, pb, 0.05); // Use alpha parameter instead of setGState
   doc.rect(margin - 5, currentY - 5, contentWidth + 10, 30, 'F');
-  doc.setGState({ opacity: 1 });
 
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(14);
