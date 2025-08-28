@@ -25,11 +25,6 @@ interface ResumeData {
     achievements: string[];
   }>;
   skills?: string[];
-  tools?: string[];
-  core_technical_skills?: Array<{
-    name: string;
-    proficiency: number;
-  }>;
   education?: Array<{
     degree: string;
     institution: string;
@@ -180,73 +175,6 @@ async function generateModernPdf(
       doc.rect(8, sidebarY + 2, progressWidth, 2, 'F');
       
       sidebarY += 8;
-    });
-  }
-
-  // Tools & Technologies in sidebar
-  if (resumeData.tools && resumeData.tools.length > 0) {
-    sidebarY += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TOOLS', 8, sidebarY);
-    sidebarY += 8;
-
-    resumeData.tools.slice(0, 8).forEach((tool) => {
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      const toolLines = doc.splitTextToSize(tool, sidebarWidth - 16);
-      doc.text(`• ${toolLines[0]}`, 8, sidebarY);
-      sidebarY += 6;
-    });
-  }
-
-  // Core Technical Skills in sidebar
-  if (resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0) {
-    sidebarY += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('CORE SKILLS', 8, sidebarY);
-    sidebarY += 8;
-
-    resumeData.core_technical_skills.slice(0, 6).forEach((skill) => {
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      const skillLines = doc.splitTextToSize(`${skill.name} (${skill.proficiency}%)`, sidebarWidth - 16);
-      doc.text(skillLines[0], 8, sidebarY);
-      sidebarY += 6;
-    });
-  }
-
-  // Professional Certifications in sidebar
-  if (resumeData.certifications && resumeData.certifications.length > 0) {
-    sidebarY += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('CERTIFICATIONS', 8, sidebarY);
-    sidebarY += 8;
-
-    resumeData.certifications.slice(0, 3).forEach((certification) => {
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      const certLines = doc.splitTextToSize(certification, sidebarWidth - 16);
-      doc.text(certLines[0], 8, sidebarY);
-      sidebarY += 6;
-    });
-  }
-
-  // Language Proficiency in sidebar
-  if (resumeData.languages && resumeData.languages.length > 0) {
-    sidebarY += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LANGUAGES', 8, sidebarY);
-    sidebarY += 8;
-
-    resumeData.languages.slice(0, 5).forEach((language) => {
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`• ${language}`, 8, sidebarY);
-      sidebarY += 6;
     });
   }
 
@@ -551,131 +479,6 @@ async function generateCreativePdf(
     currentY += 5;
   }
 
-  // Tools & Technologies section
-  if (resumeData.tools && resumeData.tools.length > 0) {
-    doc.setTextColor(pr, pg, pb);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TOOLS & TECHNOLOGIES', margin, currentY);
-    currentY += 10;
-
-    // Create tool badges in rows
-    const toolsPerRow = 3;
-    const badgeWidth = (contentWidth - 10) / toolsPerRow;
-    let toolIndex = 0;
-
-    for (let i = 0; i < Math.ceil(resumeData.tools.length / toolsPerRow); i++) {
-      for (let j = 0; j < toolsPerRow && toolIndex < resumeData.tools.length; j++) {
-        const tool = resumeData.tools[toolIndex];
-        const x = margin + (j * badgeWidth);
-        
-        // Badge background
-        doc.setFillColor(255, 255, 255);
-        doc.roundedRect(x, currentY - 4, badgeWidth - 2, 8, 2, 2, 'F');
-        
-        // Badge border
-        doc.setDrawColor(ar, ag, ab);
-        doc.setLineWidth(1);
-        doc.roundedRect(x, currentY - 4, badgeWidth - 2, 8, 2, 2, 'S');
-        
-        // Tool text
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        const toolLines = doc.splitTextToSize(tool, badgeWidth - 4);
-        doc.text(toolLines[0], x + 2, currentY);
-        
-        toolIndex++;
-      }
-      currentY += 12;
-    }
-    currentY += 5;
-  }
-
-  // Core Technical Skills
-  if (resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0) {
-    doc.setTextColor(pr, pg, pb);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('CORE TECHNICAL SKILLS', margin, currentY);
-    currentY += 10;
-
-    resumeData.core_technical_skills.forEach((skill) => {
-      // Skill badge
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(margin, currentY - 4, contentWidth - 40, 8, 2, 2, 'F');
-      doc.setDrawColor(ar, ag, ab);
-      doc.setLineWidth(1);
-      doc.roundedRect(margin, currentY - 4, contentWidth - 40, 8, 2, 2, 'S');
-      
-      doc.setTextColor(pr, pg, pb);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${skill.name} (${skill.proficiency}%)`, margin + 2, currentY);
-      
-      currentY += 10;
-    });
-    currentY += 5;
-  }
-
-  // Professional Certifications
-  if (resumeData.certifications && resumeData.certifications.length > 0) {
-    doc.setTextColor(pr, pg, pb);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('PROFESSIONAL CERTIFICATIONS', margin, currentY);
-    currentY += 10;
-
-    resumeData.certifications.forEach((certification) => {
-      doc.setFillColor(sr, sg, sb, 0.1);
-      doc.roundedRect(margin - 2, currentY - 3, contentWidth + 4, 8, 2, 2, 'F');
-      
-      doc.setTextColor(60, 60, 60);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const certLines = doc.splitTextToSize(certification, contentWidth);
-      doc.text(certLines[0], margin, currentY);
-      
-      currentY += 10;
-    });
-    currentY += 5;
-  }
-
-  // Language Proficiency
-  if (resumeData.languages && resumeData.languages.length > 0) {
-    doc.setTextColor(pr, pg, pb);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LANGUAGE PROFICIENCY', margin, currentY);
-    currentY += 10;
-
-    const languagesPerRow = 2;
-    const badgeWidth = (contentWidth - 5) / languagesPerRow;
-    let langIndex = 0;
-
-    for (let i = 0; i < Math.ceil(resumeData.languages.length / languagesPerRow); i++) {
-      for (let j = 0; j < languagesPerRow && langIndex < resumeData.languages.length; j++) {
-        const language = resumeData.languages[langIndex];
-        const x = margin + (j * badgeWidth);
-        
-        doc.setFillColor(255, 255, 255);
-        doc.roundedRect(x, currentY - 4, badgeWidth - 2, 8, 2, 2, 'F');
-        doc.setDrawColor(ar, ag, ab);
-        doc.setLineWidth(1);
-        doc.roundedRect(x, currentY - 4, badgeWidth - 2, 8, 2, 2, 'S');
-        
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text(language, x + 2, currentY);
-        
-        langIndex++;
-      }
-      currentY += 12;
-    }
-    currentY += 5;
-  }
-
   // Professional Experience with enhanced visual style
   if (resumeData.experience && resumeData.experience.length > 0) {
     doc.setTextColor(pr, pg, pb);
@@ -940,97 +743,6 @@ async function generateClassicPdf(
     currentY += 8;
   }
 
-  // Tools & Technologies
-  if (resumeData.tools && resumeData.tools.length > 0) {
-    addSectionHeader('Tools & Technologies');
-    
-    doc.setTextColor(60, 60, 60);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    
-    const skillsPerRow = 2;
-    const colWidth = contentWidth / skillsPerRow;
-    
-    for (let i = 0; i < resumeData.tools.length; i += skillsPerRow) {
-      const rowTools = resumeData.tools.slice(i, i + skillsPerRow);
-      
-      rowTools.forEach((tool, colIndex) => {
-        const x = margin + (colIndex * colWidth);
-        doc.text(`• ${tool}`, x, currentY);
-      });
-      
-      currentY += 6;
-    }
-    currentY += 8;
-  }
-
-  // Core Technical Skills
-  if (resumeData.core_technical_skills && resumeData.core_technical_skills.length > 0) {
-    addSectionHeader('Core Technical Skills');
-    
-    resumeData.core_technical_skills.forEach((skill) => {
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`• ${skill.name}`, margin, currentY);
-      
-      // Add proficiency indicator
-      if (skill.proficiency) {
-        const proficiencyText = `(${skill.proficiency}%)`;
-        const skillWidth = doc.getTextWidth(`• ${skill.name} `);
-        doc.setTextColor(pr, pg, pb);
-        doc.setFont('helvetica', 'normal');
-        doc.text(proficiencyText, margin + skillWidth, currentY);
-      }
-      
-      currentY += 6;
-    });
-    currentY += 8;
-  }
-
-  // Professional Certifications
-  if (resumeData.certifications && resumeData.certifications.length > 0) {
-    addSectionHeader('Professional Certifications');
-    
-    resumeData.certifications.forEach((certification) => {
-      doc.setTextColor(60, 60, 60);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('•', margin + 5, currentY);
-      
-      const certLines = doc.splitTextToSize(certification, contentWidth - 10);
-      certLines.forEach((line: string, lineIndex: number) => {
-        doc.text(line, margin + 10, currentY + (lineIndex * 5));
-      });
-      currentY += certLines.length * 5 + 2;
-    });
-    currentY += 8;
-  }
-
-  // Language Proficiency
-  if (resumeData.languages && resumeData.languages.length > 0) {
-    addSectionHeader('Language Proficiency');
-    
-    doc.setTextColor(60, 60, 60);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    
-    const skillsPerRow = 2;
-    const colWidth = contentWidth / skillsPerRow;
-    
-    for (let i = 0; i < resumeData.languages.length; i += skillsPerRow) {
-      const rowLanguages = resumeData.languages.slice(i, i + skillsPerRow);
-      
-      rowLanguages.forEach((language, colIndex) => {
-        const x = margin + (colIndex * colWidth);
-        doc.text(`• ${language}`, x, currentY);
-      });
-      
-      currentY += 6;
-    }
-    currentY += 8;
-  }
-
   // Education
   if (resumeData.education && resumeData.education.length > 0) {
     addSectionHeader('Education');
@@ -1098,8 +810,6 @@ export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData 
     photo: enhancedContent.photo || undefined,
     experience: enhancedContent.experience || [],
     skills: enhancedContent.skills || [],
-    tools: enhancedContent.tools || [],
-    core_technical_skills: enhancedContent.core_technical_skills || [],
     education: enhancedContent.education || [],
     certifications: enhancedContent.certifications || [],
     languages: enhancedContent.languages || []
