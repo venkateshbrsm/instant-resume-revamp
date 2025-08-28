@@ -16,7 +16,7 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
+    <div className="bg-white rounded-xl shadow-lg border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
       {/* Left Sidebar */}
       <div 
         className="w-64 p-6 text-white"
@@ -270,7 +270,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                               <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
                                 <span className="text-white text-xs font-bold">✓</span>
                               </div>
-                              <span className="leading-relaxed font-medium">{achievement}</span>
+                              <span className="leading-relaxed font-medium break-words">{achievement}</span>
                             </li>
                           ))}
                         </ul>
@@ -284,7 +284,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                                   <div key={idx} className="flex items-start gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
                                          style={{ backgroundColor: selectedColorTheme.accent }}></div>
-                                    <span className="text-sm leading-relaxed">{responsibility}</span>
+                                    <span className="text-sm leading-relaxed break-words">{responsibility}</span>
                                   </div>
                                 ))}
                              </div>
