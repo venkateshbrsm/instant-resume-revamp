@@ -127,27 +127,44 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   }, [extractedText]);
 
-  // Auto-enhance after extracting text (but show basic version first)
-  useEffect(() => {
-    // Only enhance after we have extracted text and basic data is ready
-    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && basicResumeData) {
-      // Add a delay to let user see the basic version first
-      const timer = setTimeout(() => {
-        enhanceResume();
-      }, 2000); // 2 second delay
-      
-      return () => clearTimeout(timer);
-    }
-  }, [extractedText, basicResumeData]);
+  // Disabled auto-enhancement - just show basic content for now
+  // useEffect(() => {
+  //   if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && basicResumeData) {
+  //     const timer = setTimeout(() => {
+  //       enhanceResume();
+  //     }, 2000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [extractedText, basicResumeData]);
 
-  // Generate preview PDF when enhanced content or template/theme changes
+  // Generate preview PDF when basic or enhanced content or template/theme changes
   useEffect(() => {
-    // Use edited content if available, otherwise use enhanced content
-    const contentToUse = editedContent || enhancedContent;
+    // Use edited content if available, otherwise use enhanced content, otherwise use basic data
+    const contentToUse = editedContent || enhancedContent || (basicResumeData ? {
+      name: basicResumeData.name,
+      title: basicResumeData.title,
+      email: basicResumeData.email,
+      phone: basicResumeData.phone,
+      location: basicResumeData.location,
+      summary: basicResumeData.summary,
+      experience: basicResumeData.experience.map(exp => ({
+        title: exp.title,
+        company: exp.company,
+        duration: exp.duration,
+        description: exp.description,
+        core_responsibilities: exp.responsibilities,
+        achievements: []
+      })),
+      education: basicResumeData.education,
+      skills: basicResumeData.skills,
+      tools: [],
+      core_technical_skills: basicResumeData.skills.map(skill => ({ name: skill, proficiency: 85 }))
+    } : null);
+    
     if (contentToUse && !isGeneratingPreview) {
       generatePreviewPdf();
     }
-  }, [enhancedContent, editedContent, selectedTemplate, selectedColorTheme]);
+  }, [enhancedContent, editedContent, basicResumeData, selectedTemplate, selectedColorTheme]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -823,12 +840,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                            <FileText className="w-5 h-5 text-primary" />
                            <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
                          </div>
-                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                           AI Enhancement Starting Soon...
+                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                           Content Extracted & Formatted
                          </Badge>
                        </div>
                        <p className="text-sm text-muted-foreground mb-4">
-                         This is your resume content as extracted from the file, formatted with the selected template. AI enhancement will begin automatically.
+                         This is your resume content as extracted directly from your uploaded file, formatted with the selected template.
                        </p>
                        
                        {/* Basic Resume Content */}
