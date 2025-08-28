@@ -257,8 +257,8 @@ function parseExperienceSection(lines: string[]): Array<{
     console.log(`📝 Processing line ${i}: "${line}"`);
 
     // Check if this line contains dates
-    const fullDateRangeMatch = line.match(/(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current|till\s+date)/gi);
-    const singleDateMatch = line.match(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}\b/gi);
+    const fullDateRangeMatch = line.match(/(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}|present|current|till\s+date)/gi);
+    const singleDateMatch = line.match(/\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}\b/gi);
     const yearRangeMatch = line.match(/\b(\d{4})\s*[-–—to]\s*(\d{4}|present|current)\b/gi);
     
     // Check if this looks like a company/job title line
@@ -314,7 +314,7 @@ function parseExperienceSection(lines: string[]): Array<{
       let foundDate = null;
       for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
         const nextLine = lines[j].trim();
-        const nextDateMatch = nextLine.match(/(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d{4}|present|current|till\s+date)/gi) ||
+        const nextDateMatch = nextLine.match(/(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4})\s*[-–—to]\s*(\b(?:jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\.?\s+\d{4}|present|current|till\s+date)/gi) ||
                             nextLine.match(/\b(\d{4})\s*[-–—to]\s*(\d{4}|present|current)\b/gi);
         
         if (nextDateMatch) {
