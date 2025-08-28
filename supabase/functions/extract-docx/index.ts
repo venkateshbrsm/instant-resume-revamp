@@ -38,11 +38,12 @@ serve(async (req) => {
     // Read file as ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
     
-    // Extract text using server-side processing
-    const extractedText = await extractTextFromDOCX(arrayBuffer);
+    // Use simple text extraction approach instead of complex ZIP parsing
+    const extractedText = await extractTextFromDOCXSimple(arrayBuffer);
     
     console.log('DOCX text extraction completed');
     console.log('Extracted text length:', extractedText.length);
+    console.log('Text preview:', extractedText.substring(0, 300));
 
     return new Response(
       JSON.stringify({
@@ -71,163 +72,153 @@ serve(async (req) => {
   }
 });
 
-async function extractTextFromDOCX(arrayBuffer: ArrayBuffer): Promise<string> {
-  console.log('Starting enhanced DOCX text extraction...');
+async function extractTextFromDOCXSimple(arrayBuffer: ArrayBuffer): Promise<string> {
+  console.log('Starting simplified DOCX text extraction...');
   
   try {
     const uint8Array = new Uint8Array(arrayBuffer);
     console.log('Processing DOCX file, size:', arrayBuffer.byteLength, 'bytes');
     
-    // Method 1: Try to extract readable text directly from the binary data
-    // DOCX files contain readable text even in compressed form
+    // Convert the entire buffer to string and look for readable text
     const decoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: false });
     const fullText = decoder.decode(uint8Array);
     
-    console.log('Decoded full text length:', fullText.length);
+    console.log('Decoded text length:', fullText.length);
     
-    // Extract meaningful text patterns from the decoded content
+    // Extract text using multiple patterns for maximum coverage
     let extractedText = '';
+    const textSegments = new Set<string>(); // Use Set to avoid duplicates
     
-    // Pattern 1: Look for text between common Word XML patterns
-    const xmlTextPatterns = [
-      /<w:t[^>]*>([^<]+)<\/w:t>/g,
-      /<w:instrText[^>]*>([^<]+)<\/w:instrText>/g,
-      />([A-Za-z][A-Za-z0-9\s.,;:!?\-'"()]{10,})</g
+    // Pattern 1: Look for common resume sections and content
+    const resumePatterns = [
+      // Contact information patterns
+      /[A-Za-z][A-Za-z\s]{2,30}\s*[\r\n]/g, // Names
+      /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, // Emails
+      /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g, // Phone numbers
+      
+      // Professional content patterns
+      /(?:experience|Experience|EXPERIENCE)[\s\S]{0,20}([A-Za-z][A-Za-z0-9\s.,;:!?\-'"()]{20,200})/g,
+      /(?:education|Education|EDUCATION)[\s\S]{0,20}([A-Za-z][A-Za-z0-9\s.,;:!?\-'"()]{20,200})/g,
+      /(?:skills|Skills|SKILLS)[\s\S]{0,20}([A-Za-z][A-Za-z0-9\s.,;:!?\-'"()]{20,200})/g,
+      
+      // Job titles and companies
+      /(?:^|\n|\r)([A-Z][A-Za-z\s]{5,50})(?:\n|\r|$)/g,
+      
+      // General text content (longer sequences)
+      /[A-Za-z][A-Za-z0-9\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]{25,}/g
     ];
     
-    for (const pattern of xmlTextPatterns) {
+    // Apply patterns and collect unique text segments
+    for (const pattern of resumePatterns) {
       let match;
+      pattern.lastIndex = 0; // Reset regex state
+      
       while ((match = pattern.exec(fullText)) !== null) {
-        const text = match[1]?.trim();
-        if (text && text.length > 3 && 
-            !text.includes('xml') && 
-            !text.includes('http') && 
-            !text.match(/^[0-9.]+$/) &&
+        const text = (match[1] || match[0]).trim();
+        
+        if (text && 
+            text.length > 5 && 
+            text.length < 500 && // Avoid huge chunks
+            text.match(/[A-Za-z]/) && // Must contain letters
+            !text.includes('<?xml') &&
+            !text.includes('schemas.openxml') &&
             !text.includes('word/') &&
-            text.match(/[A-Za-z]/)) {
-          extractedText += text + ' ';
+            !text.includes('http://') &&
+            !text.includes('xmlns') &&
+            !text.match(/^[0-9.]+$/)) { // Not just numbers
+          
+          // Clean the text
+          const cleanedText = text
+            .replace(/[^\w\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          if (cleanedText.length > 5) {
+            textSegments.add(cleanedText);
+          }
+        }
+        
+        // Prevent infinite loops
+        if (pattern.lastIndex === match.index) {
+          pattern.lastIndex++;
         }
       }
     }
     
-    console.log('XML pattern extraction yielded:', extractedText.length, 'characters');
+    console.log('Found', textSegments.size, 'unique text segments');
     
-    // Method 2: If XML patterns didn't work well, try broader text extraction
+    // Join all unique segments
+    extractedText = Array.from(textSegments).join(' ');
+    
+    // If we still don't have much text, try a broader approach
     if (extractedText.length < 200) {
       console.log('Trying broader text extraction...');
       
-      // Look for sequences of readable text (letters, numbers, common punctuation)
-      const readableTextPattern = /[A-Za-z][A-Za-z0-9\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]{15,}/g;
-      const matches = fullText.match(readableTextPattern);
-      
-      if (matches && matches.length > 0) {
-        console.log('Found', matches.length, 'readable text sequences');
-        
-        // Filter and clean the matches
-        const cleanedMatches = matches
-          .filter(match => {
-            // Filter out XML/technical content
-            return !match.includes('<?xml') &&
-                   !match.includes('schemas.openxmlformats') &&
-                   !match.includes('w:') &&
-                   !match.includes('xmlns') &&
-                   match.length > 10 &&
-                   match.match(/[A-Za-z]/) && // Must contain letters
-                   !match.match(/^[0-9.]+$/); // Not just numbers
-          })
-          .map(match => match
-            .replace(/[^\w\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]/g, ' ') // Clean special chars
-            .replace(/\s+/g, ' ') // Normalize whitespace
-            .trim()
-          )
-          .filter(match => match.length > 5);
-        
-        extractedText = cleanedMatches.join(' ');
-        console.log('Cleaned text extraction yielded:', extractedText.length, 'characters');
-      }
-    }
-    
-    // Method 3: Final fallback - extract any text that looks like resume content
-    if (extractedText.length < 100) {
-      console.log('Trying final fallback extraction...');
-      
-      // Look for common resume keywords and extract surrounding context
-      const resumeKeywords = ['experience', 'education', 'skills', 'work', 'university', 'degree', 'phone', 'email', 'address', 'summary', 'objective'];
-      const lines = fullText.split(/[\n\r]+/);
+      // Split by various delimiters and look for meaningful content
+      const lines = fullText.split(/[\r\n\0\x01-\x1F]+/);
+      const meaningfulLines: string[] = [];
       
       for (const line of lines) {
-        const cleanLine = line.replace(/[^\w\s.,;:!?\-'"()@]/g, ' ').replace(/\s+/g, ' ').trim();
+        const cleanLine = line
+          .replace(/[^\w\s.,;:!?\-'"()@#$%&*+=<>{}[\]|\\\/]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
         
-        if (cleanLine.length > 10 && cleanLine.match(/[A-Za-z]/)) {
-          // Check if line contains resume-related content
-          const hasResumeKeyword = resumeKeywords.some(keyword => 
-            cleanLine.toLowerCase().includes(keyword)
-          );
-          
-          // Or if it looks like contact info, names, etc.
-          const looksLikeResumeContent = cleanLine.match(/^[A-Z][a-zA-Z\s]+$/) || // Names
-                                       cleanLine.match(/\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/) || // Phone numbers
-                                       cleanLine.match(/@[\w.-]+\.\w+/) || // Email addresses
-                                       cleanLine.match(/\b[A-Z][a-z]+\s+[A-Z][a-z]+\b/); // Names
-          
-          if (hasResumeKeyword || looksLikeResumeContent) {
-            extractedText += cleanLine + ' ';
-          }
+        if (cleanLine.length > 10 && 
+            cleanLine.match(/[A-Za-z]/) &&
+            !cleanLine.includes('xml') &&
+            !cleanLine.includes('schema') &&
+            !cleanLine.match(/^[0-9.]+$/)) {
+          meaningfulLines.push(cleanLine);
         }
       }
       
-      console.log('Final fallback extraction yielded:', extractedText.length, 'characters');
+      if (meaningfulLines.length > 0) {
+        extractedText = meaningfulLines.join(' ');
+      }
     }
     
-    // Clean up the final result
+    // Final cleanup
     extractedText = extractedText
       .replace(/\s+/g, ' ')
       .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
       .trim();
     
-    console.log('Final DOCX extraction result:');
+    console.log('Final extraction result:');
     console.log('- Length:', extractedText.length);
-    console.log('- Preview (first 500 chars):', extractedText.substring(0, 500));
+    console.log('- Preview:', extractedText.substring(0, 500));
     
     // Validate extraction quality
     if (extractedText.length < 50) {
       console.log('Extraction yielded insufficient content');
-      return `⚠️ Limited Content Extracted from DOCX
+      return `Document processed but minimal text extracted.
 
-Document: ${arrayBuffer.byteLength} bytes processed
+File: ${arrayBuffer.byteLength} bytes
 
-The DOCX file was processed but yielded minimal readable text. This can happen with:
-• Documents with complex formatting or embedded objects
-• Password-protected or encrypted files
-• Files with mostly images/graphics
-• Corrupted or non-standard DOCX structure
+This can happen when:
+• The document contains mostly images or graphics
+• The file has complex formatting or embedded objects
+• The content is in a format that's difficult to extract
 
-💡 Recommended solutions:
-1. Try saving as a simpler Word document format
-2. Convert to PDF format for better text extraction
-3. Copy and paste the content into a plain text document
-4. Ensure the document contains readable text content
+Please try:
+1. Converting to PDF format
+2. Saving as a simpler Word document
+3. Copying content to a plain text document
 
-The AI will still attempt to enhance based on available content and common resume patterns.`;
+The system will still attempt to create an enhanced resume based on common resume patterns.`;
     }
     
     return extractedText;
     
   } catch (error) {
-    console.error('DOCX extraction failed:', error);
-    return `❌ DOCX Processing Error
+    console.error('Simplified DOCX extraction failed:', error);
+    return `Error processing DOCX file: ${error.message}
 
-Failed to extract text from DOCX file.
+Please try:
+1. Converting to PDF format
+2. Using a different document format
+3. Ensuring the file isn't corrupted
 
-Error: ${error.message}
-Document size: ${(arrayBuffer.byteLength / 1024).toFixed(1)} KB
-
-🔧 Recommended solutions:
-1. Re-save the document in Microsoft Word
-2. Convert to PDF format for better compatibility
-3. Ensure the file isn't corrupted or password-protected
-4. Try a different DOCX file
-
-The system will still attempt enhancement based on document structure patterns.`;
+The system will attempt to create an enhanced resume template.`;
   }
 }

@@ -152,20 +152,20 @@ ENHANCEMENT GUIDELINES:
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [
-        { 
-          role: 'system', 
-          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
-        },
-        { 
-          role: 'user', 
-          content: prompt 
-        }
-      ],
-      max_completion_tokens: 4000,
-    }),
+      body: JSON.stringify({
+        model: 'gpt-5-2025-08-07',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
+          },
+          { 
+            role: 'user', 
+            content: prompt 
+          }
+        ],
+        max_completion_tokens: 4000,
+      }),
   });
 
   if (!response.ok) {
