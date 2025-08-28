@@ -258,29 +258,14 @@ export const EditablePreview = ({
               </Button>
             </>
           ) : (
-            <>
-              <Button 
-                onClick={() => setIsEditing(true)} 
-                variant="outline" 
-                size="sm"
-              >
-                <Edit3 className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-              <Button 
-                onClick={handleDownload} 
-                variant="default" 
-                size="sm"
-                disabled={isDownloading}
-              >
-                {isDownloading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4 mr-2" />
-                )}
-                Download
-              </Button>
-            </>
+            <Button 
+              onClick={() => setIsEditing(true)} 
+              variant="outline" 
+              size="sm"
+            >
+              <Edit3 className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
           )}
         </div>
       </div>
