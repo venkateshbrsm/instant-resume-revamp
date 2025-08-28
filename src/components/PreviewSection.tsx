@@ -848,17 +848,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          This is your resume content as extracted directly from your uploaded file, formatted with the selected template.
                        </p>
                        
-                        {/* Basic Resume Content */}
-                        <div 
-                          ref={resumeContentRef}
-                          className="bg-white rounded-lg p-4 border shadow-sm"
-                        >
-                          <BasicResumePreview
-                            resumeData={basicResumeData}
-                            selectedColorTheme={selectedColorTheme}
-                            templateLayout={selectedTemplate.layout}
-                          />
-                        </div>
+                       {/* Basic Resume Content */}
+                       <div 
+                         ref={resumeContentRef}
+                         className="bg-white rounded-lg p-4 border shadow-sm"
+                       >
+                         <BasicResumePreview
+                           resumeData={basicResumeData}
+                           selectedColorTheme={selectedColorTheme}
+                           templateLayout={selectedTemplate.layout}
+                         />
+                       </div>
                      </div>
                    </div>
                  </div>
@@ -918,25 +918,25 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             </div>
             
             <div className="space-y-3 mb-6">
-               <Button 
-                 variant="success" 
-                 size="xl" 
-                 onClick={handlePurchaseClick}
-                 className="w-full"
-                 disabled={(!enhancedContent && !basicResumeData) || isCheckingAuth}
-               >
-                 <CreditCard className="w-5 h-5 mr-2" />
-                 {isCheckingAuth ? 'Checking authentication...' : 
-                  (!enhancedContent && !basicResumeData) ? 'Processing...' :
-                  user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
-               </Button>
-               
-               
-               <p className="text-xs text-muted-foreground">
-                 {(enhancedContent || basicResumeData)
-                   ? 'Secure payment • Download the enhanced version immediately' 
-                   : 'Processing content • Payment will be enabled once complete'
-                 }
+              <Button 
+                variant="success" 
+                size="xl" 
+                onClick={handlePurchaseClick}
+                className="w-full"
+                disabled={!enhancedContent || isCheckingAuth}
+              >
+                <CreditCard className="w-5 h-5 mr-2" />
+                {isCheckingAuth ? 'Checking authentication...' : 
+                 !enhancedContent ? 'Processing Enhancement...' :
+                 user ? 'Purchase Enhanced Resume' : 'Sign In & Purchase'}
+              </Button>
+              
+              
+              <p className="text-xs text-muted-foreground">
+                {enhancedContent 
+                  ? 'Secure payment • Download the enhanced version immediately' 
+                  : 'Enhancement in progress • Payment will be enabled once complete'
+                }
               </p>
             </div>
 
