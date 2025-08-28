@@ -15,6 +15,8 @@ import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
 import { EditablePreview } from "./EditablePreview";
+import { BasicResumePreview } from "./BasicResumePreview";
+import { parseBasicResumeFromText, BasicResumeData } from "@/lib/basicResumeParser";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Tooltip } from 'recharts';
 import { toast } from "sonner";
 import { generateVisualPdf, extractResumeDataFromEnhanced } from "@/lib/visualPdfGenerator";
@@ -37,6 +39,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [extractedText, setExtractedText] = useState<string>("");
   const [enhancedContent, setEnhancedContent] = useState<any>(null);
   const [editedContent, setEditedContent] = useState<any>(null);
+  const [basicResumeData, setBasicResumeData] = useState<BasicResumeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStage, setLoadingStage] = useState("Initializing...");
@@ -114,13 +117,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-enhance after extracting text
+  // Auto-parse basic resume data when text is available
   useEffect(() => {
-    // Only enhance after we have extracted text
-    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
-      enhanceResume();
+    if (extractedText && extractedText.length > 0 && !basicResumeData) {
+      console.log('🔍 Parsing basic resume data from extracted text...');
+      const parsedData = parseBasicResumeFromText(extractedText);
+      setBasicResumeData(parsedData);
+      console.log('✅ Basic resume data parsed:', parsedData);
     }
   }, [extractedText]);
+
+  // Auto-enhance after extracting text (but show basic version first)
+  useEffect(() => {
+    // Only enhance after we have extracted text and basic data is ready
+    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && basicResumeData) {
+      // Add a delay to let user see the basic version first
+      const timer = setTimeout(() => {
+        enhanceResume();
+      }, 2000); // 2 second delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [extractedText, basicResumeData]);
 
   // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
@@ -656,28 +674,28 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isEnhancing ? (
-                <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
-                  <div className="text-center space-y-4 w-full max-w-md">
-                    <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
-                      <p className="text-muted-foreground text-sm sm:text-base mb-4">
-                        Our AI is analyzing and enhancing your resume...
-                      </p>
-                      <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                        {Math.round(enhancementProgress)}% complete
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : enhancedContent ? (
-                 <div className="w-full border border-border/20 rounded-lg overflow-hidden">
-                   <div 
-                     ref={enhancedResumeRef}
-                     className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
-                   >
+               {isEnhancing ? (
+                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-4 sm:p-6 md:p-8 min-h-[300px] sm:min-h-[400px] flex items-center justify-center border border-accent/20">
+                   <div className="text-center space-y-4 w-full max-w-md">
+                     <Loader2 className="w-10 sm:w-12 h-10 sm:h-12 text-accent animate-spin mx-auto" />
+                     <div>
+                       <h3 className="text-lg sm:text-xl font-semibold mb-2">AI Enhancement in Progress</h3>
+                       <p className="text-muted-foreground text-sm sm:text-base mb-4">
+                         Our AI is analyzing and enhancing your resume...
+                       </p>
+                       <Progress value={enhancementProgress} className="w-full h-2 sm:h-3" />
+                       <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                         {Math.round(enhancementProgress)}% complete
+                       </p>
+                     </div>
+                   </div>
+                 </div>
+               ) : enhancedContent ? (
+                  <div className="w-full border border-border/20 rounded-lg overflow-hidden">
+                    <div 
+                      ref={enhancedResumeRef}
+                      className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20"
+                    >
                   
                        {/* Template and Color Selector */}
                        <TemplateSelector
@@ -785,7 +803,49 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                         </Tabs>
                     </div>
                   </div>
-              ) : (
+                ) : basicResumeData ? (
+                 /* Show basic parsed resume while waiting for AI enhancement */
+                 <div className="w-full border border-border/20 rounded-lg overflow-hidden">
+                   <div className="bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-lg p-3 sm:p-4 md:p-6 shadow-2xl border border-accent/20">
+                     
+                     {/* Template and Color Selector */}
+                     <TemplateSelector
+                       selectedTemplate={selectedTemplate}
+                       selectedColorTheme={selectedColorTheme}
+                       onTemplateChange={setSelectedTemplate}
+                       onColorThemeChange={setSelectedColorTheme}
+                     />
+
+                     {/* Basic Resume Preview */}
+                     <div className="mt-6">
+                       <div className="flex items-center justify-between mb-4">
+                         <div className="flex items-center gap-2">
+                           <FileText className="w-5 h-5 text-primary" />
+                           <h3 className="text-lg font-semibold">Extracted Resume Content</h3>
+                         </div>
+                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                           AI Enhancement Starting Soon...
+                         </Badge>
+                       </div>
+                       <p className="text-sm text-muted-foreground mb-4">
+                         This is your resume content as extracted from the file, formatted with the selected template. AI enhancement will begin automatically.
+                       </p>
+                       
+                       {/* Basic Resume Content */}
+                       <div 
+                         ref={resumeContentRef}
+                         className="bg-white rounded-lg p-4 border shadow-sm"
+                       >
+                         <BasicResumePreview
+                           resumeData={basicResumeData}
+                           selectedColorTheme={selectedColorTheme}
+                           templateLayout={selectedTemplate.layout}
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+                ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
                     <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
