@@ -50,25 +50,70 @@ export function DocxPreviewSection({ file, onPurchase, onBack }: DocxPreviewSect
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we're returning from login and restore state
-    const storedExtractedText = sessionStorage.getItem('docxExtractedText');
-    const storedEnhancedContent = sessionStorage.getItem('docxEnhancedContent');
+    // Create file identifier for tracking
+    const currentFileId = `${file.name}_${file.size}_${file.lastModified}`;
+    const lastProcessedFile = sessionStorage.getItem('lastProcessedDocxFile');
     
-    if (storedExtractedText && storedEnhancedContent) {
-      setEditedContent(storedExtractedText);
-      try {
-        setEnhancedContent(JSON.parse(storedEnhancedContent));
-        sessionStorage.removeItem('docxExtractedText');
-        sessionStorage.removeItem('docxEnhancedContent');
-      } catch (error) {
-        console.error('Error parsing stored enhanced content:', error);
-      }
-    }
+    console.log('🔄 DocxPreviewSection: Processing file:', currentFileId);
+    console.log('📁 Last processed DOCX file:', lastProcessedFile);
     
-    // Only extract file content if we don't have stored content
-    if (!storedExtractedText || !storedEnhancedContent) {
+    // Check if this is a new file or returning from payment/auth
+    const isNewFile = lastProcessedFile !== currentFileId;
+    const isReturningFromAuth = sessionStorage.getItem('attemptingPurchase') === 'true' || 
+                               sessionStorage.getItem('returnToPreview') === 'true';
+    
+    if (isNewFile && !isReturningFromAuth) {
+      console.log('🆕 New DOCX file detected - clearing all caches');
+      
+      // Clear sessionStorage for new file
+      sessionStorage.removeItem('docxExtractedText');
+      sessionStorage.removeItem('docxEnhancedContent');
+      
+      // Clear localStorage payment cache for new file
+      localStorage.removeItem('docxEnhancedContentForPayment');
+      localStorage.removeItem('docxExtractedTextForPayment');
+      localStorage.removeItem('docxSelectedTemplateForPayment');
+      localStorage.removeItem('docxSelectedColorThemeForPayment');
+      
+      // Reset all state for new file
+      setExtractedContent(null);
+      setParsedData(null);
+      setEnhancedContent(null);
+      setEditedContent("");
+      setPreviewPdfBlob(null);
+      
+      // Update file tracking
+      sessionStorage.setItem('lastProcessedDocxFile', currentFileId);
+      
+      // Always extract content for new file
       extractFileContent();
+    } else if (isReturningFromAuth) {
+      console.log('🔙 Returning from auth - restoring DOCX state');
+      
+      // Check if we're returning from login and restore state
+      const storedExtractedText = sessionStorage.getItem('docxExtractedText');
+      const storedEnhancedContent = sessionStorage.getItem('docxEnhancedContent');
+      
+      if (storedExtractedText && storedEnhancedContent) {
+        setEditedContent(storedExtractedText);
+        try {
+          setEnhancedContent(JSON.parse(storedEnhancedContent));
+          sessionStorage.removeItem('docxExtractedText');
+          sessionStorage.removeItem('docxEnhancedContent');
+        } catch (error) {
+          console.error('Error parsing stored enhanced content:', error);
+        }
+      }
+      
+      // Only extract file content if we don't have stored content
+      if (!storedExtractedText || !storedEnhancedContent) {
+        extractFileContent();
+      } else {
+        setIsLoading(false);
+      }
     } else {
+      console.log('🔄 Same DOCX file - using existing state');
+      // Same file, don't re-extract
       setIsLoading(false);
     }
     

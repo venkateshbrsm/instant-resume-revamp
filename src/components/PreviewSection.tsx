@@ -63,21 +63,85 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const { toast } = useToast();
 
   useEffect(() => {
-    // Clear any existing cached content when processing a new file
-    sessionStorage.removeItem('extractedText');
-    sessionStorage.removeItem('enhancedContent');
-    sessionStorage.removeItem('originalContent');
+    // Create file identifier for tracking
+    const currentFileId = `${file.name}_${file.size}_${file.lastModified}`;
+    const lastProcessedFile = sessionStorage.getItem('lastProcessedFile');
     
-    // Reset all state for new file
-    setExtractedText("");
-    setEnhancedContent(null);
-    setEditedContent(null);
-    setOriginalContent("");
-    setPreviewPdfBlob(null);
-    setActiveTab("before");
+    console.log('🔄 PreviewSection: Processing file:', currentFileId);
+    console.log('📁 Last processed file:', lastProcessedFile);
     
-    // Always extract content for new file
-    extractFileContent();
+    // Check if this is a new file or returning from payment/auth
+    const isNewFile = lastProcessedFile !== currentFileId;
+    const isReturningFromAuth = sessionStorage.getItem('attemptingPurchase') === 'true' || 
+                               sessionStorage.getItem('returnToPreview') === 'true';
+    
+    if (isNewFile && !isReturningFromAuth) {
+      console.log('🆕 New file detected - clearing all caches');
+      
+      // Clear sessionStorage for new file
+      sessionStorage.removeItem('extractedText');
+      sessionStorage.removeItem('enhancedContent');
+      sessionStorage.removeItem('originalContent');
+      
+      // Clear localStorage payment cache for new file (but preserve if returning from auth)
+      localStorage.removeItem('enhancedContentForPayment');
+      localStorage.removeItem('extractedTextForPayment');
+      localStorage.removeItem('selectedTemplateForPayment');
+      localStorage.removeItem('selectedColorThemeForPayment');
+      localStorage.removeItem('latestEditedContent');
+      
+      // Reset all state for new file
+      setExtractedText("");
+      setEnhancedContent(null);
+      setEditedContent(null);
+      setOriginalContent("");
+      setPreviewPdfBlob(null);
+      setActiveTab("before");
+      
+      // Update file tracking
+      sessionStorage.setItem('lastProcessedFile', currentFileId);
+      
+      // Always extract content for new file
+      extractFileContent();
+    } else if (isReturningFromAuth) {
+      console.log('🔙 Returning from auth - restoring state');
+      
+      // Check if we're returning from login and restore state
+      const storedExtractedText = sessionStorage.getItem('extractedText');
+      const storedEnhancedContent = sessionStorage.getItem('enhancedContent');
+      const storedOriginalContent = sessionStorage.getItem('originalContent');
+      
+      if (storedExtractedText) {
+        setExtractedText(storedExtractedText);
+        sessionStorage.removeItem('extractedText');
+      }
+      
+      if (storedEnhancedContent) {
+        try {
+          setEnhancedContent(JSON.parse(storedEnhancedContent));
+          sessionStorage.removeItem('enhancedContent');
+        } catch (error) {
+          console.error('Error parsing stored enhanced content:', error);
+        }
+      }
+      
+      if (storedOriginalContent) {
+        setOriginalContent(storedOriginalContent);
+        sessionStorage.removeItem('originalContent');
+      }
+      
+      // Only extract file content if we don't have stored content
+      if (!storedExtractedText || !storedOriginalContent) {
+        extractFileContent();
+      } else {
+        setIsLoading(false);
+      }
+    } else {
+      console.log('🔄 Same file - using existing state');
+      // Same file, don't re-extract
+      setIsLoading(false);
+    }
+    
     checkAuth();
   }, [file]);
 
