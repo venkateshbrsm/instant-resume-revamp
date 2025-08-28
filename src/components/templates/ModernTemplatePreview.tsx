@@ -16,7 +16,7 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex flex-col md:flex-row min-h-[600px]">
+    <div className="bg-white rounded-xl shadow-lg overflow-visible border border-border/50 print:shadow-none print:border-0 flex flex-col md:flex-row min-h-[600px]" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
       {/* Left Sidebar */}
       <div 
         className="w-full md:w-64 p-4 md:p-6 text-white"

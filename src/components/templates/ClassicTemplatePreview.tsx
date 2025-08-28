@@ -16,7 +16,7 @@ interface TemplatePreviewProps {
 
 export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
+    <div className="bg-white rounded-xl shadow-lg overflow-visible border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
       {/* Classic Header - Centered */}
       <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
         {/* Profile Photo - Only show if photo exists */}

@@ -16,7 +16,7 @@ interface TemplatePreviewProps {
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
+    <div className="bg-white shadow-2xl overflow-visible border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
       {/* Print Layout - Single Column for PDF */}
       <div className="flex print:block">
         {/* Left Sidebar - Dark Background */}
