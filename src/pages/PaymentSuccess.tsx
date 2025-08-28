@@ -240,15 +240,15 @@ export default function PaymentSuccess() {
         }
         
         // Use the same visual PDF generator as preview for consistency
-        let enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
+        let enhancedContentStr2 = localStorage.getItem('enhancedContentForPayment');
         
         // Fallback to backup storage if main storage is empty
         if (!enhancedContentStr2) {
           console.log('Main storage empty, checking backup...');
-          enhancedContentStr2 = sessionStorage.getItem('latestEditedContent');
+          enhancedContentStr2 = localStorage.getItem('latestEditedContent');
         }
         
-        const selectedThemeStr = sessionStorage.getItem('selectedColorThemeForPayment');
+        const selectedThemeStr = localStorage.getItem('selectedColorThemeForPayment');
         
         console.log('Session storage check:', {
           hasEnhancedContent: !!enhancedContentStr2,
@@ -304,11 +304,11 @@ export default function PaymentSuccess() {
               description: "Your beautifully designed resume has been downloaded - matches the preview exactly!",
             });
             
-            // Clean up session storage
-            sessionStorage.removeItem('enhancedContentForPayment');
-            sessionStorage.removeItem('selectedColorThemeForPayment');
-            sessionStorage.removeItem('selectedTemplateForPayment');
-            sessionStorage.removeItem('latestEditedContent');
+            // Clean up local storage
+            localStorage.removeItem('enhancedContentForPayment');
+            localStorage.removeItem('selectedColorThemeForPayment');
+            localStorage.removeItem('selectedTemplateForPayment');
+            localStorage.removeItem('latestEditedContent');
             return;
           } catch (error) {
             console.error('Error generating visual PDF:', error);
