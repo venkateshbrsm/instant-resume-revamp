@@ -105,7 +105,10 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
       {/* PDF Display */}
       <div 
-        className="border rounded-lg bg-background relative"
+        className={cn(
+          "border rounded-lg bg-background relative",
+          isFullscreen ? "border-0 rounded-none h-full w-full" : ""
+        )}
         style={isFullscreen ? { 
           height: '100%',
           width: '100%'
@@ -117,10 +120,24 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       >
         {pdfUrl ? (
           <iframe
-            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=fit`}
-            className="w-full h-full rounded-lg"
+            src={isFullscreen 
+              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH` 
+              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=fit`
+            }
+            className={cn(
+              "rounded-lg",
+              isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+            )}
             title="PDF Preview"
-            style={{ border: 'none' }}
+            style={{ 
+              border: 'none',
+              ...(isFullscreen && {
+                transform: 'scale(1)',
+                transformOrigin: 'top left',
+                width: '100%',
+                height: '100%'
+              })
+            }}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
