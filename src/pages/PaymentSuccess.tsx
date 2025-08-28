@@ -240,7 +240,14 @@ export default function PaymentSuccess() {
         }
         
         // Use the same visual PDF generator as preview for consistency
-        const enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
+        let enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
+        
+        // Fallback to backup storage if main storage is empty
+        if (!enhancedContentStr2) {
+          console.log('Main storage empty, checking backup...');
+          enhancedContentStr2 = sessionStorage.getItem('latestEditedContent');
+        }
+        
         const selectedThemeStr = sessionStorage.getItem('selectedColorThemeForPayment');
         
         console.log('Session storage check:', {
@@ -255,6 +262,11 @@ export default function PaymentSuccess() {
             const enhancedContent = JSON.parse(enhancedContentStr2);
             const selectedTheme = JSON.parse(selectedThemeStr);
             
+            console.log('🔍 Downloaded content data check:');
+            console.log('  - Name:', enhancedContent.name);
+            console.log('  - Skills:', enhancedContent.skills);
+            console.log('  - Contact:', enhancedContent.contact);
+            
             // Import the visual PDF generator
             const { generateVisualPdf, extractResumeDataFromEnhanced } = await import("@/lib/visualPdfGenerator");
             
@@ -265,6 +277,8 @@ export default function PaymentSuccess() {
             
             // Use the same visual PDF generator as preview
             const resumeData = extractResumeDataFromEnhanced(enhancedContent);
+            console.log('🔍 Extracted resume data for PDF:', resumeData);
+            
             const pdfBlob = await generateVisualPdf(resumeData, {
               templateType: 'modern', // Always use modern template as we filtered others
               colorTheme: {
@@ -294,6 +308,7 @@ export default function PaymentSuccess() {
             sessionStorage.removeItem('enhancedContentForPayment');
             sessionStorage.removeItem('selectedColorThemeForPayment');
             sessionStorage.removeItem('selectedTemplateForPayment');
+            sessionStorage.removeItem('latestEditedContent');
             return;
           } catch (error) {
             console.error('Error generating visual PDF:', error);

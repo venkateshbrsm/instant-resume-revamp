@@ -65,12 +65,21 @@ export const EditablePreview = ({
     setIsSaving(true);
     try {
       console.log('🔍 Saving editable data:', editableData);
+      console.log('🔍 Data being saved to sessionStorage:');
+      console.log('  - Name:', editableData.name);
+      console.log('  - Skills:', editableData.skills);
+      console.log('  - Contact:', editableData.contact);
       
       // Update the parent component with new content
       onContentUpdate(editableData);
       
-      // Store in session storage for persistence
+      // Store in session storage for persistence - this is used by PaymentSuccess
       sessionStorage.setItem('enhancedContentForPayment', JSON.stringify(editableData));
+      
+      // Also store in a backup key to ensure data persistence
+      sessionStorage.setItem('latestEditedContent', JSON.stringify(editableData));
+      
+      console.log('✅ Data saved to sessionStorage successfully');
       
       toast.success('Changes saved successfully!');
       setIsEditing(false);
