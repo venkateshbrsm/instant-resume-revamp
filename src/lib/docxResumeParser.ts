@@ -93,9 +93,47 @@ const extractEmail = (text: string): string => {
 };
 
 const extractPhone = (text: string): string => {
-  const phoneRegex = /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g;
-  const match = text.match(phoneRegex);
-  return match ? match[0] : '';
+  // Look for various phone number patterns
+  const phonePatterns = [
+    /(\+91[-.\s]?)?(\d{10})/g, // Indian format with or without +91
+    /(\+91[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g, // US format
+    /(\d{1,4}[-.\s]?\d{10})/g, // General format
+    /(\d{10,12})/g // Just digits
+  ];
+  
+  for (const pattern of phonePatterns) {
+    const matches = text.match(pattern);
+    if (matches) {
+      for (const match of matches) {
+        // Extract just digits
+        const digits = match.replace(/\D/g, '');
+        
+        // If it's 10 digits, it's likely an Indian number without country code
+        if (digits.length === 10) {
+          return `+91-${digits}`;
+        }
+        
+        // If it starts with 91 and has 12 digits, format properly
+        if (digits.startsWith('91') && digits.length === 12) {
+          const number = digits.slice(2);
+          return `+91-${number}`;
+        }
+        
+        // If it starts with 1 and has 11 digits, it might be misformatted Indian number
+        if (digits.startsWith('1') && digits.length === 11) {
+          const number = digits.slice(1);
+          return `+91-${number}`;
+        }
+        
+        // Return the first valid-looking number we find
+        if (digits.length >= 10) {
+          return match.trim();
+        }
+      }
+    }
+  }
+  
+  return '';
 };
 
 const extractLocation = (lines: string[]): string => {

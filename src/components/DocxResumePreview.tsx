@@ -24,7 +24,7 @@ const formatPhoneNumber = (phone: string) => {
   // Remove all non-digit characters first
   const digitsOnly = phone.replace(/\D/g, '');
   
-  // If it starts with 91 (India code) and has 12 digits total, format as +91-XXXXXXXXXX
+  // If it starts with 91 and has 12 digits total, format as +91-XXXXXXXXXX
   if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
     const countryCode = digitsOnly.slice(0, 2);
     const number = digitsOnly.slice(2);
@@ -34,6 +34,18 @@ const formatPhoneNumber = (phone: string) => {
   // If it's 10 digits, assume it's Indian number without country code
   if (digitsOnly.length === 10) {
     return `+91-${digitsOnly}`;
+  }
+  
+  // If it starts with 1 and has 11 digits, it might be misformatted Indian number (1-9900122877 -> +91-9900122877)
+  if (digitsOnly.startsWith('1') && digitsOnly.length === 11) {
+    const number = digitsOnly.slice(1);
+    return `+91-${number}`;
+  }
+  
+  // Handle formatted phone like "1-9900122877" 
+  if (phone.startsWith('1-') && phone.length === 13) {
+    const number = phone.slice(2);
+    return `+91-${number}`;
   }
   
   // Otherwise return as is
