@@ -170,13 +170,23 @@ const extractExperience = (lines: string[]): Array<{
   
   const experienceLines = lines.slice(experienceStart, experienceEnd);
   
-  // Parse individual job entries
+  // Parse individual job entries with improved logic
   let currentJob: any = null;
   let responsibilities: string[] = [];
+  let lookingForJobTitle = true;
   
-  for (const line of experienceLines) {
-    // Check if this looks like a job header (company/position line)
-    if (isJobHeader(line)) {
+  for (let i = 0; i < experienceLines.length; i++) {
+    const line = experienceLines[i].trim();
+    if (!line) continue;
+    
+    // Skip empty lines and very short lines
+    if (line.length < 3) continue;
+    
+    // Check for company indicators
+    if (line.toLowerCase().includes('company:') || 
+        line.toLowerCase().includes('organization:') ||
+        line.toLowerCase().includes('employer:')) {
+      
       // Save previous job if exists
       if (currentJob) {
         currentJob.responsibilities = responsibilities;
@@ -184,11 +194,45 @@ const extractExperience = (lines: string[]): Array<{
       }
       
       // Start new job
-      const jobInfo = parseJobHeader(line);
-      currentJob = jobInfo;
+      const company = line.replace(/company:/gi, '').replace(/organization:/gi, '').replace(/employer:/gi, '').trim();
+      currentJob = {
+        company: company,
+        position: '',
+        duration: '',
+        location: '',
+      };
       responsibilities = [];
-    } else if (currentJob && isResponsibility(line)) {
-      responsibilities.push(line);
+      lookingForJobTitle = true;
+      continue;
+    }
+    
+    // Look for position/title after company
+    if (currentJob && lookingForJobTitle && !currentJob.position) {
+      // Check if this line looks like a job title (not a responsibility)
+      if (!line.startsWith('•') && !line.startsWith('-') && !line.startsWith('*') && 
+          !line.match(/^\d+\./) && line.length > 5 && line.length < 100) {
+        currentJob.position = line;
+        lookingForJobTitle = false;
+        continue;
+      }
+    }
+    
+    // Look for duration/dates
+    if (currentJob && (line.match(/\d{4}/) || line.toLowerCase().includes('present') || 
+        line.toLowerCase().includes('current'))) {
+      if (!currentJob.duration) {
+        currentJob.duration = extractDurationFromLine(line);
+        continue;
+      }
+    }
+    
+    // Everything else is likely a responsibility
+    if (currentJob && line.length > 10) {
+      // Clean up responsibility bullets
+      let responsibility = line.replace(/^[•\-*]\s*/, '').trim();
+      if (responsibility.length > 5) {
+        responsibilities.push(responsibility);
+      }
     }
   }
   
