@@ -108,7 +108,7 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled = false, coup
       // Get enhanced content and theme from session storage if available
       const enhancedContentString = sessionStorage.getItem('enhancedContentForPayment');
       const extractedTextString = sessionStorage.getItem('extractedTextForPayment');
-      const selectedThemeString = sessionStorage.getItem('selectedThemeForPayment');
+      const selectedThemeString = sessionStorage.getItem('selectedColorThemeForPayment');
       
       let enhancedContent = null;
       let extractedText = null;
@@ -130,7 +130,8 @@ export const RazorpayPayment = ({ fileName, amount, file, disabled = false, coup
           // Clear from storage after using
           sessionStorage.removeItem('enhancedContentForPayment');
           sessionStorage.removeItem('extractedTextForPayment');
-          sessionStorage.removeItem('selectedThemeForPayment');
+          sessionStorage.removeItem('selectedColorThemeForPayment');
+          sessionStorage.removeItem('selectedTemplateForPayment');
         } catch (error) {
           console.warn('Failed to parse enhanced content or theme from storage:', error);
         }

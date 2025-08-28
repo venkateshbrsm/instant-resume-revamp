@@ -241,7 +241,7 @@ export default function PaymentSuccess() {
         
         // Use the same visual PDF generator as preview for consistency
         const enhancedContentStr2 = sessionStorage.getItem('enhancedContentForPayment');
-        const selectedThemeStr = sessionStorage.getItem('selectedThemeForPayment');
+        const selectedThemeStr = sessionStorage.getItem('selectedColorThemeForPayment');
         
         if (enhancedContentStr2 && selectedThemeStr) {
           try {
@@ -285,8 +285,8 @@ export default function PaymentSuccess() {
             
             // Clean up session storage
             sessionStorage.removeItem('enhancedContentForPayment');
-            sessionStorage.removeItem('selectedThemeForPayment');
-            sessionStorage.removeItem('pendingFile');
+            sessionStorage.removeItem('selectedColorThemeForPayment');
+            sessionStorage.removeItem('selectedTemplateForPayment');
             return;
           } catch (error) {
             console.error('Error generating visual PDF:', error);
