@@ -214,7 +214,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       if (session?.user) {
         // User is authenticated, generate canvas PDF and save for payment
-        if (enhancedContent && resumeContentRef.current) {
+        // Use the most recent content (edited content if available, otherwise enhanced content)
+        const contentToUse = editedContent || enhancedContent;
+        
+        if (contentToUse && resumeContentRef.current) {
           try {
             // Generate the canvas PDF blob for exact visual fidelity
             toast({
@@ -222,7 +225,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               description: "Generating high-quality PDF preview...",
             });
             
-            const resumeData = extractResumeDataFromEnhanced(enhancedContent);
+            const resumeData = extractResumeDataFromEnhanced(contentToUse);
             const pdfBlob = await generateVisualPdf(resumeData, {
               filename: 'enhanced-resume.pdf',
               templateType: selectedTemplate.layout,
@@ -239,8 +242,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               const base64data = reader.result as string;
               sessionStorage.setItem('canvasPdfBlob', base64data);
               
-              // Also save other data
-              localStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+              // Check if there's already edited content in localStorage, don't overwrite it
+              const existingEditedContent = localStorage.getItem('enhancedContentForPayment');
+              if (!existingEditedContent) {
+                console.log('💾 Saving content for payment (no existing edited content found)');
+                localStorage.setItem('enhancedContentForPayment', JSON.stringify(contentToUse));
+              } else {
+                console.log('✅ Preserving existing edited content in localStorage');
+              }
+              
               localStorage.setItem('extractedTextForPayment', extractedText);
               console.log('Saving template and theme to localStorage for payment:', selectedTemplate, selectedColorTheme);
               localStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
@@ -260,9 +270,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           }
         }
         
-        // Fallback: save enhanced content and theme before proceeding with purchase
-        if (enhancedContent) {
-          localStorage.setItem('enhancedContentForPayment', JSON.stringify(enhancedContent));
+        // Fallback: save content and theme before proceeding with purchase
+        if (contentToUse) {
+          // Check if there's already edited content in localStorage, don't overwrite it
+          const existingEditedContent = localStorage.getItem('enhancedContentForPayment');
+          if (!existingEditedContent) {
+            console.log('💾 Saving content for payment (fallback, no existing edited content found)');
+            localStorage.setItem('enhancedContentForPayment', JSON.stringify(contentToUse));
+          } else {
+            console.log('✅ Preserving existing edited content in localStorage (fallback)');
+          }
+          
           localStorage.setItem('extractedTextForPayment', extractedText);
           console.log('Saving template and theme to localStorage for payment:', selectedTemplate, selectedColorTheme);
           localStorage.setItem('selectedTemplateForPayment', JSON.stringify(selectedTemplate));
@@ -717,16 +735,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                           </TabsContent>
                           
-                           <TabsContent value="edit" className="space-y-4">
-                             <EditablePreview
-                               enhancedContent={enhancedContent}
-                               selectedTemplate={selectedTemplate}
-                               selectedColorTheme={selectedColorTheme}
-                               onContentUpdate={(updatedContent) => {
-                                 setEditedContent(updatedContent);
-                               }}
-                             />
-                           </TabsContent>
+                            <TabsContent value="edit" className="space-y-4">
+                              <EditablePreview
+                                enhancedContent={enhancedContent}
+                                selectedTemplate={selectedTemplate}
+                                selectedColorTheme={selectedColorTheme}
+                                onContentUpdate={(updatedContent) => {
+                                  console.log('Content updated from EditablePreview:', updatedContent);
+                                  setEditedContent(updatedContent);
+                                  // Also update the enhanced content to reflect the latest edits for PDF generation
+                                  setEnhancedContent(updatedContent);
+                                }}
+                              />
+                            </TabsContent>
                         </Tabs>
                     </div>
                   </div>
