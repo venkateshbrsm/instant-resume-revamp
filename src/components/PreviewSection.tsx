@@ -137,6 +137,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const extractFileContent = async () => {
+    console.log('🚀 [FILE-UPLOAD] Starting file content extraction process');
+    console.log('🚀 [FILE-UPLOAD] File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    });
+    
     setIsLoading(true);
     setLoadingProgress(0);
     setLoadingStage("Preparing file...");
@@ -149,13 +157,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setLoadingProgress(30);
       setLoadingStage("Analyzing document structure...");
-      console.log('Extracting content from file:', file.name);
+      console.log('🚀 [FILE-UPLOAD] About to call extractContentFromFile');
       
       setLoadingProgress(50);
       setLoadingStage("Scanning for photos and images...");
       
       // Use the new enhanced extraction function
+      console.log('🚀 [FILE-UPLOAD] Calling extractContentFromFile with file:', file);
       const extractedContent = await extractContentFromFile(file);
+      console.log('🚀 [FILE-UPLOAD] extractContentFromFile returned:', {
+        textLength: extractedContent.text?.length || 0,
+        textPreview: extractedContent.text?.substring(0, 100),
+        hasPdfUrl: !!extractedContent.pdfUrl,
+        hasProfilePhoto: !!extractedContent.profilePhotoUrl,
+        fileType: extractedContent.fileType
+      });
       
       setLoadingProgress(70);
       
@@ -178,6 +194,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingStage("Processing content...");
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      console.log('🚀 [FILE-UPLOAD] Setting extracted text:', extractedContent.text?.length || 0, 'characters');
       setExtractedText(extractedContent.text);
       // Store the complete extracted content for visual preview
       setOriginalContent(extractedContent);
@@ -191,7 +208,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       });
       
     } catch (error) {
-      console.error('Error extracting content:', error);
+      console.error('💥 [FILE-UPLOAD] Error extracting content:', error);
+      console.error('💥 [FILE-UPLOAD] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       toast({
         title: "Extraction Error",
         description: "There was an issue processing your file. Please try again.",
