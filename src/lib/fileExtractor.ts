@@ -38,6 +38,8 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
     } else if (fileType === 'docx') {
       // For DOCX files, extract text using enhanced server-side processing
       text = await extractTextFromDOCX(file);
+      // Create blob URL for DOCX preview (browsers can often display DOCX files)
+      pdfUrl = URL.createObjectURL(file);
     } else {
       // For text files, just extract text
       text = await file.text();
