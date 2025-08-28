@@ -16,9 +16,9 @@ interface TemplatePreviewProps {
 
 export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-visible border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+    <div className="bg-white rounded-xl shadow-lg overflow-visible border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:max-w-none print:w-full print:m-0" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
       {/* Classic Header - Centered */}
-      <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
+      <div className="text-center py-6 px-4 border-b-2 print:py-3 print:px-3 print:break-inside-avoid" style={{ borderColor: selectedColorTheme.primary }}>
         {/* Profile Photo - Only show if photo exists */}
         {enhancedContent.photo && (
           <div className="mb-4">
@@ -46,7 +46,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
         </div>
       </div>
 
-      <div className="p-6 space-y-6 print:p-4 print:space-y-4">
+      <div className="p-6 space-y-6 print:p-3 print:space-y-3">
         {/* Professional Summary */}
         <div className="page-break-avoid section">
           <h2 
