@@ -360,61 +360,69 @@ export const DocxResumePreview = ({
                       ></div>
                       
                       <div className="mb-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1 pr-4">
-                            <h3 className="font-bold text-lg text-foreground">
-                              {isEditing ? (
-                                <Input
-                                  value={exp.position}
-                                  onChange={(e) => handleArrayFieldChange('experience', index, 'position', e.target.value)}
-                                  className="font-bold text-lg"
-                                  placeholder="Job Title"
-                                />
-                              ) : (
-                                exp.position
-                              )}
-                            </h3>
-                            <p className="font-medium text-base" style={{ color: selectedColorTheme.accent }}>
+                        {/* Job Title - Most Prominent */}
+                        <div className="mb-3">
+                          <h3 className="text-xl font-bold text-foreground mb-1">
+                            {isEditing ? (
+                              <Input
+                                value={exp.position}
+                                onChange={(e) => handleArrayFieldChange('experience', index, 'position', e.target.value)}
+                                className="text-xl font-bold"
+                                placeholder="Job Title"
+                              />
+                            ) : (
+                              exp.position
+                            )}
+                          </h3>
+                          
+                          {/* Company Name - Styled with accent color */}
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-lg font-semibold" style={{ color: selectedColorTheme.accent }}>
                               {isEditing ? (
                                 <Input
                                   value={exp.company}
                                   onChange={(e) => handleArrayFieldChange('experience', index, 'company', e.target.value)}
+                                  className="text-lg font-semibold"
                                   placeholder="Company Name"
                                 />
                               ) : (
                                 exp.company
                               )}
                             </p>
-                          </div>
-                          <div className="text-right text-sm text-gray-600 flex-shrink-0">
-                            {isEditing ? (
-                              <div className="space-y-1">
-                                <Input
-                                  value={exp.duration}
-                                  onChange={(e) => handleArrayFieldChange('experience', index, 'duration', e.target.value)}
-                                  className="text-sm"
-                                  placeholder="Duration"
-                                />
-                                <Input
-                                  value={exp.location}
-                                  onChange={(e) => handleArrayFieldChange('experience', index, 'location', e.target.value)}
-                                  className="text-sm"
-                                  placeholder="Location"
-                                />
-                              </div>
-                            ) : (
-                              <>
-                                <div className="font-medium">{exp.duration}</div>
-                                <div>{exp.location}</div>
-                              </>
-                            )}
+                            
+                            {/* Duration and Location - Smaller, muted */}
+                            <div className="text-right text-sm text-muted-foreground flex-shrink-0 ml-4">
+                              {isEditing ? (
+                                <div className="space-y-1">
+                                  <Input
+                                    value={exp.duration}
+                                    onChange={(e) => handleArrayFieldChange('experience', index, 'duration', e.target.value)}
+                                    className="text-sm"
+                                    placeholder="Duration"
+                                  />
+                                  <Input
+                                    value={exp.location}
+                                    onChange={(e) => handleArrayFieldChange('experience', index, 'location', e.target.value)}
+                                    className="text-sm"
+                                    placeholder="Location"
+                                  />
+                                </div>
+                              ) : (
+                                <>
+                                  {exp.duration && <div className="font-medium">{exp.duration}</div>}
+                                  {exp.location && <div className="italic">{exp.location}</div>}
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                         
-                        {/* Key Achievements/Responsibilities */}
+                        {/* Key Achievements/Responsibilities - Clearly separated */}
                         {exp.responsibilities && exp.responsibilities.length > 0 && (
-                          <div className="mt-4">
-                            <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Responsibilities:</h4>
+                          <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: `${selectedColorTheme.primary}05`, border: `1px solid ${selectedColorTheme.primary}15` }}>
+                            <h4 className="text-sm font-semibold mb-3 uppercase tracking-wide" style={{ color: selectedColorTheme.primary }}>
+                              Key Achievements & Responsibilities
+                            </h4>
                             {isEditing ? (
                               <Textarea
                                 value={exp.responsibilities.join('\n')}
@@ -427,13 +435,21 @@ export const DocxResumePreview = ({
                                 placeholder="Enter achievements and responsibilities (one per line)"
                               />
                             ) : (
-                              <ul className="space-y-3 text-sm text-muted-foreground">
+                              <ul className="space-y-3">
                                 {exp.responsibilities.map((responsibility, respIndex) => (
                                   <li key={respIndex} className="flex items-start gap-3">
-                                    <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
-                                      <span className="text-white text-xs font-bold">✓</span>
+                                    <div 
+                                      className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 shadow-sm" 
+                                      style={{ 
+                                        backgroundColor: selectedColorTheme.accent,
+                                        color: 'white'
+                                      }}
+                                    >
+                                      <span className="text-xs font-bold">✓</span>
                                     </div>
-                                    <span className="leading-relaxed font-medium">{responsibility}</span>
+                                    <span className="text-gray-700 leading-relaxed font-medium text-sm">
+                                      {responsibility}
+                                    </span>
                                   </li>
                                 ))}
                               </ul>
