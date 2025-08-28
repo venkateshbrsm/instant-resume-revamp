@@ -800,18 +800,23 @@ export async function downloadVisualPdf(
  * Extracts resume data from enhanced content for visual PDF generation
  */
 export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData {
-  return {
+  console.log('🔍 Extracting resume data from:', enhancedContent);
+  
+  const extractedData = {
     name: enhancedContent.name || 'Enhanced Resume',
     title: enhancedContent.title || 'Professional',
-    email: enhancedContent.email || '',
-    phone: enhancedContent.phone || '',
-    location: enhancedContent.location || '',
+    email: enhancedContent.contact?.email || enhancedContent.email || '',
+    phone: enhancedContent.contact?.phone || enhancedContent.phone || '',
+    location: enhancedContent.contact?.location || enhancedContent.location || '',
     summary: enhancedContent.summary || '',
-    photo: enhancedContent.photo || undefined,
+    photo: enhancedContent.profilePhotoUrl || enhancedContent.photo || undefined,
     experience: enhancedContent.experience || [],
     skills: enhancedContent.skills || [],
     education: enhancedContent.education || [],
     certifications: enhancedContent.certifications || [],
     languages: enhancedContent.languages || []
   };
+  
+  console.log('🔍 Extracted resume data:', extractedData);
+  return extractedData;
 }

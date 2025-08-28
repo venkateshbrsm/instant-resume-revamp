@@ -65,6 +65,8 @@ export const EditablePreview = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      console.log('🔍 Saving editable data:', editableData);
+      
       // Update the parent component with new content
       onContentUpdate(editableData);
       
