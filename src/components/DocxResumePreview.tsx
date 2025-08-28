@@ -311,9 +311,6 @@ export const DocxResumePreview = ({
                   editableData.name || "Your Name"
                 )}
               </h1>
-              <p className="text-lg text-muted-foreground mb-4">
-                Professional Resume
-              </p>
             </div>
 
             {/* Professional Summary */}
