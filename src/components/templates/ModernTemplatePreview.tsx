@@ -277,7 +277,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         
                          {/* Job-specific Core Responsibilities */}
                          {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                           <div className="mt-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm page-break-avoid print:break-inside-avoid">
+                           <div className="mt-4 p-3 rounded-lg bg-white border border-gray-100 page-break-avoid print:break-inside-avoid">
                              <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
                               <div className="text-xs opacity-80 leading-relaxed space-y-1">
                                 {exp.core_responsibilities.map((responsibility: string, idx: number) => (
