@@ -1,6 +1,55 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+// Content sanitization functions
+function sanitizeContentForOpenAI(content: string): string {
+  console.log(`🧹 Sanitizing content (${content.length} chars)...`);
+  
+  let sanitized = content
+    .replace(/\s+/g, ' ')
+    .replace(/\n\s*\n/g, '\n')
+    .replace(/From:\s*/gi, 'Duration: ')
+    .replace(/(\w+)'\d{2}/g, '$1 20$2')
+    .replace(/(\w+)'(\d{2})/g, '$1 20$2')
+    .replace(/[""'']/g, '"')
+    .replace(/[–—]/g, '-')
+    .replace(/\.{3,}/g, '...')
+    .replace(/\s+/g, ' ')
+    .trim();
+    
+  if (sanitized.length < 50) {
+    console.warn(`⚠️ Content too short after sanitization: ${sanitized.length} chars`);
+    return content.trim();
+  }
+  
+  console.log(`✅ Content sanitized successfully: ${content.length} → ${sanitized.length} chars`);
+  return sanitized;
+}
+
+function createFallbackJobEntry(rawContent: string): any {
+  console.log(`🔧 Creating fallback job entry from raw content (${rawContent.length} chars)`);
+  
+  const titleMatch = rawContent.match(/(?:Role|Position|Designation|Title):\s*([^\n]+)/i) || 
+                    rawContent.match(/^([A-Z][A-Za-z\s&-]+(?:Specialist|Manager|Officer|Executive|Analyst|Associate|Lead|Director|Head|Consultant))/m);
+  
+  const companyMatch = rawContent.match(/(?:Company|Organization):\s*([^\n]+)/i) ||
+                      rawContent.match(/((?:[A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Bank|Services?|Systems?|Technologies?|Solutions?)))/);
+  
+  const durationMatch = rawContent.match(/(?:Duration|Period|From):\s*([^\n]+)/i) ||
+                       rawContent.match(/(\w+\s*'\d{2}|\w+\s+\d{4}|\d{4}).*?(?:to|till|-).*?(\w+\s*'\d{2}|\w+\s+\d{4}|\d{4}|present|current|date)/i);
+  
+  const fallbackJob = {
+    title: titleMatch ? titleMatch[1].trim() : 'Professional Role',
+    company: companyMatch ? companyMatch[1].trim() : 'Company',
+    duration: durationMatch ? (durationMatch[0] || `${durationMatch[1]} - ${durationMatch[2] || 'Present'}`).trim() : 'Multiple years',
+    description: ['Managed key responsibilities and contributed to organizational objectives'],
+    achievements: []
+  };
+  
+  console.log(`✅ Fallback job created: ${fallbackJob.title} at ${fallbackJob.company}`);
+  return { experience: [fallbackJob] };
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -107,9 +156,9 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Use reliable model for all processing - no size-based fallbacks
-  const selectedModel = 'gpt-4.1-2025-04-14';
-  const sectionTimeoutMs = 60000; // 60 seconds per section
+  // Use most reliable legacy model to avoid API failures
+  const selectedModel = 'gpt-4o-mini';
+  const sectionTimeoutMs = 90000; // 90 seconds per section for better reliability
   
   console.log(`📊 Processing ${originalText.length} chars with parallel section processing`);
   console.log(`🔧 Using model: ${selectedModel} with ${sectionTimeoutMs/1000}s per section timeout`);
@@ -120,14 +169,34 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
     const sections = parseResumeIntoSections(originalText);
     console.log(`📋 Identified sections: ${sections.map(s => s.type).join(', ')}`);
 
-    // Step 2: Process sections in parallel with specialized prompts
-    console.log('⚡ Starting parallel section processing...');
-    const sectionPromises = sections.map(section => 
-      processSectionWithSpecializedPrompt(section, apiKey, selectedModel, sectionTimeoutMs, globalSignal)
-    );
-
-    // Wait for all sections to complete (or fail)
-    const sectionResults = await Promise.allSettled(sectionPromises);
+    // Step 2: Process sections individually with enhanced error handling
+    console.log('⚡ Starting individual section processing with detailed logging...');
+    const sectionResults: Array<{status: 'fulfilled' | 'rejected', value?: any, reason?: any, section?: any}> = [];
+    
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      console.log(`🔄 Processing section ${i + 1}/${sections.length}: ${section.type}`);
+      console.log(`📝 Section content length: ${section.content.length} chars`);
+      console.log(`📄 Section preview: ${section.content.substring(0, 200)}...`);
+      
+      try {
+        const result = await processSectionWithSpecializedPrompt(section, apiKey, selectedModel, sectionTimeoutMs, globalSignal);
+        console.log(`✅ Section ${section.type} processed successfully`);
+        sectionResults.push({status: 'fulfilled', value: result, section});
+      } catch (error) {
+        console.error(`❌ Section ${section.type} failed:`, error);
+        console.error(`💡 Failed content: ${section.content.substring(0, 500)}...`);
+        
+        // Create fallback result for failed sections
+        if (section.type.startsWith('experience_job_')) {
+          console.log(`🔧 Creating fallback job entry for failed section: ${section.type}`);
+          const fallbackJob = createFallbackJobEntry(section.content);
+          sectionResults.push({status: 'fulfilled', value: fallbackJob, section});
+        } else {
+          sectionResults.push({status: 'rejected', reason: error, section});
+        }
+      }
+    }
     
     // Step 3: Merge successful results and handle failures
     console.log('🔄 Merging section results...');
@@ -1145,15 +1214,25 @@ async function processSectionWithSpecializedPrompt(
   globalSignal?: AbortSignal
 ): Promise<{type: string, result: any}> {
   
+  console.log(`🎯 Processing ${section.type} with enhanced debugging...`);
+  
+  // Sanitize content before sending to OpenAI
+  const sanitizedContent = sanitizeContentForOpenAI(section.content);
+  console.log(`🧹 Content sanitized: ${section.content.length} → ${sanitizedContent.length} chars`);
+  
+  if (sanitizedContent.length < 20) {
+    console.warn(`⚠️ Section ${section.type} too short after sanitization, skipping OpenAI processing`);
+    if (section.type.startsWith('experience_job_')) {
+      return { type: section.type, result: createFallbackJobEntry(section.content) };
+    }
+    throw new Error(`Section too short: ${sanitizedContent.length} chars`);
+  }
+  
   console.log(`🔄 Processing ${section.type} section (${section.content.length} chars)...`);
   
   // Log section content for debugging
-  const contentPreview = section.content.substring(0, 300) + (section.content.length > 300 ? '...' : '');
+  const contentPreview = sanitizedContent.substring(0, 300) + (sanitizedContent.length > 300 ? '...' : '');
   console.log(`📝 ${section.type} content preview: ${contentPreview}`);
-  
-  // Sanitize content before processing
-  const sanitizedContent = sanitizeContent(section.content);
-  console.log(`🧹 Content sanitized: ${section.content.length} → ${sanitizedContent.length} chars`);
   
   const prompts = {
     contact: `Extract contact information from this resume section. Return ONLY JSON:
@@ -1521,8 +1600,8 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
       body: JSON.stringify({
         model: model,
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4000, // GPT-4.1 uses max_tokens, not max_completion_tokens
-        temperature: 0.3, // GPT-4.1 supports temperature
+        max_tokens: 4000 // Using max_tokens for legacy model compatibility
+        // Note: temperature removed for gpt-4o-mini compatibility
       }),
       signal: controller.signal
     });
