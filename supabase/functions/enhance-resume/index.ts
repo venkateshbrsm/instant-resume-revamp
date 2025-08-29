@@ -73,16 +73,18 @@ CRITICAL INSTRUCTIONS:
 1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
 2. Preserve EVERY job position, company, and time period from the original
 3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. For each work experience entry, preserve the EXACT same number of bullet points/achievements as in the original resume
-5. Reword each bullet point/achievement using professional language while maintaining the original meaning
-6. Add relevant industry keywords and ATS-friendly terms for each role
-7. Make each section detailed and professional with specific accomplishments
-8. Use strong action verbs and descriptive achievements WITHOUT any numbers, percentages, or metrics
-9. Return ONLY a valid JSON object with the exact structure shown below
-10. MANDATORY: Include ALL work experience entries from the original resume
-11. MANDATORY: Include ALL skills and technical skills from the original resume
-12. CRITICAL: Do NOT include any quantified data (numbers, percentages, amounts) in achievements unless explicitly present in the original resume
-13. CRITICAL: Maintain the same number of bullet points per job as in the original resume - do not add or remove bullet points
+4. MANDATORY LINE-BY-LINE REWRITING: For each work experience entry, extract EVERY SINGLE LINE (job titles, company names, descriptions, bullet points) and reword each one using professional language
+5. Count the exact number of bullet points/achievements in each job from the original resume and create the EXACT same number of enhanced bullet points
+6. Reword job titles to be more professional and industry-standard while maintaining the same role essence
+7. Enhance company descriptions and role descriptions with professional language and industry keywords
+8. Transform each bullet point/achievement line by line, maintaining original meaning but using professional, ATS-friendly language
+9. Add relevant industry keywords and ATS-friendly terms throughout all sections
+10. Use strong action verbs and descriptive achievements WITHOUT any numbers, percentages, or metrics
+11. Return ONLY a valid JSON object with the exact structure shown below
+12. MANDATORY: Include ALL work experience entries from the original resume
+13. MANDATORY: Include ALL skills and technical skills from the original resume
+14. CRITICAL: Do NOT include any quantified data (numbers, percentages, amounts) in achievements unless explicitly present in the original resume
+15. CRITICAL: Maintain the same number of bullet points per job as in the original resume - do not add or remove bullet points
 
 REQUIRED JSON STRUCTURE:
 {
