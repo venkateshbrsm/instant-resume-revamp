@@ -489,15 +489,54 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('📄 Starting to parse extracted text:');
       console.log('Extracted text length:', extractedText.length);
       console.log('First 500 characters:', extractedText.substring(0, 500));
-      console.log('Full extracted text:', extractedText);
+      
+      // Clean the extracted text by removing metadata and extraction info
+      let cleanedText = extractedText;
+      
+      // Remove extraction metadata that interferes with parsing
+      const lines = extractedText.split('\n');
+      let contentStartIndex = 0;
+      
+      // Find where actual resume content starts (skip metadata)
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        // Skip lines that contain extraction metadata
+        if (line.includes('File Size:') || 
+            line.includes('Method:') || 
+            line.includes('Pages Processed:') || 
+            line.includes('Text Length:') || 
+            line.includes('Status:') ||
+            line.includes('EXTRACTED CONTENT:') ||
+            line.includes('Extraction Summary:') ||
+            line.startsWith('📄') ||
+            line.startsWith('•') && (line.includes('KB') || line.includes('characters')) ||
+            line.includes('Successfully extracted using') ||
+            line.includes('PyMuPDF') ||
+            line.includes('pytesseract') ||
+            line === '---' ||
+            line === '') {
+          contentStartIndex = i + 1;
+          continue;
+        }
+        // If we find actual content, stop skipping
+        if (line.length > 10 && !line.includes('File Details:')) {
+          break;
+        }
+      }
+      
+      // Get the cleaned content without metadata
+      const cleanedLines = lines.slice(contentStartIndex);
+      const finalText = cleanedLines.join('\n').trim();
+      
+      console.log('📄 Cleaned text for parsing (first 500 chars):', finalText.substring(0, 500));
+      
+      // Parse the content directly from the cleaned text
+      const parsedLines = finalText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      console.log('Total lines found:', parsedLines.length);
+      console.log('First 10 lines:', parsedLines.slice(0, 10));
       
       setEnhancementProgress(20);
       setEnhancementStage("Analyzing document structure...");
-      
-      // Parse the content directly from the extracted text
-      const lines = extractedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-      console.log('Total lines found:', lines.length);
-      console.log('First 10 lines:', lines.slice(0, 10));
       
       const result: any = {
         name: '',
@@ -518,8 +557,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setEnhancementStage("Extracting personal information...");
       
       // Extract name - look for capitalized names at the beginning
-      for (let i = 0; i < Math.min(10, lines.length); i++) {
-        const line = lines[i];
+      for (let i = 0; i < Math.min(10, parsedLines.length); i++) {
+        const line = parsedLines[i];
         // Look for names like SUNDARI CHANDRASHEKAR or patterns that look like names
         if (line.match(/^[A-Z][A-Z\s]{8,}$/) && 
             !line.includes('PROFESSIONAL') && 
@@ -540,7 +579,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       }
       
       // Extract contact information
-      for (const line of lines) {
+      for (const line of parsedLines) {
         // Email
         if (line.includes('@')) {
           const email = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0];
@@ -572,8 +611,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       let inSummary = false;
       let currentJob: any = null;
       
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+      for (let i = 0; i < parsedLines.length; i++) {
+        const line = parsedLines[i];
         const lowerLine = line.toLowerCase();
         
         // Detect section headers
