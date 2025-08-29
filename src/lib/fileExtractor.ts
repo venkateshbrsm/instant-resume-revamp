@@ -13,58 +13,56 @@ export interface ExtractedContent {
 }
 
 // Enhanced function that returns both text and PDF URL for visual preview
+// TEMPORARILY DISABLED: File parsing/extraction is disabled for now
 export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
   const fileType = getFileType(file);
   
-  console.log('Starting enhanced file extraction:', {
+  console.log('File upload detected (parsing disabled):', {
     name: file.name,
     type: file.type,
     size: file.size,
     detectedType: fileType
   });
 
+  // Simulate processing time to maintain UX flow
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
   try {
-    let text: string;
     let pdfUrl: string | undefined;
-    let profilePhotoUrl: string | undefined;
 
-    // Extract photos in parallel with text
-    const photoExtractionPromise = extractPhotosFromFile(file);
-
+    // Keep PDF preview functionality for visual display
     if (fileType === 'pdf') {
-      // For PDFs, extract text and keep original file for visual preview
-      text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
-    } else if (fileType === 'docx') {
-      // For DOCX files, extract text using mammoth
-      text = await extractTextFromDOCX(file);
-    } else {
-      // For text files, just extract text
-      text = await file.text();
     }
 
-    // Process photos
-    try {
-      const photoResult = await photoExtractionPromise;
-      if (photoResult.profilePhoto) {
-        console.log('Profile photo found, optimizing...');
-        const optimizedPhoto = await optimizePhoto(photoResult.profilePhoto);
-        profilePhotoUrl = URL.createObjectURL(optimizedPhoto);
-        console.log('Profile photo processed successfully');
-      }
-    } catch (error) {
-      console.warn('Photo extraction failed:', error);
-    }
+    // Return minimal content structure instead of parsing
+    const placeholderText = `📄 File Uploaded: ${file.name}
+
+File Details:
+- Size: ${(file.size / 1024).toFixed(1)} KB
+- Type: ${file.type}
+- Uploaded: ${new Date().toLocaleString()}
+
+📝 Content Ready for Editing
+
+File parsing is temporarily disabled. You can use the template system to manually create your resume content.
+
+✨ Available Features:
+• Choose from professional templates
+• Customize colors and themes  
+• Edit content directly in the preview
+• Generate and download PDFs
+• Professional formatting system`;
 
     return {
-      text,
+      text: placeholderText,
       pdfUrl,
-      profilePhotoUrl,
+      profilePhotoUrl: undefined, // Disable photo extraction too
       originalFile: file,
       fileType
     };
   } catch (error) {
-    console.error('Error extracting content from file:', error);
+    console.error('Error processing file:', error);
     throw error;
   }
 };
