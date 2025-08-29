@@ -179,20 +179,20 @@ Return ONLY the JSON object, no additional text or formatting.`;
 }
 
 async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔄 Processing with ultra-fast simplified prompt...');
+  console.log('🔄 Processing with intelligent content extraction...');
   
-  // Use the fastest model and much shorter content for speed
+  // Use the fastest model and shorter timeout for speed
   const fastModel = 'gpt-4.1-mini-2025-04-14'; // Faster model
   const shortTimeout = 15000; // 15 seconds max
   
-  // Aggressively truncate content to 5000 characters for speed
-  const truncatedText = originalText.substring(0, 5000);
-  console.log(`📋 Truncated content from ${originalText.length} to ${truncatedText.length} chars for speed`);
+  // Intelligently extract key sections instead of just truncating
+  const extractedContent = extractKeyResumeContent(originalText);
+  console.log(`📋 Extracted content from ${originalText.length} to ${extractedContent.length} chars while preserving key sections`);
   
   // Ultra-simplified prompt for speed
   const prompt = `Extract key resume info from this text. Return only JSON:
 
-${truncatedText}
+${extractedContent}
 
 JSON format:
 {
@@ -246,6 +246,73 @@ Extract actual data only. Use empty arrays/strings if not found.`;
     console.error('❌ Fast processing failed:', error);
     throw error;
   }
+}
+
+function extractKeyResumeContent(text: string): string {
+  console.log('🔍 Intelligently extracting key resume sections...');
+  
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  
+  // Identify key sections
+  const sections = {
+    header: [] as string[],
+    experience: [] as string[],
+    education: [] as string[],
+    skills: [] as string[]
+  };
+  
+  let currentSection = 'header';
+  let experienceCount = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].toLowerCase();
+    
+    // Section detection
+    if (line.includes('experience') || line.includes('employment') || line.includes('work history')) {
+      currentSection = 'experience';
+      continue;
+    } else if (line.includes('education') || line.includes('qualification') || line.includes('degree')) {
+      currentSection = 'education';
+      continue;
+    } else if (line.includes('skill') || line.includes('competenc') || line.includes('technolog')) {
+      currentSection = 'skills';
+      continue;
+    }
+    
+    // Add content to appropriate section
+    if (currentSection === 'header' && i < 20) {
+      sections.header.push(lines[i]);
+    } else if (currentSection === 'experience') {
+      sections.experience.push(lines[i]);
+      // Limit experience content to prevent bloat but keep all key details
+      if (sections.experience.length > 200) {
+        // Keep first 150 lines and last 50 to preserve structure
+        sections.experience = [
+          ...sections.experience.slice(0, 150),
+          '... [content truncated for processing] ...',
+          ...sections.experience.slice(-50)
+        ];
+        break;
+      }
+    } else if (currentSection === 'education') {
+      sections.education.push(lines[i]);
+    } else if (currentSection === 'skills') {
+      sections.skills.push(lines[i]);
+    }
+  }
+  
+  // Combine sections with priority on completeness
+  const extractedLines = [
+    ...sections.header.slice(0, 15), // Contact info
+    ...sections.experience, // Full experience (with smart truncation)
+    ...sections.education.slice(0, 20), // Education
+    ...sections.skills.slice(0, 30) // Skills
+  ];
+  
+  const result = extractedLines.join('\n');
+  console.log(`📊 Extracted ${extractedLines.length} lines preserving all key sections`);
+  
+  return result;
 }
 
 function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
