@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Save, Edit3, Eye, Loader2 } from 'lucide-react';
+import { Save, Edit3, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { generateVisualPdf, extractResumeDataFromEnhanced } from '@/lib/visualPdfGenerator';
@@ -208,6 +208,21 @@ export const EditablePreview = ({
     
     return renderEditableField(label, value, field, nestedField, isTextarea);
   };
+
+  // Show error if no enhanced content
+  if (!editableData) {
+    return (
+      <div className={cn("w-full flex items-center justify-center min-h-[400px]", className)}>
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Enhanced Content Available</h3>
+          <p className="text-muted-foreground">
+            Resume enhancement failed or is still in progress. Please wait for the enhancement to complete or try uploading your file again.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("w-full", className)}>

@@ -130,15 +130,14 @@ Return ONLY the JSON object, no additional text or formatting.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-2025-08-07',
         messages: [
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.3,
-        max_tokens: 4000,
+        max_completion_tokens: 4000,
       }),
     });
 
