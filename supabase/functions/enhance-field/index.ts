@@ -114,7 +114,7 @@ serve(async (req) => {
         
         Original achievements: "${content}"
         
-        Rewrite these achievements to be more compelling with specific metrics and strong action verbs. Focus on measurable impact and results.`;
+        IMPORTANT: Return only ONE enhanced version of these achievements, not multiple variations. Improve the original content by making it more compelling with better metrics, stronger action verbs, and clearer impact. Keep the same basic facts but present them more powerfully.`;
         break;
 
       default:
