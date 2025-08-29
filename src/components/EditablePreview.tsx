@@ -34,6 +34,7 @@ export const EditablePreview = ({
   const [editableData, setEditableData] = useState(enhancedContent);
   const [enhancingFields, setEnhancingFields] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaveTime, setLastSaveTime] = useState(0);
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
   const [autoEnhanceProgress, setAutoEnhanceProgress] = useState(0);
   const [autoEnhanceTotal, setAutoEnhanceTotal] = useState(0);
@@ -206,7 +207,15 @@ export const EditablePreview = ({
   }, [isAutoEnhancing, onAutoEnhancementStateChange]);
 
   const handleSave = useCallback(async () => {
+    // Prevent multiple saves within 1 second
+    const now = Date.now();
+    if (now - lastSaveTime < 1000) {
+      console.log('⏱️ Skipping save - too recent');
+      return;
+    }
+    
     setIsSaving(true);
+    setLastSaveTime(now);
     try {
       console.log('🔍 Saving editable data:', editableData);
       console.log('🔍 Data being saved to localStorage:');
@@ -232,14 +241,14 @@ export const EditablePreview = ({
     } finally {
       setIsSaving(false);
     }
-  }, [editableData, onContentUpdate]);
+  }, [editableData, onContentUpdate, lastSaveTime]);
 
-  // Expose save function to parent
+  // Expose save function to parent - only when onSaveRequired changes, not handleSave
   useEffect(() => {
     if (onSaveRequired) {
       onSaveRequired(handleSave);
     }
-  }, [onSaveRequired, handleSave]);
+  }, [onSaveRequired]);
 
   const handleFieldChange = useCallback((field: string, value: any, nestedField?: string) => {
     setEditableData((prev: any) => {
