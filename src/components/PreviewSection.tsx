@@ -114,11 +114,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-enhance after extracting text with AI
+  // Auto-enhance after extracting text - TEMPORARILY DISABLED
   useEffect(() => {
     // Only enhance after we have extracted text
-    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
-      enhanceResume();
+    // if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
+    //   enhanceResume();
+    // }
+    
+    // TEMPORARY: Create basic structure from extracted text for preview
+    if (extractedText && extractedText.length > 0 && !enhancedContent) {
+      const basicContent = createBasicContentStructure(extractedText);
+      setEnhancedContent(basicContent);
     }
   }, [extractedText]);
 
