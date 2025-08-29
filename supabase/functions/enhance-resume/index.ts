@@ -251,8 +251,12 @@ Return ONLY a JSON object with:
 }`;
 
     try {
-      const expResult = await makeOpenAIRequestWithTimeout(expPrompt, apiKey, 'gpt-5-mini-2025-08-07', 45000, globalSignal);
-      results.experience = expResult.experience || [];
+      const expResult = await makeOpenAIRequestWithTimeout(expPrompt, apiKey, 'gpt-5-mini-2025-08-07', 25000, globalSignal);
+      if (expResult && expResult.experience && Array.isArray(expResult.experience)) {
+        results.experience = expResult.experience;
+      } else {
+        console.warn('Experience extraction returned invalid format:', expResult);
+      }
     } catch (error) {
       console.error('Error processing experience section:', error);
       if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
@@ -292,7 +296,7 @@ ${section.content}
 Return ONLY a JSON object with the ${section.type} data.`;
         }
 
-        const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 20000, globalSignal);
+        const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 15000, globalSignal);
         return { type: section.type, data: result };
       } catch (error) {
         console.error(`Error processing ${section.type} section:`, error);
@@ -334,39 +338,82 @@ Return ONLY: {"summary": "professional summary text"}`;
 }
 
 function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   const sections = [];
-  const lines = text.split('\n');
   
-  let currentSection = { type: 'contact', content: '' };
-  let lineIndex = 0;
+  // Define section markers
+  const contactMarkers = ['email', '@', 'phone', 'mobile', 'linkedin', 'address'];
+  const experienceMarkers = ['experience', 'employment', 'work history', 'professional experience', 'career', 'work', 'positions held'];
+  const educationMarkers = ['education', 'academic', 'qualification', 'degree', 'university', 'college', 'school'];
+  const skillsMarkers = ['skills', 'technical skills', 'competencies', 'expertise', 'proficiencies', 'technologies'];
   
-  // Take first part as contact info
-  const contactLines = lines.slice(0, Math.min(20, Math.floor(lines.length * 0.15)));
-  sections.push({ type: 'contact', content: contactLines.join('\n') });
-  lineIndex = contactLines.length;
+  let currentType = 'contact';
+  let currentContent: string[] = [];
   
-  // Find experience section
-  const experienceKeywords = ['experience', 'employment', 'work history', 'professional experience', 'career'];
-  const expStart = lines.findIndex((line, idx) => 
-    idx >= lineIndex && experienceKeywords.some(keyword => 
-      line.toLowerCase().includes(keyword)
-    )
-  );
-  
-  if (expStart !== -1) {
-    // Take experience section (up to next major section or 60% of remaining content)
-    const remainingLines = lines.slice(expStart);
-    const expLines = remainingLines.slice(0, Math.min(remainingLines.length, Math.floor(remainingLines.length * 0.6)));
-    sections.push({ type: 'experience', content: expLines.join('\n') });
-    lineIndex = expStart + expLines.length;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].toLowerCase();
+    const isHeader = line.length < 50 && (line.includes(':') || line.match(/^[a-z\s]+$/));
+    
+    // Check for section transitions
+    let newType = currentType;
+    if (isHeader && experienceMarkers.some(marker => line.includes(marker))) {
+      newType = 'experience';
+    } else if (isHeader && educationMarkers.some(marker => line.includes(marker))) {
+      newType = 'education';
+    } else if (isHeader && skillsMarkers.some(marker => line.includes(marker))) {
+      newType = 'skills';
+    } else if (i < 15 && contactMarkers.some(marker => line.includes(marker))) {
+      newType = 'contact';
+    }
+    
+    // If section changed, save current and start new
+    if (newType !== currentType && currentContent.length > 0) {
+      sections.push({ type: currentType, content: currentContent.join('\n') });
+      currentContent = [];
+      currentType = newType;
+    }
+    
+    currentContent.push(lines[i]);
   }
   
-  // Rest as skills/education section
-  if (lineIndex < lines.length) {
-    sections.push({ type: 'skills_education', content: lines.slice(lineIndex).join('\n') });
+  // Add final section
+  if (currentContent.length > 0) {
+    sections.push({ type: currentType, content: currentContent.join('\n') });
   }
   
-  return sections;
+  // Merge small sections and ensure we have main sections
+  const consolidated = [];
+  const contactSection = sections.find(s => s.type === 'contact') || { type: 'contact', content: lines.slice(0, 10).join('\n') };
+  consolidated.push(contactSection);
+  
+  const experienceSection = sections.find(s => s.type === 'experience');
+  if (experienceSection) {
+    consolidated.push(experienceSection);
+  }
+  
+  // Combine education and skills if separate, or create from remaining content
+  const educationSection = sections.find(s => s.type === 'education');
+  const skillsSection = sections.find(s => s.type === 'skills');
+  
+  if (educationSection || skillsSection) {
+    const combinedContent = [
+      ...(educationSection ? [educationSection.content] : []),
+      ...(skillsSection ? [skillsSection.content] : [])
+    ].join('\n\n');
+    
+    if (combinedContent.trim()) {
+      consolidated.push({ type: 'skills_education', content: combinedContent });
+    }
+  } else {
+    // Use remaining content
+    const usedLines = contactSection.content.split('\n').length + (experienceSection?.content.split('\n').length || 0);
+    const remainingContent = lines.slice(usedLines).join('\n');
+    if (remainingContent.trim()) {
+      consolidated.push({ type: 'skills_education', content: remainingContent });
+    }
+  }
+  
+  return consolidated;
 }
 
 async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
