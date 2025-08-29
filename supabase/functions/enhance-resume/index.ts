@@ -101,7 +101,7 @@ function createEnhancedFallbackJob(rawContent: string, sectionId: string): any {
   };
   
   console.log(`✅ Enhanced fallback job created: ${fallbackJob.title} at ${fallbackJob.company} (${fallbackJob.description.length} responsibilities)`);
-  return { experience: [fallbackJob] };
+  return fallbackJob; // Return job directly, not wrapped in { experience: [job] }
 }
 
 function extractResponsibilitiesFromContent(content: string): string[] {
@@ -313,13 +313,11 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
             console.error(`❌ Even fallback failed for ${section.type}:`, fallbackError);
             // Last resort - create minimal job entry
             const emergencyJob = {
-              experience: [{
-                title: `Professional Role ${section.type.split('_')[2] || ''}`,
-                company: 'Company Name',
-                duration: 'Duration',
-                description: ['Managed key responsibilities'],
-                achievements: []
-              }]
+              title: `Professional Role ${section.type.split('_')[2] || ''}`,
+              company: 'Company Name',
+              duration: 'Duration',
+              description: ['Managed key responsibilities'],
+              achievements: []
             };
             sectionResults.push({status: 'fulfilled', value: emergencyJob, section});
             console.log(`🆘 Emergency job entry created for ${section.type}`);
@@ -1517,7 +1515,7 @@ Content: ${sanitizedContent}`;
 }
 
 function mergeSectionResults(
-  sectionResults: PromiseSettledResult<{type: string, result: any}>[],
+  sectionResults: Array<{status: 'fulfilled' | 'rejected', value?: any, reason?: any, section?: any}>,
   originalSections: Array<{type: string, content: string, priority: number}>
 ): any {
   console.log('🔄 Merging section results...');
@@ -1569,7 +1567,8 @@ function mergeSectionResults(
     const originalSection = originalSections[i];
     
     if (result.status === 'fulfilled') {
-      const { type, result: sectionData } = result.value;
+      const sectionData = result.value;
+      const type = originalSection.type;
       console.log(`✅ Merging successful ${type} section`);
       
       // Handle individual job results
@@ -1582,7 +1581,7 @@ function mergeSectionResults(
             title: sectionData.title || "Professional Role",
             company: sectionData.company || "Company",
             duration: sectionData.duration || "Employment Period",
-            description: sectionData.description || "Professional experience and responsibilities",
+            description: Array.isArray(sectionData.description) ? sectionData.description : [sectionData.description || "Professional experience and responsibilities"],
             achievements: Array.isArray(sectionData.achievements) ? sectionData.achievements : []
           });
           console.log(`   ✓ Job added successfully: ${sectionData.title || 'Professional Role'} at ${sectionData.company || 'Company'}`);
