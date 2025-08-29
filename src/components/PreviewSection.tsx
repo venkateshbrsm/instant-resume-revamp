@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -889,12 +889,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 enhancedContent={enhancedContent}
                                 selectedTemplate={selectedTemplate}
                                 selectedColorTheme={selectedColorTheme}
-                                onContentUpdate={(updatedContent) => {
+                                onContentUpdate={useCallback((updatedContent) => {
                                   console.log('Content updated from EditablePreview:', updatedContent);
                                   setEditedContent(updatedContent);
-                                  // Also update the enhanced content to reflect the latest edits for PDF generation
-                                  setEnhancedContent(updatedContent);
-                                }}
+                                }, [])}
                               />
                             </TabsContent>
                         </Tabs>
