@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,9 +28,62 @@ export const EditablePreview = ({
 }: EditablePreviewProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(enhancedContent);
-  const [isSaving, setIsSaving] = useState(false);
   const [enhancingFields, setEnhancingFields] = useState<Set<string>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
+  const [autoEnhancedResumes, setAutoEnhancedResumes] = useState<Set<string>>(new Set());
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Create a unique identifier for the current resume
+  const resumeId = useMemo(() => {
+    return JSON.stringify({
+      name: editableData?.name,
+      email: editableData?.email,
+      phone: editableData?.phone,
+      timestamp: editableData?.extractedAt || Date.now()
+    });
+  }, [editableData?.name, editableData?.email, editableData?.phone, editableData?.extractedAt]);
+
+  // Auto-enhance all fields once when edit mode is activated
+  useEffect(() => {
+    if (isEditing && !autoEnhancedResumes.has(resumeId)) {
+      const autoEnhanceAllFields = async () => {
+        console.log('🤖 Auto-enhancing all fields for resume:', resumeId);
+        
+        // Mark this resume as auto-enhanced
+        setAutoEnhancedResumes(prev => new Set(prev).add(resumeId));
+        
+        // Define fields to auto-enhance (excluding basic info fields)
+        const fieldsToEnhance = [
+          { key: 'summary', label: 'Professional Summary' },
+          { key: 'skills', label: 'Skills' }
+        ];
+        
+        // Add experience descriptions
+        if (editableData?.experience) {
+          editableData.experience.forEach((_, index) => {
+            fieldsToEnhance.push({
+              key: `experience.${index}.description`,
+              label: 'Job Description'
+            });
+          });
+        }
+        
+        // Auto-enhance fields with a delay between each
+        for (const field of fieldsToEnhance) {
+          try {
+            await handleEnhanceField(field.key, field.label);
+            // Small delay between enhancements to avoid overwhelming the API
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (error) {
+            console.error(`Failed to auto-enhance ${field.key}:`, error);
+          }
+        }
+      };
+      
+      // Start auto-enhancement after a short delay
+      setTimeout(autoEnhanceAllFields, 500);
+    }
+  }, [isEditing, resumeId, autoEnhancedResumes]);
 
   // Update editableData when enhancedContent changes
   React.useEffect(() => {
