@@ -34,10 +34,10 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to edge function secrets.');
     }
 
-    console.log('Trying direct parsing first for accurate extraction...');
+    console.log('Starting comprehensive resume parsing...');
     
-    // Use direct parsing for more accurate content extraction
-    const enhancedResume = directParseResume(extractedText);
+    // Use AI-powered parsing for accurate content extraction
+    const enhancedResume = await enhanceResumeWithAI(extractedText, openAIApiKey);
     
     console.log('AI enhancement completed successfully');
     
@@ -64,58 +64,99 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  console.log("Enhancing resume with structure preservation...");
+  console.log("Enhancing resume with comprehensive parsing...");
   console.log("Original text preview:", originalText.substring(0, 500));
-  const enhancementPrompt = `You are an expert resume parser. Extract information from the following resume text EXACTLY as written, preserving ALL original content.
+  
+  const enhancementPrompt = `You are an expert resume parser. Extract ALL information from the following resume text exactly as written, creating a comprehensive structured format.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
 CRITICAL INSTRUCTIONS:
-1. Extract the EXACT name, job titles, company names, and dates from the text above
-2. Do NOT create generic or enhanced content - use ONLY what's written in the resume
-3. For work experience, preserve ALL original bullet points and responsibilities EXACTLY as written
-4. Use the REAL information from the resume, never generic placeholders
-5. If you see "SUNDARI CHANDRASHEKAR" use that exact name
-6. If you see "AVP NFR CoE Resilience Risk" use that exact title
-7. If you see "HSBC Electronic Data Processing India P limited" use that exact company
-8. Extract ALL bullet points exactly as written - don't enhance or modify them
-9. Preserve original formatting and specific terms like "Data Leakage", "CoE", "NFR", etc.
+1. Extract the EXACT content from the resume - never create or add content
+2. Parse ALL sections present in the resume
+3. Preserve ALL original text, bullet points, and formatting
+4. Structure the data for easy editing while keeping content intact
+5. Include ALL sections found: personal details, summary, experience, education, skills, certifications, projects, achievements
 
-Return ONLY this JSON structure with REAL data from the resume:
+Return this comprehensive JSON structure with REAL data from the resume:
 {
-  "name": "ACTUAL name from resume (not filename)",
-  "title": "Professional title extracted from resume", 
-  "email": "actual email if found",
-  "phone": "actual phone if found",
-  "location": "actual location if found",
-  "summary": "Professional summary based on actual content",
+  "personalDetails": {
+    "name": "Exact full name from resume",
+    "title": "Professional title/designation",
+    "email": "actual email if found",
+    "phone": "actual phone if found", 
+    "location": "actual location/address if found",
+    "linkedin": "LinkedIn URL if found",
+    "website": "personal website if found"
+  },
+  "summary": "Professional summary exactly as written in resume",
   "experience": [
     {
-      "title": "ACTUAL job title from resume",
-      "company": "ACTUAL company name from resume",
-      "duration": "ACTUAL dates/duration from resume",
-      "description": "Brief description of the actual role",
-      "core_responsibilities": ["ACTUAL responsibility 1", "ACTUAL responsibility 2", "etc"],
-      "achievements": ["ACTUAL achievement 1", "ACTUAL achievement 2", "etc"]
+      "title": "EXACT job title from resume",
+      "company": "EXACT company name from resume", 
+      "location": "job location if specified",
+      "startDate": "start date in original format",
+      "endDate": "end date or Present",
+      "duration": "full duration string from resume",
+      "description": "role description if present",
+      "responsibilities": ["exact responsibility 1", "exact responsibility 2"],
+      "achievements": ["exact achievement 1", "exact achievement 2"]
     }
   ],
   "education": [
     {
-      "degree": "ACTUAL degree from resume",
-      "institution": "ACTUAL institution from resume",
-      "year": "ACTUAL year from resume"
+      "degree": "EXACT degree name from resume",
+      "institution": "EXACT institution name from resume",
+      "location": "institution location if found",
+      "year": "graduation year or date range",
+      "gpa": "GPA if mentioned",
+      "honors": "honors/distinctions if mentioned"
     }
   ],
-  "skills": ["ACTUAL skills found in resume"],
-  "core_technical_skills": [
-    {"name": "ACTUAL skill from resume", "proficiency": 85}
+  "skills": {
+    "technical": ["list of technical skills"],
+    "soft": ["list of soft skills"],
+    "languages": ["list of languages with proficiency"],
+    "tools": ["list of tools/software"]
+  },
+  "certifications": [
+    {
+      "name": "certification name",
+      "issuer": "issuing organization",
+      "date": "certification date",
+      "url": "certificate URL if provided"
+    }
+  ],
+  "projects": [
+    {
+      "name": "project name",
+      "description": "project description",
+      "technologies": ["tech stack used"],
+      "url": "project URL if provided",
+      "date": "project date/duration"
+    }
+  ],
+  "achievements": [
+    "achievement or award 1",
+    "achievement or award 2"
+  ],
+  "additionalSections": [
+    {
+      "title": "section name (e.g., Publications, Volunteer Work)",
+      "content": "section content"
+    }
   ]
 }
 
-DO NOT use any generic content like "Professional Organization", "Senior Professional", etc. Use only the REAL information from the resume text.`;
+IMPORTANT: 
+- Use ONLY information that exists in the resume
+- If a section doesn't exist, leave the array empty []
+- Preserve exact wording and formatting
+- Include all bullet points and details as they appear
+- Don't enhance or modify the original content`;
 
-  console.log('Sending enhancement request to OpenAI...');
+  console.log('Sending comprehensive parsing request to OpenAI...');
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -128,7 +169,7 @@ DO NOT use any generic content like "Professional Organization", "Senior Profess
       messages: [
         { 
           role: 'system', 
-          content: 'You are a resume parser and enhancer. You MUST extract the ACTUAL information from the resume text provided. Never use generic placeholders. Always use the real names, companies, job titles, and content from the original resume.' 
+          content: 'You are a professional resume parser. Extract EXACTLY what is written in the resume without adding or modifying content. Preserve all original text and structure it for easy editing.' 
         },
         { 
           role: 'user', 
@@ -153,7 +194,6 @@ DO NOT use any generic content like "Professional Organization", "Senior Profess
   }
 
   console.log('Raw AI response received, parsing JSON...');
-  console.log('AI response preview:', enhancedContent.substring(0, 500));
 
   try {
     // Clean up the response to ensure it's valid JSON
@@ -168,759 +208,101 @@ DO NOT use any generic content like "Professional Organization", "Senior Profess
 
     const parsedResponse = JSON.parse(cleanedContent);
     
-    // Validate that we have actual content, not generic content
-    if (!parsedResponse.name || 
-        parsedResponse.name.includes('PDF Resume') || 
-        parsedResponse.name === 'Professional' ||
-        !parsedResponse.experience || 
-        parsedResponse.experience.length === 0 ||
-        parsedResponse.experience[0].company === 'Professional Organization') {
+    // Validate and structure the response
+    const structuredResponse = {
+      // Personal details
+      name: parsedResponse.personalDetails?.name || parsedResponse.name || 'Professional',
+      title: parsedResponse.personalDetails?.title || parsedResponse.title || '',
+      email: parsedResponse.personalDetails?.email || parsedResponse.email || '',
+      phone: parsedResponse.personalDetails?.phone || parsedResponse.phone || '',
+      location: parsedResponse.personalDetails?.location || parsedResponse.location || '',
+      linkedin: parsedResponse.personalDetails?.linkedin || '',
+      website: parsedResponse.personalDetails?.website || '',
       
-      console.error('AI returned generic content, falling back to direct parsing');
-      return directParseResume(originalText);
-    }
-    
-    // Ensure arrays exist and have proper format
-    parsedResponse.experience = parsedResponse.experience || [];
-    parsedResponse.education = parsedResponse.education || [];
-    parsedResponse.skills = parsedResponse.skills || [];
-    parsedResponse.core_technical_skills = parsedResponse.core_technical_skills || [];
+      // Summary
+      summary: parsedResponse.summary || '',
+      
+      // Experience - ensure backward compatibility
+      experience: (parsedResponse.experience || []).map((exp: any) => ({
+        title: exp.title || '',
+        company: exp.company || '',
+        location: exp.location || '',
+        startDate: exp.startDate || '',
+        endDate: exp.endDate || '',
+        duration: exp.duration || `${exp.startDate || ''} - ${exp.endDate || ''}`.trim(),
+        description: exp.description || '',
+        responsibilities: exp.responsibilities || exp.core_responsibilities || [],
+        achievements: exp.achievements || []
+      })),
+      
+      // Education
+      education: parsedResponse.education || [],
+      
+      // Skills - structured format
+      skills: {
+        technical: parsedResponse.skills?.technical || [],
+        soft: parsedResponse.skills?.soft || [],
+        languages: parsedResponse.skills?.languages || [],
+        tools: parsedResponse.skills?.tools || []
+      },
+      
+      // Legacy skills array for backward compatibility
+      core_technical_skills: (parsedResponse.skills?.technical || []).slice(0, 5).map((skill: string, index: number) => ({
+        name: skill,
+        proficiency: 80 + index * 2
+      })),
+      
+      // New sections
+      certifications: parsedResponse.certifications || [],
+      projects: parsedResponse.projects || [],
+      achievements: parsedResponse.achievements || [],
+      additionalSections: parsedResponse.additionalSections || []
+    };
 
-    // Ensure we have the required fields for each experience entry
-    parsedResponse.experience.forEach((job: any) => {
-      job.description = job.description || `Professional role at ${job.company}`;
-      job.core_responsibilities = job.core_responsibilities || [];
-      job.achievements = job.achievements || [];
+    console.log(`Successfully parsed resume with ${structuredResponse.experience.length} work experience entries`);
+    console.log('Parsed name:', structuredResponse.name);
+    console.log('Skills structure:', Object.keys(structuredResponse.skills));
+    console.log('New sections found:', {
+      certifications: structuredResponse.certifications.length,
+      projects: structuredResponse.projects.length,
+      achievements: structuredResponse.achievements.length
     });
-
-    console.log(`Successfully enhanced resume with ${parsedResponse.experience.length} work experience entries`);
-    console.log('Parsed name:', parsedResponse.name);
-    console.log('First job title:', parsedResponse.experience[0]?.title);
-    console.log('First company:', parsedResponse.experience[0]?.company);
     
-    return parsedResponse;
+    return structuredResponse;
 
   } catch (parseError) {
     console.error('JSON parsing error:', parseError);
     console.error('Raw content:', enhancedContent.substring(0, 500));
     
-    // Fallback to direct parsing if AI response is invalid
-    return directParseResume(originalText);
+    // Fallback to basic structure
+    return createFallbackStructure(originalText);
   }
 }
 
-function directParseResume(originalText: string): any {
-  console.log('Using direct parsing approach...');
-  console.log('Full text to parse:', originalText);
+function createFallbackStructure(originalText: string): any {
+  console.log('Creating fallback structure from original text');
   
-  const lines = originalText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
-  const result: any = {
-    name: '',
+  return {
+    name: 'Professional',
     title: '',
     email: '',
     phone: '',
     location: '',
-    summary: '',
-    experience: [],
-    education: [],
-    skills: [],
-    core_technical_skills: []
-  };
-  
-  // Extract name - look for names in various formats
-  for (const line of lines) {
-    // Look for names like "SUNDARI CHANDRASHEKAR" or normal case names
-    if (line.match(/^[A-Z][A-Z\s]{8,}$/) && !line.includes('PROFESSIONAL') && !line.includes('EXPERIENCE') && !line.includes('EDUCATION')) {
-      result.name = line;
-      break;
-    }
-    // Also look for normal case names at the beginning
-    if (line.match(/^[A-Z][a-z]+\s+[A-Z][a-z]+/) && !line.includes('Experience') && !line.includes('Education') && lines.indexOf(line) < 5) {
-      result.name = line;
-      break;
-    }
-  }
-  
-  // Extract contact information
-  for (const line of lines) {
-    if (line.includes('@')) {
-      const email = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0];
-      if (email) result.email = email;
-    }
-    if (line.match(/^\+?\d[\d\s\-\(\)]{8,}$/)) {
-      result.phone = line;
-    }
-  }
-  
-  // Extract work experience directly from the text
-  console.log('Extracting work experience from full text...');
-  const workExperienceText = extractWorkExperienceDirectly(originalText);
-  console.log('Extracted work experience text:', workExperienceText);
-  
-  // Parse the extracted work experience into structured format
-  result.experience = parseWorkExperienceFromText(workExperienceText, originalText);
-  
-  // Extract summary if available
-  const summaryMatch = originalText.match(/summary[:\s]*(.*?)(?=experience|education|skills|$)/is);
-  if (summaryMatch) {
-    result.summary = summaryMatch[1].trim();
-  } else {
-    result.summary = 'Professional with experience as detailed in the original resume';
-  }
-  
-  // Extract skills
-  const skillsMatch = originalText.match(/skills[:\s]*(.*?)(?=education|experience|$)/is);
-  if (skillsMatch) {
-    const skillsText = skillsMatch[1];
-    result.skills = skillsText.split(/[,\n]/).map(s => s.trim()).filter(s => s && s.length > 1);
-  } else {
-    result.skills = ['Professional Skills', 'Industry Experience', 'Technical Knowledge'];
-  }
-  
-  result.core_technical_skills = result.skills.slice(0, 5).map((skill: string, index: number) => ({
-    name: skill,
-    proficiency: 80 + index * 2
-  }));
-  
-  // Set fallback values if nothing found
-  if (!result.name) result.name = 'Professional';
-  
-  console.log('Direct parsing completed');
-  console.log('Extracted name:', result.name);
-  console.log('Number of jobs:', result.experience.length);
-  console.log('First job details:', result.experience[0]);
-  
-  return result;
-}
-
-// Extract work experience directly from text with improved parsing
-function extractWorkExperienceDirectly(text: string): string {
-  console.log('Extracting work experience directly from text...');
-  
-  const lines = text.split('\n');
-  const workExperienceLines: string[] = [];
-  
-  let inWorkExperience = false;
-  let foundWorkExperienceSection = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const lowerLine = line.toLowerCase();
-    
-    // Check if we're entering work experience section
-    if (lowerLine.includes('employment') ||
-        lowerLine.includes('experience') || 
-        lowerLine.includes('work history') ||
-        lowerLine.includes('professional experience') ||
-        lowerLine.includes('organizational experience')) {
-      inWorkExperience = true;
-      foundWorkExperienceSection = true;
-      console.log('Found work experience section:', line);
-      continue; // Skip the header line
-    }
-    
-    // Check if we're leaving work experience section
-    if (inWorkExperience && (
-      lowerLine.includes('education') || 
-      lowerLine.includes('skills') || 
-      lowerLine.includes('certifications') ||
-      lowerLine.includes('qualifications') ||
-      lowerLine.includes('achievements') ||
-      lowerLine.includes('awards') ||
-      lowerLine.includes('projects')
-    )) {
-      console.log('Leaving work experience section at:', line);
-      break;
-    }
-    
-    // If we're in work experience section, capture all content as-is
-    if (inWorkExperience && line.length > 0) {
-      workExperienceLines.push(line);
-    }
-  }
-  
-  console.log(`Extracted ${workExperienceLines.length} work experience lines directly`);
-  return workExperienceLines.join('\n');
-}
-
-// Parse work experience from extracted text with better structure detection
-function parseWorkExperienceFromText(workExperienceText: string, fullText: string): any[] {
-  console.log('Parsing work experience from extracted text...');
-  console.log('Work experience text length:', workExperienceText.length);
-  
-  if (!workExperienceText || workExperienceText.trim().length === 0) {
-    console.log('No work experience text found, trying to parse from full text');
-    return parseWorkExperienceFromFullText(fullText);
-  }
-  
-  const lines = workExperienceText.split('\n').filter(line => line.trim().length > 0);
-  const jobs: any[] = [];
-  let currentJob: any = null;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const lowerLine = line.toLowerCase();
-    
-    console.log(`Processing line ${i}: ${line}`);
-    
-    // Look for job title patterns (Marketing Strategist, AVP, etc.)
-    if (line.match(/^[A-Z][a-zA-Z\s\-&]+$/) && 
-        !line.match(/\d{4}/) && 
-        !line.includes('@') &&
-        line.length > 10 && line.length < 100) {
-      
-      console.log('Found potential job title:', line);
-      
-      if (currentJob) {
-        jobs.push(currentJob);
-      }
-      
-      currentJob = {
-        title: line,
-        company: '',
-        duration: '',
-        location: '',
-        description: '',
-        achievements: []
-      };
-    }
-    // Look for company names
-    else if (currentJob && !currentJob.company && 
-             (line.match(/limited|ltd|inc|corp|company|pvt|private|technologies|solutions|bank|group/i) ||
-              line.match(/^[A-Z][a-zA-Z\s]+$/) && line.length < 50)) {
-      console.log('Found potential company:', line);
-      currentJob.company = line;
-    }
-    // Look for dates
-    else if (line.match(/\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|present/i)) {
-      console.log('Found potential date:', line);
-      if (currentJob) {
-        currentJob.duration = line;
-      }
-    }
-    // Look for location
-    else if (currentJob && !currentJob.location && 
-             line.match(/^[A-Z][a-z]+$/) && 
-             line.length < 20 && 
-             !line.match(/\d/)) {
-      console.log('Found potential location:', line);
-      currentJob.location = line;
-    }
-    // Add as achievement/responsibility
-    else if (currentJob && line.length > 20 && 
-             !line.match(/^[A-Z][A-Z\s]+$/) && // Not all caps headers
-             !line.includes('Experience') &&
-             !line.includes('Education')) {
-      console.log('Adding as achievement:', line);
-      currentJob.achievements.push(line);
-    }
-  }
-  
-  // Add final job if exists
-  if (currentJob) {
-    jobs.push(currentJob);
-  }
-  
-  console.log(`Parsed ${jobs.length} jobs from work experience text`);
-  jobs.forEach((job, index) => {
-    console.log(`Job ${index + 1}: ${job.title} at ${job.company}`);
-  });
-  
-  return jobs.length > 0 ? jobs : parseWorkExperienceFromFullText(fullText);
-}
-
-// Fallback: Parse work experience from full text if section-based parsing fails
-function parseWorkExperienceFromFullText(fullText: string): any[] {
-  console.log('Fallback: parsing work experience from full text');
-  
-  const lines = fullText.split('\n').filter(line => line.trim().length > 0);
-  const jobs: any[] = [];
-  
-  // Look for any job-like patterns in the entire text
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Job title patterns
-    if (line.match(/(manager|strategist|analyst|engineer|specialist|coordinator|director|officer|avp|vp)/i) &&
-        !line.match(/\d{4}/) &&
-        line.length > 10 && line.length < 100) {
-      
-      const job: any = {
-        title: line,
-        company: '',
-        duration: '',
-        location: '',
-        description: '',
-        achievements: []
-      };
-      
-      // Look ahead for company and dates
-      for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-        const nextLine = lines[j].trim();
-        
-        if (!job.company && nextLine.match(/limited|ltd|inc|corp|company|pvt|private|technologies|solutions|bank/i)) {
-          job.company = nextLine;
-        } else if (nextLine.match(/\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|present/i)) {
-          job.duration = nextLine;
-        } else if (nextLine.length > 20 && j > i + 1) {
-          job.achievements.push(nextLine);
-        }
-      }
-      
-      if (job.company || job.duration || job.achievements.length > 0) {
-        jobs.push(job);
-      }
-    }
-  }
-  
-  console.log(`Fallback parsing found ${jobs.length} jobs`);
-  return jobs;
-}
-
-// Extract work experience section preserving original formatting and content
-function extractWorkExperienceAsIs(text: string): string {
-  const lines = text.split('\n');
-  const workExperienceLines: string[] = [];
-  
-  let inWorkExperience = false;
-  let foundWorkExperienceSection = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const lowerLine = line.toLowerCase();
-    
-    // Check if we're entering work experience section
-    if (lowerLine.includes('work experience') || 
-        lowerLine.includes('professional experience') || 
-        lowerLine.includes('employment history') ||
-        lowerLine.includes('experience') ||
-        lowerLine.includes('organizational experience')) {
-      inWorkExperience = true;
-      foundWorkExperienceSection = true;
-      continue; // Skip the header line
-    }
-    
-    // Check if we're leaving work experience section
-    if (inWorkExperience && (
-      lowerLine.includes('education') || 
-      lowerLine.includes('skills') || 
-      lowerLine.includes('certifications') ||
-      lowerLine.includes('projects') ||
-      lowerLine.includes('awards') ||
-      lowerLine.includes('achievements') ||
-      lowerLine.includes('qualifications')
-    )) {
-      break;
-    }
-    
-    // If we're in work experience section, capture all content as-is
-    if (inWorkExperience && line.length > 0) {
-      workExperienceLines.push(line);
-    }
-  }
-  
-  console.log(`Extracted ${workExperienceLines.length} work experience lines as-is`);
-  return workExperienceLines.join('\n');
-}
-
-// Parse work experience while preserving original content structure
-function parseWorkExperiencePreserveOriginal(workExperienceText: string): any[] {
-  if (!workExperienceText || workExperienceText.trim().length === 0) {
-    return [];
-  }
-  
-  console.log('Parsing work experience text:', workExperienceText.substring(0, 300));
-  
-  const lines = workExperienceText.split('\n').filter(line => line.trim().length > 0);
-  const jobs: any[] = [];
-  let currentJob: any = null;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const lowerLine = line.toLowerCase();
-    
-    // Look for specific HSBC role pattern
-    if (line.includes('AVP NFR CoE Resilience Risk') || line.includes('Business Information Risk Officer')) {
-      currentJob = {
-        title: 'AVP NFR CoE Resilience Risk (Business Information Risk Officer)',
-        company: '',
-        duration: '',
-        description: 'Business Information Risk Officer role',
-        achievements: []
-      };
-    }
-    // Look for HSBC company pattern
-    else if (line.includes('HSBC Electronic Data Processing India P limited') || line.includes('HSBC')) {
-      if (currentJob) {
-        currentJob.company = line;
-      } else {
-        currentJob = {
-          title: 'Professional Role',
-          company: line,
-          duration: '',
-          description: '',
-          achievements: []
-        };
-      }
-    }
-    // Look for date patterns (Aug 2021, etc.)
-    else if (line.match(/aug\s+\d{4}|from:|to:|till date|\d{4}[-\/]\d{2,4}|\w+\s+\d{4}/i)) {
-      if (currentJob) {
-        currentJob.duration = line;
-      } else {
-        currentJob = {
-          title: '',
-          company: '',
-          duration: line,
-          description: '',
-          achievements: []
-        };
-      }
-    }
-    // Look for role/title patterns
-    else if (!currentJob || !currentJob.title) {
-      if (line.match(/manager|officer|avp|vp|analyst|specialist|coordinator|executive|lead|head|director/i)) {
-        if (currentJob) {
-          currentJob.title = line;
-        } else {
-          currentJob = {
-            title: line,
-            company: '',
-            duration: '',
-            description: '',
-            achievements: []
-          };
-        }
-      }
-    }
-    // Add content as achievements/responsibilities (preserving original content)
-    else if (currentJob && line.length > 20) {
-      // Don't add the role title or company name again as achievements
-      if (!line.includes('AVP NFR CoE') && !line.includes('HSBC Electronic Data Processing') && !line.match(/aug\s+\d{4}/i)) {
-        currentJob.achievements.push(line);
-      }
-    }
-  }
-  
-  // Add final job if exists
-  if (currentJob) {
-    jobs.push(currentJob);
-  }
-  
-  // If no structured jobs found, create one entry with all content
-  if (jobs.length === 0 && workExperienceText.trim().length > 0) {
-    // Check if this is the HSBC resume specifically
-    if (workExperienceText.includes('HSBC') || workExperienceText.includes('AVP NFR CoE')) {
-      jobs.push({
-        title: 'AVP NFR CoE Resilience Risk (Business Information Risk Officer)',
-        company: 'HSBC Electronic Data Processing India P limited, India',
-        duration: 'Aug 2021 to present',
-        description: 'Business Information Risk Officer role',
-        achievements: lines.filter(line => 
-          !line.includes('AVP NFR CoE') && 
-          !line.includes('HSBC Electronic Data Processing') && 
-          !line.match(/aug\s+\d{4}/i) &&
-          line.length > 20
-        )
-      });
-    } else {
-      jobs.push({
-        title: 'Professional Experience',
-        company: 'As per resume',
-        duration: 'See details',
-        description: 'Experience details from uploaded resume',
-        achievements: lines
-      });
-    }
-  }
-  
-  console.log('Parsed jobs:', jobs.length);
-  console.log('First job:', jobs[0]);
-  
-  return jobs;
-}
-
-// Extract detailed work experience content with all bullet points and achievements
-function extractDetailedWorkExperience(text: string): string {
-  const lines = text.split('\n');
-  const workExperienceLines: string[] = [];
-  
-  let inWorkExperience = false;
-  let foundWorkExperienceSection = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const lowerLine = line.toLowerCase();
-    
-    // Check if we're entering work experience section
-    if (lowerLine.includes('work experience') || lowerLine.includes('professional experience') || lowerLine.includes('employment history')) {
-      inWorkExperience = true;
-      foundWorkExperienceSection = true;
-      workExperienceLines.push(line);
-      continue;
-    }
-    
-    // Check if we're leaving work experience section
-    if (inWorkExperience && (
-      lowerLine.includes('education') || 
-      lowerLine.includes('skills') || 
-      lowerLine.includes('certifications') ||
-      lowerLine.includes('projects') ||
-      lowerLine.includes('awards')
-    )) {
-      break;
-    }
-    
-    // If we haven't found a clear work experience section, look for job patterns
-    if (!foundWorkExperienceSection) {
-      // Look for job title patterns or company patterns
-      if (isLikelyJobTitle(line) || isLikelyCompanyName(line)) {
-        inWorkExperience = true;
-        workExperienceLines.push(line);
-        continue;
-      }
-    }
-    
-    // If we're in work experience section, capture all content
-    if (inWorkExperience && line.length > 0) {
-      workExperienceLines.push(line);
-    }
-  }
-  
-  console.log(`Extracted ${workExperienceLines.length} work experience lines`);
-  return workExperienceLines.join('\n');
-}
-
-// Check if line looks like a job title
-function isLikelyJobTitle(line: string): boolean {
-  const jobTitlePatterns = [
-    /(manager|director|analyst|engineer|specialist|coordinator|assistant|lead|senior|junior|developer|consultant|supervisor|officer|executive)/i,
-    /(president|vice president|vp|ceo|cto|cfo)/i
-  ];
-  
-  return jobTitlePatterns.some(pattern => pattern.test(line));
-}
-
-// Check if line looks like a company name
-function isLikelyCompanyName(line: string): boolean {
-  const companyPatterns = [
-    /(inc\.|ltd\.|llc|corp|corporation|company|limited|pvt|private|public)/i,
-    /(bank|university|school|college|institute|technologies|solutions|services|systems|group)/i
-  ];
-  
-  return companyPatterns.some(pattern => pattern.test(line));
-}
-
-// Extract work experience data and count lines
-function extractWorkExperienceData(text: string): Array<{totalLines: number, achievementLines: number}> {
-  const sections = [];
-  const lines = text.split('\n');
-  
-  let currentSection: string[] = [];
-  let inWorkExperience = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Detect start of work experience entry
-    if (isWorkExperienceStart(line, i > 0 ? lines[i-1] : '', i < lines.length - 1 ? lines[i+1] : '')) {
-      // Save previous section if exists
-      if (currentSection.length > 0) {
-        sections.push(analyzeWorkExperienceSection(currentSection));
-      }
-      currentSection = [line];
-      inWorkExperience = true;
-    } 
-    // Detect end of work experience section
-    else if (inWorkExperience && isWorkExperienceEnd(line)) {
-      if (currentSection.length > 0) {
-        sections.push(analyzeWorkExperienceSection(currentSection));
-      }
-      currentSection = [];
-      inWorkExperience = false;
-    }
-    // Continue adding lines to current section
-    else if (inWorkExperience && line) {
-      currentSection.push(line);
-    }
-  }
-  
-  // Add last section if exists
-  if (currentSection.length > 0) {
-    sections.push(analyzeWorkExperienceSection(currentSection));
-  }
-  
-  return sections;
-}
-
-// Analyze a work experience section to count lines and achievements
-function analyzeWorkExperienceSection(lines: string[]): {totalLines: number, achievementLines: number} {
-  const totalLines = lines.filter(line => line.trim()).length;
-  
-  // Count achievement/bullet point lines (lines that start with bullet points or are clearly achievements)
-  let achievementLines = 0;
-  let inAchievementSection = false;
-  
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
-    
-    // Check if this line indicates start of achievements section
-    if (trimmedLine.toLowerCase().includes('achievement') || 
-        trimmedLine.toLowerCase().includes('accomplishment') ||
-        trimmedLine.match(/^[\-\•\*]\s+/) || // Bullet points
-        (inAchievementSection && trimmedLine.length > 20)) { // Continuation of achievements
-      achievementLines++;
-      inAchievementSection = true;
-    }
-    // Reset if we hit a new section header
-    else if (trimmedLine.toLowerCase().includes('responsibilities') || 
-             trimmedLine.toLowerCase().includes('experience') ||
-             trimmedLine.match(/^\d{4}/) || // Date
-             trimmedLine.length < 10) { // Short lines are usually headers
-      inAchievementSection = false;
-    }
-  }
-  
-  // If no clear achievement section found, assume last 60% of lines are achievements
-  if (achievementLines === 0 && totalLines > 3) {
-    achievementLines = Math.ceil(totalLines * 0.6);
-  }
-  
-  return { totalLines, achievementLines };
-}
-
-// Check if line indicates start of work experience entry
-function isWorkExperienceStart(line: string, prevLine: string, nextLine: string): boolean {
-  // Job titles often contain position keywords
-  const jobTitlePattern = /(manager|developer|analyst|engineer|specialist|coordinator|director|assistant|lead|senior|junior|intern)/i;
-  // Company indicators
-  const companyPattern = /(inc\.|ltd\.|llc|corp|company|organization|university|school)/i;
-  // Date patterns
-  const datePattern = /\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i;
-  
-  return jobTitlePattern.test(line) || companyPattern.test(line) || 
-         (datePattern.test(line) && line.length < 50);
-}
-
-// Check if we've reached end of work experience section
-function isWorkExperienceEnd(line: string): boolean {
-  const sectionHeaders = /(education|skills|technical skills|certifications|projects|awards|interests)/i;
-  return sectionHeaders.test(line);
-}
-
-function basicParseResume(text: string): any {
-  console.log('Using fallback basic parsing...');
-  
-  const lines = text.split('\n').filter(line => line.trim());
-  
-  const content: any = {
-    name: '',
-    title: 'Professional',
-    email: '',
-    phone: '',
-    location: '',
     linkedin: '',
-    summary: '',
+    website: '',
+    summary: 'Professional with experience as detailed in the original resume',
     experience: [],
     education: [],
-    skills: []
-  };
-
-  // Extract basic information
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Extract email
-    const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    if (emailMatch && !content.email) {
-      content.email = emailMatch[0];
-    }
-    
-    // Extract phone
-    const phoneMatch = line.match(/(\+?1?[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/);
-    if (phoneMatch && !content.phone) {
-      content.phone = phoneMatch[0];
-    }
-    
-    // First non-contact line is likely the name
-    if (!content.name && line.length > 2 && !emailMatch && !phoneMatch && !line.includes('http')) {
-      content.name = line;
-    }
-  }
-
-  // Enhanced summary
-  content.summary = "Accomplished professional with demonstrated expertise across multiple domains and proven track record of delivering exceptional results. Strong analytical and problem-solving abilities combined with excellent communication and leadership skills. Committed to continuous learning and professional development while contributing to organizational growth and success through innovative approaches and collaborative teamwork.";
-
-  // Add comprehensive experience
-  content.experience = [
-    {
-      title: "Senior Professional",
-      company: "Professional Organization",
-      duration: "Recent Experience",
-      description: "Led cross-functional initiatives and strategic planning efforts to drive organizational growth.",
-      core_responsibilities: [
-        "Training new team members on specific procedures and organizational tools",
-        "Managing daily operations related to strategic initiatives and business objectives",
-        "Participating in leadership meetings and updating project progress status",
-        "Coordinating departmental activities and sharing critical project updates"
-      ],
-      achievements: [
-        "Improved operational efficiency by 25% through process optimization and team collaboration",
-        "Enhanced stakeholder satisfaction rates by implementing customer-focused solutions and quality improvements",
-        "Mentored team members and fostered collaborative work environments resulting in increased productivity"
-      ]
+    skills: {
+      technical: [],
+      soft: [],
+      languages: [],
+      tools: []
     },
-    {
-      title: "Professional Role",
-      company: "Previous Organization", 
-      duration: "Prior Experience",
-      description: "Managed complex projects and delivered high-quality results within budget and timeline constraints.",
-      core_responsibilities: [
-        "Developing and implementing project management strategies and methodologies",
-        "Collaborating with cross-functional teams to achieve organizational objectives",
-        "Monitoring project timelines and ensuring deliverable quality standards",
-        "Maintaining client relationships and ensuring customer satisfaction"
-      ],
-      achievements: [
-        "Successfully delivered multiple high-impact projects on time and under budget",
-        "Collaborated with diverse teams to achieve organizational objectives and maintain strong client relationships",
-        "Applied analytical thinking and technical skills to solve challenging problems and drive continuous improvement"
-      ]
-    }
-  ];
-
-  // Add education
-  content.education = [
-    {
-      degree: "Professional Qualification",
-      institution: "Educational Institution",
-      year: "Completed"
-    }
-  ];
-
-  // Add comprehensive skills
-  content.skills = [
-    "Project Management", "Strategic Planning", "Data Analysis", "Problem Solving",
-    "Team Leadership", "Communication", "Process Improvement", "Customer Service",
-    "Technical Skills", "Microsoft Office", "Analytical Thinking", "Adaptability",
-    "Time Management", "Quality Assurance", "Stakeholder Management", "Innovation"
-  ];
-
-  // Add core technical skills with proficiency
-  content.core_technical_skills = [
-    { "name": "Project Management", "proficiency": 88 },
-    { "name": "Strategic Planning", "proficiency": 92 },
-    { "name": "Data Analysis", "proficiency": 85 },
-    { "name": "Problem Solving", "proficiency": 90 },
-    { "name": "Team Leadership", "proficiency": 87 },
-    { "name": "Communication", "proficiency": 93 },
-    { "name": "Process Improvement", "proficiency": 84 },
-    { "name": "Technical Skills", "proficiency": 82 },
-    { "name": "Microsoft Office", "proficiency": 89 },
-    { "name": "Quality Assurance", "proficiency": 86 }
-  ];
-
-  return content;
+    core_technical_skills: [],
+    certifications: [],
+    projects: [],
+    achievements: [],
+    additionalSections: []
+  };
 }

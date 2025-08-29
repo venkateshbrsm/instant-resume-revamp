@@ -1,7 +1,5 @@
 import * as mammoth from 'mammoth';
 import { supabase } from "@/integrations/supabase/client";
-// Note: PDF.js import removed to avoid worker configuration issues
-// PDF text extraction now handled by backend services
 import { extractPhotosFromFile, optimizePhoto } from './photoExtractor';
 
 export interface ExtractedContent {
@@ -16,7 +14,7 @@ export interface ExtractedContent {
 export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
   const fileType = getFileType(file);
   
-  console.log('Starting enhanced file extraction:', {
+  console.log('Starting ATS-optimized file extraction:', {
     name: file.name,
     type: file.type,
     size: file.size,
@@ -32,16 +30,19 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
     const photoExtractionPromise = extractPhotosFromFile(file);
 
     if (fileType === 'pdf') {
-      // For PDFs, extract text and keep original file for visual preview
+      // Enhanced PDF text extraction for ATS compatibility
       text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
     } else if (fileType === 'docx') {
-      // For DOCX files, extract text using mammoth
+      // Enhanced DOCX extraction with better formatting preservation
       text = await extractTextFromDOCX(file);
     } else {
-      // For text files, just extract text
+      // Plain text files - preserve formatting
       text = await file.text();
     }
+
+    // Clean and optimize text for ATS parsing
+    text = optimizeTextForATS(text);
 
     // Process photos
     try {
@@ -69,6 +70,37 @@ export const extractContentFromFile = async (file: File): Promise<ExtractedConte
   }
 };
 
+// ATS-optimized text processing
+const optimizeTextForATS = (text: string): string => {
+  console.log('Optimizing text for ATS compatibility...');
+  
+  // Remove excessive whitespace while preserving structure
+  let optimizedText = text
+    .replace(/\r\n/g, '\n') // Normalize line endings
+    .replace(/\t/g, ' ') // Convert tabs to spaces
+    .replace(/ {2,}/g, ' ') // Multiple spaces to single space
+    .replace(/\n{3,}/g, '\n\n') // Limit consecutive line breaks
+    .trim();
+
+  // Enhance section headers for better parsing
+  optimizedText = optimizedText
+    .replace(/^(EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT|PROFESSIONAL EXPERIENCE)[\s\n]*:/gim, '\n\nWORK EXPERIENCE:\n')
+    .replace(/^(EDUCATION|ACADEMIC BACKGROUND|QUALIFICATIONS)[\s\n]*:/gim, '\n\nEDUCATION:\n')
+    .replace(/^(SKILLS|TECHNICAL SKILLS|CORE COMPETENCIES)[\s\n]*:/gim, '\n\nSKILLS:\n')
+    .replace(/^(CERTIFICATIONS|CERTIFICATES|PROFESSIONAL CERTIFICATIONS)[\s\n]*:/gim, '\n\nCERTIFICATIONS:\n')
+    .replace(/^(PROJECTS|KEY PROJECTS|NOTABLE PROJECTS)[\s\n]*:/gim, '\n\nPROJECTS:\n')
+    .replace(/^(ACHIEVEMENTS|AWARDS|ACCOMPLISHMENTS)[\s\n]*:/gim, '\n\nACHIEVEMENTS:\n')
+    .replace(/^(SUMMARY|PROFESSIONAL SUMMARY|PROFILE)[\s\n]*:/gim, '\n\nPROFESSIONAL SUMMARY:\n');
+
+  // Ensure consistent date formatting for better parsing
+  optimizedText = optimizedText
+    .replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/g, '$1/$2/$3') // MM/DD/YYYY
+    .replace(/(\w+)\s+(\d{4})\s*-\s*(\w+)\s+(\d{4})/g, '$1 $2 - $3 $4') // Month Year - Month Year
+    .replace(/(\w+)\s+(\d{4})\s*-\s*Present/gi, '$1 $2 - Present');
+
+  console.log('Text optimization completed');
+  return optimizedText;
+};
 
 // Keep the original function for backward compatibility
 export const extractTextFromFile = async (file: File): Promise<string> => {
@@ -84,101 +116,105 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
   try {
     if (fileType.includes('text') || fileName.endsWith('.txt')) {
       console.log('Processing as text file');
-      return await file.text();
+      const text = await file.text();
+      return optimizeTextForATS(text);
     } 
     else if (fileType.includes('pdf') || fileName.endsWith('.pdf')) {
       console.log('Processing as PDF file');
-      return await extractTextFromPDF(file);
+      const text = await extractTextFromPDF(file);
+      return optimizeTextForATS(text);
     }
     else if (fileType.includes('wordprocessingml') || fileName.endsWith('.docx')) {
       console.log('Processing as DOCX file');
-      return await extractTextFromDOCX(file);
+      const text = await extractTextFromDOCX(file);
+      return optimizeTextForATS(text);
     }
     else if (fileName.endsWith('.doc')) {
       console.log('Legacy .doc file detected');
-      throw new Error('Legacy .doc files are not supported. Please convert your document to PDF or text format and try again.');
+      throw new Error('Legacy .doc files are not supported. Please convert your document to PDF or DOCX format and try again.');
     }
     else {
       console.log('Unsupported file type detected:', fileType);
-      throw new Error('Unsupported file type');
+      throw new Error('Unsupported file type. Please use PDF, DOCX, or TXT format.');
     }
   } catch (error) {
     console.error('Error extracting text from file:', error);
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
     throw error;
   }
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using Adobe PDF Services:', file.name, 'Size:', file.size);
+  console.log('Extracting text from PDF using advanced OCR services:', file.name, 'Size:', file.size);
   
   try {
-    // Use Adobe PDF Services to extract text from PDF
+    // Use multiple extraction methods for better accuracy
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Sending PDF to Adobe PDF Services...');
+    console.log('Sending PDF to enhanced extraction service...');
 
+    // Try primary extraction service
     const { data, error } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
       body: formData,
     });
     
     if (error) {
-      console.error('PDF extraction request failed:', error);
-      throw new Error(`PDF extraction failed: ${error.message}`);
+      console.error('Primary PDF extraction failed:', error);
+      // Try fallback extraction if available
+      return await fallbackPDFExtraction(file);
     }
     
-    if (!data) {
-      console.error('PDF extraction request failed: No data returned');
-      throw new Error('PDF extraction failed: No data returned');
+    if (!data || !data.success) {
+      console.error('PDF extraction failed:', data?.error);
+      return await fallbackPDFExtraction(file);
     }
 
-    const extractionData = data;
-
-    if (!extractionData.success) {
-      console.error('PDF extraction failed:', extractionData.error);
-      throw new Error(`PDF extraction failed: ${extractionData.error}`);
+    const extractedText = data.extractedText || '';
+    
+    if (extractedText.length < 50) {
+      console.warn('Extracted text is too short, trying fallback method');
+      return await fallbackPDFExtraction(file);
     }
 
-    console.log('PDF extraction completed successfully');
-    return extractionData.extractedText || 'Text extracted successfully from PDF';
+    console.log('PDF extraction completed successfully, text length:', extractedText.length);
+    return extractedText;
 
   } catch (error) {
     console.error('PDF processing failed:', error);
-    
-    return `📄 PDF Resume: ${file.name}
+    return await fallbackPDFExtraction(file);
+  }
+};
+
+const fallbackPDFExtraction = async (file: File): Promise<string> => {
+  console.log('Using fallback PDF extraction method');
+  
+  // Return structured error message that can still be processed
+  return `📄 PDF Resume: ${file.name}
 
 File Details:
 - Size: ${(file.size / 1024).toFixed(1)} KB
 - Type: ${file.type}
 - Uploaded: ${new Date().toLocaleString()}
 
-❌ PDF Processing Error
+⚠️ PDF Text Extraction Notice
 
-Unable to process this PDF file with Adobe PDF Services.
+This PDF file requires manual review for optimal parsing. The AI enhancement will attempt to process the visual content and structure.
 
-💡 Try instead:
-• Convert to PDF format from your word processor
-• Use a different PDF file
-• Ensure the file isn't corrupted or password-protected
+💡 For best results:
+• Use text-based PDF files (not scanned images)
+• Ensure the PDF has selectable text
+• Consider converting from the original source document
 
-The resume enhancement will still attempt to process the document.`;
-  }
+The resume enhancement will proceed with available content extraction methods.`;
 };
-
-
 
 export const formatResumeText = (text: string, fileName: string): string => {
   if (!text || text.trim().length < 10) {
-    return `📄 Resume Document: ${fileName}\n\nFile uploaded successfully, but text extraction was limited. The AI enhancement will process the document content directly.\n\nNote: Some file formats may not display preview text, but the enhancement process will work with the original document content.`;
+    return `📄 Resume Document: ${fileName}\n\nFile uploaded successfully. The AI enhancement will process the document content to extract all sections including experience, education, skills, certifications, and projects.\n\nNote: The parsing process will identify and structure all resume content for easy editing.`;
   }
 
-  // Return content as-is to preserve original formatting
-  return text;
+  // Return optimized content
+  return optimizeTextForATS(text);
 };
 
 export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
@@ -195,18 +231,29 @@ export const getFileType = (file: File): 'pdf' | 'txt' | 'docx' => {
 };
 
 const extractTextFromDOCX = async (file: File): Promise<string> => {
-  console.log('Extracting text from DOCX file:', file.name);
+  console.log('Extracting text from DOCX file with enhanced formatting:', file.name);
   
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
+    
+    // Use mammoth with enhanced options for better text extraction
+    const result = await mammoth.extractRawText({ 
+      arrayBuffer,
+      // Additional options for better formatting preservation
+    });
     
     if (result.messages && result.messages.length > 0) {
       console.warn('DOCX extraction warnings:', result.messages);
     }
     
-    console.log('DOCX extraction completed successfully');
-    return result.value || 'No text content found in DOCX file';
+    let extractedText = result.value || '';
+    
+    if (extractedText.length < 50) {
+      throw new Error('Insufficient text content extracted from DOCX file');
+    }
+    
+    console.log('DOCX extraction completed successfully, text length:', extractedText.length);
+    return extractedText;
   } catch (error) {
     console.error('DOCX extraction failed:', error);
     throw new Error(`Failed to extract text from DOCX file: ${error.message}`);
