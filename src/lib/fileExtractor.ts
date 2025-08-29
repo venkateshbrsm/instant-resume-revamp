@@ -123,21 +123,21 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
 
     console.log('📤 Trying primary PDF extraction service...');
 
-    // Try the cloud extraction service first (alternative to Adobe)
+    // Try Adobe PDF Services first
     let data, error;
     try {
-      const result = await supabase.functions.invoke('extract-pdf-cloud', {
+      const result = await supabase.functions.invoke('extract-pdf-ilovepdf', {
         body: formData,
       });
       data = result.data;
       error = result.error;
     } catch (primaryError) {
-      console.warn('❌ Primary extraction service failed:', primaryError);
+      console.warn('❌ Adobe PDF Services failed:', primaryError);
       
-      // Fallback to text extraction service
+      // Fallback to PDFCo service
       console.log('📤 Trying fallback PDF extraction service...');
       try {
-        const result = await supabase.functions.invoke('extract-pdf-text', {
+        const result = await supabase.functions.invoke('extract-pdf-cloud', {
           body: formData,
         });
         data = result.data;
