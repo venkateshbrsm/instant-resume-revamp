@@ -380,72 +380,66 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
 function detectIndividualJobs(experienceText: string): string[] {
   console.log('🔍 Detecting individual jobs within experience section...');
   console.log(`📝 Experience text length: ${experienceText.length} characters`);
-  console.log(`📄 Experience preview: ${experienceText.substring(0, 500)}...`);
+  console.log(`📄 Full experience text: ${experienceText}`);
   
-  // Show full text in smaller chunks for debugging
-  const lines = experienceText.split('\n');
+  // Look for distinct job patterns in this specific resume format
+  const lines = experienceText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   console.log(`📋 Total lines in experience: ${lines.length}`);
-  lines.slice(0, 20).forEach((line, index) => {
-    console.log(`  Line ${index + 1}: "${line}"`);
-  });
   
-  try {
-    // Step 1: PRIORITY - Split by "From:" markers (most reliable for this user's format)
-    const fromJobs = splitByFromMarkers(experienceText);
-    if (fromJobs.length > 1) {
-      console.log(`✅ From-marker detection successful: ${fromJobs.length} jobs found`);
-      return fromJobs;
+  // Pattern to match job titles followed by company and dates
+  // This resume has format: "Job Title \n Company | Sector \n Date Range"
+  const jobPatterns = [
+    /^(Marketing Strategist|Team Lead|SEO Content|Social Media|Content & Community)/i,
+    /^(Partnership Manager|Content Executive|Content Marketing)/i
+  ];
+  
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  let lineIndex = 0;
+  
+  while (lineIndex < lines.length) {
+    const line = lines[lineIndex];
+    
+    // Check if this line starts a new job (job title pattern)
+    const isJobTitle = jobPatterns.some(pattern => pattern.test(line)) || 
+                      (line.length > 10 && line.length < 100 && 
+                       !line.includes('•') && !line.includes('|') && 
+                       /^[A-Z]/.test(line) && 
+                       (lines[lineIndex + 1]?.includes('|') || lines[lineIndex + 1]?.includes('Sector')));
+    
+    if (isJobTitle && currentJob.length > 0) {
+      // Save previous job
+      const jobContent = currentJob.join('\n').trim();
+      if (jobContent.length > 100) {
+        jobs.push(jobContent);
+        console.log(`✅ Job found: ${currentJob[0]} (${jobContent.length} chars)`);
+      }
+      currentJob = [line];
+    } else {
+      currentJob.push(line);
     }
-    console.log(`⚠️ From-marker detection found only ${fromJobs.length} job(s)`);
-  } catch (error) {
-    console.error('❌ From-marker detection failed:', error);
+    
+    lineIndex++;
   }
   
-  try {
-    // Step 2: Try company-based detection with enhanced patterns
-    const companyJobs = detectJobsByCompanyTransitions(experienceText);
-    if (companyJobs.length > 1) {
-      console.log(`✅ Company-based detection successful: ${companyJobs.length} jobs found`);
-      return companyJobs;
+  // Don't forget the last job
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 100) {
+      jobs.push(jobContent);
+      console.log(`✅ Final job found: ${currentJob[0]} (${jobContent.length} chars)`);
     }
-    console.log(`⚠️ Company-based detection found only ${companyJobs.length} job(s)`);
-  } catch (error) {
-    console.error('❌ Company-based detection failed:', error);
   }
   
-  try {
-    // Step 3: Try role/designation based splitting
-    const roleJobs = splitByRoleDesignations(experienceText);
-    if (roleJobs.length > 1) {
-      console.log(`✅ Role-designation detection successful: ${roleJobs.length} jobs found`);
-      return roleJobs;
-    }
-    console.log(`⚠️ Role-designation detection found only ${roleJobs.length} job(s)`);
-  } catch (error) {
-    console.error('❌ Role-designation detection failed:', error);
+  console.log(`🎯 Smart detection found ${jobs.length} jobs`);
+  
+  // If we found a reasonable number of jobs (2-10), return them
+  if (jobs.length >= 2 && jobs.length <= 10) {
+    return jobs;
   }
   
-  try {
-    // Step 4: Try aggressive content splitting - force split long content
-    const aggressiveJobs = aggressiveContentSplitting(experienceText);
-    if (aggressiveJobs.length > 1) {
-      console.log(`✅ Aggressive splitting successful: ${aggressiveJobs.length} jobs found`);
-      return aggressiveJobs;
-    }
-    console.log(`⚠️ Aggressive splitting found only ${aggressiveJobs.length} job(s)`);
-  } catch (error) {
-    console.error('❌ Aggressive splitting failed:', error);
-  }
-  
-  // Final fallback - if content is very long, force split it
-  if (experienceText.length > 2000) {
-    console.log('🚨 Long content detected, forcing manual split');
-    const forcedJobs = forceContentSplit(experienceText);
-    console.log(`🔄 Forced splitting: ${forcedJobs.length} jobs created`);
-    return forcedJobs;
-  }
-  
-  console.log('⚠️ All detection methods failed, returning single job');
+  // Otherwise, return the whole experience as one section
+  console.log('⚠️ Job detection returned unexpected count, treating as single experience');
   return [experienceText];
 }
 
