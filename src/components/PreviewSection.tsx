@@ -429,11 +429,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsGeneratingPreview(true);
     
     try {
-  console.log('🎨 Generating preview PDF for template:', selectedTemplate.layout);
-  console.log('🎨 Content preview - Name:', contentToUse?.name, 'Title:', contentToUse?.title);
-  console.log('🎨 Content preview - Experience items:', contentToUse?.experience?.length || 0);
-  console.log('🎨 Content preview - Skills:', contentToUse?.skills?.length || 0);
-  console.log('🎨 First achievement sample:', contentToUse?.experience?.[0]?.achievements?.[0]);
+      console.log('🎨 Generating preview PDF for template:', selectedTemplate.layout);
+      console.log('🎨 Content preview:', contentToUse);
       
       const resumeData = extractResumeDataFromEnhanced(contentToUse);
       console.log('🎨 Extracted resume data:', resumeData);
@@ -553,8 +550,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (data.success && data.enhancedResume) {
-        // ATS optimization disabled - use direct enhanced resume
-        setEnhancedContent(data.enhancedResume);
+        // Apply ATS optimization to the enhanced resume
+        const atsOptimizedContent = enhanceResumeWithATS(data.enhancedResume);
+        setEnhancedContent(atsOptimizedContent);
         setEnhancementProgress(100);
         
         console.log('Enhancement successful, enhanced content:', data.enhancedResume);
@@ -658,22 +656,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                          {/* Tabbed Preview */}
-                          <Tabs defaultValue="pdf" className="w-full">
-                           <TabsList className="grid w-full grid-cols-2 bg-muted/50">
-                             <TabsTrigger value="pdf" className="data-[state=active]:bg-background">📄 PDF Preview</TabsTrigger>
-                             <TabsTrigger 
-                               value="edit" 
-                               className="relative bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-700 dark:text-green-400 font-bold border-2 border-green-500/40 animate-pulse hover:animate-none hover-scale shadow-lg shadow-green-500/25 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/50"
-                             >
-                               <div className="flex items-center gap-2">
-                                 ✨ <span className="hidden sm:inline">Edit &</span> Download
-                                 <Badge className="bg-orange-500 text-white text-xs px-1.5 py-0.5 animate-bounce ml-1">
-                                   NEW!
-                                 </Badge>
-                               </div>
-                             </TabsTrigger>
-                           </TabsList>
+                         {/* Tabbed Preview */}
+                         <Tabs defaultValue="pdf" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
+                            <TabsTrigger value="edit">✏️ Edit & Download</TabsTrigger>
+                          </TabsList>
                           
                           <TabsContent value="pdf" className="space-y-4">
                             <div className="relative">
@@ -682,15 +670,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                   📄 PDF Preview • This is exactly what you'll receive
                                 </p>
                                 <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                                   <DialogTrigger asChild>
-                                     <Button 
-                                       variant="outline" 
-                                       size="sm" 
-                                       className="ml-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-700 dark:text-blue-400 border-2 border-blue-500/40 animate-pulse hover:animate-none hover-scale shadow-lg shadow-blue-500/25 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-indigo-500/30 hover:border-blue-600 hover:shadow-xl hover:shadow-blue-500/40"
-                                     >
-                                       <Maximize2 className="w-4 h-4" />
-                                       <span className="ml-1 text-xs font-semibold hidden sm:inline">Expand</span>
-                                     </Button>
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="ml-2">
+                                      <Maximize2 className="w-4 h-4" />
+                                    </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
                                     <div className="flex items-center justify-between p-4 border-b">
