@@ -42,7 +42,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [loadingStage, setLoadingStage] = useState("Initializing...");
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancementProgress, setEnhancementProgress] = useState(0);
-  const [enhancementStage, setEnhancementStage] = useState("");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>(getDefaultTemplate());
@@ -157,11 +156,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       // Use the new enhanced extraction function
       const extractedContent = await extractContentFromFile(file);
-      
-      // Check if extraction failed and show error message
-      if (!extractedContent.text || extractedContent.text.trim().length < 50) {
-        throw new Error('Unable to extract text from file. Please ensure the file is not corrupted and try again.');
-      }
       
       setLoadingProgress(70);
       
@@ -473,9 +467,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
   const enhanceResume = async () => {
     if (!extractedText || extractedText.length < 50) {
+      console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
       toast({
         title: "Content Required",
-        description: "Please wait for file content to be extracted before parsing.",
+        description: "Waiting for file content to be extracted before enhancement.",
         variant: "destructive"
       });
       return;
@@ -483,390 +478,124 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
     setIsEnhancing(true);
     setEnhancementProgress(0);
-    setEnhancementStage("Parsing your resume...");
-
+    
     try {
-      console.log('📄 Starting to parse extracted text:');
-      console.log('Extracted text length:', extractedText.length);
-      console.log('First 500 characters:', extractedText.substring(0, 500));
+      console.log('Starting enhancement with extracted text length:', extractedText.length);
+      console.log('Content preview (first 200 chars):', extractedText.substring(0, 200));
       
-      // Clean the extracted text by removing metadata and extraction info
-      let cleanedText = extractedText;
+      // Simulate enhancement progress stages
+      setEnhancementProgress(10);
+      await new Promise(resolve => setTimeout(resolve, 200));
       
-      // Remove extraction metadata that interferes with parsing
-      const lines = extractedText.split('\n');
-      let contentStartIndex = 0;
+      setEnhancementProgress(30);
       
-      // Find where actual resume content starts (skip metadata)
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        // Skip lines that contain extraction metadata
-        if (line.includes('File Size:') || 
-            line.includes('Method:') || 
-            line.includes('Pages Processed:') || 
-            line.includes('Text Length:') || 
-            line.includes('Status:') ||
-            line.includes('EXTRACTED CONTENT:') ||
-            line.includes('Extraction Summary:') ||
-            line.startsWith('📄') ||
-            line.startsWith('•') && (line.includes('KB') || line.includes('characters') || line.includes('Status:') || line.includes('Successfully extracted')) ||
-            line.includes('Successfully extracted using') ||
-            line.includes('PyMuPDF') ||
-            line.includes('pytesseract') ||
-            line.includes('Python OCR service') ||
-            line === '---' ||
-            line === '') {
-          contentStartIndex = i + 1;
-          continue;
-        }
-        // If we find actual content, stop skipping
-        if (line.length > 10 && !line.includes('File Details:') && !line.includes('✅')) {
-          break;
+      // Convert file to base64 for potential re-extraction in edge function
+      let fileBase64 = '';
+      if (file.name.toLowerCase().endsWith('.docx')) {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          fileBase64 = btoa(String.fromCharCode(...bytes));
+          console.log('File converted to base64, size:', fileBase64.length);
+        } catch (error) {
+          console.warn('Failed to convert file to base64:', error);
         }
       }
       
-      // Get the cleaned content without metadata
-      const cleanedLines = lines.slice(contentStartIndex);
-      const finalText = cleanedLines.join('\n').trim();
-      
-      console.log('📄 Cleaned text for parsing (first 500 chars):', finalText.substring(0, 500));
-      
-      // Parse the content directly from the cleaned text
-      const parsedLines = finalText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-      console.log('Total lines found:', parsedLines.length);
-      console.log('First 10 lines:', parsedLines.slice(0, 10));
-      
-      setEnhancementProgress(20);
-      setEnhancementStage("Analyzing document structure...");
-      
-      const result: any = {
-        name: '',
-        title: '',
-        email: '',
-        phone: '',
-        location: '',
-        linkedin: '',
-        summary: '',
-        experience: [],
-        education: [],
-        skills: [],
-        tools: [],
-        core_technical_skills: []
-      };
-      
-      setEnhancementProgress(40);
-      setEnhancementStage("Extracting personal information...");
-      
-      // Extract name - look for capitalized names at the beginning
-      for (let i = 0; i < Math.min(10, parsedLines.length); i++) {
-        const line = parsedLines[i];
-        // Look for names like SUNDARI CHANDRASHEKAR or patterns that look like names
-        if (line.match(/^[A-Z][A-Z\s]{8,}$/) && 
-            !line.includes('PROFESSIONAL') && 
-            !line.includes('EXPERIENCE') && 
-            !line.includes('SUMMARY') && 
-            !line.includes('SKILLS') &&
-            !line.includes('EDUCATION')) {
-          result.name = line;
-          console.log('Found name:', line);
-          break;
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          fileName: file.name,
+          originalText: extractedText,
+          extractedText: extractedText,
+          file: fileBase64 || null,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.id,
+          profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
         }
-        // Also check for title case names
-        if (line.match(/^[A-Z][a-z]+ [A-Z][a-z]+/) && line.length < 50) {
-          result.name = line;
-          console.log('Found name (title case):', line);
-          break;
-        }
-      }
-      
-      // Extract contact information
-      for (const line of parsedLines) {
-        // Email
-        if (line.includes('@')) {
-          const email = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0];
-          if (email) {
-            result.email = email;
-            console.log('Found email:', email);
-          }
-        }
-        // Phone
-        if (line.match(/^\+?\d[\d\s\-\(\)]+$/) || line.match(/\b\d{10,}\b/)) {
-          result.phone = line;
-          console.log('Found phone:', line);
-        }
-        // LinkedIn
-        if (line.toLowerCase().includes('linkedin')) {
-          result.linkedin = line;
-          console.log('Found LinkedIn:', line);
-        }
-      }
-      
-      setEnhancementProgress(60);
-      setEnhancementStage("Processing work experience...");
-      
-      // Parse sections more carefully
-      let currentSection = '';
-      let inExperience = false;
-      let inEducation = false;
-      let inSkills = false;
-      let inSummary = false;
-      let currentJob: any = null;
-      let summaryCollected = false;
-      
-      // First pass: Look for explicit professional summary or infer from early content
-      for (let i = 0; i < Math.min(20, parsedLines.length); i++) {
-        const line = parsedLines[i];
-        const lowerLine = line.toLowerCase();
-        
-        // Check if this looks like a professional summary section
-        if (line.length > 50 && !line.includes('@') && !line.match(/\d{4}/) && 
-            !line.includes('HSBC') && !line.includes('Bank') && !line.includes('Limited') &&
-            !line.includes('From:') && !line.includes('Role') && !lowerLine.includes('experience') &&
-            !lowerLine.includes('education') && !lowerLine.includes('skills') &&
-            !line.includes('File Size') && !line.includes('Method:') && !line.includes('Status:') &&
-            !line.includes('Successfully extracted') && !line.includes('PyMuPDF') &&
-            !line.includes('pytesseract') && !line.includes('KB') && !line.includes('characters') &&
-            !line.includes('✅') && !line.startsWith('•') &&
-            (line.includes('professional') || line.includes('experienced') || 
-             line.includes('specializing') || line.includes('years of') ||
-             (i > 2 && line.length > 80))) { // Longer descriptive text after basic info
-          if (!result.summary) {
-            result.summary = line;
-            summaryCollected = true;
-            console.log('Found inferred summary:', line.substring(0, 100));
-          }
-        }
-      }
-      
-      for (let i = 0; i < parsedLines.length; i++) {
-        const line = parsedLines[i];
-        const lowerLine = line.toLowerCase();
-        
-        // Detect section headers
-        if (lowerLine.includes('professional summary') || lowerLine.includes('profile summary') || 
-            lowerLine.includes('summary') || lowerLine.includes('objective')) {
-          console.log('Found summary section header at line:', i, line);
-          inExperience = false;
-          inEducation = false;
-          inSkills = false;
-          inSummary = true;
-          summaryCollected = false; // Reset to collect proper summary
-          continue;
-        } else if (lowerLine.includes('experience') || lowerLine.includes('organizational experience') || 
-                   lowerLine.includes('employment history') || lowerLine.includes('professional experience')) {
-          console.log('Found experience section at line:', i, line);
-          if (currentJob) {
-            result.experience.push(currentJob);
-            currentJob = null;
-          }
-          inExperience = true;
-          inEducation = false;
-          inSkills = false;
-          inSummary = false;
-          continue;
-        } else if (lowerLine.includes('education') || lowerLine.includes('qualification') || 
-                   lowerLine.includes('academic') || lowerLine.includes('certifications')) {
-          console.log('Found education section at line:', i, line);
-          if (currentJob) {
-            result.experience.push(currentJob);
-            currentJob = null;
-          }
-          inExperience = false;
-          inEducation = true;
-          inSkills = false;
-          inSummary = false;
-          continue;
-        } else if (lowerLine.includes('skills') || lowerLine.includes('competencies') || 
-                   lowerLine.includes('core competencies') || lowerLine.includes('core skills')) {
-          console.log('Found skills section at line:', i, line);
-          if (currentJob) {
-            result.experience.push(currentJob);
-            currentJob = null;
-          }
-          inExperience = false;
-          inEducation = false;
-          inSkills = true;
-          inSummary = false;
-          continue;
-        }
-        
-        // Process content based on current section
-        if (inSummary && line.length > 10 && !line.match(/^[A-Z\s]+$/) && 
-            !line.includes('File Size') && !line.includes('Method:') && !line.includes('Status:') &&
-            !line.includes('Successfully extracted') && !line.includes('PyMuPDF') &&
-            !line.includes('pytesseract') && !line.includes('KB') && !line.includes('characters') &&
-            !line.includes('✅') && !line.startsWith('•')) {
-          if (!summaryCollected) {
-            result.summary = line;
-            summaryCollected = true;
-          } else {
-            result.summary += ' ' + line;
-          }
-          console.log('Added to summary:', line);
-        } else if (inExperience) {
-          // Detect new job entry by role pattern or duration pattern
-          if ((line.includes('Role') && line.length < 50) || 
-              line.match(/from:|to:|till date|\d{4}|aug|sep|oct|nov|dec|jan|feb|mar|apr|may|jun|jul/i)) {
-            console.log('Found job entry:', line);
-            if (currentJob) {
-              // Clean up duplicates in achievements and responsibilities
-              currentJob.core_responsibilities = [...new Set(currentJob.core_responsibilities)];
-              currentJob.achievements = [...new Set(currentJob.achievements)];
-              result.experience.push(currentJob);
-              console.log('Saved previous job:', currentJob);
-            }
-            currentJob = {
-              title: line.includes('Role') ? '' : line,
-              company: '',
-              duration: line.includes('Role') ? '' : line,
-              description: '',
-              core_responsibilities: [],
-              achievements: []
-            };
-          }
-          // Extract company name from next line after Role
-          else if (currentJob && line.includes('Role') && i + 1 < parsedLines.length) {
-            const nextLine = parsedLines[i + 1];
-            if (nextLine.includes('HSBC') || nextLine.includes('Bank') || nextLine.includes('Limited') || 
-                nextLine.includes('Deutsche') || nextLine.includes('Team Lease')) {
-              currentJob.company = nextLine;
-              console.log('Found company from next line:', nextLine);
-            }
-          }
-          // Look for job titles 
-          else if (currentJob && !currentJob.title && (
-            line.includes('AVP') || line.includes('Manager') || line.includes('Officer') || 
-            line.includes('Assistant Vice President') || line.includes('Analyst') || line.includes('Director') || 
-            line.includes('Specialist') || line.includes('Lead') || line.includes('Senior') ||
-            line.includes('Business Information Risk Officer') || line.includes('Business Process Delivery')
-          )) {
-            currentJob.title = line;
-            console.log('Found job title:', line);
-          }
-          // Look for company names
-          else if (currentJob && !currentJob.company && (
-            line.includes('HSBC') || line.includes('Deutsche Bank') || line.includes('Team Lease') || 
-            line.includes('Limited') || line.includes('P limited') || line.includes('Company') || 
-            line.includes('Corp') || line.includes('Inc') || line.includes('Electronic Data Processing')
-          )) {
-            currentJob.company = line;
-            console.log('Found company:', line);
-          }
-          // Categorize content as responsibilities vs achievements
-          else if (currentJob && line.length > 15 && !line.match(/^[A-Z\s]+$/) && !line.includes('From:')) {
-            // Responsibilities: start with action words or describe ongoing duties
-            if (line.includes('Responsible for') || line.includes('Liaising') || 
-                line.includes('Accountable for') || line.includes('Managing') ||
-                line.includes('Coordinating') || line.includes('Implementing') ||
-                line.includes('Support') || line.includes('Assist') ||
-                line.includes('Engaging') || line.includes('performing') ||
-                line.includes('review') || line.includes('provide') ||
-                line.startsWith('•') || line.startsWith('-')) {
-              const cleanLine = line.replace(/^[-•]\s*/, '');
-              if (!currentJob.core_responsibilities.includes(cleanLine)) {
-                currentJob.core_responsibilities.push(cleanLine);
-                console.log('Added responsibility:', cleanLine);
-              }
-            }
-            // Achievements: awards, recognitions, specific accomplishments
-            else if (line.includes('award') || line.includes('recognition') || line.includes('Star Performer') ||
-                     line.includes('Won') || line.includes('recipient') || line.includes('successfully') ||
-                     line.includes('completed') || line.includes('achieved') || line.includes('delivered') ||
-                     line.includes('overachieving') || line.includes('Champion') || line.includes('Team of the Quarter')) {
-              if (!currentJob.achievements.includes(line)) {
-                currentJob.achievements.push(line);
-                console.log('Added achievement:', line);
-              }
-            }
-            // Default to responsibilities for unclear content
-            else if (line.length > 30) {
-              const cleanLine = line.replace(/^[-•]\s*/, '');
-              if (!currentJob.core_responsibilities.includes(cleanLine)) {
-                currentJob.core_responsibilities.push(cleanLine);
-                console.log('Added as responsibility (default):', cleanLine);
-              }
-            }
-          }
-        } else if (inEducation && line.length > 5 && !line.match(/^[A-Z\s]+$/)) {
-          result.education.push({
-            degree: line,
-            institution: '',
-            year: '',
-            gpa: ''
-          });
-          console.log('Added education:', line);
-        } else if (inSkills && line.length > 3) {
-          // Split skills by common delimiters
-          const skills = line.split(/[,|•·\-~]/).map(s => s.trim()).filter(s => s.length > 1);
-          result.skills.push(...skills);
-          console.log('Added skills:', skills);
-        }
-      }
-      
-      // Add final job if exists
-      if (currentJob) {
-        result.experience.push(currentJob);
-        console.log('Added final job:', currentJob);
-      }
-      
-      setEnhancementProgress(80);
-      setEnhancementStage("Finalizing content...");
-      
-      // Set fallback values if nothing found
-      if (!result.name && lines.length > 0) {
-        // Try to find name in first few lines more aggressively
-        for (let i = 0; i < Math.min(5, lines.length); i++) {
-          if (lines[i].length > 5 && lines[i].length < 50 && !lines[i].includes('@')) {
-            result.name = lines[i];
-            break;
-          }
-        }
-        if (!result.name) {
-          result.name = 'Professional';
-        }
-      }
-      
-      if (!result.summary && result.experience.length > 0) {
-        result.summary = 'Experienced professional with demonstrated expertise in various domains.';
-      }
-      
-      // Clean up and deduplicate skills
-      const uniqueSkills = [...new Set(result.skills)].slice(0, 15);
-      result.skills = uniqueSkills;
-      
-      // Generate core technical skills from regular skills
-      result.core_technical_skills = uniqueSkills.slice(0, 10).map((skill: string, index: number) => ({
-        name: skill,
-        proficiency: 75 + (index * 2)
-      }));
-      
-      console.log('Final parsed result:', result);
-      console.log('Name found:', result.name);
-      console.log('Experience entries:', result.experience.length);
-      console.log('Skills found:', result.skills.length);
-      
-      setEnhancedContent(result);
-      setEnhancementProgress(100);
-      setEnhancementStage("Complete!");
-
-      toast({
-        title: "Resume Parsed Successfully",
-        description: `Extracted ${result.experience.length} jobs, ${result.skills.length} skills from your resume.`,
       });
 
+      setEnhancementProgress(70);
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      if (error) {
+        console.error('Enhancement service error:', error);
+        
+        // Handle specific error messages from content validation
+        if (error.message?.includes('Insufficient resume content')) {
+          toast({
+            title: "Content Extraction Issue",
+            description: "Unable to extract enough readable content from your file. Please try re-saving your document or converting to PDF format.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('does not appear to contain resume information')) {
+          toast({
+            title: "File Content Issue", 
+            description: "The uploaded file doesn't appear to contain resume content. Please ensure you're uploading a valid resume document.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('Too few meaningful words')) {
+          toast({
+            title: "Content Quality Issue",
+            description: "The extracted content appears to be incomplete. Please try re-saving your document in a different format.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Enhancement Error",
+            description: error.message || "Could not enhance resume. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
+      }
+
+      setEnhancementProgress(90);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      if (data.success && data.enhancedResume) {
+        // ATS optimization disabled - use direct enhanced resume
+        setEnhancedContent(data.enhancedResume);
+        setEnhancementProgress(100);
+        
+        console.log('Enhancement successful, enhanced content:', data.enhancedResume);
+        
+        toast({
+          title: "Enhancement Complete!",
+          description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
+        });
+      } else {
+        console.error('Invalid enhancement response:', data);
+        throw new Error('Enhancement failed - invalid response');
+      }
     } catch (error) {
-      console.error('Parsing error:', error);
+      console.error('Error enhancing resume:', error);
+      setEnhancementProgress(0);
+      
+      // Provide helpful guidance based on the error type
+      let errorMessage = "Could not enhance resume. Please try again.";
+      let errorTitle = "Enhancement Error";
+      
+      if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Network connection issue. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
+      } else if (error.message?.includes('OpenAI') || error.message?.includes('AI service')) {
+        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
+        errorTitle = "Service Unavailable";
+      } else if (error.message?.includes('Insufficient') || error.message?.includes('content')) {
+        errorMessage = "Unable to extract enough content from your file. Try re-saving your document or converting to PDF format.";
+        errorTitle = "Content Extraction Issue";
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = "Request timed out. Please try again with a smaller file or check your connection.";
+        errorTitle = "Timeout Error";
+      }
+      
       toast({
-        title: "Parsing Error", 
-        description: "Failed to parse resume content. Please try again.",
-        variant: "destructive",
+        title: errorTitle,
+        description: errorMessage,
+        variant: "destructive"
       });
     } finally {
-      setTimeout(() => {
-        setIsEnhancing(false);
-        setEnhancementProgress(0);
-        setEnhancementStage("");
-      }, 1000);
+      setIsEnhancing(false);
     }
   };
 
@@ -876,14 +605,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
           <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
-            <FileText className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-            Resume Parsed & Formatted
+            <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
+            AI Enhancement Complete
           </Badge>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2 sm:px-4">
-            Your Resume Preview
+            Your Enhanced Resume Preview
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-6">
-            Your original resume content formatted in beautiful templates. Pay only if you're satisfied with the results.
+            Compare your original resume with our AI-enhanced version. Pay only if you're satisfied with the results.
           </p>
         </div>
 

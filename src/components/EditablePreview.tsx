@@ -4,11 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Save, Edit3, Eye, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Save, Edit3, Eye, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { generateVisualPdf, extractResumeDataFromEnhanced } from '@/lib/visualPdfGenerator';
-import { supabase } from '@/integrations/supabase/client';
 import type { ResumeTemplate } from '@/lib/resumeTemplates';
 
 interface EditablePreviewProps {
@@ -29,7 +28,6 @@ export const EditablePreview = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(enhancedContent);
   const [isSaving, setIsSaving] = useState(false);
-  const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Debug log when component renders
@@ -94,145 +92,6 @@ export const EditablePreview = ({
   };
 
 
-  const enhanceWithAI = async (sectionType: string, content: any) => {
-    setIsEnhancing(sectionType);
-    try {
-      const { data, error } = await supabase.functions.invoke('enhance-section-ai', {
-        body: {
-          section: sectionType,
-          content: content,
-          sectionType: sectionType
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Enhancement failed');
-      }
-
-      // Apply the enhancement based on section type
-      setEditableData((prev: any) => {
-        const updated = { ...prev };
-        
-        switch (sectionType) {
-          case 'summary':
-            updated.summary = data.enhancedContent;
-            break;
-          case 'skills':
-            // Parse enhanced skills back to array
-            const enhancedSkills = data.enhancedContent.split(',').map((skill: string) => skill.trim()).filter((skill: string) => skill);
-            updated.skills = enhancedSkills;
-            break;
-          default:
-            break;
-        }
-        
-        return updated;
-      });
-
-      toast.success(`${sectionType.charAt(0).toUpperCase() + sectionType.slice(1)} enhanced successfully!`);
-      
-    } catch (error) {
-      console.error('Error enhancing section:', error);
-      toast.error(`Failed to enhance ${sectionType}. Please try again.`);
-    } finally {
-      setIsEnhancing(null);
-    }
-  };
-
-  const enhanceExperienceWithAI = async (index: number, achievements: string[]) => {
-    const enhanceKey = `experience-${index}`;
-    setIsEnhancing(enhanceKey);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('enhance-section-ai', {
-        body: {
-          section: 'experience',
-          content: achievements,
-          sectionType: 'experience'
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Enhancement failed');
-      }
-
-      // Parse enhanced achievements
-      const enhancedAchievements = data.enhancedContent.split('\n').filter((line: string) => line.trim());
-      
-      // Update the specific experience entry
-      setEditableData((prev: any) => {
-        const updated = { ...prev };
-        if (updated.experience && updated.experience[index]) {
-          updated.experience[index].achievements = enhancedAchievements;
-        }
-        return updated;
-      });
-
-      toast.success('Experience achievements enhanced successfully!');
-      
-    } catch (error) {
-      console.error('Error enhancing experience:', error);
-      toast.error('Failed to enhance experience. Please try again.');
-    } finally {
-      setIsEnhancing(null);
-    }
-  };
-
-  const renderEnhanceButton = (sectionType: string, content: any, additionalProps?: any) => {
-    if (!isEditing) return null;
-    
-    const isCurrentlyEnhancing = isEnhancing === sectionType;
-    
-    return (
-      <Button
-        onClick={() => enhanceWithAI(sectionType, content)}
-        variant="outline"
-        size="sm"
-        disabled={isCurrentlyEnhancing || !content}
-        className="mb-2 text-xs"
-      >
-        {isCurrentlyEnhancing ? (
-          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-        ) : (
-          <Sparkles className="h-3 w-3 mr-1" />
-        )}
-        {isCurrentlyEnhancing ? 'Enhancing...' : 'Enhance with AI'}
-      </Button>
-    );
-  };
-
-  const renderExperienceEnhanceButton = (index: number, achievements: string[]) => {
-    if (!isEditing) return null;
-    
-    const enhanceKey = `experience-${index}`;
-    const isCurrentlyEnhancing = isEnhancing === enhanceKey;
-    
-    return (
-      <Button
-        onClick={() => enhanceExperienceWithAI(index, achievements)}
-        variant="outline"
-        size="sm"
-        disabled={isCurrentlyEnhancing || !achievements || achievements.length === 0}
-        className="mb-2 text-xs"
-      >
-        {isCurrentlyEnhancing ? (
-          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-        ) : (
-          <Sparkles className="h-3 w-3 mr-1" />
-        )}
-        {isCurrentlyEnhancing ? 'Enhancing...' : 'Enhance with AI'}
-      </Button>
-    );
-  };
-
   const renderEditableField = (label: string, value: string, field: string, nestedField?: string, isTextarea: boolean = false) => {
     const actualValue = nestedField ? editableData[field]?.[nestedField] || '' : editableData[field] || '';
     
@@ -278,10 +137,7 @@ export const EditablePreview = ({
                   {renderEditableField2('Company', item.company, field, 'company', false, index)}
                   {item.achievements && (
                     <div className="mb-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-muted-foreground">Achievements</label>
-                        {renderExperienceEnhanceButton(index, item.achievements)}
-                      </div>
+                      <label className="text-sm font-medium text-muted-foreground">Achievements</label>
                       <Textarea
                         value={item.achievements.join('\n')}
                         onChange={(e) => {
@@ -415,12 +271,9 @@ export const EditablePreview = ({
 
         {/* Professional Summary */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
-              Professional Summary
-            </h3>
-            {renderEnhanceButton('summary', editableData.summary)}
-          </div>
+          <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
+            Professional Summary
+          </h3>
           {renderEditableField('Summary', editableData.summary, 'summary', undefined, true)}
         </div>
 
@@ -433,12 +286,9 @@ export const EditablePreview = ({
         {/* Skills */}
         {editableData.skills && (
           <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
-                Skills
-              </h3>
-              {renderEnhanceButton('skills', editableData.skills)}
-            </div>
+            <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
+              Skills
+            </h3>
             {isEditing ? (
               <Textarea
                 value={(() => {
