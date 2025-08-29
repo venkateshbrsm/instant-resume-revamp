@@ -538,7 +538,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         console.error('Enhancement service error:', error);
         
         // Handle specific error messages from content validation
-        if (error.message?.includes('Insufficient resume content')) {
+        if (error.message?.includes('Insufficient resume content') || error.message?.includes('Insufficient text content')) {
           toast({
             title: "Content Extraction Issue",
             description: "Unable to extract enough readable content from your file. Please try re-saving your document or converting to PDF format.",
@@ -554,6 +554,24 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           toast({
             title: "Content Quality Issue",
             description: "The extracted content appears to be incomplete. Please try re-saving your document in a different format.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('timeout') || error.message?.includes('Processing timeout')) {
+          toast({
+            title: "Processing Timeout",
+            description: "Your resume took too long to process. Please try with a shorter resume or contact support.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('OpenAI API key not configured')) {
+          toast({
+            title: "Service Configuration Error",
+            description: "AI enhancement service is temporarily unavailable. Please try again later.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('FunctionsHttpError') || error.message?.includes('non-2xx status code')) {
+          toast({
+            title: "Enhancement Service Error", 
+            description: "The enhancement service encountered an error. Please try uploading your resume again.",
             variant: "destructive",
           });
         } else {

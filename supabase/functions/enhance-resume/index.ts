@@ -107,248 +107,133 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Use more reliable model and shorter timeout
-  const selectedModel = 'gpt-4.1-2025-04-14'; // More reliable than GPT-5
-  const timeoutMs = 20000; // 20 seconds max
+  // Use more reliable approach - always use single prompt for consistency
+  const selectedModel = 'gpt-4o-mini'; // Fast and reliable model
+  const timeoutMs = 35000; // 35 seconds timeout
   
-  console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
+  console.log(`📊 Processing with model: ${selectedModel} (${timeoutMs/1000}s timeout)`);
 
-  // For any content over 8000, use simplified processing
-  if (originalText.length > 8000) {
-    console.log('📋 Large content detected - using simplified enhancement...');
-    return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
-  }
-
-  const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
-
-CRITICAL: DO NOT USE PLACEHOLDER TEXT. Extract real data from the resume or leave fields empty if not found.
+  // Simplified prompt that works reliably
+  const prompt = `Extract and organize the following resume information into JSON format. Use ONLY actual information from the text - no placeholders.
 
 Resume text:
 ${originalText}
 
-Parse this resume and return ONLY a JSON object with this exact structure:
+Return ONLY a JSON object with this structure:
 {
-  "name": "extract the actual person's name",
-  "title": "extract the actual professional title or role",
-  "email": "extract the actual email address",
-  "phone": "extract the actual phone number", 
-  "location": "extract the actual location/city",
-  "linkedin": "extract the actual LinkedIn URL if present",
-  "summary": "create a professional summary based on the actual profile summary and experience in the resume",
-  "experience": [
-    {
-      "title": "extract the actual job title from work experience section",
-      "company": "extract the actual company name from work experience section",
-      "duration": "extract the actual employment dates/duration",
-      "description": "extract or enhance the actual job description specific to this role",
-      "achievements": ["extract UNIQUE actual bullet points specific to THIS job only", "each achievement must be distinct and role-specific", "avoid repeating similar content across different positions"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "extract the actual degree name",
-      "institution": "extract the actual institution/university name", 
-      "year": "extract the actual graduation year or duration",
-      "gpa": "extract actual GPA if mentioned, otherwise empty string"
-    }
-  ],
-  "skills": ["extract actual skills mentioned in the resume"],
-  "tools": ["extract actual tools/software mentioned"],
-  "certifications": ["extract actual certifications mentioned"],
-  "languages": ["extract actual languages mentioned"]
-}
-
-CRITICAL EXPERIENCE EXTRACTION RULES:
-1. Each experience entry MUST have UNIQUE achievements - never repeat similar bullet points across different jobs
-2. Focus on role-specific responsibilities and outcomes for each position
-3. If the original resume has generic content, differentiate it based on job title, company, and timeframe
-4. Look for subtle differences in responsibilities, tools used, industry focus, or scope of work
-5. Extract actual metrics, numbers, and specific outcomes when available
-6. If multiple similar roles exist, emphasize different aspects of each (e.g., strategy vs execution, team leadership vs individual contributor)
-7. For work experience: Look for job titles, company names, employment dates, and unique bullet points per role
-8. For education: Look for degree names, institution names, graduation dates, GPA if mentioned
-9. For skills: Extract from dedicated skills section or mentioned throughout the resume
-10. For contact info: Extract name, email, phone, location from the header/contact section
-11. For summary: Create based on profile summary section and overall experience
-12. NEVER use phrases like "Professional Role 1", "Company Name", "Achievement based on extracted content" - these are placeholders
-13. If you cannot find specific information, use empty string "" or empty array []
-
-Return ONLY the JSON object, no additional text or formatting.`;
-
-  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
-}
-
-async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔄 Processing with simplified single prompt...');
-  
-  // Use a more focused prompt that extracts key sections efficiently
-  const prompt = `Extract information from this resume and return ONLY a JSON object. Focus on actual data, not placeholders.
-
-Resume content:
-${originalText.substring(0, 10000)} // Limit content to prevent timeouts
-
-Return ONLY this JSON structure:
-{
-  "name": "actual person's name (required)",
-  "title": "job title or professional role",
-  "email": "email address", 
+  "name": "person's actual name",
+  "title": "professional title or role", 
+  "email": "email address",
   "phone": "phone number",
-  "location": "city/location",
+  "location": "location/city",
   "linkedin": "LinkedIn URL if present",
-  "summary": "2-3 sentence professional summary based on the resume content",
+  "summary": "professional summary (2-3 sentences based on resume content)",
   "experience": [
     {
-      "title": "actual job title",
-      "company": "actual company name", 
-      "duration": "employment dates",
-      "description": "brief role description",
-      "achievements": ["specific achievement 1", "specific achievement 2"]
+      "title": "job title",
+      "company": "company name",
+      "duration": "employment dates", 
+      "description": "role description",
+      "achievements": ["achievement 1", "achievement 2"]
     }
   ],
   "education": [
     {
-      "degree": "actual degree name",
-      "institution": "actual school/university name",
+      "degree": "degree name",
+      "institution": "institution name",
       "year": "graduation year",
       "gpa": "GPA if mentioned"
     }
   ],
-  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
-  "tools": ["tool/technology used"],
-  "certifications": ["certification name if any"],
-  "languages": ["language if mentioned"]
+  "skills": ["skill1", "skill2"],
+  "tools": ["tool1", "tool2"],
+  "certifications": ["cert1"],
+  "languages": ["lang1"]
 }
 
-CRITICAL: Extract actual information only. If a section is not found, use empty array [] or empty string "". No placeholder text.`;
+Important: Extract only actual information. Use empty arrays [] or empty strings "" if information is not found.`;
 
   try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, Math.min(timeoutMs, 30000), globalSignal);
+    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
     
-    // Validate the result has minimum required data
+    // Validate and sanitize result
     if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response format from AI');
+      console.log('⚠️ Invalid AI response, creating basic structure from text');
+      return createBasicResumeFromText(originalText);
     }
-    
-    // Ensure required fields exist
+
+    // Ensure all required fields exist with proper defaults
     const validatedResult = {
-      name: result.name || "",
-      title: result.title || "",
-      email: result.email || "",
-      phone: result.phone || "",
-      location: result.location || "",
-      linkedin: result.linkedin || "",
-      summary: result.summary || "",
-      experience: Array.isArray(result.experience) ? result.experience : [],
-      education: Array.isArray(result.education) ? result.education : [],
-      skills: Array.isArray(result.skills) ? result.skills : [],
-      tools: Array.isArray(result.tools) ? result.tools : [],
-      certifications: Array.isArray(result.certifications) ? result.certifications : [],
-      languages: Array.isArray(result.languages) ? result.languages : []
+      name: (result.name || "").toString().trim(),
+      title: (result.title || "").toString().trim(),
+      email: (result.email || "").toString().trim(),
+      phone: (result.phone || "").toString().trim(),
+      location: (result.location || "").toString().trim(),
+      linkedin: (result.linkedin || "").toString().trim(),
+      summary: (result.summary || "").toString().trim(),
+      experience: Array.isArray(result.experience) ? result.experience.slice(0, 15) : [], // Limit to 15 jobs
+      education: Array.isArray(result.education) ? result.education.slice(0, 10) : [],
+      skills: Array.isArray(result.skills) ? result.skills.slice(0, 30) : [],
+      tools: Array.isArray(result.tools) ? result.tools.slice(0, 20) : [],
+      certifications: Array.isArray(result.certifications) ? result.certifications.slice(0, 10) : [],
+      languages: Array.isArray(result.languages) ? result.languages.slice(0, 10) : []
     };
     
-    console.log('✅ Single prompt processing complete');
-    console.log(`📊 Results: ${validatedResult.experience.length} experience, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
+    console.log('✅ AI enhancement completed successfully');
+    console.log(`📊 Results: ${validatedResult.experience.length} jobs, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
     
     return validatedResult;
+
   } catch (error) {
-    console.error('❌ Single prompt processing failed:', error);
-    throw error;
+    console.error('❌ AI enhancement failed, falling back to basic parsing:', error);
+    return createBasicResumeFromText(originalText);
   }
 }
 
-function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  const sections = [];
+function createBasicResumeFromText(text: string): any {
+  console.log('📝 Creating basic resume structure from text');
   
-  // Define section markers
-  const contactMarkers = ['email', '@', 'phone', 'mobile', 'linkedin', 'address'];
-  const experienceMarkers = ['experience', 'employment', 'work history', 'professional experience', 'career', 'work', 'positions held'];
-  const educationMarkers = ['education', 'academic', 'qualification', 'degree', 'university', 'college', 'school'];
-  const skillsMarkers = ['skills', 'technical skills', 'competencies', 'expertise', 'proficiencies', 'technologies'];
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
-  let currentType = 'contact';
-  let currentContent: string[] = [];
+  // Extract basic info
+  const firstLine = lines[0] || "";
+  const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const phoneMatch = text.match(/[\+]?[0-9\s\-\(\)]{10,}/);
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].toLowerCase();
-    const isHeader = line.length < 50 && (line.includes(':') || line.match(/^[a-z\s]+$/));
-    
-    // Check for section transitions
-    let newType = currentType;
-    if (isHeader && experienceMarkers.some(marker => line.includes(marker))) {
-      newType = 'experience';
-    } else if (isHeader && educationMarkers.some(marker => line.includes(marker))) {
-      newType = 'education';
-    } else if (isHeader && skillsMarkers.some(marker => line.includes(marker))) {
-      newType = 'skills';
-    } else if (i < 15 && contactMarkers.some(marker => line.includes(marker))) {
-      newType = 'contact';
-    }
-    
-    // If section changed, save current and start new
-    if (newType !== currentType && currentContent.length > 0) {
-      sections.push({ type: currentType, content: currentContent.join('\n') });
-      currentContent = [];
-      currentType = newType;
-    }
-    
-    currentContent.push(lines[i]);
-  }
-  
-  // Add final section
-  if (currentContent.length > 0) {
-    sections.push({ type: currentType, content: currentContent.join('\n') });
-  }
-  
-  // Merge small sections and ensure we have main sections
-  const consolidated = [];
-  const contactSection = sections.find(s => s.type === 'contact') || { type: 'contact', content: lines.slice(0, 10).join('\n') };
-  consolidated.push(contactSection);
-  
-  const experienceSection = sections.find(s => s.type === 'experience');
-  if (experienceSection) {
-    consolidated.push(experienceSection);
-  }
-  
-  // Combine education and skills if separate, or create from remaining content
-  const educationSection = sections.find(s => s.type === 'education');
-  const skillsSection = sections.find(s => s.type === 'skills');
-  
-  if (educationSection || skillsSection) {
-    const combinedContent = [
-      ...(educationSection ? [educationSection.content] : []),
-      ...(skillsSection ? [skillsSection.content] : [])
-    ].join('\n\n');
-    
-    if (combinedContent.trim()) {
-      consolidated.push({ type: 'skills_education', content: combinedContent });
-    }
-  } else {
-    // Use remaining content
-    const usedLines = contactSection.content.split('\n').length + (experienceSection?.content.split('\n').length || 0);
-    const remainingContent = lines.slice(usedLines).join('\n');
-    if (remainingContent.trim()) {
-      consolidated.push({ type: 'skills_education', content: remainingContent });
-    }
-  }
-  
-  return consolidated;
+  return {
+    name: firstLine.length < 50 ? firstLine : "",
+    title: "",
+    email: emailMatch ? emailMatch[0] : "",
+    phone: phoneMatch ? phoneMatch[0].replace(/\s+/g, ' ').trim() : "",
+    location: "",
+    linkedin: "",
+    summary: "Professional with experience in various roles and responsibilities.",
+    experience: [],
+    education: [],
+    skills: [],
+    tools: [],
+    certifications: [],
+    languages: []
+  };
 }
 
 async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   const controller = new AbortController();
   
-  // Use the shorter of our timeout or global timeout
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutId = setTimeout(() => {
+    console.log('⏰ OpenAI request timeout reached');
+    controller.abort();
+  }, timeoutMs);
   
-  // If global signal is already aborted, abort immediately
+  // Check for global abort
   if (globalSignal?.aborted) {
     clearTimeout(timeoutId);
-    throw new Error('Global timeout reached');
+    throw new Error('Request cancelled');
   }
 
   try {
-    console.log(`📤 Sending request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
+    console.log(`📤 Sending request to OpenAI (${model})...`);
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -358,8 +243,8 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
       body: JSON.stringify({
         model: model,
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4000, // GPT-4.1 uses max_tokens, not max_completion_tokens
-        temperature: 0.3, // GPT-4.1 supports temperature
+        max_tokens: 4000,
+        temperature: 0.3,
       }),
       signal: controller.signal
     });
@@ -369,75 +254,41 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
     console.log('📥 OpenAI response received');
     
-    // Add detailed logging of response structure
-    console.log('🔍 Full OpenAI response structure:', JSON.stringify(data, null, 2));
-    console.log('🔍 Response has choices:', !!data.choices);
-    console.log('🔍 Choices length:', data.choices?.length || 0);
-    console.log('🔍 First choice structure:', JSON.stringify(data.choices?.[0], null, 2));
-    
-    // Handle different response formats
-    let content = null;
-    
-    // Try different ways to extract content
-    if (data.choices?.[0]?.message?.content) {
-      content = data.choices[0].message.content;
-      console.log('✅ Content found in choices[0].message.content');
-    } else if (data.choices?.[0]?.text) {
-      content = data.choices[0].text;
-      console.log('✅ Content found in choices[0].text');
-    } else if (data.content) {
-      content = data.content;
-      console.log('✅ Content found in direct content field');
-    } else if (data.message?.content) {
-      content = data.message.content;
-      console.log('✅ Content found in message.content');
-    }
-    
+    const content = data.choices?.[0]?.message?.content;
     if (!content) {
-      console.error('❌ No content found in any expected field');
-      console.error('❌ Available fields:', Object.keys(data));
-      throw new Error('No content returned from OpenAI - unexpected response format');
+      throw new Error('No content in OpenAI response');
     }
 
-    console.log('📄 Raw OpenAI response preview:', content.substring(0, 200));
+    console.log('📄 Response preview:', content.substring(0, 150));
 
-    // Clean and parse the response
+    // Clean and parse the JSON response
     let cleanedContent = content.trim();
-    
-    // Remove markdown code blocks if present
     if (cleanedContent.startsWith('```json')) {
       cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
     } else if (cleanedContent.startsWith('```')) {
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
 
-    console.log('🧹 Cleaned content preview:', cleanedContent.substring(0, 200));
-
-    const parsedResume = JSON.parse(cleanedContent);
+    const parsedResult = JSON.parse(cleanedContent);
+    console.log('✅ Successfully parsed OpenAI response');
     
-    console.log('✅ Successfully parsed enhanced resume');
-    console.log('👤 Extracted name:', parsedResume.name || 'Not found');
-    console.log('💼 Experience entries:', parsedResume.experience?.length || 0);
-    console.log('🎓 Education entries:', parsedResume.education?.length || 0);
-    console.log('🛠️ Skills count:', parsedResume.skills?.length || 0);
-
-    return parsedResume;
+    return parsedResult;
 
   } catch (error) {
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      console.error('❌ Request timed out after', timeoutMs/1000, 'seconds');
-      throw new Error(`Request timed out. Your resume may be too large. Please try with a shorter resume or contact support.`);
+      console.error('⏰ OpenAI request timed out');
+      throw new Error('Request timed out');
     }
     
-    console.error('❌ Enhancement failed:', error);
+    console.error('❌ OpenAI request failed:', error);
     throw error;
   }
 }
