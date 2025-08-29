@@ -348,7 +348,7 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
   }
 
   try {
-    console.log(`📤 Sending request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
+    console.log(`📤 Sending streaming request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -360,55 +360,89 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 4000, // GPT-4.1 uses max_tokens, not max_completion_tokens
         temperature: 0.3, // GPT-4.1 supports temperature
+        stream: true, // Enable streaming
       }),
       signal: controller.signal
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
+      clearTimeout(timeoutId);
       const errorText = await response.text();
       console.error('❌ OpenAI API error:', response.status, errorText);
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
-    console.log('📥 OpenAI response received');
+    console.log('🌊 Streaming response started...');
     
-    // Add detailed logging of response structure
-    console.log('🔍 Full OpenAI response structure:', JSON.stringify(data, null, 2));
-    console.log('🔍 Response has choices:', !!data.choices);
-    console.log('🔍 Choices length:', data.choices?.length || 0);
-    console.log('🔍 First choice structure:', JSON.stringify(data.choices?.[0], null, 2));
-    
-    // Handle different response formats
-    let content = null;
-    
-    // Try different ways to extract content
-    if (data.choices?.[0]?.message?.content) {
-      content = data.choices[0].message.content;
-      console.log('✅ Content found in choices[0].message.content');
-    } else if (data.choices?.[0]?.text) {
-      content = data.choices[0].text;
-      console.log('✅ Content found in choices[0].text');
-    } else if (data.content) {
-      content = data.content;
-      console.log('✅ Content found in direct content field');
-    } else if (data.message?.content) {
-      content = data.message.content;
-      console.log('✅ Content found in message.content');
-    }
-    
-    if (!content) {
-      console.error('❌ No content found in any expected field');
-      console.error('❌ Available fields:', Object.keys(data));
-      throw new Error('No content returned from OpenAI - unexpected response format');
+    // Handle streaming response
+    const reader = response.body?.getReader();
+    if (!reader) {
+      clearTimeout(timeoutId);
+      throw new Error('No reader available for streaming response');
     }
 
-    console.log('📄 Raw OpenAI response preview:', content.substring(0, 200));
+    let fullContent = '';
+    const decoder = new TextDecoder();
+
+    try {
+      while (true) {
+        // Check if aborted
+        if (globalSignal?.aborted || controller.signal.aborted) {
+          reader.cancel();
+          throw new Error('Request aborted');
+        }
+
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          console.log('🏁 Streaming completed');
+          break;
+        }
+
+        // Decode the chunk
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.trim() === '') continue;
+          if (line.trim() === 'data: [DONE]') continue;
+          
+          if (line.startsWith('data: ')) {
+            try {
+              const jsonData = line.slice(6); // Remove 'data: '
+              const parsed = JSON.parse(jsonData);
+              
+              // Extract content from the streaming chunk
+              const deltaContent = parsed.choices?.[0]?.delta?.content;
+              if (deltaContent) {
+                fullContent += deltaContent;
+                // Log progress periodically
+                if (fullContent.length % 500 === 0) {
+                  console.log(`📊 Streaming progress: ${fullContent.length} characters received`);
+                }
+              }
+            } catch (parseError) {
+              // Skip invalid JSON chunks (common in streaming)
+              continue;
+            }
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+      clearTimeout(timeoutId);
+    }
+
+    console.log('📥 Full streaming response received');
+    console.log(`📊 Total content length: ${fullContent.length} characters`);
+    console.log('📄 Raw streaming content preview:', fullContent.substring(0, 200));
+
+    if (!fullContent) {
+      throw new Error('No content received from streaming response');
+    }
 
     // Clean and parse the response
-    let cleanedContent = content.trim();
+    let cleanedContent = fullContent.trim();
     
     // Remove markdown code blocks if present
     if (cleanedContent.startsWith('```json')) {
@@ -417,11 +451,11 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
 
-    console.log('🧹 Cleaned content preview:', cleanedContent.substring(0, 200));
+    console.log('🧹 Cleaned streaming content preview:', cleanedContent.substring(0, 200));
 
     const parsedResume = JSON.parse(cleanedContent);
     
-    console.log('✅ Successfully parsed enhanced resume');
+    console.log('✅ Successfully parsed enhanced resume from streaming');
     console.log('👤 Extracted name:', parsedResume.name || 'Not found');
     console.log('💼 Experience entries:', parsedResume.experience?.length || 0);
     console.log('🎓 Education entries:', parsedResume.education?.length || 0);
@@ -433,11 +467,11 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      console.error('❌ Request timed out after', timeoutMs/1000, 'seconds');
+      console.error('❌ Streaming request timed out after', timeoutMs/1000, 'seconds');
       throw new Error(`Request timed out. Your resume may be too large. Please try with a shorter resume or contact support.`);
     }
     
-    console.error('❌ Enhancement failed:', error);
+    console.error('❌ Streaming enhancement failed:', error);
     throw error;
   }
 }
