@@ -53,7 +53,14 @@ serve(async (req) => {
     // Convert file to base64 for API upload
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
-    const base64Content = btoa(String.fromCharCode(...uint8Array));
+    
+    // Convert to base64 safely without spreading large arrays
+    let binary = '';
+    const len = uint8Array.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(uint8Array[i]);
+    }
+    const base64Content = btoa(binary);
 
     // Step 1: Upload file to PDFCo
     console.log('Uploading PDF to PDFCo...');
