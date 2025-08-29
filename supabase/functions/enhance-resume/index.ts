@@ -1515,19 +1515,6 @@ Content: ${sanitizedContent}`;
     }
   }
 }
-      
-      // Wait before retry (exponential backoff)
-      if (attempt < maxRetries) {
-        const waitTime = 1000 * attempt; // 1s, 2s, 3s
-        console.log(`⏳ Waiting ${waitTime}ms before retry...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      }
-    }
-  }
-  
-  // This should never be reached, but TypeScript needs it
-  throw new Error(`Unexpected error in ${section.type} processing`);
-}
 
 function mergeSectionResults(
   sectionResults: PromiseSettledResult<{type: string, result: any}>[],
