@@ -1093,6 +1093,50 @@ function parseResumeIntoSections(text: string): Array<{type: string, content: st
   return consolidatedSections.sort((a, b) => a.priority - b.priority);
 }
 
+function sanitizeContent(content: string): string {
+  // Remove problematic characters that might break OpenAI parsing
+  return content
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+    .replace(/[""'']/g, '"') // Normalize quotes
+    .replace(/…/g, '...') // Replace ellipsis
+    .replace(/–—/g, '-') // Replace em/en dashes
+    .trim();
+}
+
+function createFallbackJob(content: string, type: string): any {
+  console.log(`🔧 Creating fallback job for ${type} from raw content`);
+  
+  const lines = content.split('\n').filter(line => line.trim().length > 0);
+  
+  // Try to extract basic job info from raw content
+  const fallbackJob = {
+    title: "Experience Role",
+    company: "Company Name",
+    duration: "Employment Period",
+    description: lines.slice(0, 3).join(' ').substring(0, 200),
+    achievements: lines.slice(0, 5).map(line => line.trim()).filter(line => line.length > 10).slice(0, 3)
+  };
+  
+  // Try to find company from "From:" lines
+  const fromLine = lines.find(line => line.toLowerCase().includes('from:'));
+  if (fromLine) {
+    const companyMatch = fromLine.match(/from:\s*(.+?)(?:\s+|$)/i);
+    if (companyMatch) {
+      fallbackJob.company = companyMatch[1].trim();
+    }
+  }
+  
+  // Try to extract dates
+  const datePattern = /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec).{0,10}\d{2,4}/i;
+  const dateLine = lines.find(line => datePattern.test(line));
+  if (dateLine) {
+    fallbackJob.duration = dateLine.trim();
+  }
+  
+  console.log(`🔧 Fallback job created: ${fallbackJob.title} at ${fallbackJob.company}`);
+  return fallbackJob;
+}
+
 async function processSectionWithSpecializedPrompt(
   section: {type: string, content: string, priority: number},
   apiKey: string,
@@ -1103,18 +1147,26 @@ async function processSectionWithSpecializedPrompt(
   
   console.log(`🔄 Processing ${section.type} section (${section.content.length} chars)...`);
   
+  // Log section content for debugging
+  const contentPreview = section.content.substring(0, 300) + (section.content.length > 300 ? '...' : '');
+  console.log(`📝 ${section.type} content preview: ${contentPreview}`);
+  
+  // Sanitize content before processing
+  const sanitizedContent = sanitizeContent(section.content);
+  console.log(`🧹 Content sanitized: ${section.content.length} → ${sanitizedContent.length} chars`);
+  
   const prompts = {
     contact: `Extract contact information from this resume section. Return ONLY JSON:
 {
   "name": "actual full name",
-  "email": "actual email address",
+  "email": "actual email address", 
   "phone": "actual phone number",
   "location": "actual city/location",
   "linkedin": "actual LinkedIn URL if present"
 }
 
 Resume section:
-${section.content}
+${sanitizedContent}
 
 CRITICAL: Extract only real data. Use empty string "" if not found. No placeholders.`,
 
@@ -1124,7 +1176,7 @@ CRITICAL: Extract only real data. Use empty string "" if not found. No placehold
 }
 
 Resume content:
-${section.content}
+${sanitizedContent}
 
 CRITICAL: Base summary on actual content. No generic placeholders.`,
 
@@ -1146,7 +1198,7 @@ IMPORTANT EXTRACTION RULES:
 - NEVER use generic placeholders - only use actual content from the job entry
 
 Job entry content:
-${section.content}
+${sanitizedContent}
 
 CRITICAL: This is ONE job entry. Extract the specific job title, company name, employment dates, and actual achievements from this role only. Focus on concrete accomplishments and responsibilities.`,
 
@@ -1155,7 +1207,7 @@ CRITICAL: This is ONE job entry. Extract the specific job title, company name, e
   "education": [
     {
       "degree": "actual degree name",
-      "institution": "actual institution name",
+      "institution": "actual institution name", 
       "year": "actual graduation year or date range",
       "gpa": "actual GPA if mentioned, otherwise empty string"
     }
@@ -1163,7 +1215,7 @@ CRITICAL: This is ONE job entry. Extract the specific job title, company name, e
 }
 
 Education section:
-${section.content}
+${sanitizedContent}
 
 CRITICAL: Extract actual educational credentials. Use empty array [] if none found.`,
 
@@ -1176,7 +1228,7 @@ CRITICAL: Extract actual educational credentials. Use empty array [] if none fou
 }
 
 Skills section:
-${section.content}
+${sanitizedContent}
 
 CRITICAL: Categorize properly. Extract only mentioned items. Use empty arrays [] for missing categories.`
   };
@@ -1185,15 +1237,58 @@ CRITICAL: Categorize properly. Extract only mentioned items. Use empty arrays []
   const isExperienceJob = section.type.startsWith('experience_job_');
   const prompt = isExperienceJob ? prompts.experience : (prompts[section.type as keyof typeof prompts] || prompts.skills);
 
+  // Enhanced retry logic with progressive timeouts
+  const maxRetries = 3;
+  const retryTimeouts = [timeoutMs, timeoutMs * 1.5, timeoutMs * 2]; // 60s, 90s, 120s
   
-  try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
-    console.log(`✅ Successfully processed ${section.type} section`);
-    return { type: section.type, result };
-  } catch (error) {
-    console.error(`❌ Failed to process ${section.type} section:`, error);
-    throw new Error(`Failed to process ${section.type}: ${error.message}`);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`📤 Attempt ${attempt}/${maxRetries} for ${section.type}`);
+      
+      const result = await makeOpenAIRequestWithTimeout(
+        prompt, 
+        apiKey, 
+        model, 
+        retryTimeouts[attempt - 1], 
+        globalSignal
+      );
+      
+      console.log(`✅ Successfully processed ${section.type} section on attempt ${attempt}`);
+      
+      // Validate result for experience jobs
+      if (isExperienceJob && (!result.title && !result.company)) {
+        throw new Error('Invalid job data - missing title and company');
+      }
+      
+      return { type: section.type, result };
+      
+    } catch (error) {
+      console.error(`❌ Attempt ${attempt}/${maxRetries} failed for ${section.type}:`, error.message);
+      
+      // If this is the last attempt, create fallback for experience jobs
+      if (attempt === maxRetries) {
+        if (isExperienceJob) {
+          console.log(`🔧 Creating fallback job for ${section.type} after all retries failed`);
+          const fallbackResult = createFallbackJob(sanitizedContent, section.type);
+          return { type: section.type, result: fallbackResult };
+        } else {
+          // For non-experience sections, throw the error
+          console.error(`❌ Final failure for ${section.type} after ${maxRetries} attempts`);
+          throw new Error(`Failed to process ${section.type} after ${maxRetries} attempts: ${error.message}`);
+        }
+      }
+      
+      // Wait before retry (exponential backoff)
+      if (attempt < maxRetries) {
+        const waitTime = 1000 * attempt; // 1s, 2s, 3s
+        console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
   }
+  
+  // This should never be reached, but TypeScript needs it
+  throw new Error(`Unexpected error in ${section.type} processing`);
 }
 
 function mergeSectionResults(
@@ -1201,6 +1296,7 @@ function mergeSectionResults(
   originalSections: Array<{type: string, content: string, priority: number}>
 ): any {
   console.log('🔄 Merging section results...');
+  console.log(`📊 Processing ${sectionResults.length} section results`);
   
   const enhancedResume = {
     name: "",
@@ -1219,7 +1315,30 @@ function mergeSectionResults(
   };
 
   const failedSections: string[] = [];
+  const experienceJobSections: string[] = [];
+  let successfulJobs = 0;
+  let failedJobs = 0;
   
+  // First pass: analyze results and identify experience jobs
+  for (let i = 0; i < sectionResults.length; i++) {
+    const result = sectionResults[i];
+    const originalSection = originalSections[i];
+    
+    if (originalSection.type.startsWith('experience_job_')) {
+      experienceJobSections.push(originalSection.type);
+      
+      if (result.status === 'fulfilled') {
+        successfulJobs++;
+      } else {
+        failedJobs++;
+        console.error(`❌ Job section ${originalSection.type} failed:`, result.reason);
+      }
+    }
+  }
+  
+  console.log(`📈 Experience job processing stats: ${successfulJobs} successful, ${failedJobs} failed out of ${experienceJobSections.length} total jobs`);
+  
+  // Second pass: process all results
   for (let i = 0; i < sectionResults.length; i++) {
     const result = sectionResults[i];
     const originalSection = originalSections[i];
@@ -1231,17 +1350,22 @@ function mergeSectionResults(
       // Handle individual job results
       if (type.startsWith('experience_job_')) {
         console.log(`✅ Merging individual job: ${sectionData.title || 'Unknown Title'} (Experience array size: ${enhancedResume.experience.length} → ${enhancedResume.experience.length + 1})`);
-        // Individual job data comes as a single job object, not an array
-        if (sectionData.title || sectionData.company) {
+        
+        // Validate job data before adding
+        if (sectionData.title || sectionData.company || sectionData.description) {
           enhancedResume.experience.push({
-            title: sectionData.title || "",
-            company: sectionData.company || "",
-            duration: sectionData.duration || "",
-            description: sectionData.description || "",
+            title: sectionData.title || "Professional Role",
+            company: sectionData.company || "Company",
+            duration: sectionData.duration || "Employment Period",
+            description: sectionData.description || "Professional experience and responsibilities",
             achievements: Array.isArray(sectionData.achievements) ? sectionData.achievements : []
           });
+          console.log(`   ✓ Job added successfully: ${sectionData.title || 'Professional Role'} at ${sectionData.company || 'Company'}`);
+        } else {
+          console.warn(`   ⚠️ Skipping job with insufficient data: ${JSON.stringify(sectionData)}`);
         }
       } else {
+        // Handle non-job sections
         switch (type) {
           case 'contact':
             enhancedResume.name = sectionData.name || "";
@@ -1254,9 +1378,6 @@ function mergeSectionResults(
           case 'summary':
             enhancedResume.summary = sectionData.summary || "";
             break;
-            
-          // REMOVED: case 'experience' - this was overwriting individual jobs!
-          // Individual jobs are now handled above and should never be overwritten
             
           case 'education':
             enhancedResume.education = Array.isArray(sectionData.education) ? sectionData.education : [];
@@ -1273,20 +1394,49 @@ function mergeSectionResults(
     } else {
       failedSections.push(originalSection.type);
       console.error(`❌ Failed to process ${originalSection.type} section:`, result.reason);
+      
+      // For failed experience jobs, create minimal fallback entries
+      if (originalSection.type.startsWith('experience_job_')) {
+        console.log(`🔧 Creating emergency fallback for failed job: ${originalSection.type}`);
+        const fallbackJob = createFallbackJob(originalSection.content, originalSection.type);
+        enhancedResume.experience.push(fallbackJob);
+        console.log(`   ✓ Fallback job created: ${fallbackJob.title} at ${fallbackJob.company}`);
+      }
     }
   }
   
-  // If critical sections failed, throw error (no fallbacks)
-  if (failedSections.includes('contact') || failedSections.includes('experience')) {
-    throw new Error(`Critical sections failed to process: ${failedSections.join(', ')}. Cannot continue without contact and experience data.`);
+  // Validate that we preserved all detected jobs
+  const detectedJobCount = experienceJobSections.length;
+  const finalJobCount = enhancedResume.experience.length;
+  
+  console.log(`🎯 Job preservation validation: ${detectedJobCount} detected → ${finalJobCount} in final result`);
+  
+  if (finalJobCount === 0 && detectedJobCount > 0) {
+    console.error('🚨 CRITICAL: All jobs were lost during processing!');
+    throw new Error(`All ${detectedJobCount} detected jobs were lost during OpenAI processing. This is a critical failure.`);
   }
   
-  // If we have some failed sections but not critical ones, continue
+  if (finalJobCount < detectedJobCount) {
+    console.warn(`⚠️ Job count mismatch: Expected ${detectedJobCount}, got ${finalJobCount}. Some jobs may have been lost.`);
+  }
+  
+  // Critical section validation (but allow fallbacks for experience)
+  const contactFailed = failedSections.some(s => s === 'contact');
+  if (contactFailed) {
+    console.error('❌ Contact section processing failed completely');
+    throw new Error('Critical contact section failed to process. Cannot continue without contact information.');
+  }
+  
+  // Log processing summary
   if (failedSections.length > 0) {
-    console.warn(`⚠️ Some sections failed but continuing: ${failedSections.join(', ')}`);
+    const nonJobFailures = failedSections.filter(s => !s.startsWith('experience_job_'));
+    if (nonJobFailures.length > 0) {
+      console.warn(`⚠️ Non-job sections failed: ${nonJobFailures.join(', ')}`);
+    }
+    console.warn(`⚠️ Total failed sections: ${failedSections.length}, but ${finalJobCount} jobs preserved`);
   }
   
-  // Log final experience array for debugging
+  // Final experience array logging
   console.log(`🎯 Final merged experience array contains ${enhancedResume.experience.length} jobs:`);
   enhancedResume.experience.forEach((job, index) => {
     console.log(`   Job ${index + 1}: ${job.title} at ${job.company} (${job.duration})`);
@@ -1356,6 +1506,12 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
 
   try {
     console.log(`📤 Sending request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
+    
+    // Log prompt preview for debugging
+    const promptPreview = prompt.substring(0, 200) + (prompt.length > 200 ? '...' : '');
+    console.log(`📝 Prompt preview: ${promptPreview}`);
+    
+    const requestStart = Date.now();
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -1372,23 +1528,47 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     });
 
     clearTimeout(timeoutId);
+    const requestDuration = Date.now() - requestStart;
+    console.log(`⏱️ OpenAI request completed in ${requestDuration}ms`);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ OpenAI API error:', response.status, errorText);
+      
+      // Enhanced error messages for common issues
+      if (response.status === 429) {
+        throw new Error(`Rate limit exceeded. Please wait and try again.`);
+      } else if (response.status === 401) {
+        throw new Error(`Authentication failed. Check OpenAI API key.`);
+      } else if (response.status >= 500) {
+        throw new Error(`OpenAI server error (${response.status}). Please try again later.`);
+      }
+      
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     console.log('📥 OpenAI response received');
     
-    // Add detailed logging of response structure
-    console.log('🔍 Full OpenAI response structure:', JSON.stringify(data, null, 2));
+    // Enhanced response validation
+    if (!data) {
+      throw new Error('Empty response from OpenAI API');
+    }
+    
+    if (data.error) {
+      console.error('❌ OpenAI returned error:', data.error);
+      throw new Error(`OpenAI error: ${data.error.message || JSON.stringify(data.error)}`);
+    }
+    
+    // Add detailed logging of response structure for debugging
     console.log('🔍 Response has choices:', !!data.choices);
     console.log('🔍 Choices length:', data.choices?.length || 0);
-    console.log('🔍 First choice structure:', JSON.stringify(data.choices?.[0], null, 2));
     
-    // Handle different response formats
+    if (data.choices?.length > 0) {
+      console.log('🔍 First choice structure:', JSON.stringify(data.choices[0], null, 2));
+    }
+    
+    // Handle different response formats with better error handling
     let content = null;
     
     // Try different ways to extract content
@@ -1409,13 +1589,23 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     if (!content) {
       console.error('❌ No content found in any expected field');
       console.error('❌ Available fields:', Object.keys(data));
+      console.error('❌ Full response structure:', JSON.stringify(data, null, 2));
       throw new Error('No content returned from OpenAI - unexpected response format');
+    }
+
+    if (typeof content !== 'string') {
+      console.error('❌ Content is not a string:', typeof content, content);
+      throw new Error(`Invalid content type: expected string, got ${typeof content}`);
     }
 
     console.log('📄 Raw OpenAI response preview:', content.substring(0, 200));
 
-    // Clean and parse the response
+    // Enhanced content cleaning and validation
     let cleanedContent = content.trim();
+    
+    if (!cleanedContent) {
+      throw new Error('OpenAI returned empty content');
+    }
     
     // Remove markdown code blocks if present
     if (cleanedContent.startsWith('```json')) {
@@ -1423,10 +1613,39 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     } else if (cleanedContent.startsWith('```')) {
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
+    
+    // Remove any remaining whitespace
+    cleanedContent = cleanedContent.trim();
 
     console.log('🧹 Cleaned content preview:', cleanedContent.substring(0, 200));
 
-    const parsedResume = JSON.parse(cleanedContent);
+    // Enhanced JSON parsing with better error handling
+    let parsedResume;
+    try {
+      parsedResume = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('❌ JSON parsing failed:', parseError);
+      console.error('❌ Content that failed to parse:', cleanedContent);
+      
+      // Try to fix common JSON issues
+      try {
+        // Fix trailing commas and other common issues
+        const fixedContent = cleanedContent
+          .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+          .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
+          .replace(/:\s*'([^']*)'([,}\]])/g, ':"$1"$2'); // Convert single quotes to double
+        
+        parsedResume = JSON.parse(fixedContent);
+        console.log('✅ JSON parsing succeeded after cleanup');
+      } catch (secondParseError) {
+        console.error('❌ JSON parsing failed even after cleanup:', secondParseError);
+        throw new Error(`Failed to parse OpenAI response as JSON: ${parseError.message}. Content: ${cleanedContent.substring(0, 500)}`);
+      }
+    }
+    
+    if (!parsedResume || typeof parsedResume !== 'object') {
+      throw new Error(`Invalid parsed result: expected object, got ${typeof parsedResume}`);
+    }
     
     console.log('✅ Successfully parsed enhanced resume');
     console.log('👤 Extracted name:', parsedResume.name || 'Not found');
@@ -1441,10 +1660,15 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     
     if (error.name === 'AbortError') {
       console.error('❌ Request timed out after', timeoutMs/1000, 'seconds');
-      throw new Error(`Request timed out. Your resume may be too large. Please try with a shorter resume or contact support.`);
+      throw new Error(`Request timed out after ${timeoutMs/1000}s. The section may be too complex or OpenAI is overloaded.`);
     }
     
-    console.error('❌ Enhancement failed:', error);
+    // Enhanced error logging
+    console.error('❌ makeOpenAIRequestWithTimeout failed:');
+    console.error('   Error name:', error.name);
+    console.error('   Error message:', error.message);
+    console.error('   Error stack:', error.stack);
+    
     throw error;
   }
 }
