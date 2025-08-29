@@ -114,10 +114,10 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   
   console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
 
-  // If content is very large (>12000 chars), split into sections
+  // For large content, use a more efficient single-pass approach
   if (originalText.length > 12000) {
-    console.log('📋 Large content detected - processing in chunks...');
-    return await processLargeResumeInChunks(originalText, apiKey, timeoutMs, globalSignal);
+    console.log('📋 Large content detected - using simplified enhancement...');
+    return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
   }
 
   const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
@@ -179,162 +179,82 @@ Return ONLY the JSON object, no additional text or formatting.`;
   return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
 }
 
-async function processLargeResumeInChunks(originalText: string, apiKey: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔄 Processing large resume in chunks...');
+async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
+  console.log('🔄 Processing with simplified single prompt...');
   
-  // Split content into logical sections
-  const sections = splitResumeIntoSections(originalText);
-  console.log(`📊 Split into ${sections.length} sections: ${sections.map(s => s.type).join(', ')}`);
-  
-  const results: any = {
-    name: "",
-    title: "",
-    email: "",
-    phone: "",
-    location: "",
-    linkedin: "",
-    summary: "",
-    experience: [],
-    education: [],
-    skills: [],
-    tools: [],
-    certifications: [],
-    languages: []
-  };
+  // Use a more focused prompt that extracts key sections efficiently
+  const prompt = `Extract information from this resume and return ONLY a JSON object. Focus on actual data, not placeholders.
 
-  // Process contact and basic info first
-  const contactSection = sections.find(s => s.type === 'contact') || sections[0];
-  if (contactSection) {
-    console.log('👤 Processing contact information...');
-    const contactPrompt = `Extract contact information from this resume section:
+Resume content:
+${originalText.substring(0, 10000)} // Limit content to prevent timeouts
 
-${contactSection.content}
-
-Return ONLY a JSON object with:
+Return ONLY this JSON structure:
 {
-  "name": "actual person's name",
-  "title": "professional title/role",
-  "email": "email address",
+  "name": "actual person's name (required)",
+  "title": "job title or professional role",
+  "email": "email address", 
   "phone": "phone number",
-  "location": "location/city",
-  "linkedin": "LinkedIn URL if present"
-}`;
-
-    try {
-      const contactResult = await makeOpenAIRequestWithTimeout(contactPrompt, apiKey, 'gpt-5-mini-2025-08-07', 30000, globalSignal);
-      Object.assign(results, contactResult);
-    } catch (error) {
-      console.error('Error processing contact section:', error);
-      if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
-    }
-  }
-
-  // Process experience section
-  const experienceSection = sections.find(s => s.type === 'experience');
-  if (experienceSection) {
-    console.log('💼 Processing work experience...');
-    const expPrompt = `Extract work experience from this section:
-
-${experienceSection.content}
-
-Return ONLY a JSON object with:
-{
+  "location": "city/location",
+  "linkedin": "LinkedIn URL if present",
+  "summary": "2-3 sentence professional summary based on the resume content",
   "experience": [
     {
-      "title": "job title",
-      "company": "company name",
+      "title": "actual job title",
+      "company": "actual company name", 
       "duration": "employment dates",
-      "description": "job description",
-      "achievements": ["unique achievements for this role"]
+      "description": "brief role description",
+      "achievements": ["specific achievement 1", "specific achievement 2"]
     }
-  ]
-}`;
-
-    try {
-      const expResult = await makeOpenAIRequestWithTimeout(expPrompt, apiKey, 'gpt-5-mini-2025-08-07', 25000, globalSignal);
-      if (expResult && expResult.experience && Array.isArray(expResult.experience)) {
-        results.experience = expResult.experience;
-      } else {
-        console.warn('Experience extraction returned invalid format:', expResult);
-      }
-    } catch (error) {
-      console.error('Error processing experience section:', error);
-      if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
-    }
-  }
-
-  // Process other sections in parallel for speed
-  const otherPromises = sections
-    .filter(s => s.type !== 'contact' && s.type !== 'experience')
-    .map(async (section) => {
-      console.log(`🔧 Processing ${section.type} section...`);
-      try {
-        let sectionPrompt = '';
-        
-        if (section.type === 'skills_education') {
-          sectionPrompt = `Extract skills and education from this resume section:
-
-${section.content}
-
-Return ONLY a JSON object with:
-{
-  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
+  ],
   "education": [
     {
       "degree": "actual degree name",
-      "institution": "actual institution name", 
+      "institution": "actual school/university name",
       "year": "graduation year",
       "gpa": "GPA if mentioned"
     }
-  ]
-}`;
-        } else {
-          sectionPrompt = `Extract ${section.type} information from:
+  ],
+  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
+  "tools": ["tool/technology used"],
+  "certifications": ["certification name if any"],
+  "languages": ["language if mentioned"]
+}
 
-${section.content}
+CRITICAL: Extract actual information only. If a section is not found, use empty array [] or empty string "". No placeholder text.`;
 
-Return ONLY a JSON object with the ${section.type} data.`;
-        }
-
-        const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 15000, globalSignal);
-        return { type: section.type, data: result };
-      } catch (error) {
-        console.error(`Error processing ${section.type} section:`, error);
-        return null;
-      }
-    });
-
-  const otherResults = await Promise.allSettled(otherPromises);
-  
-  // Merge results
-  otherResults.forEach((result) => {
-    if (result.status === 'fulfilled' && result.value) {
-      const { type, data } = result.value;
-      if (data && typeof data === 'object') {
-        Object.assign(results, data);
-      }
+  try {
+    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, Math.min(timeoutMs, 30000), globalSignal);
+    
+    // Validate the result has minimum required data
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response format from AI');
     }
-  });
-
-  // Generate summary from all collected data
-  if (!results.summary && (results.experience.length > 0 || results.skills.length > 0)) {
-    try {
-      const summaryPrompt = `Create a professional summary based on this data:
-Experience: ${JSON.stringify(results.experience)}
-Skills: ${JSON.stringify(results.skills)}
-
-Return ONLY: {"summary": "professional summary text"}`;
-      
-      const summaryResult = await makeOpenAIRequestWithTimeout(summaryPrompt, apiKey, 'gpt-5-mini-2025-08-07', 15000, globalSignal);
-      results.summary = summaryResult.summary || "";
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
-    }
+    
+    // Ensure required fields exist
+    const validatedResult = {
+      name: result.name || "",
+      title: result.title || "",
+      email: result.email || "",
+      phone: result.phone || "",
+      location: result.location || "",
+      linkedin: result.linkedin || "",
+      summary: result.summary || "",
+      experience: Array.isArray(result.experience) ? result.experience : [],
+      education: Array.isArray(result.education) ? result.education : [],
+      skills: Array.isArray(result.skills) ? result.skills : [],
+      tools: Array.isArray(result.tools) ? result.tools : [],
+      certifications: Array.isArray(result.certifications) ? result.certifications : [],
+      languages: Array.isArray(result.languages) ? result.languages : []
+    };
+    
+    console.log('✅ Single prompt processing complete');
+    console.log(`📊 Results: ${validatedResult.experience.length} experience, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
+    
+    return validatedResult;
+  } catch (error) {
+    console.error('❌ Single prompt processing failed:', error);
+    throw error;
   }
-
-  console.log('✅ Chunked processing complete');
-  return results;
 }
 
 function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {

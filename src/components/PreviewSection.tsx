@@ -570,21 +570,48 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (data.success && data.enhancedResume) {
-        // Check if enhancement is complete (has key sections)
+        // Check if enhancement has some useful data
+        const hasName = data.enhancedResume.name && data.enhancedResume.name.trim().length > 0;
         const hasExperience = data.enhancedResume.experience && data.enhancedResume.experience.length > 0;
         const hasSkills = data.enhancedResume.skills && data.enhancedResume.skills.length > 0;
         const hasEducation = data.enhancedResume.education && data.enhancedResume.education.length > 0;
         
-        if (!hasExperience && !hasSkills && !hasEducation) {
-          console.warn('Enhancement returned incomplete data - missing key sections');
-          throw new Error('Enhancement incomplete - missing experience, skills, and education sections. Please try again.');
+        // If we have at least a name and one other section, consider it successful
+        if (hasName && (hasExperience || hasSkills || hasEducation)) {
+          // Use the AI-enhanced content directly
+          setEnhancedContent(data.enhancedResume);
+          setEnhancementProgress(100);
+          
+          console.log('Enhancement successful, enhanced content:', data.enhancedResume);
+          
+          toast({
+            title: "Enhancement Complete!",
+            description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
+          });
+        } else {
+          console.warn('Enhancement returned minimal data:', data.enhancedResume);
+          // Fall back to showing original extracted content with a warning
+          if (originalContent && ((typeof originalContent === 'string' && originalContent.length > 0) || 
+                                        (typeof originalContent === 'object' && originalContent.text))) {
+            const fallbackContent = {
+              name: (typeof originalContent === 'string' ? originalContent.split('\n')[0] : originalContent.text.split('\n')[0]) || "Unknown",
+              title: "Professional",
+              email: "", phone: "", location: "", linkedin: "",
+              summary: "Please review and edit this content manually.",
+              experience: [], education: [], skills: [], tools: [], certifications: [], languages: []
+            };
+            setEnhancedContent(fallbackContent);
+            setEnhancementProgress(100);
+            
+            toast({
+              title: "Enhancement Partial",
+              description: "AI enhancement extracted limited data. Please review and edit manually.",
+              variant: "default"
+            });
+          } else {
+            throw new Error('Enhancement returned incomplete data. Please try with a clearer resume format.');
+          }
         }
-        
-        // Use the AI-enhanced content directly without ATS override
-        setEnhancedContent(data.enhancedResume);
-        setEnhancementProgress(100);
-        
-        console.log('Enhancement successful, enhanced content:', data.enhancedResume);
         
         toast({
           title: "Enhancement Complete!",
