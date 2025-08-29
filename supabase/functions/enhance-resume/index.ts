@@ -152,32 +152,49 @@ function detectIndividualJobs(experienceText: string): string[] {
   console.log(`📝 Experience text length: ${experienceText.length} characters`);
   console.log(`📄 Experience preview: ${experienceText.substring(0, 500)}...`);
   
-  // Step 1: Try company-based detection (most reliable for structured resumes)
-  const companyJobs = detectJobsByCompanyTransitions(experienceText);
-  if (companyJobs.length > 1) {
-    console.log(`✅ Company-based detection successful: ${companyJobs.length} jobs found`);
-    return companyJobs;
+  try {
+    // Step 1: Try company-based detection (most reliable for structured resumes)
+    const companyJobs = detectJobsByCompanyTransitions(experienceText);
+    if (companyJobs.length > 1) {
+      console.log(`✅ Company-based detection successful: ${companyJobs.length} jobs found`);
+      return companyJobs;
+    }
+  } catch (error) {
+    console.error('❌ Company-based detection failed:', error);
   }
   
-  // Step 2: Try date-based detection for chronological resumes
-  const dateJobs = detectJobsByDateRanges(experienceText);
-  if (dateJobs.length > 1) {
-    console.log(`✅ Date-based detection successful: ${dateJobs.length} jobs found`);
-    return dateJobs;
+  try {
+    // Step 2: Try date-based detection for chronological resumes
+    const dateJobs = detectJobsByDateRanges(experienceText);
+    if (dateJobs.length > 1) {
+      console.log(`✅ Date-based detection successful: ${dateJobs.length} jobs found`);
+      return dateJobs;
+    }
+  } catch (error) {
+    console.error('❌ Date-based detection failed:', error);
   }
   
-  // Step 3: Try role progression detection (same company, multiple roles)
-  const roleJobs = detectJobsByRoleProgression(experienceText);
-  if (roleJobs.length > 1) {
-    console.log(`✅ Role progression detection successful: ${roleJobs.length} jobs found`);
-    return roleJobs;
+  try {
+    // Step 3: Try role progression detection (same company, multiple roles)
+    const roleJobs = detectJobsByRoleProgression(experienceText);
+    if (roleJobs.length > 1) {
+      console.log(`✅ Role progression detection successful: ${roleJobs.length} jobs found`);
+      return roleJobs;
+    }
+  } catch (error) {
+    console.error('❌ Role progression detection failed:', error);
   }
   
-  // Step 4: Fallback to content-based splitting
-  const contentJobs = intelligentContentSplitting(experienceText);
-  console.log(`🔄 Fallback content splitting: ${contentJobs.length} jobs detected`);
-  
-  return contentJobs;
+  try {
+    // Step 4: Fallback to content-based splitting
+    const contentJobs = intelligentContentSplitting(experienceText);
+    console.log(`🔄 Fallback content splitting: ${contentJobs.length} jobs detected`);
+    return contentJobs;
+  } catch (error) {
+    console.error('❌ Content splitting failed:', error);
+    // Final fallback - return the original text as a single job
+    return [experienceText];
+  }
 }
 
 function detectJobsByCompanyTransitions(text: string): string[] {
