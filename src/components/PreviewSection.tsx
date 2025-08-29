@@ -470,7 +470,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     if (!extractedText || extractedText.length < 50) {
       toast({
         title: "Content Required",
-        description: "Waiting for file content to be extracted before parsing.",
+        description: "Please wait for file content to be extracted before parsing.",
         variant: "destructive"
       });
       return;
@@ -481,11 +481,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setEnhancementStage("Parsing your resume...");
 
     try {
-      console.log('📄 Starting direct parsing of resume content');
-      setEnhancementProgress(20);
+      console.log('📄 Starting to parse extracted text:');
+      console.log('Extracted text length:', extractedText.length);
+      console.log('First 500 characters:', extractedText.substring(0, 500));
+      console.log('Full extracted text:', extractedText);
       
-      // Parse the content directly
+      setEnhancementProgress(20);
+      setEnhancementStage("Analyzing document structure...");
+      
+      // Parse the content directly from the extracted text
       const lines = extractedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      console.log('Total lines found:', lines.length);
+      console.log('First 10 lines:', lines.slice(0, 10));
       
       const result: any = {
         name: '',
@@ -493,60 +500,136 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         email: '',
         phone: '',
         location: '',
+        linkedin: '',
         summary: '',
         experience: [],
         education: [],
         skills: [],
+        tools: [],
         core_technical_skills: []
       };
       
       setEnhancementProgress(40);
-      setEnhancementStage("Extracting contact information...");
+      setEnhancementStage("Extracting personal information...");
       
-      // Extract name
-      for (const line of lines) {
-        if (line.match(/^[A-Z][A-Z\s]{8,}$/) && !line.includes('PROFESSIONAL') && !line.includes('EXPERIENCE')) {
+      // Extract name - look for capitalized names at the beginning
+      for (let i = 0; i < Math.min(10, lines.length); i++) {
+        const line = lines[i];
+        // Look for names like SUNDARI CHANDRASHEKAR or patterns that look like names
+        if (line.match(/^[A-Z][A-Z\s]{8,}$/) && 
+            !line.includes('PROFESSIONAL') && 
+            !line.includes('EXPERIENCE') && 
+            !line.includes('SUMMARY') && 
+            !line.includes('SKILLS') &&
+            !line.includes('EDUCATION')) {
           result.name = line;
+          console.log('Found name:', line);
+          break;
+        }
+        // Also check for title case names
+        if (line.match(/^[A-Z][a-z]+ [A-Z][a-z]+/) && line.length < 50) {
+          result.name = line;
+          console.log('Found name (title case):', line);
           break;
         }
       }
       
       // Extract contact information
       for (const line of lines) {
+        // Email
         if (line.includes('@')) {
           const email = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0];
-          if (email) result.email = email;
+          if (email) {
+            result.email = email;
+            console.log('Found email:', email);
+          }
         }
+        // Phone
         if (line.match(/^\+?\d[\d\s\-\(\)]+$/) || line.match(/\b\d{10,}\b/)) {
           result.phone = line;
+          console.log('Found phone:', line);
+        }
+        // LinkedIn
+        if (line.toLowerCase().includes('linkedin')) {
+          result.linkedin = line;
+          console.log('Found LinkedIn:', line);
         }
       }
       
       setEnhancementProgress(60);
       setEnhancementStage("Processing work experience...");
       
-      // Parse work experience
+      // Parse sections more carefully
+      let currentSection = '';
       let inExperience = false;
+      let inEducation = false;
+      let inSkills = false;
+      let inSummary = false;
       let currentJob: any = null;
       
-      for (const line of lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
         const lowerLine = line.toLowerCase();
         
-        if (lowerLine.includes('experience') || lowerLine.includes('organizational experience')) {
+        // Detect section headers
+        if (lowerLine.includes('experience') || lowerLine.includes('organizational experience') || lowerLine.includes('employment history')) {
+          console.log('Found experience section at line:', i, line);
+          if (currentJob) {
+            result.experience.push(currentJob);
+            currentJob = null;
+          }
           inExperience = true;
+          inEducation = false;
+          inSkills = false;
+          inSummary = false;
           continue;
-        } else if (lowerLine.includes('education') || lowerLine.includes('skills')) {
+        } else if (lowerLine.includes('education') || lowerLine.includes('qualification') || lowerLine.includes('academic')) {
+          console.log('Found education section at line:', i, line);
           if (currentJob) {
             result.experience.push(currentJob);
             currentJob = null;
           }
           inExperience = false;
+          inEducation = true;
+          inSkills = false;
+          inSummary = false;
+          continue;
+        } else if (lowerLine.includes('skills') || lowerLine.includes('competencies') || lowerLine.includes('core competencies')) {
+          console.log('Found skills section at line:', i, line);
+          if (currentJob) {
+            result.experience.push(currentJob);
+            currentJob = null;
+          }
+          inExperience = false;
+          inEducation = false;
+          inSkills = true;
+          inSummary = false;
+          continue;
+        } else if (lowerLine.includes('summary') || lowerLine.includes('objective') || lowerLine.includes('profile summary')) {
+          console.log('Found summary section at line:', i, line);
+          inExperience = false;
+          inEducation = false;
+          inSkills = false;
+          inSummary = true;
           continue;
         }
         
-        if (inExperience) {
-          if (line.match(/from:|to:|till date|\d{4}/i)) {
-            if (currentJob) result.experience.push(currentJob);
+        // Process content based on current section
+        if (inSummary && line.length > 10) {
+          if (result.summary) {
+            result.summary += ' ' + line;
+          } else {
+            result.summary = line;
+          }
+          console.log('Added to summary:', line);
+        } else if (inExperience) {
+          // Look for date patterns to identify job periods
+          if (line.match(/from:|to:|till date|\d{4}|aug|sep|oct|nov|dec|jan|feb|mar|apr|may|jun|jul/i)) {
+            console.log('Found job date/period:', line);
+            if (currentJob) {
+              result.experience.push(currentJob);
+              console.log('Saved previous job:', currentJob);
+            }
             currentJob = {
               title: '',
               company: '',
@@ -555,34 +638,96 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               core_responsibilities: [],
               achievements: []
             };
-          } else if (currentJob && line.includes('AVP') || line.includes('Officer') || line.includes('Manager')) {
+          }
+          // Look for job titles or roles - be more flexible
+          else if (currentJob && !currentJob.title && (
+            line.includes('AVP') || line.includes('Manager') || line.includes('Officer') || 
+            line.includes('Role') || line.includes('Analyst') || line.includes('Director') || 
+            line.includes('Specialist') || line.includes('Lead') || line.includes('Senior') ||
+            line.includes('Business Information Risk Officer')
+          )) {
             currentJob.title = line;
-          } else if (currentJob && (line.includes('HSBC') || line.includes('Limited'))) {
+            console.log('Found job title:', line);
+          }
+          // Look for company names
+          else if (currentJob && !currentJob.company && (
+            line.includes('HSBC') || line.includes('Bank') || line.includes('Limited') || 
+            line.includes('P limited') || line.includes('Company') || line.includes('Corp') || 
+            line.includes('Inc') || line.includes('Electronic Data Processing')
+          )) {
             currentJob.company = line;
-          } else if (currentJob && line.length > 15) {
-            if (line.includes('Responsible for') || line.includes('Liaising')) {
-              currentJob.core_responsibilities.push(line);
+            console.log('Found company:', line);
+          }
+          // Add responsibilities and achievements
+          else if (currentJob && line.length > 15 && !line.match(/^[A-Z\s]+$/)) {
+            if (line.startsWith('-') || line.startsWith('•') || 
+                line.includes('Responsible for') || line.includes('Liaising') || 
+                line.includes('Accountable for') || line.includes('Managing') ||
+                line.includes('Coordinating') || line.includes('Implementing')) {
+              currentJob.core_responsibilities.push(line.replace(/^[-•]\s*/, ''));
+              console.log('Added responsibility:', line);
             } else if (line.length > 30) {
               currentJob.achievements.push(line);
+              console.log('Added achievement:', line);
             }
           }
+        } else if (inEducation && line.length > 5 && !line.match(/^[A-Z\s]+$/)) {
+          result.education.push({
+            degree: line,
+            institution: '',
+            year: '',
+            gpa: ''
+          });
+          console.log('Added education:', line);
+        } else if (inSkills && line.length > 3) {
+          // Split skills by common delimiters
+          const skills = line.split(/[,|•·\-~]/).map(s => s.trim()).filter(s => s.length > 1);
+          result.skills.push(...skills);
+          console.log('Added skills:', skills);
         }
       }
       
-      if (currentJob) result.experience.push(currentJob);
-      
-      setEnhancementProgress(80);
-      
-      if (!result.name && lines.length > 0) {
-        result.name = lines[0] || 'Professional';
+      // Add final job if exists
+      if (currentJob) {
+        result.experience.push(currentJob);
+        console.log('Added final job:', currentJob);
       }
       
-      result.summary = 'Experienced professional with demonstrated expertise in delivering results.';
-      result.skills = ['Risk Management', 'Compliance', 'Operations', 'Data Analysis'];
-      result.core_technical_skills = result.skills.map((skill: string, index: number) => ({
+      setEnhancementProgress(80);
+      setEnhancementStage("Finalizing content...");
+      
+      // Set fallback values if nothing found
+      if (!result.name && lines.length > 0) {
+        // Try to find name in first few lines more aggressively
+        for (let i = 0; i < Math.min(5, lines.length); i++) {
+          if (lines[i].length > 5 && lines[i].length < 50 && !lines[i].includes('@')) {
+            result.name = lines[i];
+            break;
+          }
+        }
+        if (!result.name) {
+          result.name = 'Professional';
+        }
+      }
+      
+      if (!result.summary && result.experience.length > 0) {
+        result.summary = 'Experienced professional with demonstrated expertise in various domains.';
+      }
+      
+      // Clean up and deduplicate skills
+      const uniqueSkills = [...new Set(result.skills)].slice(0, 15);
+      result.skills = uniqueSkills;
+      
+      // Generate core technical skills from regular skills
+      result.core_technical_skills = uniqueSkills.slice(0, 10).map((skill: string, index: number) => ({
         name: skill,
-        proficiency: 80 + index * 2
+        proficiency: 75 + (index * 2)
       }));
+      
+      console.log('Final parsed result:', result);
+      console.log('Name found:', result.name);
+      console.log('Experience entries:', result.experience.length);
+      console.log('Skills found:', result.skills.length);
       
       setEnhancedContent(result);
       setEnhancementProgress(100);
@@ -590,14 +735,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
       toast({
         title: "Resume Parsed Successfully",
-        description: "Your resume content has been extracted and formatted.",
+        description: `Extracted ${result.experience.length} jobs, ${result.skills.length} skills from your resume.`,
       });
 
     } catch (error) {
       console.error('Parsing error:', error);
       toast({
         title: "Parsing Error", 
-        description: "Failed to parse resume content.",
+        description: "Failed to parse resume content. Please try again.",
         variant: "destructive",
       });
     } finally {
