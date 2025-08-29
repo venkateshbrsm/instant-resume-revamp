@@ -747,10 +747,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        />
 
                           {/* Tabbed Preview */}
-                           <Tabs defaultValue="extracted" className="w-full">
+                           <Tabs defaultValue="edit" className="w-full">
                             <TabsList className="grid w-full grid-cols-3">
                               <TabsTrigger value="extracted">📄 Extracted Content</TabsTrigger>
-                              <TabsTrigger value="edit">✏️ Edit & Download</TabsTrigger>
+                              <TabsTrigger 
+                                value="edit" 
+                                className="bg-gradient-primary text-primary-foreground hover:bg-gradient-primary/90 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground font-semibold shadow-elegant"
+                              >
+                                ✏️ Edit & Download
+                              </TabsTrigger>
                               <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
                             </TabsList>
                           
