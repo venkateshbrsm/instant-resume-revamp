@@ -30,6 +30,14 @@ export const EditablePreview = ({
   const [isSaving, setIsSaving] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // Update editableData when enhancedContent changes
+  React.useEffect(() => {
+    if (enhancedContent) {
+      console.log('🔍 EditablePreview - Updating with new enhanced content:', enhancedContent);
+      setEditableData(enhancedContent);
+    }
+  }, [enhancedContent]);
+
   // Debug log when component renders
   console.log('🔍 EditablePreview render - editableData:', editableData);
   console.log('🔍 EditablePreview render - enhancedContent:', enhancedContent);
