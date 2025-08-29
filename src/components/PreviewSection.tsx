@@ -748,15 +748,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                           {/* Tabbed Preview */}
                            <Tabs defaultValue="edit" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                              <TabsTrigger value="extracted">📄 Extracted Content</TabsTrigger>
+                            <TabsList className="grid w-full grid-cols-2 bg-muted/30">
                               <TabsTrigger 
                                 value="edit" 
-                                className="bg-gradient-primary text-primary-foreground hover:bg-gradient-primary/90 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground font-semibold shadow-elegant"
+                                className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200"
                               >
                                 ✏️ Edit & Download
                               </TabsTrigger>
-                              <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
+                              <TabsTrigger 
+                                value="pdf"
+                                className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200"
+                              >
+                                📄 PDF Preview
+                              </TabsTrigger>
                             </TabsList>
                           
                           <TabsContent value="pdf" className="space-y-4">
@@ -834,79 +838,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                            </TabsContent>
                            
-                            <TabsContent value="extracted" className="space-y-4">
-                              <div className="bg-muted/50 rounded-lg p-4 border">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h3 className="text-lg font-semibold">📄 Extracted File Content</h3>
-                                  <Badge variant="outline" className="text-xs">
-                                    {typeof originalContent === 'object' && originalContent.fileType ? originalContent.fileType.toUpperCase() : 'TXT'}
-                                  </Badge>
-                                </div>
-                                
-                                {/* Display structured content if available */}
-                                {extractedText ? (
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                      <div className="space-y-2">
-                                        <h4 className="font-semibold text-sm flex items-center">
-                                          <FileText className="w-4 h-4 mr-2" />
-                                          Document Info
-                                        </h4>
-                                        <div className="bg-background p-3 rounded border space-y-1 text-xs">
-                                          <div><strong>File:</strong> {file.name}</div>
-                                          <div><strong>Size:</strong> {(file.size / 1024).toFixed(1)} KB</div>
-                                          <div><strong>Type:</strong> {typeof originalContent === 'object' && originalContent.fileType ? originalContent.fileType.toUpperCase() : file.type}</div>
-                                          <div><strong>Extracted Length:</strong> {extractedText.length} characters</div>
-                                        </div>
-                                      </div>
-                                      
-                                      {typeof originalContent === 'object' && originalContent.profilePhotoUrl && (
-                                        <div className="space-y-2">
-                                          <h4 className="font-semibold text-sm flex items-center">
-                                            <Award className="w-4 h-4 mr-2" />
-                                            Profile Photo
-                                          </h4>
-                                          <div className="bg-background p-3 rounded border">
-                                            <img 
-                                              src={originalContent.profilePhotoUrl} 
-                                              alt="Extracted profile photo" 
-                                              className="w-16 h-16 object-cover rounded border"
-                                            />
-                                            <p className="text-xs text-muted-foreground mt-1">Photo extracted successfully</p>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="space-y-2">
-                                      <h4 className="font-semibold text-sm flex items-center">
-                                        <FileText className="w-4 h-4 mr-2" />
-                                        Raw Text Content
-                                      </h4>
-                                      <ScrollArea className="h-[400px] w-full rounded border bg-background p-4">
-                                        <pre className="text-sm whitespace-pre-wrap font-mono">
-                                          {extractedText}
-                                        </pre>
-                                      </ScrollArea>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-8">
-                                    <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                                    <p className="text-muted-foreground">No content extracted yet...</p>
-                                  </div>
-                                )}
-                                
-                                <p className="text-xs text-muted-foreground mt-4 p-3 bg-background rounded border">
-                                  <strong>Note:</strong> This is the raw content extracted from your uploaded file. 
-                                  {typeof originalContent === 'object' && originalContent.fileType === 'pdf' ? 
-                                    ' PDF text extraction may vary based on document formatting and complexity.' :
-                                    ' You can edit and enhance this content using the Edit tab above.'
-                                  }
-                                </p>
-                              </div>
-                            </TabsContent>
-                          
                             <TabsContent value="edit" className="space-y-4">
                               <EditablePreview
                                 enhancedContent={enhancedContent}
