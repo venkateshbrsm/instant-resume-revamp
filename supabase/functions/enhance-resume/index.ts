@@ -203,96 +203,84 @@ function detectJobsByCompanyTransitions(text: string): string[] {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   const jobs: string[] = [];
   
-  // Look for company patterns and "From:" markers
-  const companyPatterns = [
-    /^([A-Z][A-Za-z\s&]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*Limited|Services?|Solutions?|Technologies?|Systems?|Bank|India|Operations?))/i,
-    /^(From:[^A-Z]*?)([A-Z][A-Za-z\s&]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*Limited|Services?|Solutions?|Technologies?|Systems?|Bank|India|Operations?))/i,
-    /\b(HSBC|Accenture|Deutsche Bank|Team Lease|Baroda Global|Yes Bank|RBL Bank|HDFC Bank|CITIBANK|Citibank)\b/i
+  // Enhanced patterns for user's resume format
+  const fromMarkerPattern = /^From:\s*/i;
+  const specificCompanyPatterns = [
+    /HSBC\s+Electronic\s+Data\s+Processing\s+India\s+P\.?\s*limited/i,
+    /Accenture\s+Services\s+Private\s+Limited/i,
+    /Deutsche\s+Bank\s+AG/i,
+    /Team\s+Lease\s+Services\s+Limited/i,
+    /Baroda\s+Global\s+Shared\s+Services\s+Limited/i,
+    /Yes\s+Bank\s+Limited/i,
+    /RBL\s+Bank\s+Limited/i,
+    /HDFC\s+Bank\s+Limited/i,
+    /CITIBANK/i
   ];
   
-  const dateRangePattern = /From:\s*([A-Za-z]+\s+\d{2,4})\s+to\s+([A-Za-z]+\s+\d{2,4}|till date|present)/i;
+  const generalCompanyPatterns = [
+    /^([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i,
+    /^From:\s*([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i
+  ];
   
   let currentJob: string[] = [];
   let lastCompanyFound = '';
+  let jobCount = 0;
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    console.log(`  🔍 Line ${i}: "${line.substring(0, 80)}..."`);
     
-    // Check for company names or date ranges that indicate job start
-    const isCompanyLine = companyPatterns.some(pattern => pattern.test(line));
-    const isDateRangeLine = dateRangePattern.test(line);
+    // Check for "From:" marker as primary job boundary
+    const isFromMarker = fromMarkerPattern.test(line);
     
-    if ((isCompanyLine || isDateRangeLine) && currentJob.length > 0) {
+    // Check for specific company patterns
+    const isSpecificCompany = specificCompanyPatterns.some(pattern => pattern.test(line));
+    
+    // Check for general company patterns
+    const isGeneralCompany = generalCompanyPatterns.some(pattern => pattern.test(line));
+    
+    const isJobBoundary = isFromMarker || isSpecificCompany || isGeneralCompany;
+    
+    if (isJobBoundary && currentJob.length > 0) {
       // Found new job, save previous one
       const jobContent = currentJob.join('\n').trim();
-      if (jobContent.length > 200) { // Minimum meaningful job content
+      if (jobContent.length > 150) { // Reduced threshold for better detection
         jobs.push(jobContent);
-        console.log(`  🏢 Job ${jobs.length}: ${lastCompanyFound} (${jobContent.length} chars)`);
+        jobCount++;
+        console.log(`  ✅ Job ${jobCount}: ${lastCompanyFound} (${jobContent.length} chars)`);
+        console.log(`     Preview: ${jobContent.substring(0, 100)}...`);
+      } else {
+        console.log(`  ⚠️  Skipped short job: ${jobContent.length} chars`);
       }
+      
       currentJob = [line];
       
-      // Extract company name for logging
-      const companyMatch = line.match(/([A-Z][A-Za-z\s&]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*Limited|Services?|Solutions?|Technologies?|Systems?|Bank|India|Operations?))/i);
-      lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'Unknown Company';
+      // Extract company name for better logging
+      if (isSpecificCompany) {
+        const match = specificCompanyPatterns.find(pattern => pattern.test(line));
+        lastCompanyFound = match ? line.match(match)?.[0] || 'Unknown' : 'Unknown';
+      } else if (isFromMarker) {
+        // Extract company from "From:" line
+        const companyMatch = line.match(/From:\s*(.+)/i);
+        lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'From Line';
+      } else {
+        const companyMatch = line.match(/([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i);
+        lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'Unknown Company';
+      }
       
     } else {
       currentJob.push(line);
       
       // If this is the first line and looks like a company, mark it
-      if (currentJob.length === 1 && isCompanyLine) {
-        const companyMatch = line.match(/([A-Z][A-Za-z\s&]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*Limited|Services?|Solutions?|Technologies?|Systems?|Bank|India|Operations?))/i);
-        lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'Unknown Company';
+      if (currentJob.length === 1 && isJobBoundary) {
+        if (isSpecificCompany) {
+          const match = specificCompanyPatterns.find(pattern => pattern.test(line));
+          lastCompanyFound = match ? line.match(match)?.[0] || 'Unknown' : 'Unknown';
+        } else {
+          const companyMatch = line.match(/([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i);
+          lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'First Job';
+        }
       }
-    }
-  }
-  
-  // Add the last job
-  if (currentJob.length > 0) {
-    const jobContent = currentJob.join('\n').trim();
-    if (jobContent.length > 200) {
-      jobs.push(jobContent);
-      console.log(`  🏢 Job ${jobs.length}: ${lastCompanyFound} (${jobContent.length} chars)`);
-    }
-  }
-  
-  return jobs;
-}
-
-function detectJobsByDateRanges(text: string): string[] {
-  console.log('📅 Detecting jobs by date ranges...');
-  
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  const jobs: string[] = [];
-  
-  // Enhanced date patterns for different formats
-  const datePatterns = [
-    /From:\s*([A-Za-z]+\s*\d{2,4})\s+to\s+([A-Za-z]+\s*\d{2,4}|till date|present)/i,
-    /(\d{4})\s*[-–—]\s*(\d{4}|present|current|till date)/i,
-    /([A-Za-z]+\s+\d{4})\s*[-–—]\s*([A-Za-z]+\s+\d{4}|present|current|till date)/i,
-    /(\d{1,2}\/\d{4})\s*[-–—]\s*(\d{1,2}\/\d{4}|present|current)/i,
-    /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s']*\d{2,4}\s*[-–—]\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s']*\d{2,4}/i
-  ];
-  
-  let currentJob: string[] = [];
-  let jobCount = 0;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
-    // Check if line contains a date range
-    const hasDateRange = datePatterns.some(pattern => pattern.test(line));
-    
-    if (hasDateRange && currentJob.length > 0) {
-      // Save previous job
-      const jobContent = currentJob.join('\n').trim();
-      if (jobContent.length > 150) {
-        jobs.push(jobContent);
-        jobCount++;
-        console.log(`  📅 Job ${jobCount}: ${line.substring(0, 50)}... (${jobContent.length} chars)`);
-      }
-      currentJob = [line];
-    } else {
-      currentJob.push(line);
     }
   }
   
@@ -302,10 +290,83 @@ function detectJobsByDateRanges(text: string): string[] {
     if (jobContent.length > 150) {
       jobs.push(jobContent);
       jobCount++;
-      console.log(`  📅 Job ${jobCount}: Final job (${jobContent.length} chars)`);
+      console.log(`  ✅ Final Job ${jobCount}: ${lastCompanyFound} (${jobContent.length} chars)`);
     }
   }
   
+  console.log(`🏢 Company detection result: ${jobs.length} jobs found`);
+  return jobs;
+}
+
+function detectJobsByDateRanges(text: string): string[] {
+  console.log('📅 Detecting jobs by date ranges...');
+  
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const jobs: string[] = [];
+  
+  // Enhanced date patterns for user's specific formats
+  const datePatterns = [
+    // "From: Aug 21 to till date" format
+    /From:\s*([A-Za-z]{3,9}\s*'\d{2}|\d{1,2}\/\d{4}|[A-Za-z]{3,9}\s+\d{2,4})\s+to\s+(till\s+date|present|[A-Za-z]{3,9}\s*'\d{2}|[A-Za-z]{3,9}\s+\d{2,4})/i,
+    
+    // "Sep1997-Feb 2013" format (no spaces)
+    /([A-Za-z]{3,9}\d{4})\s*[-–—]\s*([A-Za-z]{3,9}\s*\d{4}|present|current|till\s+date)/i,
+    
+    // "Mar 21 to July 21" format  
+    /([A-Za-z]{3,9}\s+\d{2,4})\s+to\s+([A-Za-z]{3,9}\s+\d{2,4}|present|current|till\s+date)/i,
+    
+    // Standard formats
+    /(\d{4})\s*[-–—]\s*(\d{4}|present|current|till\s+date)/i,
+    /([A-Za-z]+\s+\d{4})\s*[-–—]\s*([A-Za-z]+\s+\d{4}|present|current|till\s+date)/i,
+    /(\d{1,2}\/\d{4})\s*[-–—]\s*(\d{1,2}\/\d{4}|present|current)/i,
+    
+    // Month abbreviations with apostrophes: "Aug'21", "Mar'13"
+    /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s']*\d{2,4}\s*[-–—to]\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s']*\d{2,4}/i,
+    
+    // "Since" patterns
+    /Since\s+([A-Za-z]+[\s']*\d{2,4})/i
+  ];
+  
+  let currentJob: string[] = [];
+  let jobCount = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Check if line contains a date range
+    const matchedPattern = datePatterns.find(pattern => pattern.test(line));
+    const hasDateRange = !!matchedPattern;
+    
+    if (hasDateRange) {
+      console.log(`  🎯 Date pattern found: "${line}" (Pattern: ${matchedPattern})`);
+      
+      if (currentJob.length > 0) {
+        // Save previous job
+        const jobContent = currentJob.join('\n').trim();
+        if (jobContent.length > 100) { // Reduced threshold
+          jobs.push(jobContent);
+          jobCount++;
+          console.log(`  ✅ Job ${jobCount}: Date-based (${jobContent.length} chars)`);
+          console.log(`     Preview: ${jobContent.substring(0, 80)}...`);
+        }
+      }
+      currentJob = [line];
+    } else {
+      currentJob.push(line);
+    }
+  }
+  
+  // Add the last job
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 100) {
+      jobs.push(jobContent);
+      jobCount++;
+      console.log(`  ✅ Final Job ${jobCount}: Date-based (${jobContent.length} chars)`);
+    }
+  }
+  
+  console.log(`📅 Date detection result: ${jobs.length} jobs found`);
   return jobs;
 }
 
@@ -360,51 +421,170 @@ function detectJobsByRoleProgression(text: string): string[] {
 }
 
 function intelligentContentSplitting(text: string): string[] {
-  console.log('🧠 Applying intelligent content splitting...');
+  console.log('🧠 Applying intelligent content splitting fallback...');
   
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  console.log(`📝 Total lines to process: ${lines.length}`);
   
-  // Strategy 1: Split by major content blocks (paragraph-based)
-  const paragraphJobs = text.split(/\n\s*\n/).filter(p => p.trim().length > 200);
+  // Strategy 1: Use "From:" as the most reliable boundary marker for this user's format
+  const fromBasedJobs = splitByFromMarkers(text);
+  if (fromBasedJobs.length > 1) {
+    console.log(`✅ From-marker splitting: ${fromBasedJobs.length} jobs found`);
+    return fromBasedJobs;
+  }
+  
+  // Strategy 2: Split by major content blocks (paragraph-based)
+  const paragraphJobs = text.split(/\n\s*\n/).filter(p => p.trim().length > 150);
   if (paragraphJobs.length > 1) {
-    console.log(`  📝 Paragraph-based splitting: ${paragraphJobs.length} jobs`);
+    console.log(`✅ Paragraph-based splitting: ${paragraphJobs.length} jobs found`);
     return paragraphJobs;
   }
   
-  // Strategy 2: Split by line count for very long content
-  if (lines.length > 50) {
-    console.log('  📏 Long content detected, splitting by line count');
-    const jobSize = Math.ceil(lines.length / Math.min(Math.floor(lines.length / 20), 6));
-    const jobs: string[] = [];
-    
-    for (let i = 0; i < lines.length; i += jobSize) {
-      const jobLines = lines.slice(i, i + jobSize);
-      const jobContent = jobLines.join('\n').trim();
-      if (jobContent.length > 150) {
-        jobs.push(jobContent);
-        console.log(`    📏 Chunk ${jobs.length}: ${jobContent.length} chars`);
-      }
-    }
-    
-    if (jobs.length > 1) {
-      return jobs;
+  // Strategy 3: Split by role/position indicators for career progression
+  const roleBasedJobs = splitByRoleIndicators(text);
+  if (roleBasedJobs.length > 1) {
+    console.log(`✅ Role-based splitting: ${roleBasedJobs.length} jobs found`);
+    return roleBasedJobs;
+  }
+  
+  // Strategy 4: Split by line count for very long content (adaptive)
+  if (lines.length > 40) {
+    console.log('📏 Long content detected, using adaptive line splitting');
+    const adaptiveJobs = adaptiveLineSplitting(lines);
+    if (adaptiveJobs.length > 1) {
+      console.log(`✅ Adaptive splitting: ${adaptiveJobs.length} jobs found`);
+      return adaptiveJobs;
     }
   }
   
-  // Strategy 3: Look for any organizational markers
+  // Strategy 5: Look for any organizational markers as last resort
+  const markerBasedJobs = splitByOrganizationalMarkers(lines);
+  if (markerBasedJobs.length > 1) {
+    console.log(`✅ Marker-based splitting: ${markerBasedJobs.length} jobs found`);
+    return markerBasedJobs;
+  }
+  
+  // Final fallback - return original as single job
+  console.log('⚠️ All splitting strategies failed, returning single job');
+  return [text];
+}
+
+function splitByFromMarkers(text: string): string[] {
+  console.log('  🎯 Splitting by "From:" markers...');
+  const fromPattern = /^From:\s*/im;
+  const sections = text.split(fromPattern).filter(section => section.trim().length > 100);
+  
+  // Add back "From:" prefix to all but first section
+  const jobs = sections.map((section, index) => {
+    if (index === 0) return section.trim();
+    return 'From: ' + section.trim();
+  });
+  
+  return jobs.filter(job => job.length > 150);
+}
+
+function splitByRoleIndicators(text: string): string[] {
+  console.log('  🎯 Splitting by role indicators...');
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  
+  const roleIndicators = [
+    /^As\s+(AVP|Area Manager|Vice President|Manager|Director|Executive|Officer)/i,
+    /^Role:\s*/i,
+    /^Position:\s*/i,
+    /^Designation:\s*/i,
+    /Since\s+[A-Za-z]+[\s']*\d{2,4}/i,
+    /\d{4}\s*[-–—]\s*\d{4}/i
+  ];
+  
+  for (const line of lines) {
+    const isRoleIndicator = roleIndicators.some(pattern => pattern.test(line));
+    
+    if (isRoleIndicator && currentJob.length > 5) {
+      const jobContent = currentJob.join('\n').trim();
+      if (jobContent.length > 150) {
+        jobs.push(jobContent);
+      }
+      currentJob = [line];
+    } else {
+      currentJob.push(line);
+    }
+  }
+  
+  // Add final job
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 150) {
+      jobs.push(jobContent);
+    }
+  }
+  
+  return jobs;
+}
+
+function adaptiveLineSplitting(lines: string[]): string[] {
+  console.log('  📏 Using adaptive line splitting...');
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  
+  // Calculate ideal chunk size based on content density
+  const avgLineLength = lines.reduce((sum, line) => sum + line.length, 0) / lines.length;
+  const targetJobLength = 2000; // Target characters per job
+  const linesPerJob = Math.max(Math.ceil(targetJobLength / avgLineLength), 8);
+  
+  console.log(`  📊 Avg line length: ${Math.round(avgLineLength)}, targeting ${linesPerJob} lines per job`);
+  
+  for (let i = 0; i < lines.length; i++) {
+    currentJob.push(lines[i]);
+    
+    // Look for natural break points when we have enough content
+    if (currentJob.length >= linesPerJob) {
+      const jobContent = currentJob.join('\n').trim();
+      
+      // Check if next few lines might be a natural break
+      const nextLines = lines.slice(i + 1, i + 4).join(' ').toLowerCase();
+      const hasNaturalBreak = /\b(from|since|role|position|company|bank|limited|services)\b/.test(nextLines) ||
+                             /\d{4}/.test(nextLines);
+      
+      if (hasNaturalBreak || i === lines.length - 1) {
+        if (jobContent.length > 150) {
+          jobs.push(jobContent);
+          console.log(`    📦 Chunk ${jobs.length}: ${jobContent.length} chars`);
+        }
+        currentJob = [];
+      }
+    }
+  }
+  
+  // Add remaining content
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 150) {
+      jobs.push(jobContent);
+      console.log(`    📦 Final chunk: ${jobContent.length} chars`);
+    }
+  }
+  
+  return jobs;
+}
+
+function splitByOrganizationalMarkers(lines: string[]): string[] {
+  console.log('  🎯 Splitting by organizational markers...');
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  
   const organizationalMarkers = [
     /\b(HSBC|Accenture|Deutsche|Team Lease|Baroda|Yes Bank|RBL|HDFC|Citibank|CITIBANK)\b/i,
     /\b(Manager|Director|Vice President|AVP|Executive|Officer|Lead|Senior|Specialist)\b/i,
-    /\b(From|Since|Apr|Aug|Jan|Feb|Mar|May|Jun|Jul|Sep|Oct|Nov|Dec)\s+\d{4}/i
+    /\b(From|Since|Apr|Aug|Jan|Feb|Mar|May|Jun|Jul|Sep|Oct|Nov|Dec)\s+\d{2,4}/i,
+    /\b(Limited|Ltd|Bank|Services|Private|India)\b/i
   ];
-  
-  let currentJob: string[] = [];
-  const jobs: string[] = [];
   
   for (const line of lines) {
     const hasMarker = organizationalMarkers.some(pattern => pattern.test(line));
     
-    if (hasMarker && currentJob.length > 10) {
+    if (hasMarker && currentJob.length > 8) { // Need substantial content before splitting
       const jobContent = currentJob.join('\n').trim();
       if (jobContent.length > 200) {
         jobs.push(jobContent);
@@ -425,8 +605,7 @@ function intelligentContentSplitting(text: string): string[] {
     }
   }
   
-  // Return the best result or fallback to single job
-  return jobs.length > 1 ? jobs : [text];
+  return jobs;
 }
 
 function intelligentContentSplit(text: string): string[] {
