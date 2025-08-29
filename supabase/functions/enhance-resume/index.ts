@@ -73,15 +73,16 @@ CRITICAL INSTRUCTIONS:
 1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
 2. Preserve EVERY job position, company, and time period from the original
 3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. Expand descriptions to be more comprehensive and achievement-focused
-5. Add relevant industry keywords and ATS-friendly terms for each role
-6. Make each section detailed and professional with specific accomplishments
-7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
+4. For each work experience entry, preserve the EXACT same number of bullet points/achievements as in the original resume
+5. Reword each bullet point/achievement using professional language while maintaining the original meaning
+6. Add relevant industry keywords and ATS-friendly terms for each role
+7. Make each section detailed and professional with specific accomplishments
 8. Use strong action verbs and descriptive achievements WITHOUT any numbers, percentages, or metrics
 9. Return ONLY a valid JSON object with the exact structure shown below
 10. MANDATORY: Include ALL work experience entries from the original resume
 11. MANDATORY: Include ALL skills and technical skills from the original resume
 12. CRITICAL: Do NOT include any quantified data (numbers, percentages, amounts) in achievements unless explicitly present in the original resume
+13. CRITICAL: Maintain the same number of bullet points per job as in the original resume - do not add or remove bullet points
 
 REQUIRED JSON STRUCTURE:
 {
@@ -131,15 +132,17 @@ REQUIRED JSON STRUCTURE:
 ENHANCEMENT GUIDELINES:
 - Professional summary should be compelling and keyword-rich
 - Experience descriptions should be brief role overviews (1-2 sentences)
-- Each experience should have 3-5 core responsibilities detailing daily tasks and duties
-- Each experience should have 3-5 specific achievements using descriptive text without numbers or metrics
+- For each work experience entry, count the bullet points in the original resume and create the EXACT same number of enhanced bullet points
+- Reword each original bullet point into professional, ATS-friendly language while preserving the core meaning
+- Do not add extra bullet points - only enhance the existing ones
 - Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
 - Extract ALL tools mentioned in original resume as a separate "tools" array
 - Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
 - Expand on responsibilities with action verbs and specific outcomes
 - Make content ATS-friendly with industry standard terminology
 - Ensure all sections are comprehensive and detailed
-- Focus achievements on impact descriptions and professional contributions without quantification`;
+- Focus achievements on impact descriptions and professional contributions without quantification
+- CRITICAL: The number of achievements/bullet points per job must match the original resume exactly`;
 
   console.log('Sending request to OpenAI...');
 
