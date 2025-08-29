@@ -881,9 +881,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                               </div>
                             </TabsContent>
                           
-                            <TabsContent value="edit" className="space-y-4">
+                             <TabsContent value="edit" className="space-y-4">
                               <EditablePreview
                                 enhancedContent={enhancedContent}
+                                extractedContent={originalContent} // Pass raw extracted content
                                 selectedTemplate={selectedTemplate}
                                 selectedColorTheme={selectedColorTheme}
                                 onContentUpdate={handleContentUpdate}
