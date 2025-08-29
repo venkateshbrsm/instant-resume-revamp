@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   // Set a global timeout for the entire function
-  const globalTimeoutMs = 55000; // 55 seconds (less than edge function limit)
+  const globalTimeoutMs = 360000; // 6 minutes (accommodate 5min OpenAI timeout + buffer)
   const globalController = new AbortController();
   const globalTimeout = setTimeout(() => {
     console.log('⏰ Global function timeout reached');
@@ -109,7 +109,7 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
 
   // Use more reliable approach - always use single prompt for consistency
   const selectedModel = 'gpt-4o-mini'; // Fast and reliable model
-  const timeoutMs = 35000; // 35 seconds timeout
+  const timeoutMs = 300000; // 5 minutes timeout
   
   console.log(`📊 Processing with model: ${selectedModel} (${timeoutMs/1000}s timeout)`);
 
