@@ -28,6 +28,7 @@ function sanitizeContentForOpenAI(content: string): string {
 
 function createFallbackJobEntry(rawContent: string): any {
   console.log(`🔧 Creating fallback job entry from raw content (${rawContent.length} chars)`);
+  // Return the job directly, not wrapped in experience array
   return createEnhancedFallbackJob(rawContent, 'fallback');
 }
 
@@ -1573,20 +1574,27 @@ function mergeSectionResults(
       
       // Handle individual job results
       if (type.startsWith('experience_job_')) {
-        console.log(`✅ Merging individual job: ${sectionData.title || 'Unknown Title'} (Experience array size: ${enhancedResume.experience.length} → ${enhancedResume.experience.length + 1})`);
+        // Check if this is a fallback job structure with nested experience array
+        let jobData = sectionData;
+        if (sectionData.experience && Array.isArray(sectionData.experience) && sectionData.experience.length > 0) {
+          // This is from the old fallback structure - extract the job
+          jobData = sectionData.experience[0];
+        }
+        
+        console.log(`✅ Merging individual job: ${jobData.title || 'Unknown Title'} (Experience array size: ${enhancedResume.experience.length} → ${enhancedResume.experience.length + 1})`);
         
         // Validate job data before adding
-        if (sectionData.title || sectionData.company || sectionData.description) {
+        if (jobData.title || jobData.company || jobData.description) {
           enhancedResume.experience.push({
-            title: sectionData.title || "Professional Role",
-            company: sectionData.company || "Company",
-            duration: sectionData.duration || "Employment Period",
-            description: Array.isArray(sectionData.description) ? sectionData.description : [sectionData.description || "Professional experience and responsibilities"],
-            achievements: Array.isArray(sectionData.achievements) ? sectionData.achievements : []
+            title: jobData.title || "Professional Role",
+            company: jobData.company || "Company",
+            duration: jobData.duration || "Employment Period",
+            description: Array.isArray(jobData.description) ? jobData.description : [jobData.description || "Professional experience and responsibilities"],
+            achievements: Array.isArray(jobData.achievements) ? jobData.achievements : []
           });
-          console.log(`   ✓ Job added successfully: ${sectionData.title || 'Professional Role'} at ${sectionData.company || 'Company'}`);
+          console.log(`   ✓ Job added successfully: ${jobData.title || 'Professional Role'} at ${jobData.company || 'Company'}`);
         } else {
-          console.warn(`   ⚠️ Skipping job with insufficient data: ${JSON.stringify(sectionData)}`);
+          console.warn(`   ⚠️ Skipping job with insufficient data: ${JSON.stringify(jobData)}`);
         }
       } else {
         // Handle non-job sections
