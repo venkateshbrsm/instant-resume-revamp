@@ -183,6 +183,10 @@ serve(async (req) => {
     // Remove common AI introduction phrases and return only the enhanced content
     let cleanedContent = enhancedContent;
     
+    // Remove markdown formatting
+    cleanedContent = cleanedContent.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove **bold** formatting
+    cleanedContent = cleanedContent.replace(/\*(.*?)\*/g, '$1'); // Remove *italic* formatting
+    
     // Remove common AI prefixes and explanatory text
     const prefixesToRemove = [
       /^Certainly!?\s*/i,
@@ -225,6 +229,34 @@ serve(async (req) => {
       cleanedContent = cleanedContent.replace(prefix, '');
     }
 
+    // Remove explanatory text that comes AFTER the enhanced content
+    const explanatoryPatterns = [
+      /This version.*$/i,
+      /This enhanced.*$/i,
+      /This improved.*$/i,
+      /This optimized.*$/i,
+      /This revised.*$/i,
+      /This rewrite.*$/i,
+      /This professional.*$/i,
+      /The above.*$/i,
+      /This incorporates.*$/i,
+      /This includes.*$/i,
+      /This maintains.*$/i,
+      /This focuses.*$/i,
+      /This highlights.*$/i,
+      /This emphasizes.*$/i,
+      /This ensures.*$/i,
+      /\s*-\s*This.*$/i,
+      // Remove any sentence that starts with explanation after the main content
+      /[.!]\s*This\s+.*$/i,
+      /[.!]\s*The\s+.*version.*$/i,
+      /[.!]\s*It\s+.*$/i
+    ];
+
+    for (const pattern of explanatoryPatterns) {
+      cleanedContent = cleanedContent.replace(pattern, '');
+    }
+
     // Remove trailing dashes or separators and explanatory suffixes
     cleanedContent = cleanedContent.replace(/^---+\s*/, '').replace(/\s*---+$/, '');
     
@@ -243,6 +275,9 @@ serve(async (req) => {
     
     // Clean up extra whitespace and newlines at the beginning and end
     cleanedContent = cleanedContent.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '').trim();
+    
+    // Remove any trailing periods that might be left from explanatory text
+    cleanedContent = cleanedContent.replace(/\.\s*$/, '').trim();
 
     console.log('✅ Field enhancement completed successfully');
 
