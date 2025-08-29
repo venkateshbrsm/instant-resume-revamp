@@ -132,7 +132,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     // Use edited content if available, otherwise use enhanced content
     const contentToUse = editedContent || enhancedContent;
     if (contentToUse && !isGeneratingPreview) {
-      generatePreviewPdf();
+      console.log('🔄 Triggering PDF regeneration due to content/template change');
+      console.log('🔄 Using content type:', editedContent ? 'edited' : 'enhanced');
+      console.log('🔄 Content preview - name:', contentToUse.name, 'skills:', contentToUse.skills?.length || 0);
+      
+      // Small delay to prevent excessive regeneration during rapid edits
+      const timeoutId = setTimeout(() => {
+        generatePreviewPdf();
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [enhancedContent, editedContent, selectedTemplate, selectedColorTheme]);
 
@@ -893,10 +902,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 selectedTemplate={selectedTemplate}
                                 selectedColorTheme={selectedColorTheme}
                                 onContentUpdate={(updatedContent) => {
-                                  console.log('Content updated from EditablePreview:', updatedContent);
+                                  console.log('📝 Content updated from EditablePreview:', updatedContent);
+                                  console.log('📝 Updated content keys:', Object.keys(updatedContent));
                                   setEditedContent(updatedContent);
-                                  // Also update the enhanced content to reflect the latest edits for PDF generation
-                                  setEnhancedContent(updatedContent);
+                                  toast({
+                                    title: "Content Saved",
+                                    description: "Your edits have been saved and PDF preview will update shortly.",
+                                  });
                                 }}
                               />
                             </TabsContent>
