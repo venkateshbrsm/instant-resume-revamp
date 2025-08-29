@@ -180,10 +180,41 @@ serve(async (req) => {
 
     const enhancedContent = data.choices[0].message.content.trim();
 
+    // Remove common AI introduction phrases and return only the enhanced content
+    let cleanedContent = enhancedContent;
+    
+    // Remove common AI prefixes and explanatory text
+    const prefixesToRemove = [
+      /^Certainly!?\s*/i,
+      /^Here's an?\s+/i,
+      /^Here is an?\s+/i,
+      /^I'll\s+/i,
+      /^I will\s+/i,
+      /^Let me\s+/i,
+      /^.*enhanced.*rewrite.*:/i,
+      /^.*ATS-optimized.*:/i,
+      /^.*professional.*version.*:/i,
+      /^.*improved.*version.*:/i,
+      /^---\s*/,
+      /^\*\*.*\*\*\s*/,
+      /^#{1,6}\s+.*\n/m
+    ];
+
+    // Clean the content by removing prefixes
+    for (const prefix of prefixesToRemove) {
+      cleanedContent = cleanedContent.replace(prefix, '');
+    }
+
+    // Remove trailing dashes or separators
+    cleanedContent = cleanedContent.replace(/^---+\s*/, '').replace(/\s*---+$/, '');
+    
+    // Clean up extra whitespace and newlines at the beginning
+    cleanedContent = cleanedContent.replace(/^\s*\n+/, '').trim();
+
     console.log('✅ Field enhancement completed successfully');
 
     return new Response(JSON.stringify({ 
-      enhancedContent,
+      enhancedContent: cleanedContent,
       originalContent: content,
       fieldType 
     }), {
