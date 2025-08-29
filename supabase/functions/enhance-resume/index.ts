@@ -190,6 +190,10 @@ Important: Extract only actual information. Use empty arrays [] or empty strings
     
     console.log('✅ AI enhancement completed successfully');
     console.log(`📊 Results: ${validatedResult.experience.length} jobs, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
+    console.log('🔍 Skills extracted:', validatedResult.skills);
+    console.log('🔍 Tools extracted:', validatedResult.tools);
+    console.log('🔍 Raw AI skills result:', result.skills);
+    console.log('🔍 Raw AI tools result:', result.tools);
     
     return validatedResult;
 
@@ -201,13 +205,45 @@ Important: Extract only actual information. Use empty arrays [] or empty strings
 
 function createBasicResumeFromText(text: string): any {
   console.log('📝 Creating basic resume structure from text');
+  console.log('📄 Fallback: Attempting basic skills extraction from text');
   
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  // Try to extract skills from common patterns
+  let extractedSkills: string[] = [];
+  
+  // Look for skills section patterns
+  const skillsPatterns = [
+    /skills?\s*:?\s*([^\n\r]*)/i,
+    /technical\s*skills?\s*:?\s*([^\n\r]*)/i,
+    /core\s*competencies?\s*:?\s*([^\n\r]*)/i,
+    /proficiencies?\s*:?\s*([^\n\r]*)/i
+  ];
+  
+  for (const pattern of skillsPatterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      const skillsText = match[1].trim();
+      // Split by common delimiters
+      const skills = skillsText.split(/[,;•·|]/)
+        .map(skill => skill.trim())
+        .filter(skill => skill.length > 2 && skill.length < 50)
+        .slice(0, 20); // Limit to 20 skills
+      
+      if (skills.length > 0) {
+        console.log('📝 Extracted skills from pattern:', skills);
+        extractedSkills = skills;
+        break;
+      }
+    }
+  }
   
   // Extract basic info
   const firstLine = lines[0] || "";
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const phoneMatch = text.match(/[\+]?[0-9\s\-\(\)]{10,}/);
+  
+  console.log('📝 Basic extraction - Skills found:', extractedSkills.length);
   
   return {
     name: firstLine.length < 50 ? firstLine : "",
@@ -219,7 +255,7 @@ function createBasicResumeFromText(text: string): any {
     summary: "Professional with experience in various roles and responsibilities.",
     experience: [],
     education: [],
-    skills: [],
+    skills: extractedSkills,
     tools: [],
     certifications: [],
     languages: []
