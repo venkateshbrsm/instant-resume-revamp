@@ -186,6 +186,10 @@ export const EditablePreview = ({
     const fieldKey = nestedField ? `${field}.${nestedField}` : field;
     const isEnhancing = enhancingFields.has(fieldKey);
     
+    // Fields that should NOT have the enhance button
+    const excludedFields = ['name', 'email', 'phone', 'title', 'location', 'linkedin'];
+    const shouldShowEnhanceButton = !excludedFields.includes(field);
+    
     if (!isEditing) {
       return actualValue ? (
         <div className="mb-2">
@@ -201,21 +205,23 @@ export const EditablePreview = ({
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <label className="text-sm font-medium text-muted-foreground">{label}</label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
-            disabled={isEnhancing || !actualValue.trim()}
-            className="h-7 px-2 text-xs"
-          >
-            {isEnhancing ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Sparkles className="h-3 w-3 mr-1" />
-            )}
-            {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
-          </Button>
+          {shouldShowEnhanceButton && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
+              disabled={isEnhancing || !actualValue.trim()}
+              className="h-7 px-2 text-xs"
+            >
+              {isEnhancing ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3 mr-1" />
+              )}
+              {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+            </Button>
+          )}
         </div>
         <InputComponent
           value={actualValue}
@@ -304,6 +310,14 @@ export const EditablePreview = ({
       const fieldKey = `${field}.${index}.${nestedField}`;
       const isEnhancing = enhancingFields.has(fieldKey);
       
+      // Fields that should NOT have the enhance button for experience and education
+      const excludedExperienceFields = ['title', 'company', 'duration'];
+      const excludedEducationFields = ['degree', 'institution', 'year', 'gpa'];
+      const shouldShowEnhanceButton = !(
+        (field === 'experience' && excludedExperienceFields.includes(nestedField!)) ||
+        (field === 'education' && excludedEducationFields.includes(nestedField!))
+      );
+      
       if (!isEditing) {
         return actualValue ? (
           <div className="mb-2">
@@ -319,21 +333,23 @@ export const EditablePreview = ({
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <label className="text-sm font-medium text-muted-foreground">{label}</label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
-              disabled={isEnhancing || !actualValue.trim()}
-              className="h-7 px-2 text-xs"
-            >
-              {isEnhancing ? (
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              ) : (
-                <Sparkles className="h-3 w-3 mr-1" />
-              )}
-              {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
-            </Button>
+            {shouldShowEnhanceButton && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
+                disabled={isEnhancing || !actualValue.trim()}
+                className="h-7 px-2 text-xs"
+              >
+                {isEnhancing ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3 w-3 mr-1" />
+                )}
+                {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+              </Button>
+            )}
           </div>
           <InputComponent
             value={actualValue}
