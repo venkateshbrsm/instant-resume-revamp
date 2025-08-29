@@ -92,8 +92,8 @@ Parse this resume and return ONLY a JSON object with this exact structure:
       "title": "extract the actual job title from work experience section",
       "company": "extract the actual company name from work experience section",
       "duration": "extract the actual employment dates/duration",
-      "description": "extract or enhance the actual job description",
-      "achievements": ["extract actual bullet points, achievements, or responsibilities from this job", "convert each bullet point to a clear achievement", "include quantifiable results when mentioned"]
+      "description": "extract or enhance the actual job description specific to this role",
+      "achievements": ["extract UNIQUE actual bullet points specific to THIS job only", "each achievement must be distinct and role-specific", "avoid repeating similar content across different positions"]
     }
   ],
   "education": [
@@ -110,14 +110,20 @@ Parse this resume and return ONLY a JSON object with this exact structure:
   "languages": ["extract actual languages mentioned"]
 }
 
-EXTRACTION GUIDELINES:
-1. For work experience: Look for job titles, company names, employment dates, and bullet points describing responsibilities/achievements
-2. For education: Look for degree names, institution names, graduation dates, GPA if mentioned
-3. For skills: Extract from dedicated skills section or mentioned throughout the resume
-4. For contact info: Extract name, email, phone, location from the header/contact section
-5. For summary: Create based on profile summary section and overall experience
-6. NEVER use phrases like "Professional Role 1", "Company Name", "Achievement based on extracted content" - these are placeholders
-7. If you cannot find specific information, use empty string "" or empty array []
+CRITICAL EXPERIENCE EXTRACTION RULES:
+1. Each experience entry MUST have UNIQUE achievements - never repeat similar bullet points across different jobs
+2. Focus on role-specific responsibilities and outcomes for each position
+3. If the original resume has generic content, differentiate it based on job title, company, and timeframe
+4. Look for subtle differences in responsibilities, tools used, industry focus, or scope of work
+5. Extract actual metrics, numbers, and specific outcomes when available
+6. If multiple similar roles exist, emphasize different aspects of each (e.g., strategy vs execution, team leadership vs individual contributor)
+7. For work experience: Look for job titles, company names, employment dates, and unique bullet points per role
+8. For education: Look for degree names, institution names, graduation dates, GPA if mentioned
+9. For skills: Extract from dedicated skills section or mentioned throughout the resume
+10. For contact info: Extract name, email, phone, location from the header/contact section
+11. For summary: Create based on profile summary section and overall experience
+12. NEVER use phrases like "Professional Role 1", "Company Name", "Achievement based on extracted content" - these are placeholders
+13. If you cannot find specific information, use empty string "" or empty array []
 
 Return ONLY the JSON object, no additional text or formatting.`;
 
