@@ -1128,10 +1128,10 @@ ${section.content}
 
 CRITICAL: Base summary on actual content. No generic placeholders.`,
 
-    experience_job_0: `Extract work experience from this individual job entry. Return ONLY JSON:
+    experience: `Extract work experience from this individual job entry. Return ONLY JSON:
 {
   "title": "actual job title from content",
-  "company": "actual company name from content",
+  "company": "actual company name from content", 
   "duration": "actual employment dates or period from content",
   "description": "brief role description based on actual content (2-3 sentences)",
   "achievements": ["specific achievement 1 from content", "specific achievement 2 from content", "specific achievement 3 from content"]
@@ -1146,34 +1146,6 @@ IMPORTANT EXTRACTION RULES:
 - NEVER use generic placeholders - only use actual content from the job entry
 
 Job entry content:
-${section.content}
-
-CRITICAL: Extract from actual content only. If information is not clear, provide the closest available match from the content.`,
-
-    // Handle all experience_job_X variations with the same prompt
-    ...Array.from({length: 20}, (_, i) => ({ 
-      [`experience_job_${i}`]: `Extract work experience from this individual job entry. Return ONLY JSON:
-{
-  "title": "actual job title from content",
-  "company": "actual company name from content", 
-  "duration": "actual employment dates or period from content",
-  "description": "brief role description based on actual content (2-3 sentences)",
-  "achievements": ["specific achievement 1 from content", "specific achievement 2 from content", "specific achievement 3 from content"]
-}
-
-IMPORTANT EXTRACTION RULES:
-- Look for "From:" lines to extract company names and dates
-- Extract job titles from role descriptions, "As [Title]" patterns, or designation lines  
-- Parse dates in formats like "Aug 21 to till date", "Sep1997-Feb 2013", etc.
-- Find achievements from bullet points, accomplishments, or responsibility lists
-- If any field is unclear, extract the best approximation from available content
-- NEVER use generic placeholders - only use actual content from the job entry
-
-Job entry content:
-${section.content}
-
-CRITICAL: Extract from actual content only. If information is not clear, provide the closest available match from the content.`
-    })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
 ${section.content}
 
 CRITICAL: This is ONE job entry. Extract the specific job title, company name, employment dates, and actual achievements from this role only. Focus on concrete accomplishments and responsibilities.`,
@@ -1209,7 +1181,7 @@ ${section.content}
 CRITICAL: Categorize properly. Extract only mentioned items. Use empty arrays [] for missing categories.`
   };
 
-  // Handle individual job processing
+  // Handle individual job processing - use experience prompt for all job sections
   const isExperienceJob = section.type.startsWith('experience_job_');
   const prompt = isExperienceJob ? prompts.experience : (prompts[section.type as keyof typeof prompts] || prompts.skills);
 
