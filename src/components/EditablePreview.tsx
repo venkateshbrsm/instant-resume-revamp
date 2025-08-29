@@ -37,21 +37,23 @@ export const EditablePreview = ({
   const [currentEnhancingField, setCurrentEnhancingField] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Create a unique identifier for the current resume
+  // Create a stable unique identifier for the current resume session
   const resumeId = useMemo(() => {
+    // Use initial enhanced content to create a stable ID that doesn't change with edits
+    const baseContent = enhancedContent || editableData;
     return JSON.stringify({
-      name: editableData?.name,
-      email: editableData?.email,
-      phone: editableData?.phone,
-      timestamp: editableData?.extractedAt || Date.now()
+      name: baseContent?.name,
+      email: baseContent?.email,
+      phone: baseContent?.phone,
+      timestamp: baseContent?.extractedAt || Date.now()
     });
-  }, [editableData?.name, editableData?.email, editableData?.phone, editableData?.extractedAt]);
+  }, [enhancedContent]);
 
   // Auto-enhance all fields once when component mounts
   useEffect(() => {
-    if (!autoEnhancedResumes.has(resumeId) && editableData) {
+    if (!autoEnhancedResumes.has(resumeId) && enhancedContent) {
       const autoEnhanceAllFields = async () => {
-        console.log('🤖 Auto-enhancing all fields for resume:', resumeId);
+        console.log('🤖 Auto-enhancing all fields for resume (session):', resumeId);
         
         // Mark this resume as auto-enhanced
         setAutoEnhancedResumes(prev => new Set(prev).add(resumeId));
@@ -62,8 +64,8 @@ export const EditablePreview = ({
         ];
         
         // Add experience descriptions
-        if (editableData?.experience) {
-          editableData.experience.forEach((_, index) => {
+        if (enhancedContent?.experience) {
+          enhancedContent.experience.forEach((_, index) => {
             fieldsToEnhance.push({
               key: `experience.${index}.description`,
               label: 'Job Description'
@@ -100,7 +102,7 @@ export const EditablePreview = ({
       // Start auto-enhancement after a short delay
       setTimeout(autoEnhanceAllFields, 500);
     }
-  }, [resumeId, autoEnhancedResumes, editableData]);
+  }, [resumeId, autoEnhancedResumes, enhancedContent]);
 
   // Update editableData when enhancedContent changes
   React.useEffect(() => {
