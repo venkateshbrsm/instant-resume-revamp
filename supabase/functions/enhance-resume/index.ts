@@ -149,60 +149,278 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
 
 function detectIndividualJobs(experienceText: string): string[] {
   console.log('🔍 Detecting individual jobs within experience section...');
+  console.log(`📝 Experience text length: ${experienceText.length} characters`);
+  console.log(`📄 Experience preview: ${experienceText.substring(0, 300)}...`);
   
-  const lines = experienceText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  // Preprocess content for better detection
+  const normalizedText = preprocessExperienceContent(experienceText);
+  const lines = normalizedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  
+  console.log(`📋 Processing ${lines.length} lines for job detection`);
+  
+  // Enhanced job boundary detection with scoring
+  const jobBoundaries = detectJobBoundaries(lines);
+  console.log(`🎯 Detected ${jobBoundaries.length} potential job boundaries: [${jobBoundaries.join(', ')}]`);
+  
+  // Split content based on detected boundaries
+  const jobs = splitContentByBoundaries(lines, jobBoundaries);
+  
+  // Apply intelligent fallback strategies if needed
+  const finalJobs = applyFallbackStrategies(jobs, experienceText);
+  
+  console.log(`📊 Final result: ${finalJobs.length} individual jobs detected`);
+  finalJobs.forEach((job, index) => {
+    console.log(`  Job ${index + 1}: ${job.length} chars - ${job.substring(0, 100).replace(/\n/g, ' ')}...`);
+  });
+  
+  return finalJobs;
+}
+
+function preprocessExperienceContent(text: string): string {
+  console.log('🧹 Preprocessing experience content...');
+  
+  return text
+    // Normalize date separators
+    .replace(/(\d{4})\s*[–—]\s*(\d{4}|present|current)/gi, '$1 - $2')
+    .replace(/(\d{4})\s*[-]\s*(\d{4}|present|current)/gi, '$1 - $2')
+    // Normalize month/year formats
+    .replace(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+(\d{4})/gi, '$1 $2')
+    // Clean up extra whitespace
+    .replace(/\s+/g, ' ')
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
+function detectJobBoundaries(lines: string[]): number[] {
+  console.log('🎯 Analyzing job boundaries with scoring system...');
+  
+  const boundaries: Array<{line: number, score: number, reason: string}> = [];
+  
+  // Enhanced pattern recognition for job boundaries
+  const boundaryIndicators = {
+    dateRange: {
+      patterns: [
+        /(\d{4})\s*[-–]\s*(\d{4}|present|current)/i,
+        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{4}\s*[-–]\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)?\s*\d{4}/i,
+        /\d{1,2}\/\d{4}\s*[-–]\s*\d{1,2}\/\d{4}/i,
+        /\d{4}\s*[-–]\s*\d{4}/i
+      ],
+      score: 10
+    },
+    jobTitle: {
+      patterns: [
+        /^(manager|director|senior|lead|analyst|specialist|coordinator|officer|executive|developer|engineer|consultant|associate|assistant|supervisor|administrator|technician)\b/i,
+        /\b(manager|director|senior|lead|analyst|specialist|coordinator|officer|executive|developer|engineer|consultant)\s*([-–]|\||\s+at\s+)/i,
+        /^[A-Z][A-Za-z\s&]+\b(Manager|Director|Analyst|Specialist|Officer|Executive|Developer|Engineer|Consultant|Lead|Senior)/i
+      ],
+      score: 8
+    },
+    companyName: {
+      patterns: [
+        /\b(inc\.?|llc|ltd\.?|corp\.?|corporation|company|co\.?|pvt\.?|private|limited|plc)\b/i,
+        /\b(technologies|solutions|systems|services|consulting|group|international|global|enterprises|industries)\b/i,
+        /\bat\s+[A-Z][A-Za-z\s&]+\b(Inc|LLC|Ltd|Corp|Company|Technologies|Solutions|Systems|Services|Consulting|Group)\b/i
+      ],
+      score: 7
+    },
+    structuralCues: {
+      patterns: [
+        /^•|^\*|^\d+\.|^-\s/, // Bullet points or numbered lists
+        /^[A-Z\s]{10,}$/, // All caps headers
+        /^={3,}|^-{3,}|^\*{3,}/, // Separator lines
+      ],
+      score: 5
+    },
+    transitionWords: {
+      patterns: [
+        /\b(promoted\s+to|transferred\s+to|moved\s+to|advanced\s+to)\b/i,
+        /\b(previously|former|current|latest|recent)\b/i,
+      ],
+      score: 6
+    }
+  };
+  
+  // Score each line for boundary probability
+  for (let i = 1; i < lines.length - 1; i++) {
+    const line = lines[i];
+    const prevLine = lines[i - 1];
+    const nextLine = lines[i + 1];
+    
+    let totalScore = 0;
+    const reasons: string[] = [];
+    
+    // Check all boundary indicators
+    for (const [category, config] of Object.entries(boundaryIndicators)) {
+      for (const pattern of config.patterns) {
+        if (pattern.test(line)) {
+          totalScore += config.score;
+          reasons.push(`${category}(${config.score})`);
+          break; // Only count once per category
+        }
+      }
+    }
+    
+    // Additional scoring based on context
+    if (prevLine.length < 10 && line.length > 20) {
+      totalScore += 3; // Line after short line (possible separator)
+      reasons.push('context(3)');
+    }
+    
+    if (line.length < 100 && nextLine.length > 50) {
+      totalScore += 2; // Short line before content
+      reasons.push('structure(2)');
+    }
+    
+    // Boost score for lines with multiple indicators
+    if (reasons.length > 1) {
+      totalScore += 2;
+      reasons.push('multi(2)');
+    }
+    
+    if (totalScore >= 6) { // Threshold for job boundary
+      boundaries.push({ line: i, score: totalScore, reason: reasons.join(',') });
+      console.log(`  🎯 Boundary at line ${i} (score: ${totalScore}): "${line.substring(0, 60)}..." [${reasons.join(',')}]`);
+    }
+  }
+  
+  // Sort by score and remove overlapping boundaries
+  boundaries.sort((a, b) => b.score - a.score);
+  const finalBoundaries = [];
+  
+  for (const boundary of boundaries) {
+    const tooClose = finalBoundaries.some(existing => Math.abs(existing - boundary.line) < 3);
+    if (!tooClose) {
+      finalBoundaries.push(boundary.line);
+    }
+  }
+  
+  return finalBoundaries.sort((a, b) => a - b);
+}
+
+function splitContentByBoundaries(lines: string[], boundaries: number[]): string[] {
+  console.log('✂️ Splitting content based on detected boundaries...');
+  
+  if (boundaries.length === 0) {
+    console.log('⚠️ No boundaries detected, returning full content as single job');
+    return [lines.join('\n')];
+  }
+  
   const jobs: string[] = [];
-  let currentJob: string[] = [];
+  let startIndex = 0;
   
-  // Patterns that indicate a new job entry
-  const jobStartPatterns = [
-    /(\d{4})\s*[-–]\s*(\d{4}|present|current)/i, // Date ranges like "2019 - 2021" or "2020 - Present"
-    /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{4}/i, // Month year like "Jan 2020"
-    /\b(manager|director|senior|lead|analyst|specialist|coordinator|officer|executive|developer|engineer|consultant)\b/i, // Common job titles
-    /^[A-Z][^a-z]*$/, // All caps titles
-    /^\d{1,2}\/\d{4}/, // Date formats like "01/2020"
-  ];
+  // Add boundaries at start and end for complete coverage
+  const allBoundaries = [0, ...boundaries, lines.length];
   
-  // Company name patterns (often appear near job titles)
-  const companyPatterns = [
-    /\b(inc|llc|ltd|corp|corporation|company|co\.|pvt|private|limited)\b/i,
-    /\b(technologies|solutions|systems|services|consulting|group|international)\b/i,
-  ];
+  for (let i = 1; i < allBoundaries.length; i++) {
+    const start = allBoundaries[i - 1];
+    const end = allBoundaries[i];
+    
+    const jobLines = lines.slice(start, end);
+    const jobContent = jobLines.join('\n').trim();
+    
+    if (jobContent.length > 100) { // Minimum job content length
+      jobs.push(jobContent);
+      console.log(`  ✂️ Job ${jobs.length}: lines ${start}-${end} (${jobContent.length} chars)`);
+    } else {
+      console.log(`  ⚠️ Skipping short segment: lines ${start}-${end} (${jobContent.length} chars)`);
+    }
+  }
   
-  let jobStartFound = false;
+  return jobs;
+}
+
+function applyFallbackStrategies(jobs: string[], originalText: string): string[] {
+  console.log('🔄 Applying fallback strategies...');
+  
+  // Strategy 1: If no jobs detected, try paragraph-based splitting
+  if (jobs.length === 0) {
+    console.log('🔄 Fallback 1: Paragraph-based splitting');
+    const paragraphs = originalText.split(/\n\s*\n/).filter(p => p.trim().length > 100);
+    if (paragraphs.length > 1) {
+      console.log(`  ✅ Found ${paragraphs.length} paragraph-based jobs`);
+      return paragraphs;
+    }
+  }
+  
+  // Strategy 2: If only one job but content is very long, try intelligent chunking
+  if (jobs.length === 1 && originalText.length > 2000) {
+    console.log('🔄 Fallback 2: Intelligent chunking for long content');
+    const chunks = intelligentContentSplit(originalText);
+    if (chunks.length > 1) {
+      console.log(`  ✅ Split into ${chunks.length} intelligent chunks`);
+      return chunks;
+    }
+  }
+  
+  // Strategy 3: If very few jobs but many lines, try sentence clustering
+  if (jobs.length <= 2 && originalText.split('\n').length > 20) {
+    console.log('🔄 Fallback 3: Sentence clustering approach');
+    const clustered = clusterBySentencePatterns(originalText);
+    if (clustered.length > jobs.length) {
+      console.log(`  ✅ Clustered into ${clustered.length} groups`);
+      return clustered;
+    }
+  }
+  
+  // Return original jobs if fallbacks don't improve
+  return jobs.length > 0 ? jobs : [originalText];
+}
+
+function intelligentContentSplit(text: string): string[] {
+  const lines = text.split('\n').filter(line => line.trim().length > 0);
+  const chunks: string[] = [];
+  let currentChunk: string[] = [];
+  
+  const chunkSize = Math.max(Math.floor(lines.length / 3), 5); // Aim for 3-5 chunks
   
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const isJobStart = jobStartPatterns.some(pattern => pattern.test(line)) ||
-                      (companyPatterns.some(pattern => pattern.test(line)) && line.length < 100);
+    currentChunk.push(lines[i]);
     
-    // If we detect a new job start and we have content for the current job
-    if (isJobStart && currentJob.length > 0 && jobStartFound) {
-      jobs.push(currentJob.join('\n'));
-      currentJob = [];
-    }
-    
-    currentJob.push(line);
-    
-    if (isJobStart) {
-      jobStartFound = true;
+    // Look for natural break points
+    if (currentChunk.length >= chunkSize) {
+      const nextFewLines = lines.slice(i + 1, i + 4).join(' ').toLowerCase();
+      const hasDatePattern = /\d{4}/.test(nextFewLines);
+      const hasJobTitle = /(manager|director|analyst|specialist|coordinator|lead|senior)/.test(nextFewLines);
+      
+      if (hasDatePattern || hasJobTitle || i === lines.length - 1) {
+        chunks.push(currentChunk.join('\n'));
+        currentChunk = [];
+      }
     }
   }
   
-  // Add the last job
-  if (currentJob.length > 0) {
-    jobs.push(currentJob.join('\n'));
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join('\n'));
   }
   
-  // If no jobs detected using patterns, split by content length
-  if (jobs.length <= 1 && experienceText.length > 1000) {
-    console.log('🔄 Fallback: Splitting experience by content chunks...');
-    const chunks = splitTextIntoChunks(experienceText, 800); // Split into manageable chunks
-    return chunks.filter(chunk => chunk.length > 100);
+  return chunks.filter(chunk => chunk.length > 100);
+}
+
+function clusterBySentencePatterns(text: string): string[] {
+  const sentences = text.split(/[.!?]\s+/).filter(s => s.trim().length > 20);
+  const clusters: string[] = [];
+  let currentCluster: string[] = [];
+  
+  for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i];
+    currentCluster.push(sentence);
+    
+    // Look for clustering signals
+    const hasYearTransition = /\d{4}/.test(sentence) && currentCluster.length > 3;
+    const hasRoleTransition = /(promoted|moved|transferred|joined|started|became)/.test(sentence.toLowerCase());
+    const isLongEnough = currentCluster.join('. ').length > 800;
+    
+    if ((hasYearTransition || hasRoleTransition || isLongEnough) && currentCluster.length > 2) {
+      clusters.push(currentCluster.join('. ') + '.');
+      currentCluster = [];
+    }
   }
   
-  console.log(`📊 Detected ${jobs.length} individual jobs`);
-  return jobs.filter(job => job.length > 50); // Filter out very short entries
+  if (currentCluster.length > 0) {
+    clusters.push(currentCluster.join('. ') + '.');
+  }
+  
+  return clusters.filter(cluster => cluster.length > 100);
 }
 
 function splitTextIntoChunks(text: string, maxChunkSize: number): string[] {
