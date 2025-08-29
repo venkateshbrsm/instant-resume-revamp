@@ -113,8 +113,8 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   
   console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
 
-  // For any content over 8000, use simplified processing
-  if (originalText.length > 8000) {
+  // For any content over 7000, use simplified processing to avoid timeouts
+  if (originalText.length > 7000) {
     console.log('📋 Large content detected - using simplified enhancement...');
     return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
   }
@@ -179,50 +179,42 @@ Return ONLY the JSON object, no additional text or formatting.`;
 }
 
 async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔄 Processing with simplified single prompt...');
+  console.log('🔄 Processing with ultra-fast simplified prompt...');
   
-  // Use a more focused prompt that extracts key sections efficiently
-  const prompt = `Extract information from this resume and return ONLY a JSON object. Focus on actual data, not placeholders.
+  // Use the fastest model and much shorter content for speed
+  const fastModel = 'gpt-4.1-mini-2025-04-14'; // Faster model
+  const shortTimeout = 15000; // 15 seconds max
+  
+  // Aggressively truncate content to 5000 characters for speed
+  const truncatedText = originalText.substring(0, 5000);
+  console.log(`📋 Truncated content from ${originalText.length} to ${truncatedText.length} chars for speed`);
+  
+  // Ultra-simplified prompt for speed
+  const prompt = `Extract key resume info from this text. Return only JSON:
 
-Resume content:
-${originalText.substring(0, 10000)} // Limit content to prevent timeouts
+${truncatedText}
 
-Return ONLY this JSON structure:
+JSON format:
 {
-  "name": "actual person's name (required)",
-  "title": "job title or professional role",
-  "email": "email address", 
-  "phone": "phone number",
-  "location": "city/location",
-  "linkedin": "LinkedIn URL if present",
-  "summary": "2-3 sentence professional summary based on the resume content",
-  "experience": [
-    {
-      "title": "actual job title",
-      "company": "actual company name", 
-      "duration": "employment dates",
-      "description": "brief role description",
-      "achievements": ["specific achievement 1", "specific achievement 2"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "actual degree name",
-      "institution": "actual school/university name",
-      "year": "graduation year",
-      "gpa": "GPA if mentioned"
-    }
-  ],
-  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
-  "tools": ["tool/technology used"],
-  "certifications": ["certification name if any"],
-  "languages": ["language if mentioned"]
+  "name": "person name",
+  "title": "job title", 
+  "email": "email",
+  "phone": "phone",
+  "location": "location",
+  "linkedin": "linkedin url",
+  "summary": "brief summary",
+  "experience": [{"title": "job", "company": "company", "duration": "dates", "description": "role", "achievements": ["key point"]}],
+  "education": [{"degree": "degree", "institution": "school", "year": "year", "gpa": ""}],
+  "skills": ["skill1", "skill2"],
+  "tools": ["tool1"],
+  "certifications": ["cert1"],
+  "languages": ["lang1"]
 }
 
-CRITICAL: Extract actual information only. If a section is not found, use empty array [] or empty string "". No placeholder text.`;
+Extract actual data only. Use empty arrays/strings if not found.`;
 
   try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, Math.min(timeoutMs, 30000), globalSignal);
+    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, fastModel, shortTimeout, globalSignal);
     
     // Validate the result has minimum required data
     if (!result || typeof result !== 'object') {
@@ -246,12 +238,12 @@ CRITICAL: Extract actual information only. If a section is not found, use empty 
       languages: Array.isArray(result.languages) ? result.languages : []
     };
     
-    console.log('✅ Single prompt processing complete');
+    console.log('✅ Fast processing complete');
     console.log(`📊 Results: ${validatedResult.experience.length} experience, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
     
     return validatedResult;
   } catch (error) {
-    console.error('❌ Single prompt processing failed:', error);
+    console.error('❌ Fast processing failed:', error);
     throw error;
   }
 }
