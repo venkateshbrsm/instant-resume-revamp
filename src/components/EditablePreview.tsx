@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Save, Edit3, Eye, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,10 @@ export const EditablePreview = ({
   const [enhancingFields, setEnhancingFields] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [autoEnhancedResumes, setAutoEnhancedResumes] = useState<Set<string>>(new Set());
+  const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
+  const [autoEnhanceProgress, setAutoEnhanceProgress] = useState(0);
+  const [autoEnhanceTotal, setAutoEnhanceTotal] = useState(0);
+  const [currentEnhancingField, setCurrentEnhancingField] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Create a unique identifier for the current resume
@@ -68,16 +73,30 @@ export const EditablePreview = ({
           });
         }
         
+        // Start auto-enhancement
+        setIsAutoEnhancing(true);
+        setAutoEnhanceTotal(fieldsToEnhance.length);
+        setAutoEnhanceProgress(0);
+        
         // Auto-enhance fields with a delay between each
-        for (const field of fieldsToEnhance) {
+        for (let i = 0; i < fieldsToEnhance.length; i++) {
+          const field = fieldsToEnhance[i];
+          setCurrentEnhancingField(field.label);
+          
           try {
             await handleEnhanceField(field.key, field.label);
+            setAutoEnhanceProgress(i + 1);
             // Small delay between enhancements to avoid overwhelming the API
             await new Promise(resolve => setTimeout(resolve, 1000));
           } catch (error) {
             console.error(`Failed to auto-enhance ${field.key}:`, error);
           }
         }
+        
+        // Complete auto-enhancement
+        setIsAutoEnhancing(false);
+        setCurrentEnhancingField('');
+        toast.success('All fields enhanced successfully!');
       };
       
       // Start auto-enhancement after a short delay
@@ -515,6 +534,31 @@ export const EditablePreview = ({
           )}
         </div>
       </div>
+
+      {/* Auto Enhancement Progress */}
+      {isAutoEnhancing && (
+        <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+          <div className="flex items-center gap-3 mb-3">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <div className="flex-1">
+              <h4 className="font-medium text-primary">Enhancing Resume with AI</h4>
+              <p className="text-sm text-muted-foreground">
+                Currently enhancing: {currentEnhancingField}
+              </p>
+            </div>
+            <div className="text-sm font-medium text-primary">
+              {autoEnhanceProgress}/{autoEnhanceTotal}
+            </div>
+          </div>
+          <Progress 
+            value={(autoEnhanceProgress / autoEnhanceTotal) * 100} 
+            className="h-2"
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            Please wait while we optimize your resume content for ATS compatibility...
+          </p>
+        </div>
+      )}
 
       {/* Editable Content */}
       <div ref={previewRef} className="border rounded-lg bg-background p-6 min-h-[600px]">
