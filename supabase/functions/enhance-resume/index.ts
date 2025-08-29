@@ -7,10 +7,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🚀 Enhancement function started');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Set a global timeout for the entire function
+  const globalTimeoutMs = 55000; // 55 seconds (less than edge function limit)
+  const globalController = new AbortController();
+  const globalTimeout = setTimeout(() => {
+    console.log('⏰ Global function timeout reached');
+    globalController.abort();
+  }, globalTimeoutMs);
 
   try {
     const { extractedText, templateId, themeId } = await req.json();
@@ -20,6 +30,7 @@ serve(async (req) => {
 
     // Validate input - fail if insufficient content
     if (!extractedText || extractedText.trim().length < 50) {
+      clearTimeout(globalTimeout);
       throw new Error("Insufficient text content for enhancement. PDF extraction may have failed.");
     }
 
@@ -30,18 +41,22 @@ serve(async (req) => {
                           extractedText.includes('Unable to process the PDF');
 
     if (isErrorContent) {
+      clearTimeout(globalTimeout);
       throw new Error('PDF extraction failed. Cannot process error content.');
     }
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
+      clearTimeout(globalTimeout);
       throw new Error('OpenAI API key not configured');
     }
 
     console.log('Enhancing resume with AI...');
     
-    const enhancedResume = await enhanceResumeWithAI(extractedText, openAIApiKey);
+    // Pass the abort signal to the enhancement function
+    const enhancedResume = await enhanceResumeWithAI(extractedText, openAIApiKey, globalController.signal);
     
+    clearTimeout(globalTimeout);
     console.log('AI enhancement completed successfully');
     
     return new Response(JSON.stringify({ 
@@ -52,7 +67,24 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Enhancement error:', error);
+    clearTimeout(globalTimeout);
+    console.error('❌ Enhancement failed:', error);
+    
+    // Handle timeout errors specifically
+    if (error.name === 'AbortError') {
+      console.error('⏰ Function timed out after', globalTimeoutMs/1000, 'seconds');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Processing timeout. Your resume is quite large - try shortening it or contact support."
+        }),
+        {
+          status: 408, // Request Timeout
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -66,7 +98,7 @@ serve(async (req) => {
   }
 });
 
-async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
+async function enhanceResumeWithAI(originalText: string, apiKey: string, globalSignal?: AbortSignal): Promise<any> {
   console.log('🔍 Starting AI enhancement...');
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
@@ -74,14 +106,14 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string): Promis
   // Determine model and timeout based on content size
   const isLargeContent = originalText.length > 8000;
   const selectedModel = isLargeContent ? 'gpt-5-mini-2025-08-07' : 'gpt-5-2025-08-07';
-  const timeoutMs = isLargeContent ? 90000 : 60000; // 90s for large, 60s for normal
+  const timeoutMs = isLargeContent ? 45000 : 30000; // Reduced timeouts for testing
   
   console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
 
-  // If content is very large (>15000 chars), split into sections
-  if (originalText.length > 15000) {
+  // If content is very large (>12000 chars), split into sections
+  if (originalText.length > 12000) {
     console.log('📋 Large content detected - processing in chunks...');
-    return await processLargeResumeInChunks(originalText, apiKey, timeoutMs);
+    return await processLargeResumeInChunks(originalText, apiKey, timeoutMs, globalSignal);
   }
 
   const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
@@ -140,10 +172,10 @@ CRITICAL EXPERIENCE EXTRACTION RULES:
 
 Return ONLY the JSON object, no additional text or formatting.`;
 
-  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs);
+  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
 }
 
-async function processLargeResumeInChunks(originalText: string, apiKey: string, timeoutMs: number): Promise<any> {
+async function processLargeResumeInChunks(originalText: string, apiKey: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   console.log('🔄 Processing large resume in chunks...');
   
   // Split content into logical sections
@@ -185,10 +217,11 @@ Return ONLY a JSON object with:
 }`;
 
     try {
-      const contactResult = await makeOpenAIRequestWithTimeout(contactPrompt, apiKey, 'gpt-5-mini-2025-08-07', 30000);
+      const contactResult = await makeOpenAIRequestWithTimeout(contactPrompt, apiKey, 'gpt-5-mini-2025-08-07', 30000, globalSignal);
       Object.assign(results, contactResult);
     } catch (error) {
       console.error('Error processing contact section:', error);
+      if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
     }
   }
 
@@ -214,10 +247,11 @@ Return ONLY a JSON object with:
 }`;
 
     try {
-      const expResult = await makeOpenAIRequestWithTimeout(expPrompt, apiKey, 'gpt-5-mini-2025-08-07', 45000);
+      const expResult = await makeOpenAIRequestWithTimeout(expPrompt, apiKey, 'gpt-5-mini-2025-08-07', 45000, globalSignal);
       results.experience = expResult.experience || [];
     } catch (error) {
       console.error('Error processing experience section:', error);
+      if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
     }
   }
 
@@ -233,7 +267,7 @@ ${section.content}
 
 Return ONLY a JSON object with the ${section.type} data.`;
 
-        const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 20000);
+        const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 20000, globalSignal);
         return { type: section.type, data: result };
       } catch (error) {
         console.error(`Error processing ${section.type} section:`, error);
@@ -262,10 +296,11 @@ Skills: ${JSON.stringify(results.skills)}
 
 Return ONLY: {"summary": "professional summary text"}`;
       
-      const summaryResult = await makeOpenAIRequestWithTimeout(summaryPrompt, apiKey, 'gpt-5-mini-2025-08-07', 15000);
+      const summaryResult = await makeOpenAIRequestWithTimeout(summaryPrompt, apiKey, 'gpt-5-mini-2025-08-07', 15000, globalSignal);
       results.summary = summaryResult.summary || "";
     } catch (error) {
       console.error('Error generating summary:', error);
+      if (error.name === 'AbortError' || globalSignal?.aborted) throw error;
     }
   }
 
@@ -309,9 +344,17 @@ function splitResumeIntoSections(text: string): Array<{type: string, content: st
   return sections;
 }
 
-async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number): Promise<any> {
+async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   const controller = new AbortController();
+  
+  // Use the shorter of our timeout or global timeout
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  // If global signal is already aborted, abort immediately
+  if (globalSignal?.aborted) {
+    clearTimeout(timeoutId);
+    throw new Error('Global timeout reached');
+  }
 
   try {
     console.log(`📤 Sending request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
