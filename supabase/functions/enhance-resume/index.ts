@@ -178,10 +178,18 @@ async function splitResumeIntoSections(text: string): Promise<Array<{type: strin
       }
     }
     
-    // Handle early contact detection (first 20 lines)
-    if (i < 20 && sectionMarkers.contact.some(marker => lowerLine.includes(marker))) {
-      newType = 'contact';
-    }
+  // Handle early contact detection (first 25 lines)
+  if (i < 25 && sectionMarkers.contact.some(marker => lowerLine.includes(marker))) {
+    newType = 'contact';
+  }
+  
+  // Force experience detection for common patterns
+  if (lowerLine.includes('work') || lowerLine.includes('employment') || lowerLine.includes('experience') || 
+      lowerLine.includes('career') || lowerLine.includes('professional') ||
+      /\d{4}.*-.*\d{4}/.test(lowerLine) || // Date ranges like "2020 - 2024"
+      /\d{2}\/\d{4}.*-.*\d{2}\/\d{4}/.test(lowerLine)) { // Date ranges like "01/2020 - 12/2024"
+    newType = 'experience';
+  }
     
     // If section changed, save current and start new
     if (newType !== currentType && currentContent.length > 0) {
@@ -262,6 +270,7 @@ function consolidateSections(sections: Array<{type: string, content: string}>, a
 
 async function processSectionWithAI(section: {type: string, content: string}, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   console.log(`🔄 Processing ${section.type} section (${section.content.length} chars)...`);
+  console.log(`📄 Section content preview: ${section.content.substring(0, 200)}...`);
   
   const prompts = {
     contact: `Extract contact information from this resume section. Return ONLY a JSON object:
@@ -289,21 +298,29 @@ Return:
   "summary": "2-3 sentence professional summary highlighting key qualifications and experience"
 }`,
 
-    experience: `Extract work experience from this section. Each job must have UNIQUE achievements. Return ONLY a JSON array:
+    experience: `Extract ALL work experience from this section. Parse every job/position mentioned. Return ONLY a JSON array:
 
 Content:
 ${section.content}
 
+Instructions:
+- Extract EVERY job, position, or work experience mentioned
+- Look for company names, job titles, dates, and responsibilities
+- Each job should have unique achievements and descriptions
+- Do NOT skip any work experience entries
+
 Return:
 [
   {
-    "title": "job title",
-    "company": "company name",
-    "duration": "employment dates", 
-    "description": "brief role description",
+    "title": "actual job title from resume",
+    "company": "actual company name from resume",
+    "duration": "actual employment dates from resume", 
+    "description": "brief role description based on content",
     "achievements": ["unique achievement 1", "unique achievement 2", "unique achievement 3"]
   }
-]`,
+]
+
+CRITICAL: If you find ANY work experience, return it as an array. If no work experience is found, return an empty array [].`,
 
     education: `Extract education information. Return ONLY a JSON array:
 
@@ -349,16 +366,25 @@ Return:
   try {
     const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
     console.log(`✅ ${section.type} section processed successfully`);
+    console.log(`📊 ${section.type} result preview:`, JSON.stringify(result).substring(0, 200) + '...');
     return { type: section.type, data: result };
   } catch (error) {
     console.error(`❌ Failed to process ${section.type} section:`, error);
-    // Return empty structure for failed sections
-    return { type: section.type, data: {} };
+    // Return appropriate empty structure for failed sections
+    const fallbackData = section.type === 'experience' ? [] : 
+                        section.type === 'education' ? [] :
+                        section.type === 'skills' ? { skills: [], tools: [] } :
+                        section.type === 'summary' ? { summary: '' } :
+                        section.type === 'contact' ? { name: '', email: '', phone: '', location: '', linkedin: '', title: '' } :
+                        { certifications: [], languages: [], projects: [] };
+    
+    return { type: section.type, data: fallbackData };
   }
 }
 
 function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data: any}>): any {
   console.log('🔧 Merging sections into final resume format...');
+  console.log('📋 Processing sections:', enhancedSections.map(s => `${s.type}: ${JSON.stringify(s.data).substring(0, 100)}...`));
   
   const result = {
     name: "",
@@ -378,52 +404,73 @@ function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data
   
   for (const section of enhancedSections) {
     try {
+      console.log(`🔧 Processing section: ${section.type}`);
+      console.log(`📊 Section data type: ${Array.isArray(section.data) ? 'array' : typeof section.data}`);
+      
       switch (section.type) {
         case 'contact':
-          if (section.data) {
+          if (section.data && typeof section.data === 'object') {
             result.name = section.data.name || result.name;
             result.title = section.data.title || result.title;
             result.email = section.data.email || result.email;
             result.phone = section.data.phone || result.phone;
             result.location = section.data.location || result.location;
             result.linkedin = section.data.linkedin || result.linkedin;
+            console.log(`✅ Contact merged: ${result.name} - ${result.email}`);
           }
           break;
           
         case 'summary':
           if (section.data?.summary) {
             result.summary = section.data.summary;
+            console.log(`✅ Summary merged: ${result.summary.substring(0, 50)}...`);
           }
           break;
           
         case 'experience':
+          console.log(`🔍 Experience section data:`, section.data);
           if (Array.isArray(section.data)) {
-            result.experience = section.data.filter(exp => exp.title && exp.company);
+            const validExperience = section.data.filter(exp => exp && (exp.title || exp.company));
+            result.experience = validExperience;
+            console.log(`✅ Experience merged: ${validExperience.length} entries`);
+          } else if (section.data && typeof section.data === 'object') {
+            // Handle case where AI returns object instead of array
+            console.log('⚠️ Experience data is object, attempting to convert...');
+            console.log('Experience object keys:', Object.keys(section.data));
+            // If it's a single experience object, wrap it in array
+            if (section.data.title || section.data.company) {
+              result.experience = [section.data];
+              console.log(`✅ Single experience converted to array`);
+            }
           }
           break;
           
         case 'education':
           if (Array.isArray(section.data)) {
-            result.education = section.data.filter(edu => edu.degree || edu.institution);
+            const validEducation = section.data.filter(edu => edu && (edu.degree || edu.institution));
+            result.education = validEducation;
+            console.log(`✅ Education merged: ${validEducation.length} entries`);
           }
           break;
           
         case 'skills':
-          if (section.data) {
+          if (section.data && typeof section.data === 'object') {
             result.skills = Array.isArray(section.data.skills) ? section.data.skills : [];
             result.tools = Array.isArray(section.data.tools) ? section.data.tools : [];
+            console.log(`✅ Skills merged: ${result.skills.length} skills, ${result.tools.length} tools`);
           }
           break;
           
         case 'additional':
-          if (section.data) {
+          if (section.data && typeof section.data === 'object') {
             result.certifications = Array.isArray(section.data.certifications) ? section.data.certifications : [];
             result.languages = Array.isArray(section.data.languages) ? section.data.languages : [];
+            console.log(`✅ Additional merged: ${result.certifications.length} certs, ${result.languages.length} languages`);
           }
           break;
       }
     } catch (error) {
-      console.error(`Error merging ${section.type} section:`, error);
+      console.error(`❌ Error merging ${section.type} section:`, error);
     }
   }
   
@@ -432,6 +479,7 @@ function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data
   console.log(`💼 Experience entries: ${result.experience.length}`);
   console.log(`🎓 Education entries: ${result.education.length}`);
   console.log(`🛠️ Skills count: ${result.skills.length}`);
+  console.log(`📜 Certifications: ${result.certifications.length}`);
   
   return result;
 }
