@@ -1230,7 +1230,7 @@ function mergeSectionResults(
       
       // Handle individual job results
       if (type.startsWith('experience_job_')) {
-        console.log(`✅ Merging individual job: ${sectionData.title || 'Unknown Title'}`);
+        console.log(`✅ Merging individual job: ${sectionData.title || 'Unknown Title'} (Experience array size: ${enhancedResume.experience.length} → ${enhancedResume.experience.length + 1})`);
         // Individual job data comes as a single job object, not an array
         if (sectionData.title || sectionData.company) {
           enhancedResume.experience.push({
@@ -1255,9 +1255,8 @@ function mergeSectionResults(
             enhancedResume.summary = sectionData.summary || "";
             break;
             
-          case 'experience':
-            enhancedResume.experience = Array.isArray(sectionData.experience) ? sectionData.experience : [];
-            break;
+          // REMOVED: case 'experience' - this was overwriting individual jobs!
+          // Individual jobs are now handled above and should never be overwritten
             
           case 'education':
             enhancedResume.education = Array.isArray(sectionData.education) ? sectionData.education : [];
@@ -1286,6 +1285,12 @@ function mergeSectionResults(
   if (failedSections.length > 0) {
     console.warn(`⚠️ Some sections failed but continuing: ${failedSections.join(', ')}`);
   }
+  
+  // Log final experience array for debugging
+  console.log(`🎯 Final merged experience array contains ${enhancedResume.experience.length} jobs:`);
+  enhancedResume.experience.forEach((job, index) => {
+    console.log(`   Job ${index + 1}: ${job.title} at ${job.company} (${job.duration})`);
+  });
   
   return enhancedResume;
 }
