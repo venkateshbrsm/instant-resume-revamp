@@ -114,41 +114,69 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using Adobe PDF Services:', file.name, 'Size:', file.size);
+  console.log('🔍 Extracting text from PDF:', file.name, 'Size:', file.size);
   
   try {
     // Use Adobe PDF Services to extract text from PDF
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Sending PDF to Adobe PDF Services...');
+    console.log('📤 Sending PDF to extraction service...');
 
     const { data, error } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
       body: formData,
     });
     
     if (error) {
-      console.error('PDF extraction request failed:', error);
+      console.error('❌ PDF extraction request failed:', error);
       throw new Error(`PDF extraction failed: ${error.message}`);
     }
     
     if (!data) {
-      console.error('PDF extraction request failed: No data returned');
+      console.error('❌ No data returned from extraction service');
       throw new Error('PDF extraction failed: No data returned');
     }
 
-    const extractionData = data;
+    console.log('📄 Extraction response received:', { success: data.success, hasText: !!data.extractedText });
 
-    if (!extractionData.success) {
-      console.error('PDF extraction failed:', extractionData.error);
-      throw new Error(`PDF extraction failed: ${extractionData.error}`);
+    if (!data.success) {
+      console.error('❌ Extraction service failed:', data.error);
+      throw new Error(`PDF extraction failed: ${data.error}`);
     }
 
-    console.log('PDF extraction completed successfully');
-    return extractionData.extractedText || 'Text extracted successfully from PDF';
+    // Validate that we actually got meaningful text content
+    const extractedText = data.extractedText || '';
+    console.log('📝 Extracted text length:', extractedText.length);
+    console.log('📝 Text preview (first 200 chars):', extractedText.substring(0, 200));
+    
+    if (extractedText.length < 10) {
+      console.warn('⚠️ Very short text extracted, this may be a scanned PDF');
+      return `📄 PDF Resume: ${file.name}
+
+File Details:
+- Size: ${(file.size / 1024).toFixed(1)} KB
+- Type: ${file.type}
+- Uploaded: ${new Date().toLocaleString()}
+
+⚠️ Limited Text Extraction
+
+This appears to be a scanned PDF or image-based document. Only ${extractedText.length} characters were extracted.
+
+Original content: ${extractedText}
+
+💡 For best results:
+• Use a text-based PDF (not scanned)
+• Convert from Word/Google Docs to PDF
+• Ensure the PDF has selectable text
+
+The AI will still attempt to enhance based on available content.`;
+    }
+
+    console.log('✅ PDF text extraction completed successfully');
+    return extractedText;
 
   } catch (error) {
-    console.error('PDF processing failed:', error);
+    console.error('❌ PDF processing failed:', error);
     
     return `📄 PDF Resume: ${file.name}
 
@@ -159,14 +187,14 @@ File Details:
 
 ❌ PDF Processing Error
 
-Unable to process this PDF file with Adobe PDF Services.
+Error: ${error.message}
 
-💡 Try instead:
-• Convert to PDF format from your word processor
-• Use a different PDF file
+💡 Troubleshooting:
 • Ensure the file isn't corrupted or password-protected
+• Try converting to a different PDF format
+• Use a text-based document instead of scanned images
 
-The resume enhancement will still attempt to process the document.`;
+The system will still attempt enhancement with available data.`;
   }
 };
 

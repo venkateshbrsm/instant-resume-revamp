@@ -64,23 +64,38 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer and career consultant. Transform the following resume content into a comprehensive, ATS-friendly, keyword-rich professional resume.
+  console.log('🤖 Starting AI enhancement...');
+  console.log('📝 Original text preview (first 300 chars):', originalText.substring(0, 300));
+  
+  // Check if the text looks like an error message or fallback content
+  const isErrorContent = originalText.includes('PDF Processing Error') || 
+                        originalText.includes('Limited Text Extraction') ||
+                        originalText.includes('PDF Resume:') ||
+                        originalText.length < 50;
+  
+  if (isErrorContent) {
+    console.log('⚠️ Detected error/fallback content, using comprehensive parsing mode');
+    return await enhanceWithComprehensiveParsing(originalText, apiKey);
+  }
+  
+  const prompt = `You are an expert ATS resume optimizer and career consultant. You MUST extract REAL information from the user's actual resume content and enhance it professionally.
+
+IMPORTANT: The following text is from a REAL PERSON'S RESUME. Extract their ACTUAL information, don't create fictional content.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL INSTRUCTIONS:
-1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
-2. Preserve EVERY job position, company, and time period from the original
-3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. Expand descriptions to be more comprehensive and achievement-focused
-5. Add relevant industry keywords and ATS-friendly terms for each role
-6. Make each section detailed and professional with specific accomplishments
-7. Ensure content is 2-3 times more detailed than the original while maintaining accuracy
-8. Use strong action verbs and quantifiable achievements where possible
-9. Return ONLY a valid JSON object with the exact structure shown below
-10. MANDATORY: Include ALL work experience entries from the original resume
-11. MANDATORY: Include ALL skills and technical skills from the original resume
+CRITICAL REQUIREMENTS:
+1. EXTRACT THE PERSON'S REAL NAME, EMAIL, PHONE, AND LOCATION from the original text
+2. EXTRACT ALL REAL WORK EXPERIENCE with actual company names, job titles, and dates
+3. EXTRACT ALL REAL SKILLS AND TECHNICAL SKILLS mentioned in the original
+4. EXTRACT REAL EDUCATION information if available
+5. DO NOT CREATE FAKE COMPANIES, NAMES, OR EXPERIENCES
+6. If information is missing, use "Not provided" rather than making it up
+7. Enhance the descriptions with professional language but keep the core facts accurate
+8. Return ONLY valid JSON with the exact structure below
+9. PRESERVE the person's actual career progression and timeline
+10. ADD relevant keywords for their ACTUAL field/industry based on their real experience
 
 REQUIRED JSON STRUCTURE:
 {
@@ -140,7 +155,7 @@ ENHANCEMENT GUIDELINES:
 - Ensure all sections are comprehensive and detailed
 - Focus achievements on quantifiable results and business impact`;
 
-  console.log('Sending request to OpenAI...');
+  console.log('🚀 Sending request to OpenAI API...');
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -153,7 +168,7 @@ ENHANCEMENT GUIDELINES:
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
+          content: 'You are an expert resume optimizer. Extract REAL information from the person\'s actual resume and enhance it professionally. NEVER create fictional content. If information is missing, use "Not provided" instead of making it up. Always return valid JSON.' 
         },
         { 
           role: 'user', 
@@ -161,6 +176,7 @@ ENHANCEMENT GUIDELINES:
         }
       ],
       max_completion_tokens: 4000,
+      temperature: 0.3,
     }),
   });
 
@@ -177,7 +193,8 @@ ENHANCEMENT GUIDELINES:
     throw new Error('No content received from OpenAI');
   }
 
-  console.log('Raw AI response received, parsing JSON...');
+  console.log('📥 Raw AI response received, parsing JSON...');
+  console.log('🔍 Response preview (first 300 chars):', enhancedContent.substring(0, 300));
 
   try {
     // Clean up the response to ensure it's valid JSON
@@ -190,10 +207,21 @@ ENHANCEMENT GUIDELINES:
       cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
 
+    console.log('🧹 Cleaned content preview (first 200 chars):', cleanedContent.substring(0, 200));
+
     const parsedResume = JSON.parse(cleanedContent);
     
-    // Validate the structure
-    if (!parsedResume.name || !parsedResume.summary || !parsedResume.experience) {
+    console.log('✅ Successfully parsed JSON structure');
+    console.log('👤 Parsed name:', parsedResume.name);
+    console.log('💼 Experience entries count:', parsedResume.experience?.length || 0);
+    console.log('🎯 Skills count:', parsedResume.skills?.length || 0);
+    
+    // Validate the structure and content quality
+    if (!parsedResume.name || parsedResume.name === "Full professional name" || parsedResume.name.includes("Professional")) {
+      console.warn('⚠️ Generic or missing name detected, may be placeholder content');
+    }
+    
+    if (!parsedResume.summary || !parsedResume.experience) {
       throw new Error('Invalid resume structure received from AI');
     }
 
@@ -202,8 +230,6 @@ ENHANCEMENT GUIDELINES:
     parsedResume.education = parsedResume.education || [];
     parsedResume.skills = parsedResume.skills || [];
     parsedResume.tools = parsedResume.tools || [];
-    parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
-    parsedResume.skills = parsedResume.skills || [];
     parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
 
     // Add some fallback data if sections are empty
@@ -254,125 +280,277 @@ ENHANCEMENT GUIDELINES:
     return parsedResume;
 
   } catch (parseError) {
-    console.error('JSON parsing error:', parseError);
-    console.error('Raw content:', enhancedContent);
+    console.error('❌ JSON parsing error:', parseError);
+    console.error('📄 Raw content that failed to parse:', enhancedContent);
     
-    // Fallback to basic parsing if AI response is invalid
-    return basicParseResume(originalText);
+    // Try comprehensive parsing as fallback
+    console.log('🔄 Attempting comprehensive parsing fallback...');
+    return await enhanceWithComprehensiveParsing(originalText, apiKey);
   }
 }
 
+// Enhanced comprehensive parsing function
+async function enhanceWithComprehensiveParsing(originalText: string, apiKey: string): Promise<any> {
+  console.log('🔬 Starting comprehensive parsing for complex/error content...');
+  
+  const comprehensivePrompt = `You are an expert resume parser and career consultant. The text below may be from a PDF extraction error or contain formatting issues, but you need to extract any real information available and create a professional resume.
+
+TEXT TO ANALYZE:
+${originalText}
+
+INSTRUCTIONS:
+1. Look for ANY real personal information (name, email, phone, location)
+2. Look for ANY real work experience, company names, job titles, dates
+3. Look for ANY real skills, education, or qualifications mentioned
+4. If you find real information, use it and enhance it professionally
+5. If the text is mostly error messages or has very little real content, create a basic professional template but indicate missing information
+6. NEVER invent specific company names, dates, or personal details that aren't in the original
+7. Return ONLY valid JSON with the structure below
+
+REQUIRED JSON STRUCTURE (same as before):
+{
+  "name": "Extract real name or use 'Name Not Provided'",
+  "title": "Extract real title or use 'Professional'", 
+  "email": "Extract real email or use 'Email Not Provided'",
+  "phone": "Extract real phone or use 'Phone Not Provided'",
+  "location": "Extract real location or use 'Location Not Provided'",
+  "linkedin": "Extract real LinkedIn or use ''",
+  "summary": "Professional summary based on any available information",
+  "experience": [/* Extract real experience or provide basic template */],
+  "education": [/* Extract real education or provide basic template */],
+  "skills": [/* Extract real skills or provide relevant basic skills */],
+  "tools": [/* Extract real tools mentioned */],
+  "core_technical_skills": [/* Based on extracted information */]
+}`;
+
+  console.log('🚀 Sending comprehensive parsing request to OpenAI...');
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { 
+          role: 'system', 
+          content: 'You are an expert at extracting real information from resumes, even when the text has formatting issues or extraction errors. Extract only real information and clearly indicate when information is not available rather than making it up.' 
+        },
+        { 
+          role: 'user', 
+          content: comprehensivePrompt 
+        }
+      ],
+      max_completion_tokens: 3000,
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ OpenAI API error in comprehensive parsing:', response.status, errorText);
+    
+    // Ultimate fallback to basic parsing
+    console.log('🔄 Falling back to basic parsing...');
+    return basicParseResume(originalText);
+  }
+
+  const data = await response.json();
+  const comprehensiveContent = data.choices[0]?.message?.content;
+
+  if (!comprehensiveContent) {
+    console.log('❌ No content from comprehensive parsing, using basic fallback');
+    return basicParseResume(originalText);
+  }
+
+  try {
+    // Clean and parse the comprehensive response
+    let cleanedContent = comprehensiveContent.trim();
+    
+    if (cleanedContent.startsWith('```json')) {
+      cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (cleanedContent.startsWith('```')) {
+      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    const parsedResume = JSON.parse(cleanedContent);
+    console.log('✅ Comprehensive parsing successful');
+    console.log('👤 Extracted name:', parsedResume.name);
+    
+    return parsedResume;
+
+  } catch (error) {
+    console.error('❌ Comprehensive parsing also failed:', error);
+    console.log('🔄 Using basic parsing as final fallback');
+    return basicParseResume(originalText);
+  }
+
 function basicParseResume(text: string): any {
-  console.log('Using fallback basic parsing...');
+  console.log('📋 Using basic parsing as final fallback...');
+  console.log('📄 Text being parsed (first 200 chars):', text.substring(0, 200));
   
   const lines = text.split('\n').filter(line => line.trim());
   
   const content: any = {
-    name: '',
+    name: 'Name Not Provided',
     title: 'Professional',
-    email: '',
-    phone: '',
-    location: '',
+    email: 'Email Not Provided',
+    phone: 'Phone Not Provided',
+    location: 'Location Not Provided',
     linkedin: '',
     summary: '',
     experience: [],
     education: [],
-    skills: []
+    skills: [],
+    tools: [],
+    core_technical_skills: []
   };
+
+  let realInfoFound = false;
 
   // Extract basic information
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     
+    // Skip error message lines
+    if (line.includes('PDF Processing Error') || 
+        line.includes('Limited Text Extraction') ||
+        line.includes('File Details:') ||
+        line.includes('💡') ||
+        line.includes('❌') ||
+        line.includes('⚠️')) {
+      continue;
+    }
+    
     // Extract email
     const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    if (emailMatch && !content.email) {
+    if (emailMatch) {
       content.email = emailMatch[0];
+      realInfoFound = true;
+      console.log('📧 Found email:', content.email);
     }
     
     // Extract phone
     const phoneMatch = line.match(/(\+?1?[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/);
-    if (phoneMatch && !content.phone) {
+    if (phoneMatch) {
       content.phone = phoneMatch[0];
+      realInfoFound = true;
+      console.log('📞 Found phone:', content.phone);
     }
     
-    // First non-contact line is likely the name
-    if (!content.name && line.length > 2 && !emailMatch && !phoneMatch && !line.includes('http')) {
+    // Extract name (first meaningful line that's not contact info)
+    if (content.name === 'Name Not Provided' && 
+        line.length > 2 && 
+        line.length < 50 && 
+        !emailMatch && 
+        !phoneMatch && 
+        !line.includes('http') &&
+        !line.includes('.pdf') &&
+        !line.includes('Size:') &&
+        !line.includes('Type:')) {
       content.name = line;
+      realInfoFound = true;
+      console.log('👤 Found name:', content.name);
     }
   }
 
-  // Enhanced summary
-  content.summary = "Accomplished professional with demonstrated expertise across multiple domains and proven track record of delivering exceptional results. Strong analytical and problem-solving abilities combined with excellent communication and leadership skills. Committed to continuous learning and professional development while contributing to organizational growth and success through innovative approaches and collaborative teamwork.";
+  console.log('🔍 Real information found:', realInfoFound);
 
-  // Add comprehensive experience
-  content.experience = [
-    {
-      title: "Senior Professional",
-      company: "Professional Organization",
-      duration: "Recent Experience",
-      description: "Led cross-functional initiatives and strategic planning efforts to drive organizational growth.",
-      core_responsibilities: [
-        "Training new team members on specific procedures and organizational tools",
-        "Managing daily operations related to strategic initiatives and business objectives",
-        "Participating in leadership meetings and updating project progress status",
-        "Coordinating departmental activities and sharing critical project updates"
-      ],
-      achievements: [
-        "Improved operational efficiency by 25% through process optimization and team collaboration",
-        "Enhanced stakeholder satisfaction rates by implementing customer-focused solutions and quality improvements",
-        "Mentored team members and fostered collaborative work environments resulting in increased productivity"
-      ]
-    },
-    {
-      title: "Professional Role",
-      company: "Previous Organization", 
-      duration: "Prior Experience",
-      description: "Managed complex projects and delivered high-quality results within budget and timeline constraints.",
-      core_responsibilities: [
-        "Developing and implementing project management strategies and methodologies",
-        "Collaborating with cross-functional teams to achieve organizational objectives",
-        "Monitoring project timelines and ensuring deliverable quality standards",
-        "Maintaining client relationships and ensuring customer satisfaction"
-      ],
-      achievements: [
-        "Successfully delivered multiple high-impact projects on time and under budget",
-        "Collaborated with diverse teams to achieve organizational objectives and maintain strong client relationships",
-        "Applied analytical thinking and technical skills to solve challenging problems and drive continuous improvement"
-      ]
-    }
-  ];
+  // Create summary based on whether real info was found
+  if (realInfoFound) {
+    content.summary = `Experienced professional with expertise in multiple domains. Demonstrated ability to deliver results and collaborate effectively in team environments. Skilled in problem-solving and committed to continuous improvement and professional development.`;
+  } else {
+    content.summary = `Professional seeking opportunities to contribute skills and experience. Due to file processing limitations, please refer to the original resume document for complete details. Strong commitment to excellence and collaborative approach to achieving organizational objectives.`;
+  }
+
+  // Add experience based on whether real info was found
+  if (realInfoFound) {
+    content.experience = [
+      {
+        title: "Professional Experience",
+        company: "Please refer to original document",
+        duration: "See original resume for dates",
+        description: "Professional experience details extracted from uploaded resume. Due to file processing limitations, some formatting may have been affected.",
+        core_responsibilities: [
+          "Professional duties and responsibilities as detailed in original resume",
+          "Key tasks and project management activities",
+          "Collaboration and team coordination efforts"
+        ],
+        achievements: [
+          "Professional accomplishments as outlined in original document",
+          "Successful project delivery and performance metrics",
+          "Contributions to organizational goals and objectives"
+        ]
+      }
+    ];
+  } else {
+    content.experience = [
+      {
+        title: "Experience Details Not Available",
+        company: "Please refer to original document",
+        duration: "See original resume",
+        description: "Due to file processing limitations, experience details could not be extracted. Please refer to your original resume document for complete work history.",
+        core_responsibilities: [
+          "Professional responsibilities as detailed in original resume",
+          "Key duties and task management",
+          "Team collaboration and project coordination"
+        ],
+        achievements: [
+          "Professional achievements as outlined in original document",
+          "Successful completion of assigned projects and initiatives",
+          "Contributions to team and organizational success"
+        ]
+      }
+    ];
+  }
 
   // Add education
   content.education = [
     {
-      degree: "Professional Qualification",
-      institution: "Educational Institution",
-      year: "Completed"
+      degree: realInfoFound ? "Education details in original document" : "Education Not Provided",
+      institution: realInfoFound ? "Please refer to original resume" : "Institution Not Provided",
+      year: realInfoFound ? "See original document" : "Year Not Provided"
     }
   ];
 
-  // Add comprehensive skills
-  content.skills = [
-    "Project Management", "Strategic Planning", "Data Analysis", "Problem Solving",
-    "Team Leadership", "Communication", "Process Improvement", "Customer Service",
-    "Technical Skills", "Microsoft Office", "Analytical Thinking", "Adaptability",
-    "Time Management", "Quality Assurance", "Stakeholder Management", "Innovation"
-  ];
+  // Add skills - more conservative when no real info found
+  if (realInfoFound) {
+    content.skills = [
+      "Professional Skills", "Communication", "Problem Solving", "Team Collaboration",
+      "Project Management", "Analytical Thinking", "Technical Proficiency", "Adaptability",
+      "Time Management", "Quality Focus", "Customer Service", "Process Improvement"
+    ];
+  } else {
+    content.skills = [
+      "Skills details in original document", "Professional capabilities as listed in resume",
+      "Technical skills per original document", "Soft skills as outlined in original resume"
+    ];
+  }
+
+  // Add tools
+  content.tools = realInfoFound ? 
+    ["Microsoft Office", "Email Communication", "Professional Software"] :
+    ["Tools and software listed in original document"];
 
   // Add core technical skills with proficiency
-  content.core_technical_skills = [
-    { "name": "Project Management", "proficiency": 88 },
-    { "name": "Strategic Planning", "proficiency": 92 },
-    { "name": "Data Analysis", "proficiency": 85 },
-    { "name": "Problem Solving", "proficiency": 90 },
-    { "name": "Team Leadership", "proficiency": 87 },
-    { "name": "Communication", "proficiency": 93 },
-    { "name": "Process Improvement", "proficiency": 84 },
-    { "name": "Technical Skills", "proficiency": 82 },
-    { "name": "Microsoft Office", "proficiency": 89 },
-    { "name": "Quality Assurance", "proficiency": 86 }
-  ];
+  if (realInfoFound) {
+    content.core_technical_skills = [
+      { "name": "Professional Skills", "proficiency": 85 },
+      { "name": "Communication", "proficiency": 90 },
+      { "name": "Problem Solving", "proficiency": 88 },
+      { "name": "Team Collaboration", "proficiency": 87 },
+      { "name": "Technical Proficiency", "proficiency": 82 }
+    ];
+  } else {
+    content.core_technical_skills = [
+      { "name": "Technical skills from original document", "proficiency": 80 },
+      { "name": "Professional capabilities as listed", "proficiency": 85 }
+    ];
+  }
+
+  console.log('📋 Basic parsing completed. Real info found:', realInfoFound);
 
   return content;
 }
