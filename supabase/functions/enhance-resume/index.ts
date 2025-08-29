@@ -71,6 +71,19 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string): Promis
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
+  // Determine model and timeout based on content size
+  const isLargeContent = originalText.length > 8000;
+  const selectedModel = isLargeContent ? 'gpt-5-mini-2025-08-07' : 'gpt-5-2025-08-07';
+  const timeoutMs = isLargeContent ? 90000 : 60000; // 90s for large, 60s for normal
+  
+  console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
+
+  // If content is very large (>15000 chars), split into sections
+  if (originalText.length > 15000) {
+    console.log('📋 Large content detected - processing in chunks...');
+    return await processLargeResumeInChunks(originalText, apiKey, timeoutMs);
+  }
+
   const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
 
 CRITICAL: DO NOT USE PLACEHOLDER TEXT. Extract real data from the resume or leave fields empty if not found.
@@ -127,8 +140,181 @@ CRITICAL EXPERIENCE EXTRACTION RULES:
 
 Return ONLY the JSON object, no additional text or formatting.`;
 
+  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs);
+}
+
+async function processLargeResumeInChunks(originalText: string, apiKey: string, timeoutMs: number): Promise<any> {
+  console.log('🔄 Processing large resume in chunks...');
+  
+  // Split content into logical sections
+  const sections = splitResumeIntoSections(originalText);
+  console.log(`📊 Split into ${sections.length} sections: ${sections.map(s => s.type).join(', ')}`);
+  
+  const results: any = {
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    linkedin: "",
+    summary: "",
+    experience: [],
+    education: [],
+    skills: [],
+    tools: [],
+    certifications: [],
+    languages: []
+  };
+
+  // Process contact and basic info first
+  const contactSection = sections.find(s => s.type === 'contact') || sections[0];
+  if (contactSection) {
+    console.log('👤 Processing contact information...');
+    const contactPrompt = `Extract contact information from this resume section:
+
+${contactSection.content}
+
+Return ONLY a JSON object with:
+{
+  "name": "actual person's name",
+  "title": "professional title/role",
+  "email": "email address",
+  "phone": "phone number",
+  "location": "location/city",
+  "linkedin": "LinkedIn URL if present"
+}`;
+
+    try {
+      const contactResult = await makeOpenAIRequestWithTimeout(contactPrompt, apiKey, 'gpt-5-mini-2025-08-07', 30000);
+      Object.assign(results, contactResult);
+    } catch (error) {
+      console.error('Error processing contact section:', error);
+    }
+  }
+
+  // Process experience section
+  const experienceSection = sections.find(s => s.type === 'experience');
+  if (experienceSection) {
+    console.log('💼 Processing work experience...');
+    const expPrompt = `Extract work experience from this section:
+
+${experienceSection.content}
+
+Return ONLY a JSON object with:
+{
+  "experience": [
+    {
+      "title": "job title",
+      "company": "company name",
+      "duration": "employment dates",
+      "description": "job description",
+      "achievements": ["unique achievements for this role"]
+    }
+  ]
+}`;
+
+    try {
+      const expResult = await makeOpenAIRequestWithTimeout(expPrompt, apiKey, 'gpt-5-mini-2025-08-07', 45000);
+      results.experience = expResult.experience || [];
+    } catch (error) {
+      console.error('Error processing experience section:', error);
+    }
+  }
+
+  // Process other sections in parallel for speed
+  const otherPromises = sections
+    .filter(s => s.type !== 'contact' && s.type !== 'experience')
+    .map(async (section) => {
+      console.log(`🔧 Processing ${section.type} section...`);
+      try {
+        const sectionPrompt = `Extract ${section.type} information from:
+
+${section.content}
+
+Return ONLY a JSON object with the ${section.type} data.`;
+
+        const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 20000);
+        return { type: section.type, data: result };
+      } catch (error) {
+        console.error(`Error processing ${section.type} section:`, error);
+        return null;
+      }
+    });
+
+  const otherResults = await Promise.allSettled(otherPromises);
+  
+  // Merge results
+  otherResults.forEach((result) => {
+    if (result.status === 'fulfilled' && result.value) {
+      const { type, data } = result.value;
+      if (data && typeof data === 'object') {
+        Object.assign(results, data);
+      }
+    }
+  });
+
+  // Generate summary from all collected data
+  if (!results.summary && (results.experience.length > 0 || results.skills.length > 0)) {
+    try {
+      const summaryPrompt = `Create a professional summary based on this data:
+Experience: ${JSON.stringify(results.experience)}
+Skills: ${JSON.stringify(results.skills)}
+
+Return ONLY: {"summary": "professional summary text"}`;
+      
+      const summaryResult = await makeOpenAIRequestWithTimeout(summaryPrompt, apiKey, 'gpt-5-mini-2025-08-07', 15000);
+      results.summary = summaryResult.summary || "";
+    } catch (error) {
+      console.error('Error generating summary:', error);
+    }
+  }
+
+  console.log('✅ Chunked processing complete');
+  return results;
+}
+
+function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
+  const sections = [];
+  const lines = text.split('\n');
+  
+  let currentSection = { type: 'contact', content: '' };
+  let lineIndex = 0;
+  
+  // Take first part as contact info
+  const contactLines = lines.slice(0, Math.min(20, Math.floor(lines.length * 0.15)));
+  sections.push({ type: 'contact', content: contactLines.join('\n') });
+  lineIndex = contactLines.length;
+  
+  // Find experience section
+  const experienceKeywords = ['experience', 'employment', 'work history', 'professional experience', 'career'];
+  const expStart = lines.findIndex((line, idx) => 
+    idx >= lineIndex && experienceKeywords.some(keyword => 
+      line.toLowerCase().includes(keyword)
+    )
+  );
+  
+  if (expStart !== -1) {
+    // Take experience section (up to next major section or 60% of remaining content)
+    const remainingLines = lines.slice(expStart);
+    const expLines = remainingLines.slice(0, Math.min(remainingLines.length, Math.floor(remainingLines.length * 0.6)));
+    sections.push({ type: 'experience', content: expLines.join('\n') });
+    lineIndex = expStart + expLines.length;
+  }
+  
+  // Rest as skills/education section
+  if (lineIndex < lines.length) {
+    sections.push({ type: 'skills_education', content: lines.slice(lineIndex).join('\n') });
+  }
+  
+  return sections;
+}
+
+async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number): Promise<any> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    console.log('📤 Sending request to OpenAI...');
+    console.log(`📤 Sending request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -136,21 +322,19 @@ Return ONLY the JSON object, no additional text or formatting.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_completion_tokens: 4000,
+        model: model,
+        messages: [{ role: 'user', content: prompt }],
+        max_completion_tokens: model.includes('mini') ? 2000 : 4000,
       }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -178,7 +362,7 @@ Return ONLY the JSON object, no additional text or formatting.`;
     const parsedResume = JSON.parse(cleanedContent);
     
     console.log('✅ Successfully parsed enhanced resume');
-    console.log('👤 Extracted name:', parsedResume.name);
+    console.log('👤 Extracted name:', parsedResume.name || 'Not found');
     console.log('💼 Experience entries:', parsedResume.experience?.length || 0);
     console.log('🎓 Education entries:', parsedResume.education?.length || 0);
     console.log('🛠️ Skills count:', parsedResume.skills?.length || 0);
@@ -186,6 +370,13 @@ Return ONLY the JSON object, no additional text or formatting.`;
     return parsedResume;
 
   } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      console.error('❌ Request timed out after', timeoutMs/1000, 'seconds');
+      throw new Error(`Request timed out. Your resume may be too large. Please try with a shorter resume or contact support.`);
+    }
+    
     console.error('❌ Enhancement failed:', error);
     throw error;
   }

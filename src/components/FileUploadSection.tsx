@@ -93,7 +93,18 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
     setIsProcessing(true);
     setUploadProgress(0);
 
-    // Simulate file processing with progress
+    // Check file size and provide realistic expectations
+    const fileSizeMB = file.size / (1024 * 1024);
+    const isLargeFile = fileSizeMB > 2;
+    
+    if (isLargeFile) {
+      toast({
+        title: "Large File Detected",
+        description: `${fileSizeMB.toFixed(1)}MB file detected. Processing may take a bit longer.`,
+      });
+    }
+
+    // Simulate file processing with progress - faster for smaller files
     const progressInterval = setInterval(() => {
       setUploadProgress(prev => {
         if (prev >= 100) {
@@ -103,14 +114,18 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
             onFileProcessed(file);
             toast({
               title: "Resume uploaded successfully!",
-              description: "Your AI-enhanced preview is ready."
+              description: isLargeFile 
+                ? "Large file processed! AI enhancement will begin shortly."
+                : "Your AI-enhanced preview is ready."
             });
           }, 500);
           return 100;
         }
-        return prev + Math.random() * 15;
+        // Adjust progress speed based on file size
+        const increment = isLargeFile ? Math.random() * 8 : Math.random() * 15;
+        return prev + increment;
       });
-    }, 200);
+    }, isLargeFile ? 400 : 200);
   };
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {

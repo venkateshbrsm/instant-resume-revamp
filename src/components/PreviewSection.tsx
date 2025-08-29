@@ -477,43 +477,62 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsEnhancing(true);
     setEnhancementProgress(0);
     
+    // Determine if this is a large resume
+    const isLargeResume = extractedText.length > 8000;
+    const estimatedTime = isLargeResume ? 90 : 60; // seconds
+    
+    console.log(`🚀 Starting resume enhancement... (${extractedText.length} chars, ~${estimatedTime}s estimated)`);
+    
+    if (isLargeResume) {
+      toast({
+        title: "Large Resume Detected",
+        description: `Processing ${Math.round(extractedText.length/1000)}k characters. This may take up to ${estimatedTime} seconds.`,
+      });
+    }
+    
     try {
       console.log('Starting enhancement with extracted text length:', extractedText.length);
       console.log('Content preview (first 200 chars):', extractedText.substring(0, 200));
       
-      // Simulate enhancement progress stages
-      setEnhancementProgress(10);
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      setEnhancementProgress(30);
-      
-      // Convert file to base64 for potential re-extraction in edge function
-      let fileBase64 = '';
-      if (file.name.toLowerCase().endsWith('.docx')) {
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const bytes = new Uint8Array(arrayBuffer);
-          fileBase64 = btoa(String.fromCharCode(...bytes));
-          console.log('File converted to base64, size:', fileBase64.length);
-        } catch (error) {
-          console.warn('Failed to convert file to base64:', error);
+      // Progressive enhancement progress simulation with realistic timing
+      const progressInterval = setInterval(() => {
+        setEnhancementProgress(prev => {
+          if (prev >= 85) {
+            clearInterval(progressInterval);
+            return 85;
+          }
+          // Slower progress for large resumes
+          const increment = isLargeResume ? Math.random() * 3 : Math.random() * 8;
+          return prev + increment;
+        });
+      }, isLargeResume ? 2000 : 1000);
+
+      // Set up timeout warning for large resumes
+      let timeoutWarningShown = false;
+      const timeoutWarning = setTimeout(() => {
+        if (isLargeResume && !timeoutWarningShown) {
+          timeoutWarningShown = true;
+          toast({
+            title: "Still Processing...",
+            description: "Large resume detected. AI is working hard to process all your experience.",
+          });
         }
-      }
+      }, 30000);
       
       const { data, error } = await supabase.functions.invoke('enhance-resume', {
         body: {
           fileName: file.name,
           originalText: extractedText,
           extractedText: extractedText,
-          file: fileBase64 || null,
           templateId: selectedTemplate.id,
           themeId: selectedColorTheme.id,
           profilePhotoUrl: typeof originalContent === 'object' && originalContent.profilePhotoUrl ? originalContent.profilePhotoUrl : undefined
         }
       });
 
-      setEnhancementProgress(70);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      clearInterval(progressInterval);
+      clearTimeout(timeoutWarning);
+      setEnhancementProgress(100);
 
       if (error) {
         console.error('Enhancement service error:', error);
@@ -570,29 +589,42 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.error('Error enhancing resume:', error);
       setEnhancementProgress(0);
       
-      // Provide helpful guidance based on the error type
-      let errorMessage = "Could not enhance resume. Please try again.";
-      let errorTitle = "Enhancement Error";
+      // Handle specific timeout errors
+      const errorMessage = error.message || "Could not enhance resume. Please try again.";
+      const isTimeoutError = errorMessage.includes('timeout') || errorMessage.includes('too large') || errorMessage.includes('timed out');
       
-      if (error.message?.includes('network') || error.message?.includes('fetch')) {
-        errorMessage = "Network connection issue. Please check your internet connection and try again.";
-        errorTitle = "Connection Error";
-      } else if (error.message?.includes('OpenAI') || error.message?.includes('AI service')) {
-        errorMessage = "AI service temporarily unavailable. Please try again in a moment.";
-        errorTitle = "Service Unavailable";
-      } else if (error.message?.includes('Insufficient') || error.message?.includes('content')) {
-        errorMessage = "Unable to extract enough content from your file. Try re-saving your document or converting to PDF format.";
-        errorTitle = "Content Extraction Issue";
-      } else if (error.message?.includes('timeout')) {
-        errorMessage = "Request timed out. Please try again with a smaller file or check your connection.";
-        errorTitle = "Timeout Error";
+      let title = "Enhancement Error";
+      let description = errorMessage;
+      
+      if (isTimeoutError) {
+        title = "Processing Timeout";
+        description = "Your resume is quite large. Try uploading a shorter version or contact support for help with large resumes.";
+      } else if (errorMessage?.includes('network') || errorMessage?.includes('fetch')) {
+        title = "Connection Error";
+        description = "Network connection issue. Please check your internet connection and try again.";
+      } else if (errorMessage?.includes('OpenAI') || errorMessage?.includes('AI service')) {
+        title = "Service Unavailable";
+        description = "AI service temporarily unavailable. Please try again in a moment.";
+      } else if (errorMessage?.includes('Insufficient') || errorMessage?.includes('content')) {
+        title = "Content Extraction Issue";
+        description = "Unable to extract enough content from your file. Try re-saving your document or converting to PDF format.";
       }
       
       toast({
-        title: errorTitle,
-        description: errorMessage,
+        title: title,
+        description: description,
         variant: "destructive"
       });
+      
+      // If timeout, suggest solutions
+      if (isTimeoutError) {
+        setTimeout(() => {
+          toast({
+            title: "💡 Suggestion",
+            description: "For large resumes, try: 1) Remove old experiences, 2) Shorten descriptions, 3) Split into 2-3 pages max",
+          });
+        }, 3000);
+      }
     } finally {
       setIsEnhancing(false);
     }
