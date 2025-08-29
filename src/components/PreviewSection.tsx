@@ -748,31 +748,34 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                           {/* Tabbed Preview */}
                            <Tabs defaultValue="edit" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 bg-muted/30">
+                            <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                               <TabsTrigger 
                                 value="edit" 
-                                className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200"
+                                className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
                               >
-                                ✏️ Edit & Download
+                                <span className="hidden sm:inline">✏️ Edit & Download</span>
+                                <span className="sm:hidden">✏️ Edit</span>
                               </TabsTrigger>
                               <TabsTrigger 
                                 value="pdf"
-                                className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200"
+                                className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
                               >
-                                📄 PDF Preview
+                                <span className="hidden sm:inline">📄 PDF Preview</span>
+                                <span className="sm:hidden">📄 PDF</span>
                               </TabsTrigger>
                             </TabsList>
                           
                           <TabsContent value="pdf" className="space-y-4">
                             <div className="relative">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm text-muted-foreground text-center flex-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
                                   📄 PDF Preview • This is exactly what you'll receive
                                 </p>
                                 <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
                                   <DialogTrigger asChild>
-                                    <Button variant="outline" size="sm" className="ml-2">
-                                      <Maximize2 className="w-4 h-4" />
+                                    <Button variant="outline" size="sm" className="w-full sm:w-auto sm:ml-2">
+                                      <Maximize2 className="w-4 h-4 mr-2 sm:mr-0" />
+                                      <span className="sm:hidden">Fullscreen</span>
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">

@@ -354,7 +354,7 @@ export const EditablePreview = ({
   return (
     <div className={cn("w-full", className)}>
       {/* Controls */}
-      <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg gap-3 sm:gap-0">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
             {isEditing ? "✏️ Edit Mode" : "👁️ Preview Mode"}
@@ -368,6 +368,7 @@ export const EditablePreview = ({
                 onClick={() => setIsEditing(false)} 
                 variant="outline" 
                 size="sm"
+                className="flex-1 sm:flex-none"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
@@ -377,6 +378,7 @@ export const EditablePreview = ({
                 variant="default" 
                 size="sm"
                 disabled={isSaving}
+                className="flex-1 sm:flex-none"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -391,7 +393,7 @@ export const EditablePreview = ({
               onClick={() => setIsEditing(true)} 
               variant="hero" 
               size="lg"
-              className="font-semibold shadow-glow hover:shadow-xl transition-all duration-300 animate-edit-pulse hover:animate-none"
+              className="font-semibold shadow-glow hover:shadow-xl transition-all duration-300 animate-edit-pulse hover:animate-none w-full sm:w-auto"
             >
               <Edit3 className="h-5 w-5 mr-2 animate-pulse" />
               Edit Resume
