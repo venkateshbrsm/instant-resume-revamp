@@ -385,6 +385,8 @@ function mergeChunkedResults(results: PromiseSettledResult<{ type: string, resul
     if (result.status === 'fulfilled' && result.value.success) {
       const { type, result: data } = result.value;
       
+      console.log(`🔧 Processing ${type} section result:`, JSON.stringify(data, null, 2).substring(0, 300));
+      
       try {
         switch (type) {
           case 'contact':
@@ -394,35 +396,81 @@ function mergeChunkedResults(results: PromiseSettledResult<{ type: string, resul
             if (data?.phone) mergedResume.phone = data.phone;
             if (data?.location) mergedResume.location = data.location;
             if (data?.linkedin) mergedResume.linkedin = data.linkedin;
+            console.log('✅ Contact info merged:', { name: mergedResume.name, title: mergedResume.title });
             break;
             
           case 'experience':
+            // FIX: Properly merge experiences instead of overwriting
             if (Array.isArray(data)) {
-              mergedResume.experience = data;
+              mergedResume.experience = [...mergedResume.experience, ...data];
+              console.log(`✅ Added ${data.length} experience entries. Total: ${mergedResume.experience.length}`);
+            } else if (data && typeof data === 'object') {
+              // Handle single experience object
+              mergedResume.experience = [...mergedResume.experience, data];
+              console.log('✅ Added 1 experience entry (single object). Total:', mergedResume.experience.length);
             }
             break;
             
           case 'education':
             if (Array.isArray(data)) {
-              mergedResume.education = data;
+              mergedResume.education = [...mergedResume.education, ...data];
+              console.log(`✅ Added ${data.length} education entries. Total: ${mergedResume.education.length}`);
+            } else if (data && typeof data === 'object') {
+              mergedResume.education = [...mergedResume.education, data];
+              console.log('✅ Added 1 education entry (single object). Total:', mergedResume.education.length);
             }
             break;
             
           case 'skills':
           case 'skills_education':
-            if (data?.skills) mergedResume.skills = [...mergedResume.skills, ...(Array.isArray(data.skills) ? data.skills : [])];
-            if (data?.tools) mergedResume.tools = [...mergedResume.tools, ...(Array.isArray(data.tools) ? data.tools : [])];
-            if (data?.certifications) mergedResume.certifications = [...mergedResume.certifications, ...(Array.isArray(data.certifications) ? data.certifications : [])];
-            if (data?.languages) mergedResume.languages = [...mergedResume.languages, ...(Array.isArray(data.languages) ? data.languages : [])];
+            if (data?.skills) {
+              const skillsToAdd = Array.isArray(data.skills) ? data.skills : [data.skills];
+              mergedResume.skills = [...mergedResume.skills, ...skillsToAdd];
+            }
+            if (data?.tools) {
+              const toolsToAdd = Array.isArray(data.tools) ? data.tools : [data.tools];
+              mergedResume.tools = [...mergedResume.tools, ...toolsToAdd];
+            }
+            if (data?.certifications) {
+              const certsToAdd = Array.isArray(data.certifications) ? data.certifications : [data.certifications];
+              mergedResume.certifications = [...mergedResume.certifications, ...certsToAdd];
+            }
+            if (data?.languages) {
+              const langsToAdd = Array.isArray(data.languages) ? data.languages : [data.languages];
+              mergedResume.languages = [...mergedResume.languages, ...langsToAdd];
+            }
             if (data?.education && Array.isArray(data.education)) {
               mergedResume.education = [...mergedResume.education, ...data.education];
             }
+            console.log(`✅ Skills section merged. Skills: ${mergedResume.skills.length}, Tools: ${mergedResume.tools.length}`);
             break;
         }
       } catch (error) {
         console.error(`❌ Error merging ${type} section:`, error);
       }
+    } else {
+      console.log(`❌ Failed to process section:`, result.status === 'fulfilled' ? result.value : result.reason);
     }
+  });
+  
+  // Deduplicate experiences based on company and title
+  const uniqueExperiences = [];
+  const seenExperiences = new Set();
+  
+  for (const exp of mergedResume.experience) {
+    const key = `${exp.company}-${exp.title}`.toLowerCase();
+    if (!seenExperiences.has(key)) {
+      seenExperiences.add(key);
+      uniqueExperiences.push(exp);
+    }
+  }
+  mergedResume.experience = uniqueExperiences;
+  
+  // Sort experiences chronologically (most recent first)
+  mergedResume.experience.sort((a, b) => {
+    const dateA = extractYearFromDuration(a.duration);
+    const dateB = extractYearFromDuration(b.duration);
+    return dateB - dateA; // Most recent first
   });
   
   // Generate summary if we have enough information
@@ -430,7 +478,13 @@ function mergeChunkedResults(results: PromiseSettledResult<{ type: string, resul
     const experienceTitles = mergedResume.experience.map(exp => exp.title).filter(Boolean);
     const topSkills = mergedResume.skills.slice(0, 5);
     
-    mergedResume.summary = `Professional ${mergedResume.title || 'with expertise'} with experience in ${experienceTitles.join(', ')}. Skilled in ${topSkills.join(', ')}.`;
+    if (experienceTitles.length > 0 && topSkills.length > 0) {
+      mergedResume.summary = `Professional ${mergedResume.title || 'with expertise'} with experience in ${experienceTitles.slice(0, 3).join(', ')}. Skilled in ${topSkills.join(', ')}.`;
+    } else if (experienceTitles.length > 0) {
+      mergedResume.summary = `Professional ${mergedResume.title || 'with expertise'} with experience in ${experienceTitles.slice(0, 3).join(', ')}.`;
+    } else if (topSkills.length > 0) {
+      mergedResume.summary = `Professional skilled in ${topSkills.join(', ')}.`;
+    }
   }
   
   // Remove duplicates from arrays
@@ -442,7 +496,27 @@ function mergeChunkedResults(results: PromiseSettledResult<{ type: string, resul
   console.log('✅ Merging complete');
   console.log(`📊 Final results: ${mergedResume.experience.length} experience, ${mergedResume.skills.length} skills, ${mergedResume.education.length} education`);
   
+  // Check if we have sufficient data - fallback to single prompt if not
+  const hasMinimumData = mergedResume.name || mergedResume.experience.length > 0 || mergedResume.skills.length > 2;
+  if (!hasMinimumData) {
+    console.log('⚠️ Insufficient data from chunking, should consider fallback to single prompt');
+  }
+  
   return mergedResume;
+}
+
+// Helper function to extract year from duration string
+function extractYearFromDuration(duration: string): number {
+  if (!duration) return 0;
+  
+  // Try to extract year from patterns like "2020-2023", "2020 - Present", "Jan 2020 - Dec 2023"
+  const yearMatch = duration.match(/(\d{4})/g);
+  if (yearMatch && yearMatch.length > 0) {
+    // Return the latest year found
+    return Math.max(...yearMatch.map(y => parseInt(y)));
+  }
+  
+  return 0;
 }
 
 function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
