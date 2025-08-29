@@ -114,11 +114,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-enhance after extracting text
+  // Auto-enhance after extracting text - TEMPORARILY DISABLED
   useEffect(() => {
     // Only enhance after we have extracted text
-    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
-      enhanceResume();
+    // if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
+    //   enhanceResume();
+    // }
+    
+    // TEMPORARY: Create basic structure from extracted text for preview
+    if (extractedText && extractedText.length > 0 && !enhancedContent) {
+      const basicContent = createBasicContentStructure(extractedText);
+      setEnhancedContent(basicContent);
     }
   }, [extractedText]);
 
@@ -204,6 +210,104 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         setLoadingStage("");
       }, 1000);
     }
+  };
+
+  // Helper function to create basic content structure from raw text
+  const createBasicContentStructure = (text: string) => {
+    console.log('📋 Creating basic content structure from extracted text');
+    
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    // Extract basic information
+    let name = 'Name Not Provided';
+    let email = 'Email Not Provided';
+    let phone = 'Phone Not Provided';
+    let location = 'Location Not Provided';
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Skip error/system lines
+      if (trimmedLine.includes('PDF Processing Error') || 
+          trimmedLine.includes('File Details:') ||
+          trimmedLine.includes('💡') ||
+          trimmedLine.includes('❌')) {
+        continue;
+      }
+      
+      // Extract email
+      const emailMatch = trimmedLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (emailMatch) {
+        email = emailMatch[0];
+      }
+      
+      // Extract phone
+      const phoneMatch = trimmedLine.match(/(\+?1?[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/);
+      if (phoneMatch) {
+        phone = phoneMatch[0];
+      }
+      
+      // Extract name (first meaningful line)
+      if (name === 'Name Not Provided' && 
+          trimmedLine.length > 2 && 
+          trimmedLine.length < 50 && 
+          !emailMatch && 
+          !phoneMatch && 
+          !trimmedLine.includes('http') &&
+          !trimmedLine.includes('.pdf')) {
+        name = trimmedLine;
+      }
+    }
+    
+    return {
+      name,
+      title: 'Professional',
+      email,
+      phone,
+      location,
+      linkedin: '',
+      summary: 'Professional summary - please edit to add your specific background and achievements.',
+      experience: [
+        {
+          title: 'Position Title',
+          company: 'Company Name',
+          duration: 'Start Date - End Date',
+          description: 'Brief description of your role and main responsibilities.',
+          core_responsibilities: [
+            'Key responsibility or task you handled',
+            'Another important duty or project you managed',
+            'Additional responsibility that showcases your skills'
+          ],
+          achievements: [
+            'Specific achievement or result you delivered',
+            'Another accomplishment with measurable impact',
+            'Third achievement that demonstrates your value'
+          ]
+        }
+      ],
+      education: [
+        {
+          degree: 'Degree Name',
+          institution: 'Institution Name',
+          year: 'Graduation Year',
+          gpa: ''
+        }
+      ],
+      skills: [
+        'Skill 1', 'Skill 2', 'Skill 3', 'Skill 4', 'Skill 5', 'Skill 6',
+        'Skill 7', 'Skill 8', 'Skill 9', 'Skill 10', 'Skill 11', 'Skill 12'
+      ],
+      tools: [
+        'Tool 1', 'Tool 2', 'Tool 3', 'Tool 4', 'Tool 5'
+      ],
+      core_technical_skills: [
+        { name: 'Technical Skill 1', proficiency: 85 },
+        { name: 'Technical Skill 2', proficiency: 80 },
+        { name: 'Technical Skill 3', proficiency: 90 },
+        { name: 'Technical Skill 4', proficiency: 75 },
+        { name: 'Technical Skill 5', proficiency: 88 }
+      ]
+    };
   };
 
   const handlePurchaseClick = async () => {
@@ -603,14 +707,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6 md:mb-8">
           <Badge variant="secondary" className="mb-2 sm:mb-3 md:mb-4 px-2 sm:px-3 md:px-4 py-1 sm:py-2 text-xs sm:text-sm">
-            <Sparkles className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-            AI Enhancement Complete
+            <FileText className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
+            Content Ready for Editing
           </Badge>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2 sm:px-4">
-            Your Enhanced Resume Preview
+            Your Resume Preview
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-6">
-            Compare your original resume with our AI-enhanced version. Pay only if you're satisfied with the results.
+            Your resume content is ready for editing. Customize the details and choose your preferred template design.
           </p>
         </div>
 
@@ -780,12 +884,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         {/* Enhancement Features */}
         <Card className="max-w-4xl mx-auto mb-6 sm:mb-8 bg-card/80 backdrop-blur-sm">
           <CardContent className="p-3 sm:p-4 md:p-6">
-            <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 text-center">What We Enhanced</h3>
+            <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 text-center">Available Features</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="text-center p-3 sm:p-4 rounded-lg bg-accent/5 border border-accent/20">
-                <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
-                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Content Optimization</h4>
-                <p className="text-xs sm:text-sm text-muted-foreground">Enhanced descriptions with action verbs and quantified achievements</p>
+                <FileText className="w-6 sm:w-8 h-6 sm:h-8 text-accent mx-auto mb-1 sm:mb-2" />
+                <h4 className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Content Ready</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Your resume content is extracted and ready for customization</p>
               </div>
               <div className="text-center p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
                 <Eye className="w-6 sm:w-8 h-6 sm:h-8 text-primary mx-auto mb-1 sm:mb-2" />
