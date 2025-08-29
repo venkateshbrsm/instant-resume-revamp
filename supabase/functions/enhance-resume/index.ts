@@ -382,63 +382,77 @@ function detectIndividualJobs(experienceText: string): string[] {
   console.log(`📝 Experience text length: ${experienceText.length} characters`);
   console.log(`📄 Full experience text: ${experienceText}`);
   
-  // Look for distinct job patterns in this specific resume format
-  const lines = experienceText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  console.log(`📋 Total lines in experience: ${lines.length}`);
-  
-  // Pattern to match job titles followed by company and dates
-  // This resume has format: "Job Title \n Company | Sector \n Date Range"
-  const jobPatterns = [
-    /^(Marketing Strategist|Team Lead|SEO Content|Social Media|Content & Community)/i,
-    /^(Partnership Manager|Content Executive|Content Marketing)/i
-  ];
-  
+  // Look for "From:" patterns which are the main job delimiters in this resume format
+  const fromPattern = /^From:\s*([^-\n]+(?:-[^-\n]+)?)\s+(.+?)$/gm;
   const jobs: string[] = [];
-  let currentJob: string[] = [];
-  let lineIndex = 0;
   
-  while (lineIndex < lines.length) {
-    const line = lines[lineIndex];
-    
-    // Check if this line starts a new job (job title pattern)
-    const isJobTitle = jobPatterns.some(pattern => pattern.test(line)) || 
-                      (line.length > 10 && line.length < 100 && 
-                       !line.includes('•') && !line.includes('|') && 
-                       /^[A-Z]/.test(line) && 
-                       (lines[lineIndex + 1]?.includes('|') || lines[lineIndex + 1]?.includes('Sector')));
-    
-    if (isJobTitle && currentJob.length > 0) {
-      // Save previous job
-      const jobContent = currentJob.join('\n').trim();
-      if (jobContent.length > 100) {
-        jobs.push(jobContent);
-        console.log(`✅ Job found: ${currentJob[0]} (${jobContent.length} chars)`);
-      }
-      currentJob = [line];
+  // Split by "From:" markers first
+  const sections = experienceText.split(/(?=^From:)/gm).filter(section => section.trim().length > 0);
+  
+  console.log(`📋 Found ${sections.length} sections split by "From:" markers`);
+  
+  sections.forEach((section, index) => {
+    const trimmedSection = section.trim();
+    if (trimmedSection.length > 100) { // Reasonable content threshold
+      jobs.push(trimmedSection);
+      
+      // Extract job title for logging
+      const lines = trimmedSection.split('\n').filter(line => line.trim().length > 0);
+      const jobTitle = lines.find(line => line.includes('Role') || line.match(/^[A-Z][^:]+$/)) || lines[1] || 'Unknown Role';
+      
+      console.log(`✅ Job ${index + 1}: ${jobTitle.substring(0, 50)}... (${trimmedSection.length} chars)`);
     } else {
-      currentJob.push(line);
+      console.log(`⚠️ Skipped short section ${index + 1}: ${trimmedSection.length} chars`);
     }
+  });
+  
+  // If "From:" pattern didn't work well, try alternative parsing for roles within companies
+  if (jobs.length < 2) {
+    console.log('🔄 "From:" pattern found limited jobs, trying alternative parsing...');
     
-    lineIndex++;
-  }
-  
-  // Don't forget the last job
-  if (currentJob.length > 0) {
-    const jobContent = currentJob.join('\n').trim();
-    if (jobContent.length > 100) {
-      jobs.push(jobContent);
-      console.log(`✅ Final job found: ${currentJob[0]} (${jobContent.length} chars)`);
+    // Look for company headers and role sections
+    const companyPattern = /^[A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Bank|Services|Operations|N\.?A\.?)/gm;
+    const rolePattern = /^(?:Role|As|Since)/gm;
+    
+    const lines = experienceText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    let currentJob: string[] = [];
+    
+    lines.forEach((line, index) => {
+      // Check if this starts a new job/role section
+      const isCompanyHeader = companyPattern.test(line);
+      const isRoleHeader = rolePattern.test(line);
+      const isFromHeader = /^From:/.test(line);
+      
+      if ((isFromHeader || isCompanyHeader) && currentJob.length > 5) {
+        // Save current job
+        const jobContent = currentJob.join('\n').trim();
+        if (jobContent.length > 200) {
+          jobs.push(jobContent);
+          console.log(`✅ Alternative parsing job: ${currentJob[0].substring(0, 50)}... (${jobContent.length} chars)`);
+        }
+        currentJob = [line];
+      } else {
+        currentJob.push(line);
+      }
+    });
+    
+    // Don't forget the last job
+    if (currentJob.length > 5) {
+      const jobContent = currentJob.join('\n').trim();
+      if (jobContent.length > 200) {
+        jobs.push(jobContent);
+        console.log(`✅ Final job: ${currentJob[0].substring(0, 50)}... (${jobContent.length} chars)`);
+      }
     }
   }
   
-  console.log(`🎯 Smart detection found ${jobs.length} jobs`);
+  console.log(`🎯 Total jobs detected: ${jobs.length}`);
   
-  // If we found a reasonable number of jobs (2-10), return them
-  if (jobs.length >= 2 && jobs.length <= 10) {
+  // Return jobs if we found a reasonable number, otherwise return original text
+  if (jobs.length >= 2 && jobs.length <= 15) {
     return jobs;
   }
   
-  // Otherwise, return the whole experience as one section
   console.log('⚠️ Job detection returned unexpected count, treating as single experience');
   return [experienceText];
 }

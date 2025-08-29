@@ -268,6 +268,22 @@ export const EditablePreview = React.memo(({
           </div>
         </div>
 
+        {/* Debug Info */}
+        <div className="mb-4 p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
+          <div className="font-semibold mb-2">🔍 Debug Info:</div>
+          <div>Experience entries: {editableData.experience?.length || 0}</div>
+          <div>Education entries: {editableData.education?.length || 0}</div>
+          <div>Skills entries: {editableData.skills?.length || 0}</div>
+          {editableData.experience?.length > 0 && (
+            <div className="mt-2">
+              <div className="font-medium">Experience titles:</div>
+              {editableData.experience.map((exp: any, index: number) => (
+                <div key={index} className="ml-2 text-xs">• {exp.title || 'No title'} at {exp.company || 'No company'}</div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Editable Content */}
         <div ref={previewRef} className="border rounded-lg bg-background p-6 min-h-[600px]">
           {/* Personal Information */}
