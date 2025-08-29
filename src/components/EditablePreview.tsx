@@ -30,7 +30,6 @@ export const EditablePreview = ({
   const [editableData, setEditableData] = useState(enhancedContent);
   const [enhancingFields, setEnhancingFields] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
-  const [autoEnhancedResumes, setAutoEnhancedResumes] = useState<Set<string>>(new Set());
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
   const [autoEnhanceProgress, setAutoEnhanceProgress] = useState(0);
   const [autoEnhanceTotal, setAutoEnhanceTotal] = useState(0);
@@ -49,14 +48,37 @@ export const EditablePreview = ({
     });
   }, [enhancedContent]);
 
+  // Check if resume has been auto-enhanced using localStorage
+  const hasBeenAutoEnhanced = useMemo(() => {
+    try {
+      const enhancedResumes = JSON.parse(localStorage.getItem('autoEnhancedResumes') || '[]');
+      return enhancedResumes.includes(resumeId);
+    } catch {
+      return false;
+    }
+  }, [resumeId]);
+
+  // Mark resume as auto-enhanced in localStorage
+  const markAsAutoEnhanced = useCallback((id: string) => {
+    try {
+      const enhancedResumes = JSON.parse(localStorage.getItem('autoEnhancedResumes') || '[]');
+      if (!enhancedResumes.includes(id)) {
+        enhancedResumes.push(id);
+        localStorage.setItem('autoEnhancedResumes', JSON.stringify(enhancedResumes));
+      }
+    } catch (error) {
+      console.error('Failed to save auto-enhanced resume ID:', error);
+    }
+  }, []);
+
   // Auto-enhance all fields once when component mounts
   useEffect(() => {
-    if (!autoEnhancedResumes.has(resumeId) && enhancedContent) {
+    if (!hasBeenAutoEnhanced && enhancedContent) {
       const autoEnhanceAllFields = async () => {
         console.log('🤖 Auto-enhancing all fields for resume (session):', resumeId);
         
         // Mark this resume as auto-enhanced
-        setAutoEnhancedResumes(prev => new Set(prev).add(resumeId));
+        markAsAutoEnhanced(resumeId);
         
         // Define fields to auto-enhance (excluding basic info fields and skills)
         const fieldsToEnhance = [
@@ -102,7 +124,7 @@ export const EditablePreview = ({
       // Start auto-enhancement after a short delay
       setTimeout(autoEnhanceAllFields, 500);
     }
-  }, [resumeId, autoEnhancedResumes, enhancedContent]);
+  }, [hasBeenAutoEnhanced, enhancedContent, resumeId, markAsAutoEnhanced]);
 
   // Update editableData when enhancedContent changes
   React.useEffect(() => {
