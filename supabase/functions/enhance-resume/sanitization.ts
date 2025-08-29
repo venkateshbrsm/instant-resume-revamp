@@ -60,7 +60,7 @@ function extractKeyResponsibilities(content: string): string[] {
   const responsibilities = [];
   
   // Look for bullet points or numbered lists
-  const bulletMatches = content.match(/[•·▪▫-]\s*([^•·▪▫-\n]{20,})/g) || [];
+  const bulletMatches = content.match(/[•·▪▫\-]\s*([^•·▪▫\-\n]{20,})/g) || [];
   bulletMatches.forEach(match => {
     const cleaned = match.replace(/^[•·▪▫-]\s*/, '').trim();
     if (cleaned.length > 15) {
