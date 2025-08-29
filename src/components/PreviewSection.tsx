@@ -436,10 +436,29 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     
     try {
       console.log('🎨 Generating preview PDF for template:', selectedTemplate.layout);
-      console.log('🎨 Content preview:', contentToUse);
+      console.log('🎨 Content preview (full object):', JSON.stringify(contentToUse, null, 2));
       
-      const resumeData = extractResumeDataFromEnhanced(contentToUse);
-      console.log('🎨 Extracted resume data:', resumeData);
+      // Ensure all content sections are properly structured for PDF generation
+      const enhancedContentForPdf = {
+        ...contentToUse,
+        // Ensure all arrays exist and are properly formatted
+        experience: Array.isArray(contentToUse.experience) ? contentToUse.experience : [],
+        education: Array.isArray(contentToUse.education) ? contentToUse.education : [],
+        skills: Array.isArray(contentToUse.skills) ? contentToUse.skills : [],
+        tools: Array.isArray(contentToUse.tools) ? contentToUse.tools : [],
+        certifications: Array.isArray(contentToUse.certifications) ? contentToUse.certifications : [],
+        languages: Array.isArray(contentToUse.languages) ? contentToUse.languages : [],
+        // Preserve profile photo
+        profilePhotoUrl: contentToUse.profilePhotoUrl
+      };
+      
+      console.log('🎨 Enhanced content for PDF (experience count):', enhancedContentForPdf.experience?.length || 0);
+      console.log('🎨 Enhanced content for PDF (education count):', enhancedContentForPdf.education?.length || 0);
+      console.log('🎨 Enhanced content for PDF (skills):', enhancedContentForPdf.skills);
+      
+      const resumeData = extractResumeDataFromEnhanced(enhancedContentForPdf);
+      console.log('🎨 Extracted resume data (experience count):', resumeData.experience?.length || 0);
+      console.log('🎨 Extracted resume data (skills count):', resumeData.skills?.length || 0);
       
       const pdfBlob = await generateVisualPdf(resumeData, {
         templateType: selectedTemplate.layout,
@@ -452,6 +471,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       setPreviewPdfBlob(pdfBlob);
       console.log('✅ Preview PDF generated successfully with', editedContent ? 'edited' : 'enhanced', 'content');
+      
+      toast({
+        title: "PDF Preview Updated!",
+        description: `Your resume preview has been updated with all ${editedContent ? 'edited' : 'enhanced'} content.`,
+      });
     } catch (error) {
       console.error('❌ Error generating preview PDF:', error);
       console.error('❌ Template type:', selectedTemplate.layout);
@@ -834,47 +858,64 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </TabsContent>
                            
                            <TabsContent value="pdf" className="space-y-4">
-                            <div className="relative">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                                <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
-                                  📄 PDF Preview • This is exactly what you'll receive
-                                </p>
-                                <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                                  <DialogTrigger asChild>
-                                    <Button variant="outline" size="sm" className="w-full sm:w-auto sm:ml-2">
-                                      <Maximize2 className="w-4 h-4 mr-2 sm:mr-0" />
-                                      <span className="sm:hidden">Fullscreen</span>
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
-                                    <div className="flex items-center justify-between p-4 border-b">
-                                      <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        onClick={() => setIsFullscreen(false)}
-                                      >
-                                        <Minimize2 className="w-4 h-4 mr-2" />
-                                        Exit Fullscreen
-                                      </Button>
-                                    </div>
-                                    <div className="flex-1 overflow-hidden">
-                                      {previewPdfBlob ? (
-                                        <PDFViewer 
-                                          file={previewPdfBlob} 
-                                          className="h-full w-full"
-                                          isFullscreen={true}
-                                        />
-                                      ) : (
-                                        <div className="flex items-center justify-center h-full">
-                                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                          <span className="ml-2">Generating PDF preview...</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-                              </div>
+                             <div className="relative">
+                               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                 <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
+                                   📄 PDF Preview • This is exactly what you'll receive
+                                 </p>
+                                 <div className="flex gap-2">
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm" 
+                                     onClick={generatePreviewPdf}
+                                     disabled={isGeneratingPreview}
+                                     className="flex-1 sm:flex-none"
+                                   >
+                                     {isGeneratingPreview ? (
+                                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                     ) : (
+                                       <FileText className="w-4 h-4 mr-2" />
+                                     )}
+                                     <span className="hidden sm:inline">Refresh PDF</span>
+                                     <span className="sm:hidden">Refresh</span>
+                                   </Button>
+                                   <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+                                     <DialogTrigger asChild>
+                                       <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                                         <Maximize2 className="w-4 h-4 mr-2 sm:mr-0" />
+                                         <span className="sm:hidden">Fullscreen</span>
+                                       </Button>
+                                     </DialogTrigger>
+                                     <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
+                                       <div className="flex items-center justify-between p-4 border-b">
+                                         <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
+                                         <Button 
+                                           variant="outline" 
+                                           size="sm" 
+                                           onClick={() => setIsFullscreen(false)}
+                                         >
+                                           <Minimize2 className="w-4 h-4 mr-2" />
+                                           Exit Fullscreen
+                                         </Button>
+                                       </div>
+                                       <div className="flex-1 overflow-hidden">
+                                         {previewPdfBlob ? (
+                                           <PDFViewer 
+                                             file={previewPdfBlob} 
+                                             className="h-full w-full"
+                                             isFullscreen={true}
+                                           />
+                                         ) : (
+                                           <div className="flex items-center justify-center h-full">
+                                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                             <span className="ml-2">Generating PDF preview...</span>
+                                           </div>
+                                         )}
+                                       </div>
+                                     </DialogContent>
+                                   </Dialog>
+                                 </div>
+                               </div>
                               
                               {isGeneratingPreview ? (
                                 <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
