@@ -132,9 +132,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     // Use edited content if available, otherwise use enhanced content
     const contentToUse = editedContent || enhancedContent;
     if (contentToUse && !isGeneratingPreview) {
+      console.log('🔄 Content or template changed, regenerating PDF preview');
+      console.log('🔄 Using content type:', editedContent ? 'edited' : 'enhanced');
       generatePreviewPdf();
     }
   }, [enhancedContent, editedContent, selectedTemplate, selectedColorTheme]);
+
+  // Force PDF regeneration when switching to PDF tab if we have edited content
+  const handleTabChange = (value: string) => {
+    if (value === 'pdf' && editedContent && !isGeneratingPreview) {
+      console.log('🔄 Switched to PDF tab with edited content, ensuring preview is up to date');
+      generatePreviewPdf();
+    }
+  };
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -775,8 +785,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                           {/* Tabbed Preview */}
-                            <Tabs defaultValue="edit" className="w-full">
+                            {/* Tabbed Preview */}
+                             <Tabs defaultValue="edit" className="w-full" onValueChange={handleTabChange}>
                              <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
