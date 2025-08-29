@@ -386,6 +386,7 @@ REQUIRED JSON STRUCTURE (same as before):
     console.log('🔄 Using basic parsing as final fallback');
     return basicParseResume(originalText);
   }
+}
 
 function basicParseResume(text: string): any {
   console.log('📋 Using basic parsing as final fallback...');
