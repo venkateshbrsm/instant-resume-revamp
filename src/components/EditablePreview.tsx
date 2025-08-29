@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,16 +12,14 @@ import type { ResumeTemplate } from '@/lib/resumeTemplates';
 
 interface EditablePreviewProps {
   enhancedContent: any;
-  extractedContent?: any; // Raw extracted content
   selectedTemplate: ResumeTemplate;
   selectedColorTheme: any;
   onContentUpdate: (updatedContent: any) => void;
   className?: string;
 }
 
-export const EditablePreview = React.memo(({ 
+export const EditablePreview = ({ 
   enhancedContent, 
-  extractedContent,
   selectedTemplate, 
   selectedColorTheme,
   onContentUpdate,
@@ -29,65 +27,20 @@ export const EditablePreview = React.memo(({
 }: EditablePreviewProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(enhancedContent);
-  const [rawTextSections, setRawTextSections] = useState({
-    personalInfo: '',
-    summary: '',
-    experience: '',
-    education: '',
-    skills: '',
-    languages: ''
-  });
   const [isSaving, setIsSaving] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Update editableData when enhancedContent changes - optimized to prevent unnecessary updates
+  // Update editableData when enhancedContent changes
   React.useEffect(() => {
-    if (enhancedContent && JSON.stringify(enhancedContent) !== JSON.stringify(editableData)) {
-      console.log('🔍 EditablePreview - Content changed, updating editable data');
+    if (enhancedContent) {
+      console.log('🔍 EditablePreview - Updating with new enhanced content:', enhancedContent);
       setEditableData(enhancedContent);
     }
   }, [enhancedContent]);
 
-  // Parse raw extracted content into organized sections
-  React.useEffect(() => {
-    if (extractedContent?.text) {
-      const text = extractedContent.text;
-      
-      // Split content by common section headers
-      const sections = {
-        personalInfo: extractSection(text, /^(.*?)(?:Profile Summary|Summary|Objective|PROFESSIONAL|Experience|EXPERIENCE)/mi) || 
-                     extractPersonalInfo(text),
-        summary: extractSection(text, /(?:Profile Summary|Summary|Objective|PROFESSIONAL)(.*?)(?:Experience|EXPERIENCE|Core Competencies|Organizational Experience)/mi),
-        experience: extractSection(text, /(?:Experience|EXPERIENCE|Organizational Experience|Professional Experience|Employment History)(.*?)(?:Education|EDUCATION|Certifications|Personal Details|Skills)/mi),
-        education: extractSection(text, /(?:Education|EDUCATION|Academic|Qualifications)(.*?)(?:Certifications|Skills|Personal Details|Languages|$)/mi),
-        skills: extractSection(text, /(?:Skills|SKILLS|Core Competencies|Technical Skills|Competencies)(.*?)(?:Languages|Personal Details|Certifications|$)/mi),
-        languages: extractSection(text, /(?:Languages|LANGUAGES|Language)(.*?)(?:Personal Details|Address|$)/mi)
-      };
-      
-      setRawTextSections(sections);
-    }
-  }, [extractedContent]);
-
-  const extractSection = (text: string, regex: RegExp) => {
-    const match = text.match(regex);
-    return match ? match[1]?.trim() : '';
-  };
-
-  const extractPersonalInfo = (text: string) => {
-    const lines = text.split('\n');
-    const personalLines = [];
-    
-    for (let i = 0; i < Math.min(10, lines.length); i++) {
-      const line = lines[i].trim();
-      if (line && !line.match(/^(Profile Summary|Summary|Objective|Experience|Education)/i)) {
-        personalLines.push(line);
-      } else if (line.match(/^(Profile Summary|Summary|Objective|Experience|Education)/i)) {
-        break;
-      }
-    }
-    
-    return personalLines.join('\n');
-  };
+  // Debug log when component renders
+  console.log('🔍 EditablePreview render - editableData:', editableData);
+  console.log('🔍 EditablePreview render - enhancedContent:', enhancedContent);
 
   const handleFieldChange = useCallback((field: string, value: any, nestedField?: string) => {
     setEditableData((prev: any) => {
@@ -271,281 +224,183 @@ export const EditablePreview = React.memo(({
     );
   }
 
-    return (
-      <div className={cn("w-full", className)}>
-        {/* Controls */}
-        <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {isEditing ? "✏️ Edit Mode" : "👁️ Preview Mode"}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {isEditing ? (
-              <>
-                <Button 
-                  onClick={() => setIsEditing(false)} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
-                </Button>
-                <Button 
-                  onClick={handleSave} 
-                  variant="default" 
-                  size="sm"
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Save
-                </Button>
-              </>
-            ) : (
+  return (
+    <div className={cn("w-full", className)}>
+      {/* Controls */}
+      <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {isEditing ? "✏️ Edit Mode" : "👁️ Preview Mode"}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {isEditing ? (
+            <>
               <Button 
-                onClick={() => setIsEditing(true)} 
+                onClick={() => setIsEditing(false)} 
                 variant="outline" 
                 size="sm"
               >
-                <Edit3 className="h-4 w-4 mr-2" />
-                Edit
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
               </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Debug Info */}
-        <div className="mb-4 p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
-          <div className="font-semibold mb-2">🔍 Debug Info:</div>
-          <div>Experience entries: {editableData.experience?.length || 0}</div>
-          <div>Education entries: {editableData.education?.length || 0}</div>
-          <div>Skills entries: {editableData.skills?.length || 0}</div>
-          {editableData.experience?.length > 0 && (
-            <div className="mt-2">
-              <div className="font-medium">Experience titles:</div>
-              {editableData.experience.map((exp: any, index: number) => (
-                <div key={index} className="ml-2 text-xs">• {exp.title || 'No title'} at {exp.company || 'No company'}</div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Editable Content */}
-        <div ref={previewRef} className="border rounded-lg bg-background p-6 min-h-[600px]">
-          {isEditing ? (
-            /* RAW EXTRACTED CONTENT - ORGANIZED BY SECTIONS */
-            <div className="space-y-6">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold mb-2" style={{ color: selectedColorTheme.primary }}>
-                  Raw Extracted Content - Edit Mode
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Edit the raw extracted content organized by sections. Changes will be saved to the enhanced data.
-                </p>
-              </div>
-
-              {/* Personal Information Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: selectedColorTheme.primary }}>
-                    Personal Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    value={rawTextSections.personalInfo}
-                    onChange={(e) => setRawTextSections(prev => ({ ...prev, personalInfo: e.target.value }))}
-                    className="w-full font-mono text-sm"
-                    placeholder="Name, contact details, professional title..."
-                    rows={6}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Professional Summary Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: selectedColorTheme.primary }}>
-                    Professional Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    value={rawTextSections.summary}
-                    onChange={(e) => setRawTextSections(prev => ({ ...prev, summary: e.target.value }))}
-                    className="w-full font-mono text-sm"
-                    placeholder="Professional summary, profile summary, objective..."
-                    rows={6}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Experience Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: selectedColorTheme.primary }}>
-                    Professional Experience
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    value={rawTextSections.experience}
-                    onChange={(e) => setRawTextSections(prev => ({ ...prev, experience: e.target.value }))}
-                    className="w-full font-mono text-sm"
-                    placeholder="Work experience, job history, organizational experience..."
-                    rows={12}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Education Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: selectedColorTheme.primary }}>
-                    Education
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    value={rawTextSections.education}
-                    onChange={(e) => setRawTextSections(prev => ({ ...prev, education: e.target.value }))}
-                    className="w-full font-mono text-sm"
-                    placeholder="Educational qualifications, degrees, certifications..."
-                    rows={6}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Skills Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: selectedColorTheme.primary }}>
-                    Skills & Competencies
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    value={rawTextSections.skills}
-                    onChange={(e) => setRawTextSections(prev => ({ ...prev, skills: e.target.value }))}
-                    className="w-full font-mono text-sm"
-                    placeholder="Skills, competencies, technical skills..."
-                    rows={4}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Languages Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: selectedColorTheme.primary }}>
-                    Languages
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    value={rawTextSections.languages}
-                    onChange={(e) => setRawTextSections(prev => ({ ...prev, languages: e.target.value }))}
-                    className="w-full font-mono text-sm"
-                    placeholder="Languages known, proficiency levels..."
-                    rows={3}
-                  />
-                </CardContent>
-              </Card>
-            </div>
+              <Button 
+                onClick={handleSave} 
+                variant="default" 
+                size="sm"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                Save
+              </Button>
+            </>
           ) : (
-            /* ENHANCED CONTENT - PREVIEW MODE */
-            <div>
-              {/* Personal Information */}
-              <div className="mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  {editableData.profilePhotoUrl && (
-                    <img 
-                      src={editableData.profilePhotoUrl} 
-                      alt="Profile" 
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-                  )}
-                  <div className="flex-1">
-                    {renderEditableField('Full Name', editableData.name, 'name')}
-                    {renderEditableField('Professional Title', editableData.title, 'title')}
-                  </div>
-                </div>
-                
-                {/* Contact Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {renderEditableField('Email', editableData.email, 'email')}
-                  {renderEditableField('Phone', editableData.phone, 'phone')}
-                  {renderEditableField('Location', editableData.location, 'location')}
-                  {editableData.linkedin && renderEditableField('LinkedIn', editableData.linkedin, 'linkedin')}
-                </div>
-              </div>
-
-              {/* Professional Summary */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
-                  Professional Summary
-                </h3>
-                {renderEditableField('Summary', editableData.summary, 'summary', undefined, true)}
-              </div>
-
-              {/* Experience */}
-              {renderEditableArraySection('Professional Experience', 'experience', editableData.experience || [])}
-
-              {/* Education */}
-              {renderEditableArraySection('Education', 'education', editableData.education || [])}
-
-              {/* Skills */}
-              {editableData.skills && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {(() => {
-                      // Handle different skill formats for display
-                      let skillsToDisplay: string[] = [];
-                      if (Array.isArray(editableData.skills)) {
-                        editableData.skills.forEach((skill: any) => {
-                          if (typeof skill === 'string') {
-                            skillsToDisplay.push(skill);
-                          } else if (skill.items && Array.isArray(skill.items)) {
-                            skillsToDisplay.push(...skill.items);
-                          }
-                        });
-                      }
-                      return skillsToDisplay.map((skill: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ));
-                    })()}
-                  </div>
-                </div>
-              )}
-
-              {/* Languages */}
-              {editableData.languages && editableData.languages.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
-                    Languages
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {editableData.languages.map((lang: any, index: number) => (
-                      <Badge key={index} variant="outline">
-                        {typeof lang === 'string' ? lang : `${lang.language}: ${lang.proficiency}`}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <Button 
+              onClick={() => setIsEditing(true)} 
+              variant="outline" 
+              size="sm"
+            >
+              <Edit3 className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
           )}
         </div>
       </div>
-    );
-  });
+
+      {/* Editable Content */}
+      <div ref={previewRef} className="border rounded-lg bg-background p-6 min-h-[600px]">
+        {/* Personal Information */}
+        <div className="mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            {editableData.profilePhotoUrl && (
+              <img 
+                src={editableData.profilePhotoUrl} 
+                alt="Profile" 
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            )}
+            <div className="flex-1">
+              {renderEditableField('Full Name', editableData.name, 'name')}
+              {renderEditableField('Professional Title', editableData.title, 'title')}
+            </div>
+          </div>
+          
+          {/* Contact Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {renderEditableField('Email', editableData.email, 'email')}
+            {renderEditableField('Phone', editableData.phone, 'phone')}
+            {renderEditableField('Location', editableData.location, 'location')}
+            {editableData.linkedin && renderEditableField('LinkedIn', editableData.linkedin, 'linkedin')}
+          </div>
+        </div>
+
+        {/* Professional Summary */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
+            Professional Summary
+          </h3>
+          {renderEditableField('Summary', editableData.summary, 'summary', undefined, true)}
+        </div>
+
+        {/* Experience */}
+        {renderEditableArraySection('Professional Experience', 'experience', editableData.experience || [])}
+
+        {/* Education */}
+        {renderEditableArraySection('Education', 'education', editableData.education || [])}
+
+        {/* Skills */}
+        {editableData.skills && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
+              Skills
+            </h3>
+            {isEditing ? (
+              <Textarea
+                value={(() => {
+                  // Handle different skill formats - convert to comma-separated string
+                  if (Array.isArray(editableData.skills)) {
+                    return editableData.skills.map((skill: any) => {
+                      if (typeof skill === 'string') return skill;
+                      if (skill.items && Array.isArray(skill.items)) return skill.items.join(', ');
+                      return '';
+                    }).filter(s => s).join(', ');
+                  }
+                  return '';
+                })()}
+                onChange={(e) => {
+                  console.log('🔍 Skills onChange - Input value:', e.target.value);
+                  setEditableData((prev: any) => {
+                    const updated = { ...prev };
+                    // Store as simple array of skill strings
+                    const skillsArray = e.target.value.split(',').map(skill => skill.trim()).filter(skill => skill);
+                    updated.skills = skillsArray;
+                    console.log('🔍 Updated skills:', updated.skills);
+                    return updated;
+                  });
+                }}
+                className="w-full"
+                placeholder="Enter skills separated by commas (e.g., JavaScript, React, Node.js, Python)"
+                rows={3}
+              />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  // Handle different skill formats for display
+                  let skillsToDisplay: string[] = [];
+                  if (Array.isArray(editableData.skills)) {
+                    editableData.skills.forEach((skill: any) => {
+                      if (typeof skill === 'string') {
+                        skillsToDisplay.push(skill);
+                      } else if (skill.items && Array.isArray(skill.items)) {
+                        skillsToDisplay.push(...skill.items);
+                      }
+                    });
+                  }
+                  return skillsToDisplay.map((skill: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {skill}
+                    </Badge>
+                  ));
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Languages */}
+        {editableData.languages && editableData.languages.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
+              Languages
+            </h3>
+            {isEditing ? (
+              <Textarea
+                value={editableData.languages.map((lang: any) => typeof lang === 'string' ? lang : `${lang.language}: ${lang.proficiency}`).join(', ')}
+                onChange={(e) => {
+                  const languages = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                  setEditableData(prev => ({ ...prev, languages }));
+                }}
+                className="w-full"
+                placeholder="Enter languages separated by commas"
+                rows={2}
+              />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {editableData.languages.map((lang: any, index: number) => (
+                  <Badge key={index} variant="outline">
+                    {typeof lang === 'string' ? lang : `${lang.language}: ${lang.proficiency}`}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

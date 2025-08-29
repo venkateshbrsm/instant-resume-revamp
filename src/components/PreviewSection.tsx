@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -54,12 +54,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Memoized callback for content updates
-  const handleContentUpdate = useCallback((updatedContent: any) => {
-    console.log('Content updated from EditablePreview:', updatedContent);
-    setEditedContent(updatedContent);
-  }, []);
 
   useEffect(() => {
     // Check if we're returning from login and restore state
@@ -576,44 +570,53 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (data.success && data.enhancedResume) {
-        console.log('🔍 DETAILED ENHANCEMENT ANALYSIS:');
-        console.log('Full enhanced resume data:', JSON.stringify(data.enhancedResume, null, 2));
-        
-        // Detailed validation logging
+        // Check if enhancement has some useful data
         const hasName = data.enhancedResume.name && data.enhancedResume.name.trim().length > 0;
-        const hasExperience = data.enhancedResume.experience && Array.isArray(data.enhancedResume.experience) && data.enhancedResume.experience.length > 0;
-        const hasSkills = data.enhancedResume.skills && Array.isArray(data.enhancedResume.skills) && data.enhancedResume.skills.length > 0;
-        const hasEducation = data.enhancedResume.education && Array.isArray(data.enhancedResume.education) && data.enhancedResume.education.length > 0;
+        const hasExperience = data.enhancedResume.experience && data.enhancedResume.experience.length > 0;
+        const hasSkills = data.enhancedResume.skills && data.enhancedResume.skills.length > 0;
+        const hasEducation = data.enhancedResume.education && data.enhancedResume.education.length > 0;
         
-        console.log('📊 Validation Results:');
-        console.log(`  Name: ${hasName ? '✅' : '❌'} - "${data.enhancedResume.name}"`);
-        console.log(`  Experience: ${hasExperience ? '✅' : '❌'} - ${data.enhancedResume.experience?.length || 0} entries`);
-        console.log(`  Skills: ${hasSkills ? '✅' : '❌'} - ${data.enhancedResume.skills?.length || 0} entries`);
-        console.log(`  Education: ${hasEducation ? '✅' : '❌'} - ${data.enhancedResume.education?.length || 0} entries`);
-        
-        if (hasExperience) {
-          console.log('📋 Experience entries:');
-          data.enhancedResume.experience.forEach((exp: any, index: number) => {
-            console.log(`  ${index + 1}. ${exp.title} at ${exp.company} (${exp.duration})`);
-          });
-        }
-        
-        // More flexible validation - just check if we have meaningful data
-        if (data.enhancedResume.name || hasExperience || hasSkills || hasEducation) {
+        // If we have at least a name and one other section, consider it successful
+        if (hasName && (hasExperience || hasSkills || hasEducation)) {
           // Use the AI-enhanced content directly
           setEnhancedContent(data.enhancedResume);
           setEnhancementProgress(100);
           
-          console.log('✅ Enhancement accepted with valid data');
+          console.log('Enhancement successful, enhanced content:', data.enhancedResume);
           
           toast({
             title: "Enhancement Complete!",
-            description: `Resume enhanced successfully! Found ${data.enhancedResume.experience?.length || 0} work experiences, ${data.enhancedResume.skills?.length || 0} skills, and ${data.enhancedResume.education?.length || 0} education entries.`,
+            description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
           });
         } else {
-          console.error('❌ Enhancement data completely empty:', data.enhancedResume);
-          throw new Error('Enhancement returned completely empty data. Please try with a clearer resume format.');
+          console.warn('Enhancement returned minimal data:', data.enhancedResume);
+          // Fall back to showing original extracted content with a warning
+          if (originalContent && ((typeof originalContent === 'string' && originalContent.length > 0) || 
+                                        (typeof originalContent === 'object' && originalContent.text))) {
+            const fallbackContent = {
+              name: (typeof originalContent === 'string' ? originalContent.split('\n')[0] : originalContent.text.split('\n')[0]) || "Unknown",
+              title: "Professional",
+              email: "", phone: "", location: "", linkedin: "",
+              summary: "Please review and edit this content manually.",
+              experience: [], education: [], skills: [], tools: [], certifications: [], languages: []
+            };
+            setEnhancedContent(fallbackContent);
+            setEnhancementProgress(100);
+            
+            toast({
+              title: "Enhancement Partial",
+              description: "AI enhancement extracted limited data. Please review and edit manually.",
+              variant: "default"
+            });
+          } else {
+            throw new Error('Enhancement returned incomplete data. Please try with a clearer resume format.');
+          }
         }
+        
+        toast({
+          title: "Enhancement Complete!",
+          description: "Your resume has been enhanced with AI. Review the changes and pay if satisfied.",
+        });
       } else {
         console.error('Invalid enhancement response:', data);
         console.error('Full response data:', JSON.stringify(data, null, 2));
@@ -881,13 +884,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                               </div>
                             </TabsContent>
                           
-                             <TabsContent value="edit" className="space-y-4">
+                            <TabsContent value="edit" className="space-y-4">
                               <EditablePreview
                                 enhancedContent={enhancedContent}
-                                extractedContent={originalContent} // Pass raw extracted content
                                 selectedTemplate={selectedTemplate}
                                 selectedColorTheme={selectedColorTheme}
-                                onContentUpdate={handleContentUpdate}
+                                onContentUpdate={(updatedContent) => {
+                                  console.log('Content updated from EditablePreview:', updatedContent);
+                                  setEditedContent(updatedContent);
+                                  // Also update the enhanced content to reflect the latest edits for PDF generation
+                                  setEnhancedContent(updatedContent);
+                                }}
                               />
                             </TabsContent>
                         </Tabs>
