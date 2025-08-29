@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   // Set a global timeout for the entire function
-  const globalTimeoutMs = 55000; // 55 seconds (less than edge function limit)
+  const globalTimeoutMs = 90000; // 90 seconds (increased for complete processing)
   const globalController = new AbortController();
   const globalTimeout = setTimeout(() => {
     console.log('⏰ Global function timeout reached');
@@ -103,21 +103,15 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔍 Starting AI enhancement...');
+  console.log('🔍 Starting AI enhancement with complete content...');
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Use more reliable model and shorter timeout
-  const selectedModel = 'gpt-4.1-2025-04-14'; // More reliable than GPT-5
-  const timeoutMs = 20000; // 20 seconds max
+  // Use more capable model and longer timeout for complete processing
+  const selectedModel = 'gpt-5-2025-08-07'; // Most capable model for complete content
+  const timeoutMs = 60000; // 60 seconds max for complete processing
   
-  console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
-
-  // For any content over 7000, use simplified processing to avoid timeouts
-  if (originalText.length > 7000) {
-    console.log('📋 Large content detected - using simplified enhancement...');
-    return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
-  }
+  console.log(`📊 Processing complete content: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
 
   const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
 
@@ -178,142 +172,6 @@ Return ONLY the JSON object, no additional text or formatting.`;
   return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
 }
 
-async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔄 Processing with intelligent content extraction...');
-  
-  // Use the fastest model and shorter timeout for speed
-  const fastModel = 'gpt-4.1-mini-2025-04-14'; // Faster model
-  const shortTimeout = 15000; // 15 seconds max
-  
-  // Intelligently extract key sections instead of just truncating
-  const extractedContent = extractKeyResumeContent(originalText);
-  console.log(`📋 Extracted content from ${originalText.length} to ${extractedContent.length} chars while preserving key sections`);
-  
-  // Ultra-simplified prompt for speed
-  const prompt = `Extract key resume info from this text. Return only JSON:
-
-${extractedContent}
-
-JSON format:
-{
-  "name": "person name",
-  "title": "job title", 
-  "email": "email",
-  "phone": "phone",
-  "location": "location",
-  "linkedin": "linkedin url",
-  "summary": "brief summary",
-  "experience": [{"title": "job", "company": "company", "duration": "dates", "description": "role", "achievements": ["key point"]}],
-  "education": [{"degree": "degree", "institution": "school", "year": "year", "gpa": ""}],
-  "skills": ["skill1", "skill2"],
-  "tools": ["tool1"],
-  "certifications": ["cert1"],
-  "languages": ["lang1"]
-}
-
-Extract actual data only. Use empty arrays/strings if not found.`;
-
-  try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, fastModel, shortTimeout, globalSignal);
-    
-    // Validate the result has minimum required data
-    if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response format from AI');
-    }
-    
-    // Ensure required fields exist
-    const validatedResult = {
-      name: result.name || "",
-      title: result.title || "",
-      email: result.email || "",
-      phone: result.phone || "",
-      location: result.location || "",
-      linkedin: result.linkedin || "",
-      summary: result.summary || "",
-      experience: Array.isArray(result.experience) ? result.experience : [],
-      education: Array.isArray(result.education) ? result.education : [],
-      skills: Array.isArray(result.skills) ? result.skills : [],
-      tools: Array.isArray(result.tools) ? result.tools : [],
-      certifications: Array.isArray(result.certifications) ? result.certifications : [],
-      languages: Array.isArray(result.languages) ? result.languages : []
-    };
-    
-    console.log('✅ Fast processing complete');
-    console.log(`📊 Results: ${validatedResult.experience.length} experience, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
-    
-    return validatedResult;
-  } catch (error) {
-    console.error('❌ Fast processing failed:', error);
-    throw error;
-  }
-}
-
-function extractKeyResumeContent(text: string): string {
-  console.log('🔍 Intelligently extracting key resume sections...');
-  
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
-  // Identify key sections
-  const sections = {
-    header: [] as string[],
-    experience: [] as string[],
-    education: [] as string[],
-    skills: [] as string[]
-  };
-  
-  let currentSection = 'header';
-  let experienceCount = 0;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].toLowerCase();
-    
-    // Section detection
-    if (line.includes('experience') || line.includes('employment') || line.includes('work history')) {
-      currentSection = 'experience';
-      continue;
-    } else if (line.includes('education') || line.includes('qualification') || line.includes('degree')) {
-      currentSection = 'education';
-      continue;
-    } else if (line.includes('skill') || line.includes('competenc') || line.includes('technolog')) {
-      currentSection = 'skills';
-      continue;
-    }
-    
-    // Add content to appropriate section
-    if (currentSection === 'header' && i < 20) {
-      sections.header.push(lines[i]);
-    } else if (currentSection === 'experience') {
-      sections.experience.push(lines[i]);
-      // Limit experience content to prevent bloat but keep all key details
-      if (sections.experience.length > 200) {
-        // Keep first 150 lines and last 50 to preserve structure
-        sections.experience = [
-          ...sections.experience.slice(0, 150),
-          '... [content truncated for processing] ...',
-          ...sections.experience.slice(-50)
-        ];
-        break;
-      }
-    } else if (currentSection === 'education') {
-      sections.education.push(lines[i]);
-    } else if (currentSection === 'skills') {
-      sections.skills.push(lines[i]);
-    }
-  }
-  
-  // Combine sections with priority on completeness
-  const extractedLines = [
-    ...sections.header.slice(0, 15), // Contact info
-    ...sections.experience, // Full experience (with smart truncation)
-    ...sections.education.slice(0, 20), // Education
-    ...sections.skills.slice(0, 30) // Skills
-  ];
-  
-  const result = extractedLines.join('\n');
-  console.log(`📊 Extracted ${extractedLines.length} lines preserving all key sections`);
-  
-  return result;
-}
 
 function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
@@ -408,19 +266,31 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
 
   try {
     console.log(`📤 Sending streaming request to OpenAI (${model}, ${timeoutMs/1000}s timeout)...`);
+    
+    // Configure API parameters based on model
+    const isGPT5 = model.includes('gpt-5');
+    const requestBody: any = {
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+      stream: true, // Enable streaming
+    };
+    
+    // GPT-5 uses different parameters than GPT-4
+    if (isGPT5) {
+      requestBody.max_completion_tokens = 4000; // GPT-5 uses max_completion_tokens
+      // GPT-5 doesn't support temperature parameter
+    } else {
+      requestBody.max_tokens = 4000; // GPT-4 uses max_tokens
+      requestBody.temperature = 0.3; // GPT-4 supports temperature
+    }
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4000, // GPT-4.1 uses max_tokens, not max_completion_tokens
-        temperature: 0.3, // GPT-4.1 supports temperature
-        stream: true, // Enable streaming
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
 
