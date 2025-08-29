@@ -682,10 +682,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                   📄 PDF Preview • This is exactly what you'll receive
                                 </p>
                                 <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                                  <DialogTrigger asChild>
-                                    <Button variant="outline" size="sm" className="ml-2">
-                                      <Maximize2 className="w-4 h-4" />
-                                    </Button>
+                                   <DialogTrigger asChild>
+                                     <Button 
+                                       variant="outline" 
+                                       size="sm" 
+                                       className="ml-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-700 dark:text-blue-400 border-2 border-blue-500/40 animate-pulse hover:animate-none hover-scale shadow-lg shadow-blue-500/25 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-indigo-500/30 hover:border-blue-600 hover:shadow-xl hover:shadow-blue-500/40"
+                                     >
+                                       <Maximize2 className="w-4 h-4" />
+                                       <span className="ml-1 text-xs font-semibold hidden sm:inline">Expand</span>
+                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
                                     <div className="flex items-center justify-between p-4 border-b">
