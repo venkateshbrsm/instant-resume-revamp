@@ -64,175 +64,42 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  console.log("Enhancing resume with AI using programmatic line-by-line approach...");
+  console.log("Enhancing resume with AI using efficient line-count preservation...");
   
-  // Extract work experience sections first
-  const workExperiences = extractWorkExperienceSections(originalText);
-  console.log(`Found ${workExperiences.length} work experience sections`);
+  // Extract work experience sections and count lines
+  const workExperienceSections = extractWorkExperienceData(originalText);
+  console.log(`Found ${workExperienceSections.length} work experience sections`);
   
-  // Process each work experience section line by line
-  const enhancedWorkExperiences = [];
-  
-  for (let i = 0; i < workExperiences.length; i++) {
-    const workExp = workExperiences[i];
-    console.log(`Processing work experience ${i + 1}: ${workExp.lines.length} lines`);
-    
-    const enhancedLines = [];
-    
-    // Enhance each line individually
-    for (const line of workExp.lines) {
-      if (line.trim()) {
-        const enhancedLine = await enhanceIndividualLine(line, apiKey);
-        enhancedLines.push(enhancedLine);
-      }
-    }
-    
-    console.log(`Enhanced ${enhancedLines.length} lines for work experience ${i + 1}`);
-    
-    // Validate line count matches
-    const originalNonEmptyLines = workExp.lines.filter(line => line.trim()).length;
-    if (enhancedLines.length !== originalNonEmptyLines) {
-      console.warn(`Line count mismatch for work experience ${i + 1}: original ${originalNonEmptyLines}, enhanced ${enhancedLines.length}`);
-    }
-    
-    enhancedWorkExperiences.push({
-      originalLines: workExp.lines,
-      enhancedLines: enhancedLines,
-      lineCount: originalNonEmptyLines
-    });
-  }
-  
-  // Now get the complete enhanced resume structure
-  return await generateEnhancedResumeStructure(originalText, enhancedWorkExperiences, apiKey);
-}
+  // Log line counts for each section
+  workExperienceSections.forEach((section, index) => {
+    console.log(`Work Experience ${index + 1}: ${section.totalLines} lines (${section.achievementLines} achievement lines)`);
+  });
 
-// Extract work experience sections and their lines
-function extractWorkExperienceSections(text: string): Array<{lines: string[]}> {
-  const sections = [];
-  const lines = text.split('\n');
-  
-  let currentSection: string[] = [];
-  let inWorkExperience = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Detect start of work experience entry (company names, job titles, dates)
-    if (isWorkExperienceStart(line, i > 0 ? lines[i-1] : '', i < lines.length - 1 ? lines[i+1] : '')) {
-      // Save previous section if exists
-      if (currentSection.length > 0) {
-        sections.push({lines: [...currentSection]});
-      }
-      currentSection = [line];
-      inWorkExperience = true;
-    } 
-    // Detect end of work experience section
-    else if (inWorkExperience && isWorkExperienceEnd(line)) {
-      if (currentSection.length > 0) {
-        sections.push({lines: [...currentSection]});
-      }
-      currentSection = [];
-      inWorkExperience = false;
-    }
-    // Continue adding lines to current section
-    else if (inWorkExperience && line) {
-      currentSection.push(line);
-    }
-  }
-  
-  // Add last section if exists
-  if (currentSection.length > 0) {
-    sections.push({lines: [...currentSection]});
-  }
-  
-  return sections;
-}
-
-// Check if line indicates start of work experience entry
-function isWorkExperienceStart(line: string, prevLine: string, nextLine: string): boolean {
-  // Job titles often contain position keywords
-  const jobTitlePattern = /(manager|developer|analyst|engineer|specialist|coordinator|director|assistant|lead|senior|junior|intern)/i;
-  // Company indicators
-  const companyPattern = /(inc\.|ltd\.|llc|corp|company|organization|university|school)/i;
-  // Date patterns
-  const datePattern = /\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i;
-  
-  return jobTitlePattern.test(line) || companyPattern.test(line) || 
-         (datePattern.test(line) && line.length < 50);
-}
-
-// Check if we've reached end of work experience section
-function isWorkExperienceEnd(line: string): boolean {
-  const sectionHeaders = /(education|skills|technical skills|certifications|projects|awards|interests)/i;
-  return sectionHeaders.test(line);
-}
-
-// Enhance individual line using simple GPT call
-async function enhanceIndividualLine(line: string, apiKey: string): Promise<string> {
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a professional resume writer. Rewrite the given line to be more professional, ATS-friendly, and impactful while preserving the exact meaning. Return only the enhanced line, no explanations.'
-          },
-          {
-            role: 'user',
-            content: `Rewrite this resume line professionally: "${line}"`
-          }
-        ],
-        max_tokens: 100,
-        temperature: 0.7
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`OpenAI API error for line enhancement: ${response.status}`);
-      return line; // Return original line if enhancement fails
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content.trim() || line;
-  } catch (error) {
-    console.error('Error enhancing individual line:', error);
-    return line; // Return original line if enhancement fails
-  }
-}
-
-// Generate complete resume structure with enhanced work experience
-async function generateEnhancedResumeStructure(originalText: string, enhancedWorkExperiences: any[], apiKey: string): Promise<any> {
-  console.log("Generating complete enhanced resume structure...");
-
-  const structurePrompt = `
-You are an expert resume enhancement specialist. Using the original resume text and the enhanced work experience lines provided, create a complete professional resume structure.
+  const enhancementPrompt = `You are an expert ATS resume optimizer. Transform the following resume into a professional, ATS-friendly format.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-ENHANCED WORK EXPERIENCE DATA:
-${JSON.stringify(enhancedWorkExperiences, null, 2)}
+WORK EXPERIENCE LINE COUNT REQUIREMENTS:
+${workExperienceSections.map((section, index) => 
+  `Work Experience ${index + 1}: Must have exactly ${section.totalLines} total lines (including ${section.achievementLines} achievement/bullet point lines)`
+).join('\n')}
 
-CRITICAL REQUIREMENTS:
-1. Extract basic information (name, contact details) from original text
-2. Use the enhanced work experience lines to build the experience section
-3. Map enhanced lines back to structured format (title, company, duration, core_responsibilities, achievements)
-4. Preserve ALL work experience entries and exact line counts
-5. Extract all skills and education from original text
-6. Return valid JSON with exact structure below
-
-WORK EXPERIENCE MAPPING:
-For each enhanced work experience, organize the enhanced lines into:
-- First line = job title
-- Second line = company name  
-- Third line = duration/dates
-- Remaining lines = mix of responsibilities and achievements (categorize appropriately)
+CRITICAL INSTRUCTIONS:
+1. Extract ALL work experience entries from the original resume - preserve every job
+2. For each work experience entry, create EXACTLY the same number of lines as in the original
+3. Count every line in the original work experience sections including:
+   - Job title line
+   - Company name line
+   - Date/duration line
+   - Role description lines
+   - ALL bullet points under responsibilities
+   - ALL bullet points under achievements
+4. Reword each line to be professional and ATS-friendly while preserving exact meaning
+5. NEVER combine multiple original lines into one enhanced line
+6. NEVER add extra lines beyond what exists in original
+7. Extract and preserve ALL skills and technical skills from original resume
+8. Use strong action verbs and professional language without adding quantified data unless present in original
 
 REQUIRED JSON STRUCTURE:
 {
@@ -307,11 +174,11 @@ ENHANCEMENT GUIDELINES:
       messages: [
         { 
           role: 'system', 
-          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content.' 
+          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content that preserves exact line counts from the original resume.' 
         },
         { 
           role: 'user', 
-          content: structurePrompt 
+          content: enhancementPrompt 
         }
       ],
       max_completion_tokens: 4000,
@@ -357,8 +224,22 @@ ENHANCEMENT GUIDELINES:
     parsedResume.skills = parsedResume.skills || [];
     parsedResume.tools = parsedResume.tools || [];
     parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
-    parsedResume.skills = parsedResume.skills || [];
-    parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
+
+    // Validate line counts match original
+    if (parsedResume.experience.length !== workExperienceSections.length) {
+      console.warn(`Work experience count mismatch: original ${workExperienceSections.length}, enhanced ${parsedResume.experience.length}`);
+    }
+
+    // Validate achievement counts for each work experience
+    parsedResume.experience.forEach((exp: any, index: number) => {
+      const originalSection = workExperienceSections[index];
+      if (originalSection) {
+        const enhancedAchievements = (exp.achievements || []).length;
+        if (enhancedAchievements !== originalSection.achievementLines) {
+          console.warn(`Achievement count mismatch for experience ${index + 1}: original ${originalSection.achievementLines}, enhanced ${enhancedAchievements}`);
+        }
+      }
+    });
 
     // Add some fallback data if sections are empty
     if (parsedResume.experience.length === 0) {
@@ -414,6 +295,104 @@ ENHANCEMENT GUIDELINES:
     // Fallback to basic parsing if AI response is invalid
     return basicParseResume(originalText);
   }
+}
+
+// Extract work experience data and count lines
+function extractWorkExperienceData(text: string): Array<{totalLines: number, achievementLines: number}> {
+  const sections = [];
+  const lines = text.split('\n');
+  
+  let currentSection: string[] = [];
+  let inWorkExperience = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Detect start of work experience entry
+    if (isWorkExperienceStart(line, i > 0 ? lines[i-1] : '', i < lines.length - 1 ? lines[i+1] : '')) {
+      // Save previous section if exists
+      if (currentSection.length > 0) {
+        sections.push(analyzeWorkExperienceSection(currentSection));
+      }
+      currentSection = [line];
+      inWorkExperience = true;
+    } 
+    // Detect end of work experience section
+    else if (inWorkExperience && isWorkExperienceEnd(line)) {
+      if (currentSection.length > 0) {
+        sections.push(analyzeWorkExperienceSection(currentSection));
+      }
+      currentSection = [];
+      inWorkExperience = false;
+    }
+    // Continue adding lines to current section
+    else if (inWorkExperience && line) {
+      currentSection.push(line);
+    }
+  }
+  
+  // Add last section if exists
+  if (currentSection.length > 0) {
+    sections.push(analyzeWorkExperienceSection(currentSection));
+  }
+  
+  return sections;
+}
+
+// Analyze a work experience section to count lines and achievements
+function analyzeWorkExperienceSection(lines: string[]): {totalLines: number, achievementLines: number} {
+  const totalLines = lines.filter(line => line.trim()).length;
+  
+  // Count achievement/bullet point lines (lines that start with bullet points or are clearly achievements)
+  let achievementLines = 0;
+  let inAchievementSection = false;
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+    
+    // Check if this line indicates start of achievements section
+    if (trimmedLine.toLowerCase().includes('achievement') || 
+        trimmedLine.toLowerCase().includes('accomplishment') ||
+        trimmedLine.match(/^[\-\•\*]\s+/) || // Bullet points
+        (inAchievementSection && trimmedLine.length > 20)) { // Continuation of achievements
+      achievementLines++;
+      inAchievementSection = true;
+    }
+    // Reset if we hit a new section header
+    else if (trimmedLine.toLowerCase().includes('responsibilities') || 
+             trimmedLine.toLowerCase().includes('experience') ||
+             trimmedLine.match(/^\d{4}/) || // Date
+             trimmedLine.length < 10) { // Short lines are usually headers
+      inAchievementSection = false;
+    }
+  }
+  
+  // If no clear achievement section found, assume last 60% of lines are achievements
+  if (achievementLines === 0 && totalLines > 3) {
+    achievementLines = Math.ceil(totalLines * 0.6);
+  }
+  
+  return { totalLines, achievementLines };
+}
+
+// Check if line indicates start of work experience entry
+function isWorkExperienceStart(line: string, prevLine: string, nextLine: string): boolean {
+  // Job titles often contain position keywords
+  const jobTitlePattern = /(manager|developer|analyst|engineer|specialist|coordinator|director|assistant|lead|senior|junior|intern)/i;
+  // Company indicators
+  const companyPattern = /(inc\.|ltd\.|llc|corp|company|organization|university|school)/i;
+  // Date patterns
+  const datePattern = /\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i;
+  
+  return jobTitlePattern.test(line) || companyPattern.test(line) || 
+         (datePattern.test(line) && line.length < 50);
+}
+
+// Check if we've reached end of work experience section
+function isWorkExperienceEnd(line: string): boolean {
+  const sectionHeaders = /(education|skills|technical skills|certifications|projects|awards|interests)/i;
+  return sectionHeaders.test(line);
 }
 
 function basicParseResume(text: string): any {
