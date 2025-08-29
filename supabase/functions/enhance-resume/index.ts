@@ -109,7 +109,7 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
 
   // Use more reliable model and shorter timeout
   const selectedModel = 'gpt-4.1-2025-04-14'; // More reliable than GPT-5
-  const timeoutMs = 15000; // 15 seconds max to prevent edge function timeout
+  const timeoutMs = 20000; // 20 seconds max
   
   console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
 
@@ -181,51 +181,48 @@ Return ONLY the JSON object, no additional text or formatting.`;
 async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   console.log('🔄 Processing with simplified single prompt...');
   
-  // Drastically reduce content size to prevent timeouts
-  const truncatedText = originalText.substring(0, 3000); // Only first 3000 chars
-  console.log(`📏 Truncated content from ${originalText.length} to ${truncatedText.length} chars`);
-  
-  // Use a much simpler prompt for faster processing
-  const prompt = `Extract key information from this resume text and return ONLY a JSON object:
+  // Use a more focused prompt that extracts key sections efficiently
+  const prompt = `Extract information from this resume and return ONLY a JSON object. Focus on actual data, not placeholders.
 
-${truncatedText}
+Resume content:
+${originalText.substring(0, 10000)} // Limit content to prevent timeouts
 
-Return this exact JSON structure (fill with actual data from resume):
+Return ONLY this JSON structure:
 {
-  "name": "",
-  "title": "",
-  "email": "",
-  "phone": "",
-  "location": "",
-  "linkedin": "",
-  "summary": "",
+  "name": "actual person's name (required)",
+  "title": "job title or professional role",
+  "email": "email address", 
+  "phone": "phone number",
+  "location": "city/location",
+  "linkedin": "LinkedIn URL if present",
+  "summary": "2-3 sentence professional summary based on the resume content",
   "experience": [
     {
-      "title": "",
-      "company": "",
-      "duration": "",
-      "description": "",
-      "achievements": ["", ""]
+      "title": "actual job title",
+      "company": "actual company name", 
+      "duration": "employment dates",
+      "description": "brief role description",
+      "achievements": ["specific achievement 1", "specific achievement 2"]
     }
   ],
   "education": [
     {
-      "degree": "",
-      "institution": "",
-      "year": "",
-      "gpa": ""
+      "degree": "actual degree name",
+      "institution": "actual school/university name",
+      "year": "graduation year",
+      "gpa": "GPA if mentioned"
     }
   ],
-  "skills": [""],
-  "tools": [""],
-  "certifications": [""],
-  "languages": [""]
+  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
+  "tools": ["tool/technology used"],
+  "certifications": ["certification name if any"],
+  "languages": ["language if mentioned"]
 }
 
-Extract actual data only. Use empty strings/arrays if not found.`;
+CRITICAL: Extract actual information only. If a section is not found, use empty array [] or empty string "". No placeholder text.`;
 
   try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
+    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, Math.min(timeoutMs, 30000), globalSignal);
     
     // Validate the result has minimum required data
     if (!result || typeof result !== 'object') {
