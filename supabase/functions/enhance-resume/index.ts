@@ -211,7 +211,7 @@ DO NOT use any generic content like "Professional Organization", "Senior Profess
 
 function directParseResume(originalText: string): any {
   console.log('Using direct parsing approach...');
-  console.log('Text to parse:', originalText.substring(0, 500));
+  console.log('Full text to parse:', originalText);
   
   const lines = originalText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   
@@ -228,9 +228,15 @@ function directParseResume(originalText: string): any {
     core_technical_skills: []
   };
   
-  // Extract name (look for names like SUNDARI CHANDRASHEKAR)
+  // Extract name - look for names in various formats
   for (const line of lines) {
-    if (line.match(/^[A-Z][A-Z\s]{10,}$/) && !line.includes('PROFESSIONAL') && !line.includes('EXPERIENCE')) {
+    // Look for names like "SUNDARI CHANDRASHEKAR" or normal case names
+    if (line.match(/^[A-Z][A-Z\s]{8,}$/) && !line.includes('PROFESSIONAL') && !line.includes('EXPERIENCE') && !line.includes('EDUCATION')) {
+      result.name = line;
+      break;
+    }
+    // Also look for normal case names at the beginning
+    if (line.match(/^[A-Z][a-z]+\s+[A-Z][a-z]+/) && !line.includes('Experience') && !line.includes('Education') && lines.indexOf(line) < 5) {
       result.name = line;
       break;
     }
@@ -242,42 +248,234 @@ function directParseResume(originalText: string): any {
       const email = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0];
       if (email) result.email = email;
     }
-    if (line.match(/^\+?\d[\d\s\-\(\)]+$/)) {
+    if (line.match(/^\+?\d[\d\s\-\(\)]{8,}$/)) {
       result.phone = line;
     }
   }
   
-  // Extract work experience as-is from file content
-  const workExperienceText = extractWorkExperienceAsIs(originalText);
+  // Extract work experience directly from the text
+  console.log('Extracting work experience from full text...');
+  const workExperienceText = extractWorkExperienceDirectly(originalText);
+  console.log('Extracted work experience text:', workExperienceText);
   
-  // Parse the extracted work experience into structured format while preserving original content
-  result.experience = parseWorkExperiencePreserveOriginal(workExperienceText);
+  // Parse the extracted work experience into structured format
+  result.experience = parseWorkExperienceFromText(workExperienceText, originalText);
   
-  // Set fallback values if nothing found
-  if (!result.name) result.name = 'Professional';
-  if (result.experience.length === 0) {
-    // Create a single entry with all experience content if no structure found
-    result.experience.push({
-      title: 'Professional Experience',
-      company: 'See details below',
-      duration: 'As per resume',
-      description: workExperienceText || 'Experience details from uploaded resume',
-      achievements: workExperienceText ? workExperienceText.split('\n').filter(line => line.trim().length > 0) : []
-    });
+  // Extract summary if available
+  const summaryMatch = originalText.match(/summary[:\s]*(.*?)(?=experience|education|skills|$)/is);
+  if (summaryMatch) {
+    result.summary = summaryMatch[1].trim();
+  } else {
+    result.summary = 'Professional with experience as detailed in the original resume';
   }
   
-  result.summary = 'Professional with experience as detailed in the original resume';
-  result.skills = ['Professional Skills', 'Industry Experience', 'Technical Knowledge'];
-  result.core_technical_skills = result.skills.map((skill: string, index: number) => ({
+  // Extract skills
+  const skillsMatch = originalText.match(/skills[:\s]*(.*?)(?=education|experience|$)/is);
+  if (skillsMatch) {
+    const skillsText = skillsMatch[1];
+    result.skills = skillsText.split(/[,\n]/).map(s => s.trim()).filter(s => s && s.length > 1);
+  } else {
+    result.skills = ['Professional Skills', 'Industry Experience', 'Technical Knowledge'];
+  }
+  
+  result.core_technical_skills = result.skills.slice(0, 5).map((skill: string, index: number) => ({
     name: skill,
     proficiency: 80 + index * 2
   }));
   
+  // Set fallback values if nothing found
+  if (!result.name) result.name = 'Professional';
+  
   console.log('Direct parsing completed');
   console.log('Extracted name:', result.name);
   console.log('Number of jobs:', result.experience.length);
+  console.log('First job details:', result.experience[0]);
   
   return result;
+}
+
+// Extract work experience directly from text with improved parsing
+function extractWorkExperienceDirectly(text: string): string {
+  console.log('Extracting work experience directly from text...');
+  
+  const lines = text.split('\n');
+  const workExperienceLines: string[] = [];
+  
+  let inWorkExperience = false;
+  let foundWorkExperienceSection = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lowerLine = line.toLowerCase();
+    
+    // Check if we're entering work experience section
+    if (lowerLine.includes('employment') ||
+        lowerLine.includes('experience') || 
+        lowerLine.includes('work history') ||
+        lowerLine.includes('professional experience') ||
+        lowerLine.includes('organizational experience')) {
+      inWorkExperience = true;
+      foundWorkExperienceSection = true;
+      console.log('Found work experience section:', line);
+      continue; // Skip the header line
+    }
+    
+    // Check if we're leaving work experience section
+    if (inWorkExperience && (
+      lowerLine.includes('education') || 
+      lowerLine.includes('skills') || 
+      lowerLine.includes('certifications') ||
+      lowerLine.includes('qualifications') ||
+      lowerLine.includes('achievements') ||
+      lowerLine.includes('awards') ||
+      lowerLine.includes('projects')
+    )) {
+      console.log('Leaving work experience section at:', line);
+      break;
+    }
+    
+    // If we're in work experience section, capture all content as-is
+    if (inWorkExperience && line.length > 0) {
+      workExperienceLines.push(line);
+    }
+  }
+  
+  console.log(`Extracted ${workExperienceLines.length} work experience lines directly`);
+  return workExperienceLines.join('\n');
+}
+
+// Parse work experience from extracted text with better structure detection
+function parseWorkExperienceFromText(workExperienceText: string, fullText: string): any[] {
+  console.log('Parsing work experience from extracted text...');
+  console.log('Work experience text length:', workExperienceText.length);
+  
+  if (!workExperienceText || workExperienceText.trim().length === 0) {
+    console.log('No work experience text found, trying to parse from full text');
+    return parseWorkExperienceFromFullText(fullText);
+  }
+  
+  const lines = workExperienceText.split('\n').filter(line => line.trim().length > 0);
+  const jobs: any[] = [];
+  let currentJob: any = null;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lowerLine = line.toLowerCase();
+    
+    console.log(`Processing line ${i}: ${line}`);
+    
+    // Look for job title patterns (Marketing Strategist, AVP, etc.)
+    if (line.match(/^[A-Z][a-zA-Z\s\-&]+$/) && 
+        !line.match(/\d{4}/) && 
+        !line.includes('@') &&
+        line.length > 10 && line.length < 100) {
+      
+      console.log('Found potential job title:', line);
+      
+      if (currentJob) {
+        jobs.push(currentJob);
+      }
+      
+      currentJob = {
+        title: line,
+        company: '',
+        duration: '',
+        location: '',
+        description: '',
+        achievements: []
+      };
+    }
+    // Look for company names
+    else if (currentJob && !currentJob.company && 
+             (line.match(/limited|ltd|inc|corp|company|pvt|private|technologies|solutions|bank|group/i) ||
+              line.match(/^[A-Z][a-zA-Z\s]+$/) && line.length < 50)) {
+      console.log('Found potential company:', line);
+      currentJob.company = line;
+    }
+    // Look for dates
+    else if (line.match(/\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|present/i)) {
+      console.log('Found potential date:', line);
+      if (currentJob) {
+        currentJob.duration = line;
+      }
+    }
+    // Look for location
+    else if (currentJob && !currentJob.location && 
+             line.match(/^[A-Z][a-z]+$/) && 
+             line.length < 20 && 
+             !line.match(/\d/)) {
+      console.log('Found potential location:', line);
+      currentJob.location = line;
+    }
+    // Add as achievement/responsibility
+    else if (currentJob && line.length > 20 && 
+             !line.match(/^[A-Z][A-Z\s]+$/) && // Not all caps headers
+             !line.includes('Experience') &&
+             !line.includes('Education')) {
+      console.log('Adding as achievement:', line);
+      currentJob.achievements.push(line);
+    }
+  }
+  
+  // Add final job if exists
+  if (currentJob) {
+    jobs.push(currentJob);
+  }
+  
+  console.log(`Parsed ${jobs.length} jobs from work experience text`);
+  jobs.forEach((job, index) => {
+    console.log(`Job ${index + 1}: ${job.title} at ${job.company}`);
+  });
+  
+  return jobs.length > 0 ? jobs : parseWorkExperienceFromFullText(fullText);
+}
+
+// Fallback: Parse work experience from full text if section-based parsing fails
+function parseWorkExperienceFromFullText(fullText: string): any[] {
+  console.log('Fallback: parsing work experience from full text');
+  
+  const lines = fullText.split('\n').filter(line => line.trim().length > 0);
+  const jobs: any[] = [];
+  
+  // Look for any job-like patterns in the entire text
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Job title patterns
+    if (line.match(/(manager|strategist|analyst|engineer|specialist|coordinator|director|officer|avp|vp)/i) &&
+        !line.match(/\d{4}/) &&
+        line.length > 10 && line.length < 100) {
+      
+      const job: any = {
+        title: line,
+        company: '',
+        duration: '',
+        location: '',
+        description: '',
+        achievements: []
+      };
+      
+      // Look ahead for company and dates
+      for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+        const nextLine = lines[j].trim();
+        
+        if (!job.company && nextLine.match(/limited|ltd|inc|corp|company|pvt|private|technologies|solutions|bank/i)) {
+          job.company = nextLine;
+        } else if (nextLine.match(/\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|present/i)) {
+          job.duration = nextLine;
+        } else if (nextLine.length > 20 && j > i + 1) {
+          job.achievements.push(nextLine);
+        }
+      }
+      
+      if (job.company || job.duration || job.achievements.length > 0) {
+        jobs.push(job);
+      }
+    }
+  }
+  
+  console.log(`Fallback parsing found ${jobs.length} jobs`);
+  return jobs;
 }
 
 // Extract work experience section preserving original formatting and content
