@@ -273,54 +273,69 @@ async function processSectionWithAI(section: {type: string, content: string}, ap
   console.log(`📄 Section content preview: ${section.content.substring(0, 200)}...`);
   
   const prompts = {
-    contact: `Extract contact information from this resume section. Return ONLY a JSON object:
+    contact: `Extract contact information from this resume section. Use ONLY actual information from the resume content. DO NOT create placeholder text.
 
 Content:
 ${section.content}
 
-Return:
+CRITICAL INSTRUCTIONS:
+- Extract ONLY the actual name, email, phone, etc. that appears in the content above
+- DO NOT use placeholder text like "Professional" or generic titles
+- If information is not found, leave it as an empty string ""
+- Use the exact professional title/role mentioned in the resume, not a generic one
+
+Return ONLY a JSON object:
 {
-  "name": "full name",
-  "email": "email address", 
-  "phone": "phone number",
-  "location": "city/location",
-  "linkedin": "LinkedIn URL if present",
-  "title": "professional title/role if mentioned"
+  "name": "actual full name exactly as written",
+  "email": "actual email address", 
+  "phone": "actual phone number",
+  "location": "actual city/location mentioned",
+  "linkedin": "actual LinkedIn URL if present",
+  "title": "actual professional title/role exactly as mentioned in resume"
 }`,
 
-    summary: `Create a professional summary from this resume section. Return ONLY a JSON object:
+    summary: `Create a professional summary from this resume section using ONLY the actual content provided. DO NOT use any placeholder text or brackets.
 
 Content: 
 ${section.content}
 
-Return:
+Instructions:
+- Use ONLY information that appears in the actual resume content above
+- Extract the person's actual industry, role, and experience from what's written
+- DO NOT use placeholder text like [industry/field], [skills], or generic phrases
+- If specific details aren't clear, use general professional language but based on what's actually written
+- Write 2-3 sentences that reflect the actual experience and background mentioned in the content
+
+Return ONLY a JSON object:
 {
-  "summary": "2-3 sentence professional summary highlighting key qualifications and experience"
+  "summary": "2-3 sentence professional summary based entirely on the actual resume content provided, no placeholders or brackets"
 }`,
 
-    experience: `Extract ALL work experience from this section. Parse every job/position mentioned. Return ONLY a JSON array:
+    experience: `Extract ALL work experience from this section. Use ONLY actual information from the resume content. DO NOT create placeholder text.
 
 Content:
 ${section.content}
 
-Instructions:
-- Extract EVERY job, position, or work experience mentioned
-- Look for company names, job titles, dates, and responsibilities
-- Each job should have unique achievements and descriptions
-- Do NOT skip any work experience entries
+CRITICAL INSTRUCTIONS:
+- Extract EVERY job, position, or work experience mentioned in the content above
+- Use ONLY the actual company names, job titles, and dates that appear in the resume
+- DO NOT use placeholder text like "Company Name", "Job Title", or generic descriptions
+- If a detail is missing, leave it as an empty string ""
+- Base achievements on actual responsibilities mentioned, not generic placeholder content
+- Each job entry must have real, specific information from the resume content
 
-Return:
+Return ONLY a JSON array:
 [
   {
-    "title": "actual job title from resume",
-    "company": "actual company name from resume",
-    "duration": "actual employment dates from resume", 
-    "description": "brief role description based on content",
-    "achievements": ["unique achievement 1", "unique achievement 2", "unique achievement 3"]
+    "title": "actual job title exactly as written in resume",
+    "company": "actual company name exactly as written in resume", 
+    "duration": "actual employment dates exactly as written in resume",
+    "description": "brief role description based on actual content mentioned",
+    "achievements": ["real achievement 1 from resume", "real achievement 2 from resume", "real achievement 3 from resume"]
   }
 ]
 
-CRITICAL: If you find ANY work experience, return it as an array. If no work experience is found, return an empty array [].`,
+If no work experience is found in the content, return an empty array [].`,
 
     education: `Extract education information. Return ONLY a JSON array:
 
