@@ -147,6 +147,87 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   }
 }
 
+function detectIndividualJobs(experienceText: string): string[] {
+  console.log('🔍 Detecting individual jobs within experience section...');
+  
+  const lines = experienceText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  
+  // Patterns that indicate a new job entry
+  const jobStartPatterns = [
+    /(\d{4})\s*[-–]\s*(\d{4}|present|current)/i, // Date ranges like "2019 - 2021" or "2020 - Present"
+    /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{4}/i, // Month year like "Jan 2020"
+    /\b(manager|director|senior|lead|analyst|specialist|coordinator|officer|executive|developer|engineer|consultant)\b/i, // Common job titles
+    /^[A-Z][^a-z]*$/, // All caps titles
+    /^\d{1,2}\/\d{4}/, // Date formats like "01/2020"
+  ];
+  
+  // Company name patterns (often appear near job titles)
+  const companyPatterns = [
+    /\b(inc|llc|ltd|corp|corporation|company|co\.|pvt|private|limited)\b/i,
+    /\b(technologies|solutions|systems|services|consulting|group|international)\b/i,
+  ];
+  
+  let jobStartFound = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const isJobStart = jobStartPatterns.some(pattern => pattern.test(line)) ||
+                      (companyPatterns.some(pattern => pattern.test(line)) && line.length < 100);
+    
+    // If we detect a new job start and we have content for the current job
+    if (isJobStart && currentJob.length > 0 && jobStartFound) {
+      jobs.push(currentJob.join('\n'));
+      currentJob = [];
+    }
+    
+    currentJob.push(line);
+    
+    if (isJobStart) {
+      jobStartFound = true;
+    }
+  }
+  
+  // Add the last job
+  if (currentJob.length > 0) {
+    jobs.push(currentJob.join('\n'));
+  }
+  
+  // If no jobs detected using patterns, split by content length
+  if (jobs.length <= 1 && experienceText.length > 1000) {
+    console.log('🔄 Fallback: Splitting experience by content chunks...');
+    const chunks = splitTextIntoChunks(experienceText, 800); // Split into manageable chunks
+    return chunks.filter(chunk => chunk.length > 100);
+  }
+  
+  console.log(`📊 Detected ${jobs.length} individual jobs`);
+  return jobs.filter(job => job.length > 50); // Filter out very short entries
+}
+
+function splitTextIntoChunks(text: string, maxChunkSize: number): string[] {
+  const words = text.split(' ');
+  const chunks: string[] = [];
+  let currentChunk = '';
+  
+  for (const word of words) {
+    if (currentChunk.length + word.length + 1 <= maxChunkSize) {
+      currentChunk += (currentChunk ? ' ' : '') + word;
+    } else {
+      if (currentChunk) {
+        chunks.push(currentChunk);
+      }
+      currentChunk = word;
+    }
+  }
+  
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+  
+  return chunks;
+}
+
 function parseResumeIntoSections(text: string): Array<{type: string, content: string, priority: number}> {
   console.log('🔍 Parsing resume into intelligent sections...');
   
@@ -241,10 +322,21 @@ function parseResumeIntoSections(text: string): Array<{type: string, content: st
   }
   consolidatedSections.push(contactSection);
 
-  // Process experience section (often the largest)
+  // Process experience section with individual job detection
   const experienceSection = sections.find(s => s.type === 'experience');
   if (experienceSection && experienceSection.content.length > 100) {
-    consolidatedSections.push(experienceSection);
+    // Detect individual jobs within the experience section
+    const individualJobs = detectIndividualJobs(experienceSection.content);
+    console.log(`🔍 Detected ${individualJobs.length} individual jobs in experience section`);
+    
+    // Add each job as a separate section for processing
+    individualJobs.forEach((jobContent, index) => {
+      consolidatedSections.push({
+        type: `experience_job_${index}`,
+        content: jobContent,
+        priority: 3 + (index * 0.1) // Maintain order but allow parallel processing
+      });
+    });
   }
 
   // Process summary/profile section
@@ -317,23 +409,19 @@ ${section.content}
 
 CRITICAL: Base summary on actual content. No generic placeholders.`,
 
-    experience: `Extract work experience from this section. Return ONLY JSON:
+    experience: `Extract work experience from this individual job entry. Return ONLY JSON:
 {
-  "experience": [
-    {
-      "title": "actual job title",
-      "company": "actual company name",
-      "duration": "actual employment dates",
-      "description": "brief role description based on content",
-      "achievements": ["unique achievement 1", "unique achievement 2", "unique achievement 3"]
-    }
-  ]
+  "title": "actual job title",
+  "company": "actual company name",
+  "duration": "actual employment dates or period",
+  "description": "brief role description based on actual content",
+  "achievements": ["specific achievement 1", "specific achievement 2", "specific achievement 3"]
 }
 
-Experience section:
+Job entry content:
 ${section.content}
 
-CRITICAL: Each job must have unique achievements. Extract actual job titles, companies, dates. If multiple jobs, ensure achievements are distinct per role.`,
+CRITICAL: This is ONE job entry. Extract the specific job title, company name, employment dates, and actual achievements from this role only. Focus on concrete accomplishments and responsibilities.`,
 
     education: `Extract education information from this section. Return ONLY JSON:
 {
@@ -366,7 +454,10 @@ ${section.content}
 CRITICAL: Categorize properly. Extract only mentioned items. Use empty arrays [] for missing categories.`
   };
 
-  const prompt = prompts[section.type as keyof typeof prompts] || prompts.skills;
+  // Handle individual job processing
+  const isExperienceJob = section.type.startsWith('experience_job_');
+  const prompt = isExperienceJob ? prompts.experience : (prompts[section.type as keyof typeof prompts] || prompts.skills);
+
   
   try {
     const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
@@ -410,33 +501,48 @@ function mergeSectionResults(
       const { type, result: sectionData } = result.value;
       console.log(`✅ Merging successful ${type} section`);
       
-      switch (type) {
-        case 'contact':
-          enhancedResume.name = sectionData.name || "";
-          enhancedResume.email = sectionData.email || "";
-          enhancedResume.phone = sectionData.phone || "";
-          enhancedResume.location = sectionData.location || "";
-          enhancedResume.linkedin = sectionData.linkedin || "";
-          break;
-          
-        case 'summary':
-          enhancedResume.summary = sectionData.summary || "";
-          break;
-          
-        case 'experience':
-          enhancedResume.experience = Array.isArray(sectionData.experience) ? sectionData.experience : [];
-          break;
-          
-        case 'education':
-          enhancedResume.education = Array.isArray(sectionData.education) ? sectionData.education : [];
-          break;
-          
-        case 'skills':
-          enhancedResume.skills = Array.isArray(sectionData.skills) ? sectionData.skills : [];
-          enhancedResume.tools = Array.isArray(sectionData.tools) ? sectionData.tools : [];
-          enhancedResume.certifications = Array.isArray(sectionData.certifications) ? sectionData.certifications : [];
-          enhancedResume.languages = Array.isArray(sectionData.languages) ? sectionData.languages : [];
-          break;
+      // Handle individual job results
+      if (type.startsWith('experience_job_')) {
+        console.log(`✅ Merging individual job: ${sectionData.title || 'Unknown Title'}`);
+        // Individual job data comes as a single job object, not an array
+        if (sectionData.title || sectionData.company) {
+          enhancedResume.experience.push({
+            title: sectionData.title || "",
+            company: sectionData.company || "",
+            duration: sectionData.duration || "",
+            description: sectionData.description || "",
+            achievements: Array.isArray(sectionData.achievements) ? sectionData.achievements : []
+          });
+        }
+      } else {
+        switch (type) {
+          case 'contact':
+            enhancedResume.name = sectionData.name || "";
+            enhancedResume.email = sectionData.email || "";
+            enhancedResume.phone = sectionData.phone || "";
+            enhancedResume.location = sectionData.location || "";
+            enhancedResume.linkedin = sectionData.linkedin || "";
+            break;
+            
+          case 'summary':
+            enhancedResume.summary = sectionData.summary || "";
+            break;
+            
+          case 'experience':
+            enhancedResume.experience = Array.isArray(sectionData.experience) ? sectionData.experience : [];
+            break;
+            
+          case 'education':
+            enhancedResume.education = Array.isArray(sectionData.education) ? sectionData.education : [];
+            break;
+            
+          case 'skills':
+            enhancedResume.skills = Array.isArray(sectionData.skills) ? sectionData.skills : [];
+            enhancedResume.tools = Array.isArray(sectionData.tools) ? sectionData.tools : [];
+            enhancedResume.certifications = Array.isArray(sectionData.certifications) ? sectionData.certifications : [];
+            enhancedResume.languages = Array.isArray(sectionData.languages) ? sectionData.languages : [];
+            break;
+        }
       }
     } else {
       failedSections.push(originalSection.type);
