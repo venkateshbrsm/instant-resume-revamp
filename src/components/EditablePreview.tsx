@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Save, Edit3, Eye, Loader2 } from 'lucide-react';
+import { Save, Edit3, Eye, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { generateVisualPdf, extractResumeDataFromEnhanced } from '@/lib/visualPdfGenerator';
@@ -91,6 +91,15 @@ export const EditablePreview = ({
     }
   };
 
+  const enhanceWorkExperience = useCallback(async (index: number) => {
+    try {
+      toast.success('AI Enhancement feature coming soon!');
+      // TODO: Implement AI enhancement for individual work experience entries
+    } catch (error) {
+      toast.error('Enhancement failed. Please try again.');
+    }
+  }, []);
+
 
   const renderEditableField = (label: string, value: string, field: string, nestedField?: string, isTextarea: boolean = false) => {
     const actualValue = nestedField ? editableData[field]?.[nestedField] || '' : editableData[field] || '';
@@ -125,41 +134,234 @@ export const EditablePreview = ({
 
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3" style={{ color: selectedColorTheme.primary }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: selectedColorTheme.primary }}>
           {title}
         </h3>
         {items.map((item, index) => (
-          <Card key={index} className="mb-4">
-            <CardContent className="pt-4">
+          <Card key={index} className="mb-6 border-2">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-medium">
+                  {field === 'experience' ? `Experience ${index + 1}` : `Education ${index + 1}`}
+                </CardTitle>
+                {field === 'experience' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => enhanceWorkExperience(index)}
+                  >
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    AI Enhance
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
               {field === 'experience' && (
                 <>
-                  {renderEditableField2('Job Title', item.title, field, 'title', false, index)}
-                  {renderEditableField2('Company', item.company, field, 'company', false, index)}
-                  {item.achievements && (
-                    <div className="mb-3">
-                      <label className="text-sm font-medium text-muted-foreground">Achievements</label>
+                  {/* Position Field */}
+                  <div className="grid grid-cols-1 gap-2">
+                    <label className="text-sm font-medium text-muted-foreground">Position</label>
+                    {isEditing ? (
+                      <Input
+                        value={item.title || ''}
+                        onChange={(e) => handleArrayFieldChange(field, index, 'title', e.target.value)}
+                        placeholder="Enter job title"
+                        className="bg-blue-50 border-blue-200"
+                      />
+                    ) : (
+                      <div className="text-sm p-2 bg-gray-50 rounded border">
+                        {item.title || 'No title specified'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Employer and City */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Employer</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.company || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'company', e.target.value)}
+                          placeholder="Enter company name"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.company || 'No company specified'}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">City</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.location || item.city || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'location', e.target.value)}
+                          placeholder="Enter city"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.location || item.city || 'No location specified'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Date Range */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Start Date</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.startDate || item.duration?.split(' to ')[0] || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'startDate', e.target.value)}
+                          placeholder="e.g., August 2021"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.startDate || item.duration?.split(' to ')[0] || 'No start date'}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">End Date</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.endDate || item.duration?.split(' to ')[1] || 'Present'}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'endDate', e.target.value)}
+                          placeholder="e.g., Present"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.endDate || item.duration?.split(' to ')[1] || 'Present'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description/Responsibilities */}
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Description</label>
+                    {isEditing ? (
                       <Textarea
-                        value={item.achievements.join('\n')}
+                        value={(() => {
+                          if (item.achievements && Array.isArray(item.achievements)) {
+                            return item.achievements.map(achievement => `• ${achievement}`).join('\n');
+                          } else if (item.core_responsibilities && Array.isArray(item.core_responsibilities)) {
+                            return item.core_responsibilities.map(resp => `• ${resp}`).join('\n');
+                          } else if (item.description) {
+                            return item.description;
+                          }
+                          return '';
+                        })()}
                         onChange={(e) => {
-                          const achievements = e.target.value.split('\n').filter(a => a.trim());
-                          handleArrayFieldChange(field, index, 'achievements', achievements);
+                          const lines = e.target.value.split('\n').map(line => line.replace(/^[•\-]\s*/, '').trim()).filter(line => line);
+                          handleArrayFieldChange(field, index, 'achievements', lines);
                         }}
                         className="mt-1"
-                        rows={4}
-                        placeholder="Enter achievements (one per line)"
-                        disabled={!isEditing}
+                        rows={8}
+                        placeholder="Enter job responsibilities and achievements (one per line)"
                       />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="text-sm p-3 bg-gray-50 rounded border mt-1 space-y-1">
+                        {(() => {
+                          let items_to_show = [];
+                          if (item.achievements && Array.isArray(item.achievements)) {
+                            items_to_show = item.achievements;
+                          } else if (item.core_responsibilities && Array.isArray(item.core_responsibilities)) {
+                            items_to_show = item.core_responsibilities;
+                          } else if (item.description) {
+                            items_to_show = [item.description];
+                          }
+                          
+                          return items_to_show.map((achievement, achIndex) => (
+                            <div key={achIndex} className="flex items-start gap-2">
+                              <span className="text-primary mt-1">•</span>
+                              <span>{achievement}</span>
+                            </div>
+                          ));
+                        })()}
+                        {(!item.achievements?.length && !item.core_responsibilities?.length && !item.description) && (
+                          <span className="text-muted-foreground">No description provided</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
               
               {field === 'education' && (
                 <>
-                  {renderEditableField2('Degree', item.degree, field, 'degree', false, index)}
-                  {renderEditableField2('Institution', item.institution, field, 'institution', false, index)}
-                  {renderEditableField2('Year', item.year, field, 'year', false, index)}
-                  {renderEditableField2('GPA', item.gpa, field, 'gpa', false, index)}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Degree</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.degree || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'degree', e.target.value)}
+                          placeholder="Enter degree"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.degree || 'No degree specified'}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Institution</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.institution || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'institution', e.target.value)}
+                          placeholder="Enter institution"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.institution || 'No institution specified'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Year</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.year || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'year', e.target.value)}
+                          placeholder="Enter year"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.year || 'No year specified'}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">GPA</label>
+                      {isEditing ? (
+                        <Input
+                          value={item.gpa || ''}
+                          onChange={(e) => handleArrayFieldChange(field, index, 'gpa', e.target.value)}
+                          placeholder="Enter GPA (optional)"
+                          className="mt-1"
+                        />
+                      ) : (
+                        <div className="text-sm p-2 bg-gray-50 rounded border mt-1">
+                          {item.gpa || 'No GPA specified'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </>
               )}
             </CardContent>
