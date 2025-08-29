@@ -193,11 +193,31 @@ serve(async (req) => {
       /^Let me\s+/i,
       /^.*enhanced.*rewrite.*:/i,
       /^.*ATS-optimized.*:/i,
+      /^.*ATS-friendly.*:/i,
       /^.*professional.*version.*:/i,
       /^.*improved.*version.*:/i,
+      /^.*revised.*:/i,
+      /^.*keyword-optimized.*:/i,
+      /^.*optimized.*:/i,
+      /^.*rewritten.*:/i,
+      /^.*enhanced.*:/i,
+      /^.*improved.*:/i,
+      /^.*better.*:/i,
+      /^.*updated.*:/i,
+      /^.*refined.*:/i,
       /^---\s*/,
       /^\*\*.*\*\*\s*/,
-      /^#{1,6}\s+.*\n/m
+      /^#{1,6}\s+.*\n/m,
+      // Specific pattern the user mentioned
+      /^.*revised.*ATS-friendly.*keyword-optimized.*:/i,
+      // More specific patterns
+      /^.*professional title.*:/i,
+      /^.*summary.*:/i,
+      /^.*description.*:/i,
+      /^.*skills.*:/i,
+      /^.*achievements.*:/i,
+      // Remove any pattern ending with colon after descriptive text
+      /^[^:]*(?:enhanced|optimized|improved|revised|better|updated|refined|professional|ATS)[^:]*:\s*/i
     ];
 
     // Clean the content by removing prefixes
@@ -205,11 +225,24 @@ serve(async (req) => {
       cleanedContent = cleanedContent.replace(prefix, '');
     }
 
-    // Remove trailing dashes or separators
+    // Remove trailing dashes or separators and explanatory suffixes
     cleanedContent = cleanedContent.replace(/^---+\s*/, '').replace(/\s*---+$/, '');
     
-    // Clean up extra whitespace and newlines at the beginning
-    cleanedContent = cleanedContent.replace(/^\s*\n+/, '').trim();
+    // Remove any remaining explanatory phrases at the end
+    const suffixesToRemove = [
+      /\s*\(.*ATS.*\)$/i,
+      /\s*\(.*optimized.*\)$/i,
+      /\s*\(.*enhanced.*\)$/i,
+      /\s*-\s*.*optimized.*/i,
+      /\s*-\s*.*ATS.*/i
+    ];
+
+    for (const suffix of suffixesToRemove) {
+      cleanedContent = cleanedContent.replace(suffix, '');
+    }
+    
+    // Clean up extra whitespace and newlines at the beginning and end
+    cleanedContent = cleanedContent.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '').trim();
 
     console.log('✅ Field enhancement completed successfully');
 
