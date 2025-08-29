@@ -322,6 +322,7 @@ export const EditablePreview = ({
           className="mt-1"
           placeholder={`Enter ${label.toLowerCase()}`}
           rows={isTextarea ? 3 : undefined}
+          disabled={isAutoEnhancing}
         />
       </div>
     );
@@ -373,6 +374,7 @@ export const EditablePreview = ({
                         className="mt-1"
                         rows={4}
                         placeholder="Enter achievements (one per line)"
+                        disabled={isAutoEnhancing}
                       />
                     </div>
                   )}
@@ -438,6 +440,7 @@ export const EditablePreview = ({
             className="mt-1"
             placeholder={`Enter ${label.toLowerCase()}`}
             rows={isTextarea ? 3 : undefined}
+            disabled={isAutoEnhancing}
           />
         </div>
       );
@@ -476,7 +479,7 @@ export const EditablePreview = ({
             onClick={handleSave} 
             variant="default" 
             size="sm"
-            disabled={isSaving}
+            disabled={isSaving || isAutoEnhancing}
             className="flex-1 sm:flex-none"
           >
             {isSaving ? (
@@ -618,6 +621,7 @@ export const EditablePreview = ({
                 className="w-full"
                 placeholder="Enter skills separated by commas (e.g., JavaScript, React, Node.js, Python)"
                 rows={3}
+                disabled={isAutoEnhancing}
               />
             </div>
           </div>
@@ -638,6 +642,7 @@ export const EditablePreview = ({
               className="w-full"
               placeholder="Enter languages separated by commas"
               rows={2}
+              disabled={isAutoEnhancing}
             />
           </div>
         )}
