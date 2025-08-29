@@ -188,6 +188,7 @@ serve(async (req) => {
     
     // Remove introductory phrases at the beginning
     const introPatterns = [
+      /^Absolutely[!]?\s*Here.*?:/i,
       /^Certainly[!]?\s*Here is.*?:/i,
       /^Here is.*?:/i,
       /^Here's.*?:/i,
@@ -195,7 +196,12 @@ serve(async (req) => {
       /^The enhanced.*?:/i,
       /^This is.*?:/i,
       /^Below is.*?:/i,
-      /^.*?enhanced.*?version.*?:/i
+      /^.*?enhanced.*?version.*?:/i,
+      /^.*?ATS-optimized.*?:/i,
+      /^.*?rewrite.*?:/i,
+      /^Perfect[!]?\s*Here.*?:/i,
+      /^Great[!]?\s*Here.*?:/i,
+      /^Excellent[!]?\s*Here.*?:/i
     ];
     
     for (const pattern of introPatterns) {
