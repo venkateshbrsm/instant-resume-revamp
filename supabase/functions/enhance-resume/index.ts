@@ -64,282 +64,158 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  console.log("Enhancing resume with line-by-line preservation...");
+  console.log("Enhancing resume with structure preservation...");
   
-  // Split the text into lines and preserve the structure
-  const lines = originalText.split('\n');
-  const enhancedLines: string[] = [];
-  
-  // Process the text in sections to preserve structure
-  let currentSection = '';
-  let sectionLines: string[] = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmedLine = line.trim();
-    
-    if (trimmedLine === '' || trimmedLine.length < 3) {
-      // Preserve empty lines and spacing
-      enhancedLines.push(line);
-      continue;
-    }
-    
-    // Detect section headers (short lines that are likely headers)
-    if (isLikelyHeader(trimmedLine)) {
-      enhancedLines.push(line);
-      continue;
-    }
-    
-    // For content lines, enhance them individually
-    const enhancedLine = await enhanceLineContent(trimmedLine, apiKey);
-    enhancedLines.push(enhancedLine);
+  const enhancementPrompt = `You are an expert resume enhancement specialist. Your task is to enhance the following resume while PRESERVING THE EXACT STRUCTURE AND LINE COUNT.
+
+ORIGINAL RESUME:
+${originalText}
+
+CRITICAL REQUIREMENTS:
+1. PRESERVE EVERY SINGLE LINE from the original resume
+2. For each line of content, enhance it to be more professional and ATS-friendly 
+3. Do NOT restructure, reorganize, or change the order of information
+4. Do NOT add new sections or remove existing ones
+5. MAINTAIN the exact number of bullet points, achievements, and responsibilities for each job
+6. Only improve the wording and professional language of existing content
+7. Keep all contact information, dates, and company names exactly as they are
+
+ENHANCEMENT RULES:
+- Transform responsibility descriptions into action-oriented, professional language
+- Use strong action verbs (Managed, Developed, Implemented, Led, etc.)
+- Make content ATS-friendly with industry keywords
+- Improve grammar and professional tone
+- Keep the same meaning but make it more impactful
+
+Return the enhanced resume in this JSON format:
+{
+  "enhanced_text": "The complete enhanced resume text with exact same structure as original",
+  "structured_data": {
+    "name": "extracted name",
+    "title": "professional title", 
+    "email": "email address",
+    "phone": "phone number",
+    "location": "location",
+    "summary": "professional summary from resume",
+    "experience": [
+      {
+        "title": "job title",
+        "company": "company name",
+        "duration": "time period",
+        "responsibilities": ["responsibility 1", "responsibility 2", "etc - exact count as original"]
+      }
+    ],
+    "education": [
+      {
+        "degree": "degree name",
+        "institution": "school name",
+        "year": "graduation year"
+      }
+    ],
+    "skills": ["list of skills from resume"],
+    "core_technical_skills": [
+      {"name": "skill name", "proficiency": 80}
+    ]
   }
-  
-  // Join enhanced lines back together
-  const enhancedText = enhancedLines.join('\n');
-  
-  // Now parse the enhanced text into structured format
-  return parseEnhancedTextToStructure(enhancedText);
-}
+}`;
 
-async function enhanceLineContent(line: string, apiKey: string): Promise<string> {
-  // Don't enhance very short lines, names, contact info, dates
-  if (line.length < 10 || 
-      line.includes('@') || 
-      line.match(/^\d{4}/) || 
-      line.match(/^\+?\d[\d\s\-\(\)]+$/)) {
-    return line;
+  console.log('Sending enhancement request to OpenAI...');
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { 
+          role: 'system', 
+          content: 'You are a resume enhancement expert. You must preserve the exact structure and line count of the original resume while improving the professional language and ATS-friendliness.' 
+        },
+        { 
+          role: 'user', 
+          content: enhancementPrompt 
+        }
+      ],
+      max_completion_tokens: 4000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('OpenAI API error:', response.status, errorText);
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
   }
-  
-  const enhancementPrompt = `Enhance this single resume line to be more professional and ATS-friendly while preserving its core meaning and structure. Only return the enhanced version, nothing else:
 
-Original line: "${line}"
+  const data = await response.json();
+  const enhancedContent = data.choices[0]?.message?.content;
 
-Enhanced line:`;
+  if (!enhancedContent) {
+    throw new Error('No content received from OpenAI');
+  }
+
+  console.log('Raw AI response received, parsing JSON...');
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a resume enhancement expert. Enhance the given line to be more professional and ATS-friendly while keeping the same meaning. Return only the enhanced line, no explanations.' 
-          },
-          { 
-            role: 'user', 
-            content: enhancementPrompt 
-          }
-        ],
-        max_tokens: 100,
-        temperature: 0.3,
-      }),
-    });
+    // Clean up the response to ensure it's valid JSON
+    let cleanedContent = enhancedContent.trim();
+    
+    // Remove any markdown code block markers
+    if (cleanedContent.startsWith('```json')) {
+      cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (cleanedContent.startsWith('```')) {
+      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
 
-    if (response.ok) {
-      const data = await response.json();
-      const enhancedLine = data.choices[0]?.message?.content?.trim();
-      return enhancedLine || line;
+    const parsedResponse = JSON.parse(cleanedContent);
+    
+    // Use the structured data from AI response
+    const structuredData = parsedResponse.structured_data;
+    
+    // Validate the structure
+    if (!structuredData || !structuredData.experience) {
+      throw new Error('Invalid structured data received from AI');
     }
-  } catch (error) {
-    console.error('Error enhancing line:', error);
-  }
-  
-  // Return original line if enhancement fails
-  return line;
-}
 
-function isLikelyHeader(line: string): boolean {
-  const headerPatterns = [
-    /^(EDUCATION|EXPERIENCE|SKILLS|SUMMARY|OBJECTIVE|ACHIEVEMENTS|CERTIFICATIONS|PROJECTS|AWARDS)/i,
-    /^[A-Z\s]{3,20}$/,  // All caps short lines
-    /^\s*[-=*]+\s*$/,   // Decorative lines
-  ];
-  
-  return headerPatterns.some(pattern => pattern.test(line)) || line.length < 30;
-}
+    // Ensure arrays exist and have proper format
+    structuredData.experience = structuredData.experience || [];
+    structuredData.education = structuredData.education || [];
+    structuredData.skills = structuredData.skills || [];
+    structuredData.core_technical_skills = structuredData.core_technical_skills || [];
 
-function parseEnhancedTextToStructure(enhancedText: string): any {
-  console.log('Parsing enhanced text to structure...');
-  
-  const lines = enhancedText.split('\n').filter(line => line.trim());
-  const structure: any = {
-    name: '',
-    title: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedin: '',
-    summary: '',
-    experience: [],
-    education: [],
-    skills: [],
-    tools: [],
-    core_technical_skills: []
-  };
-  
-  // Extract basic contact information
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    
-    // Extract email
-    if (trimmedLine.includes('@') && !structure.email) {
-      structure.email = trimmedLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || '';
-    }
-    
-    // Extract phone
-    if (trimmedLine.match(/^\+?\d[\d\s\-\(\)]+$/) && !structure.phone) {
-      structure.phone = trimmedLine;
-    }
-    
-    // Extract LinkedIn
-    if (trimmedLine.toLowerCase().includes('linkedin') && !structure.linkedin) {
-      structure.linkedin = trimmedLine;
-    }
-  }
-  
-  // Extract name (usually the first substantial line)
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (trimmedLine.length > 3 && 
-        !trimmedLine.includes('@') && 
-        !trimmedLine.match(/^\+?\d/) && 
-        !structure.name) {
-      structure.name = trimmedLine;
-      break;
-    }
-  }
-  
-  // Parse sections
-  let currentSection = '';
-  let currentExperience: any = null;
-  let currentEducation: any = null;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const lowerLine = line.toLowerCase();
-    
-    // Detect section headers
-    if (lowerLine.includes('experience') || lowerLine.includes('employment')) {
-      currentSection = 'experience';
-      continue;
-    } else if (lowerLine.includes('education')) {
-      currentSection = 'education';
-      continue;
-    } else if (lowerLine.includes('skills')) {
-      currentSection = 'skills';
-      continue;
-    } else if (lowerLine.includes('summary') || lowerLine.includes('objective')) {
-      currentSection = 'summary';
-      continue;
-    }
-    
-    // Process content based on current section
-    if (currentSection === 'experience') {
-      // Check if this is a new job entry
-      if (isLikelyJobTitle(line) || isLikelyCompanyName(line)) {
-        // Save previous experience if exists
-        if (currentExperience) {
-          structure.experience.push(currentExperience);
-        }
-        
-        // Start new experience entry
-        currentExperience = {
-          title: '',
-          company: '',
-          duration: '',
-          description: '',
-          core_responsibilities: [],
-          achievements: []
-        };
-        
-        // Determine if this is title or company
-        if (isLikelyJobTitle(line)) {
-          currentExperience.title = line;
-        } else {
-          currentExperience.company = line;
-        }
-      } else if (currentExperience && line.length > 0) {
-        // Check next line to determine if this is title/company info
-        if (line.match(/\d{4}/) || line.includes('-')) {
-          currentExperience.duration = line;
-        } else if (!currentExperience.title && isLikelyJobTitle(line)) {
-          currentExperience.title = line;
-        } else if (!currentExperience.company && isLikelyCompanyName(line)) {
-          currentExperience.company = line;
-        } else {
-          // This is a responsibility or achievement
-          if (line.length > 20) {
-            if (lowerLine.includes('achievement') || lowerLine.includes('accomplishment')) {
-              currentExperience.achievements.push(line);
-            } else {
-              currentExperience.core_responsibilities.push(line);
-            }
-          }
-        }
-      }
-    } else if (currentSection === 'education') {
-      if (currentEducation && line.length > 0) {
-        structure.education.push(currentEducation);
-        currentEducation = null;
+    // Convert responsibilities to the expected format
+    structuredData.experience.forEach((job: any) => {
+      if (job.responsibilities) {
+        job.core_responsibilities = job.responsibilities.slice(0, Math.ceil(job.responsibilities.length / 2));
+        job.achievements = job.responsibilities.slice(Math.ceil(job.responsibilities.length / 2));
+        delete job.responsibilities;
       }
       
-      if (!currentEducation && line.length > 0) {
-        currentEducation = {
-          degree: line,
-          institution: '',
-          year: '',
-          gpa: ''
-        };
-      }
-    } else if (currentSection === 'skills' && line.length > 0) {
-      // Split skills by common delimiters
-      const skills = line.split(/[,|•·\-]/).map(s => s.trim()).filter(s => s.length > 0);
-      structure.skills.push(...skills);
-    } else if (currentSection === 'summary' && line.length > 0) {
-      if (structure.summary) {
-        structure.summary += ' ' + line;
-      } else {
-        structure.summary = line;
-      }
-    }
+      // Ensure we have the required fields
+      job.description = job.description || "Professional role focused on delivering exceptional results and contributing to organizational objectives.";
+      job.core_responsibilities = job.core_responsibilities || [];
+      job.achievements = job.achievements || [];
+    });
+
+    // Ensure we have basic required fields
+    structuredData.name = structuredData.name || "Professional";
+    structuredData.title = structuredData.title || "Experienced Professional";
+    structuredData.summary = structuredData.summary || "Experienced professional with demonstrated expertise in delivering results and contributing to organizational success.";
+
+    console.log(`Successfully enhanced resume with ${structuredData.experience.length} work experience entries`);
+    console.log('Enhanced text preview:', parsedResponse.enhanced_text?.substring(0, 200));
+    
+    return structuredData;
+
+  } catch (parseError) {
+    console.error('JSON parsing error:', parseError);
+    console.error('Raw content:', enhancedContent.substring(0, 500));
+    
+    // Fallback to basic parsing if AI response is invalid
+    return basicParseResume(originalText);
   }
-  
-  // Add final experience if exists
-  if (currentExperience) {
-    structure.experience.push(currentExperience);
-  }
-  
-  // Add final education if exists
-  if (currentEducation) {
-    structure.education.push(currentEducation);
-  }
-  
-  // Clean up and ensure we have content
-  if (!structure.summary) {
-    structure.summary = "Experienced professional with demonstrated expertise in delivering results and contributing to organizational success.";
-  }
-  
-  // Ensure we have some skills
-  if (structure.skills.length === 0) {
-    structure.skills = ["Professional Communication", "Team Collaboration", "Problem Solving", "Project Management"];
-  }
-  
-  // Generate core technical skills from regular skills
-  const technicalSkills = structure.skills.slice(0, 8).map((skill: string, index: number) => ({
-    name: skill,
-    proficiency: 75 + (index * 3)
-  }));
-  structure.core_technical_skills = technicalSkills;
-  
-  console.log(`Successfully parsed enhanced resume with ${structure.experience.length} work experience entries`);
-  
-  return structure;
 }
 
 // Extract detailed work experience content with all bullet points and achievements
