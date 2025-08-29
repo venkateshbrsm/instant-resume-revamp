@@ -64,42 +64,29 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  console.log("Enhancing resume with AI using efficient line-count preservation...");
+  console.log("Enhancing resume with detailed work experience extraction...");
   
-  // Extract work experience sections and count lines
-  const workExperienceSections = extractWorkExperienceData(originalText);
-  console.log(`Found ${workExperienceSections.length} work experience sections`);
-  
-  // Log line counts for each section
-  workExperienceSections.forEach((section, index) => {
-    console.log(`Work Experience ${index + 1}: ${section.totalLines} lines (${section.achievementLines} achievement lines)`);
-  });
+  // Extract detailed work experience content
+  const workExperienceContent = extractDetailedWorkExperience(originalText);
+  console.log(`Extracted work experience content:`, workExperienceContent);
 
   const enhancementPrompt = `You are an expert ATS resume optimizer. Transform the following resume into a professional, ATS-friendly format.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-WORK EXPERIENCE LINE COUNT REQUIREMENTS:
-${workExperienceSections.map((section, index) => 
-  `Work Experience ${index + 1}: Must have exactly ${section.totalLines} total lines (including ${section.achievementLines} achievement/bullet point lines)`
-).join('\n')}
+EXTRACTED WORK EXPERIENCE DETAILS:
+${workExperienceContent}
 
 CRITICAL INSTRUCTIONS:
-1. Extract ALL work experience entries from the original resume - preserve every job
-2. For each work experience entry, create EXACTLY the same number of lines as in the original
-3. Count every line in the original work experience sections including:
-   - Job title line
-   - Company name line
-   - Date/duration line
-   - Role description lines
-   - ALL bullet points under responsibilities
-   - ALL bullet points under achievements
-4. Reword each line to be professional and ATS-friendly while preserving exact meaning
-5. NEVER combine multiple original lines into one enhanced line
-6. NEVER add extra lines beyond what exists in original
+1. Extract ALL work experience entries from the original resume - preserve every job with ALL details
+2. For EACH work experience entry, include ALL bullet points, achievements, responsibilities, and descriptions exactly as they appear in the original
+3. Every single line of detail under each job must be enhanced and included
+4. Count the bullet points in the original and create the EXACT same number in the enhanced version
+5. Transform each responsibility/achievement line into professional, ATS-friendly language
+6. DO NOT skip any content - enhance everything that exists in the original
 7. Extract and preserve ALL skills and technical skills from original resume
-8. Use strong action verbs and professional language without adding quantified data unless present in original
+8. Use strong action verbs and professional language
 
 REQUIRED JSON STRUCTURE:
 {
@@ -225,21 +212,8 @@ ENHANCEMENT GUIDELINES:
     parsedResume.tools = parsedResume.tools || [];
     parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
 
-    // Validate line counts match original
-    if (parsedResume.experience.length !== workExperienceSections.length) {
-      console.warn(`Work experience count mismatch: original ${workExperienceSections.length}, enhanced ${parsedResume.experience.length}`);
-    }
-
-    // Validate achievement counts for each work experience
-    parsedResume.experience.forEach((exp: any, index: number) => {
-      const originalSection = workExperienceSections[index];
-      if (originalSection) {
-        const enhancedAchievements = (exp.achievements || []).length;
-        if (enhancedAchievements !== originalSection.achievementLines) {
-          console.warn(`Achievement count mismatch for experience ${index + 1}: original ${originalSection.achievementLines}, enhanced ${enhancedAchievements}`);
-        }
-      }
-    });
+    // Log successful enhancement
+    console.log(`Successfully enhanced resume with ${parsedResume.experience.length} work experience entries`);
 
     // Add some fallback data if sections are empty
     if (parsedResume.experience.length === 0) {
@@ -295,6 +269,77 @@ ENHANCEMENT GUIDELINES:
     // Fallback to basic parsing if AI response is invalid
     return basicParseResume(originalText);
   }
+}
+
+// Extract detailed work experience content with all bullet points and achievements
+function extractDetailedWorkExperience(text: string): string {
+  const lines = text.split('\n');
+  const workExperienceLines: string[] = [];
+  
+  let inWorkExperience = false;
+  let foundWorkExperienceSection = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lowerLine = line.toLowerCase();
+    
+    // Check if we're entering work experience section
+    if (lowerLine.includes('work experience') || lowerLine.includes('professional experience') || lowerLine.includes('employment history')) {
+      inWorkExperience = true;
+      foundWorkExperienceSection = true;
+      workExperienceLines.push(line);
+      continue;
+    }
+    
+    // Check if we're leaving work experience section
+    if (inWorkExperience && (
+      lowerLine.includes('education') || 
+      lowerLine.includes('skills') || 
+      lowerLine.includes('certifications') ||
+      lowerLine.includes('projects') ||
+      lowerLine.includes('awards')
+    )) {
+      break;
+    }
+    
+    // If we haven't found a clear work experience section, look for job patterns
+    if (!foundWorkExperienceSection) {
+      // Look for job title patterns or company patterns
+      if (isLikelyJobTitle(line) || isLikelyCompanyName(line)) {
+        inWorkExperience = true;
+        workExperienceLines.push(line);
+        continue;
+      }
+    }
+    
+    // If we're in work experience section, capture all content
+    if (inWorkExperience && line.length > 0) {
+      workExperienceLines.push(line);
+    }
+  }
+  
+  console.log(`Extracted ${workExperienceLines.length} work experience lines`);
+  return workExperienceLines.join('\n');
+}
+
+// Check if line looks like a job title
+function isLikelyJobTitle(line: string): boolean {
+  const jobTitlePatterns = [
+    /(manager|director|analyst|engineer|specialist|coordinator|assistant|lead|senior|junior|developer|consultant|supervisor|officer|executive)/i,
+    /(president|vice president|vp|ceo|cto|cfo)/i
+  ];
+  
+  return jobTitlePatterns.some(pattern => pattern.test(line));
+}
+
+// Check if line looks like a company name
+function isLikelyCompanyName(line: string): boolean {
+  const companyPatterns = [
+    /(inc\.|ltd\.|llc|corp|corporation|company|limited|pvt|private|public)/i,
+    /(bank|university|school|college|institute|technologies|solutions|services|systems|group)/i
+  ];
+  
+  return companyPatterns.some(pattern => pattern.test(line));
 }
 
 // Extract work experience data and count lines
