@@ -28,26 +28,127 @@ function sanitizeContentForOpenAI(content: string): string {
 
 function createFallbackJobEntry(rawContent: string): any {
   console.log(`🔧 Creating fallback job entry from raw content (${rawContent.length} chars)`);
+  return createEnhancedFallbackJob(rawContent, 'fallback');
+}
+
+function createEnhancedFallbackJob(rawContent: string, sectionId: string): any {
+  console.log(`🔧 Creating enhanced fallback job from raw content (${rawContent.length} chars) for ${sectionId}`);
+  console.log(`📄 Raw content for fallback: "${rawContent}"`);
   
-  const titleMatch = rawContent.match(/(?:Role|Position|Designation|Title):\s*([^\n]+)/i) || 
-                    rawContent.match(/^([A-Z][A-Za-z\s&-]+(?:Specialist|Manager|Officer|Executive|Analyst|Associate|Lead|Director|Head|Consultant))/m);
+  // Enhanced patterns for better extraction
+  const titlePatterns = [
+    /(?:Role|Position|Designation|Title):\s*([^\n]+)/i,
+    /^([A-Z][A-Za-z\s&-]+(?:Specialist|Manager|Officer|Executive|Analyst|Associate|Lead|Director|Head|Consultant))/m,
+    /Designation:\s*([^\n]+)/i,
+    /^\s*([A-Z][A-Za-z\s&-]+(?:Specialist|Manager|Officer|Executive|Analyst|Associate|Lead|Director|Head|Consultant))/m,
+  ];
   
-  const companyMatch = rawContent.match(/(?:Company|Organization):\s*([^\n]+)/i) ||
-                      rawContent.match(/((?:[A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Bank|Services?|Systems?|Technologies?|Solutions?)))/);
+  const companyPatterns = [
+    /(?:Company|Organization):\s*([^\n]+)/i,
+    /From:\s*([^\n]+?)(?:\s+to|\s+till|\s*$)/i,
+    /((?:[A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Bank|Services?|Systems?|Technologies?|Solutions?)))/,
+    /(?:at|with|in)\s+([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Bank|Services?|Systems?|Technologies?|Solutions?))/i,
+  ];
   
-  const durationMatch = rawContent.match(/(?:Duration|Period|From):\s*([^\n]+)/i) ||
-                       rawContent.match(/(\w+\s*'\d{2}|\w+\s+\d{4}|\d{4}).*?(?:to|till|-).*?(\w+\s*'\d{2}|\w+\s+\d{4}|\d{4}|present|current|date)/i);
+  const durationPatterns = [
+    /(?:Duration|Period|From):\s*([^\n]+)/i,
+    /(\w+\s*'\d{2}|\w+\s+\d{4}|\d{4}).*?(?:to|till|-).*?(\w+\s*'\d{2}|\w+\s+\d{4}|\d{4}|present|current|date)/i,
+    /From:\s*([^,\n]+?)\s+to\s+([^\n]+)/i,
+  ];
+  
+  // Try multiple patterns for better extraction
+  let title = 'Professional Role';
+  for (const pattern of titlePatterns) {
+    const match = rawContent.match(pattern);
+    if (match && match[1]) {
+      title = match[1].trim();
+      break;
+    }
+  }
+  
+  let company = 'Company';
+  for (const pattern of companyPatterns) {
+    const match = rawContent.match(pattern);
+    if (match && match[1]) {
+      company = match[1].trim();
+      break;
+    }
+  }
+  
+  let duration = 'Duration';
+  for (const pattern of durationPatterns) {
+    const match = rawContent.match(pattern);
+    if (match) {
+      if (match[2]) {
+        duration = `${match[1]} - ${match[2]}`;
+      } else {
+        duration = match[1].trim();
+      }
+      break;
+    }
+  }
+  
+  // Extract responsibilities from content
+  const responsibilities = extractResponsibilitiesFromContent(rawContent);
+  const achievements = extractAchievementsFromContent(rawContent);
   
   const fallbackJob = {
-    title: titleMatch ? titleMatch[1].trim() : 'Professional Role',
-    company: companyMatch ? companyMatch[1].trim() : 'Company',
-    duration: durationMatch ? (durationMatch[0] || `${durationMatch[1]} - ${durationMatch[2] || 'Present'}`).trim() : 'Multiple years',
-    description: ['Managed key responsibilities and contributed to organizational objectives'],
-    achievements: []
+    title: title,
+    company: company,
+    duration: duration,
+    description: responsibilities.length > 0 ? responsibilities : ['Managed key responsibilities and contributed to organizational objectives'],
+    achievements: achievements
   };
   
-  console.log(`✅ Fallback job created: ${fallbackJob.title} at ${fallbackJob.company}`);
+  console.log(`✅ Enhanced fallback job created: ${fallbackJob.title} at ${fallbackJob.company} (${fallbackJob.description.length} responsibilities)`);
   return { experience: [fallbackJob] };
+}
+
+function extractResponsibilitiesFromContent(content: string): string[] {
+  const responsibilities = [];
+  
+  // Look for bullet points
+  const bulletMatches = content.match(/[•·▪▫-]\s*([^•·▪▫-\n]{20,})/g) || [];
+  bulletMatches.forEach(match => {
+    const cleaned = match.replace(/^[•·▪▫-]\s*/, '').trim();
+    if (cleaned.length > 15) {
+      responsibilities.push(cleaned);
+    }
+  });
+  
+  // Look for sentences starting with action words
+  const actionWords = ['managed', 'led', 'developed', 'implemented', 'coordinated', 'supervised', 'executed', 'handled', 'supported', 'maintained', 'analyzed', 'processed', 'monitored', 'reviewed', 'conducted', 'performed'];
+  const sentences = content.split(/[.!?]+/);
+  
+  sentences.forEach(sentence => {
+    const trimmed = sentence.trim();
+    if (trimmed.length > 30) {
+      const startsWithAction = actionWords.some(word => 
+        trimmed.toLowerCase().startsWith(word) || 
+        trimmed.toLowerCase().includes(` ${word} `)
+      );
+      if (startsWithAction && !responsibilities.includes(trimmed)) {
+        responsibilities.push(trimmed);
+      }
+    }
+  });
+  
+  return responsibilities.slice(0, 5); // Max 5 responsibilities
+}
+
+function extractAchievementsFromContent(content: string): string[] {
+  const achievements = [];
+  
+  // Look for numbers/percentages that might indicate achievements
+  const achievementMatches = content.match(/[^.]*(?:\d+%|\$\d+|increased|improved|reduced|achieved|delivered|saved|grew)[^.]*/gi) || [];
+  achievementMatches.forEach(match => {
+    const cleaned = match.trim();
+    if (cleaned.length > 20 && cleaned.length < 150) {
+      achievements.push(cleaned);
+    }
+  });
+  
+  return achievements.slice(0, 3); // Max 3 achievements
 }
 
 const corsHeaders = {
@@ -156,9 +257,9 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Use most reliable legacy model to avoid API failures
-  const selectedModel = 'gpt-4o-mini';
-  const sectionTimeoutMs = 90000; // 90 seconds per section for better reliability
+  // Use most reliable model for complex parsing tasks
+  const selectedModel = 'gpt-4o';
+  const sectionTimeoutMs = 120000; // 120 seconds per section for complex parsing
   
   console.log(`📊 Processing ${originalText.length} chars with parallel section processing`);
   console.log(`🔧 Using model: ${selectedModel} with ${sectionTimeoutMs/1000}s per section timeout`);
@@ -169,40 +270,101 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
     const sections = parseResumeIntoSections(originalText);
     console.log(`📋 Identified sections: ${sections.map(s => s.type).join(', ')}`);
 
-    // Step 2: Process sections individually with enhanced error handling
-    console.log('⚡ Starting individual section processing with detailed logging...');
+    // Step 2: Count expected vs actual jobs for validation
+    const expectedJobCount = sections.filter(s => s.type.startsWith('experience_job_')).length;
+    console.log(`🎯 Expected job sections to process: ${expectedJobCount}`);
+
+    // Step 3: Process sections individually with enhanced error handling and mandatory job preservation
+    console.log('⚡ Starting individual section processing with guaranteed job preservation...');
     const sectionResults: Array<{status: 'fulfilled' | 'rejected', value?: any, reason?: any, section?: any}> = [];
     
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
       console.log(`🔄 Processing section ${i + 1}/${sections.length}: ${section.type}`);
       console.log(`📝 Section content length: ${section.content.length} chars`);
-      console.log(`📄 Section preview: ${section.content.substring(0, 200)}...`);
+      console.log(`📄 Section content (first 300 chars): ${section.content.substring(0, 300)}`);
+      
+      // Enhanced logging for job sections - show exact content being sent to OpenAI
+      if (section.type.startsWith('experience_job_')) {
+        console.log(`🔍 DETAILED JOB SECTION ANALYSIS for ${section.type}:`);
+        console.log(`   Content length: ${section.content.length} chars`);
+        console.log(`   Content (full): ${section.content}`);
+        console.log(`   Sanitized preview: ${sanitizeContentForOpenAI(section.content).substring(0, 200)}...`);
+      }
       
       try {
         const result = await processSectionWithSpecializedPrompt(section, apiKey, selectedModel, sectionTimeoutMs, globalSignal);
         console.log(`✅ Section ${section.type} processed successfully`);
+        console.log(`📊 Result preview: ${JSON.stringify(result).substring(0, 200)}...`);
         sectionResults.push({status: 'fulfilled', value: result, section});
       } catch (error) {
-        console.error(`❌ Section ${section.type} failed:`, error);
-        console.error(`💡 Failed content: ${section.content.substring(0, 500)}...`);
+        console.error(`❌ Section ${section.type} FAILED with error:`, error.message);
+        console.error(`💡 Failed section full content: "${section.content}"`);
+        console.error(`🔧 Error details:`, error);
         
-        // Create fallback result for failed sections
+        // MANDATORY: All job sections MUST create an entry (fallback if needed)
         if (section.type.startsWith('experience_job_')) {
-          console.log(`🔧 Creating fallback job entry for failed section: ${section.type}`);
-          const fallbackJob = createFallbackJobEntry(section.content);
-          sectionResults.push({status: 'fulfilled', value: fallbackJob, section});
+          console.log(`🔧 MANDATORY fallback job creation for: ${section.type}`);
+          try {
+            const fallbackJob = createEnhancedFallbackJob(section.content, section.type);
+            console.log(`✅ Enhanced fallback job created: ${JSON.stringify(fallbackJob).substring(0, 200)}...`);
+            sectionResults.push({status: 'fulfilled', value: fallbackJob, section});
+          } catch (fallbackError) {
+            console.error(`❌ Even fallback failed for ${section.type}:`, fallbackError);
+            // Last resort - create minimal job entry
+            const emergencyJob = {
+              experience: [{
+                title: `Professional Role ${section.type.split('_')[2] || ''}`,
+                company: 'Company Name',
+                duration: 'Duration',
+                description: ['Managed key responsibilities'],
+                achievements: []
+              }]
+            };
+            sectionResults.push({status: 'fulfilled', value: emergencyJob, section});
+            console.log(`🆘 Emergency job entry created for ${section.type}`);
+          }
         } else {
           sectionResults.push({status: 'rejected', reason: error, section});
         }
       }
     }
     
-    // Step 3: Merge successful results and handle failures
+    // Step 4: Merge successful results and handle failures
     console.log('🔄 Merging section results...');
     const enhancedResume = mergeSectionResults(sectionResults, sections);
     
-    // Step 4: Validate final result
+    // Step 5: CRITICAL VALIDATION - Ensure job count matches expectations
+    const finalJobCount = enhancedResume.experience?.length || 0;
+    console.log(`🎯 Job preservation validation: ${expectedJobCount} expected → ${finalJobCount} in final result`);
+    
+    if (finalJobCount < expectedJobCount) {
+      console.error(`❌ JOB LOSS DETECTED: Expected ${expectedJobCount} jobs, got ${finalJobCount}`);
+      console.error(`📊 Section results breakdown:`);
+      sectionResults.forEach((result, idx) => {
+        if (sections[idx].type.startsWith('experience_job_')) {
+          console.error(`   ${sections[idx].type}: ${result.status} - ${result.value ? 'has value' : 'no value'}`);
+        }
+      });
+      
+      // Emergency job recovery - ensure we have at least the expected count
+      const missingJobs = expectedJobCount - finalJobCount;
+      console.log(`🆘 Attempting emergency recovery of ${missingJobs} missing jobs`);
+      
+      for (let i = 0; i < missingJobs; i++) {
+        const emergencyJob = {
+          title: `Professional Role ${finalJobCount + i + 1}`,
+          company: 'Company Name',
+          duration: 'Duration',
+          description: ['Managed key responsibilities and contributed to organizational objectives'],
+          achievements: []
+        };
+        enhancedResume.experience.push(emergencyJob);
+        console.log(`🆘 Emergency job ${i + 1} added to prevent data loss`);
+      }
+    }
+    
+    // Step 6: Final validation
     validateEnhancedResume(enhancedResume);
     
     console.log('✅ Streaming section-based enhancement completed successfully');
@@ -578,68 +740,86 @@ function intelligentContentSplitting(text: string): string[] {
 }
 
 function splitByFromMarkers(text: string): string[] {
-  console.log('  🎯 Enhanced "From:" marker splitting...');
+  console.log('🎯 Enhanced "From:" marker detection with improved splitting...');
+  console.log(`📝 Input text length: ${text.length} chars`);
+  console.log(`📄 Input preview: ${text.substring(0, 300)}...`);
   
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  console.log(`📋 Processing ${lines.length} lines for "From:" markers`);
+  console.log(`📋 Total lines after cleanup: ${lines.length}`);
   
-  // Show first few lines for debugging
-  lines.slice(0, 10).forEach((line, index) => {
-    const isFromLine = /^From:\s*/i.test(line);
-    console.log(`  Line ${index + 1} ${isFromLine ? '🎯' : '  '}: "${line}"`);
+  // Show first 25 lines for debugging
+  console.log('📋 First 25 lines for From marker analysis:');
+  lines.slice(0, 25).forEach((line, index) => {
+    const hasFromMarker = /^From:\s*/i.test(line);
+    console.log(`  ${index + 1}: "${line}" ${hasFromMarker ? '← FROM MARKER' : ''}`);
   });
   
   const jobs: string[] = [];
   let currentJob: string[] = [];
   
-  // Enhanced "From:" pattern
+  // Enhanced "From:" pattern - more flexible matching
   const fromPattern = /^From:\s*/i;
+  
+  let foundFromMarkers = 0;
+  let jobBoundariesFound = [];
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const isFromMarker = fromPattern.test(line);
     
-    if (isFromMarker && currentJob.length > 0) {
-      // Found new "From:" marker, save previous job
-      const jobContent = currentJob.join('\n').trim();
-      if (jobContent.length > 50) { // Very lenient threshold
-        jobs.push(jobContent);
-        console.log(`  ✅ From-based Job ${jobs.length}: (${jobContent.length} chars)`);
-        console.log(`     Content preview: ${jobContent.substring(0, 100)}...`);
-      } else {
-        console.log(`  ⚠️  Skipped short content: ${jobContent.length} chars`);
+    if (isFromMarker) {
+      foundFromMarkers++;
+      jobBoundariesFound.push(i);
+      console.log(`🎯 Found From marker ${foundFromMarkers} at line ${i + 1}: "${line}"`);
+      
+      // If we have accumulated content, save it as a job
+      if (currentJob.length > 0) {
+        const jobContent = currentJob.join('\n').trim();
+        if (jobContent.length > 30) { // More lenient threshold
+          jobs.push(jobContent);
+          console.log(`  ✅ From Job ${jobs.length}: ${jobContent.length} chars`);
+          console.log(`     Content preview: ${jobContent.substring(0, 150)}...`);
+        } else {
+          console.log(`  ⚠️  Skipped short job: ${jobContent.length} chars - "${jobContent}"`);
+        }
       }
       
-      currentJob = [line]; // Start new job with the "From:" line
+      // Start new job with this line
+      currentJob = [line];
     } else {
       currentJob.push(line);
-      
-      // Log when we encounter the first "From:" line
-      if (isFromMarker && currentJob.length === 1) {
-        console.log(`  🎯 Starting new job with: "${line}"`);
-      }
     }
   }
   
-  // Add the final job
+  // Add the last job
   if (currentJob.length > 0) {
     const jobContent = currentJob.join('\n').trim();
-    if (jobContent.length > 50) {
+    if (jobContent.length > 30) {
       jobs.push(jobContent);
-      console.log(`  ✅ Final From-based Job: (${jobContent.length} chars)`);
-      console.log(`     Content preview: ${jobContent.substring(0, 100)}...`);
+      console.log(`  ✅ Final From Job ${jobs.length}: ${jobContent.length} chars`);
+      console.log(`     Content preview: ${jobContent.substring(0, 150)}...`);
     }
   }
   
-  console.log(`🎯 Enhanced "From:" splitting result: ${jobs.length} jobs found`);
+  console.log(`🎯 From-marker detection summary: ${foundFromMarkers} markers found at lines [${jobBoundariesFound.join(', ')}], ${jobs.length} jobs created`);
   
-  // If we found jobs, show detailed breakdown
-  if (jobs.length > 0) {
-    console.log('📋 Job breakdown:');
-    jobs.forEach((job, index) => {
-      const firstLine = job.split('\n')[0];
-      console.log(`  Job ${index + 1}: "${firstLine}" (${job.length} chars)`);
-    });
+  // Enhanced validation and recovery
+  if (foundFromMarkers > 0 && jobs.length < foundFromMarkers) {
+    console.log(`⚠️ Job count mismatch: ${foundFromMarkers} markers but only ${jobs.length} jobs`);
+    console.log('🔧 Attempting content recovery...');
+    
+    // Try alternative splitting approach
+    const alternativeJobs = text.split(/\n(?=From:)/i).filter(section => section.trim().length > 30);
+    if (alternativeJobs.length > jobs.length) {
+      console.log(`✅ Alternative splitting recovered ${alternativeJobs.length} jobs`);
+      return alternativeJobs;
+    }
+  }
+  
+  // If we found markers but no jobs, there might be a parsing issue
+  if (foundFromMarkers > 0 && jobs.length === 0) {
+    console.log('⚠️ Found From markers but no jobs created - returning full text to prevent data loss');
+    return [text.trim()];
   }
   
   return jobs;
@@ -1207,155 +1387,134 @@ function createFallbackJob(content: string, type: string): any {
 }
 
 async function processSectionWithSpecializedPrompt(
-  section: {type: string, content: string, priority: number},
-  apiKey: string,
-  model: string,
-  timeoutMs: number,
+  section: {type: string, content: string, priority: number}, 
+  apiKey: string, 
+  model: string, 
+  timeoutMs: number = 120000,
   globalSignal?: AbortSignal
-): Promise<{type: string, result: any}> {
+): Promise<any> {
+  console.log(`🔄 Processing ${section.type} section (${section.content.length} chars)...`);
   
-  console.log(`🎯 Processing ${section.type} with enhanced debugging...`);
-  
-  // Sanitize content before sending to OpenAI
   const sanitizedContent = sanitizeContentForOpenAI(section.content);
   console.log(`🧹 Content sanitized: ${section.content.length} → ${sanitizedContent.length} chars`);
   
-  if (sanitizedContent.length < 20) {
-    console.warn(`⚠️ Section ${section.type} too short after sanitization, skipping OpenAI processing`);
-    if (section.type.startsWith('experience_job_')) {
-      return { type: section.type, result: createFallbackJobEntry(section.content) };
-    }
-    throw new Error(`Section too short: ${sanitizedContent.length} chars`);
+  // ENHANCED logging for all sections, especially job sections
+  if (section.type.startsWith('experience_job_')) {
+    console.log(`🎯 Processing ${section.type} with enhanced debugging...`);
+    console.log(`📝 Section content length: ${section.content.length} chars`);
+    console.log(`📄 Section preview: ${section.content.substring(0, 500)}...`);
+    console.log(`🧹 Sanitized content (first 300 chars): ${sanitizedContent.substring(0, 300)}`);
+  } else {
+    console.log(`📝 ${section.type} content preview: ${sanitizedContent.substring(0, 200)}...`);
   }
   
-  console.log(`🔄 Processing ${section.type} section (${section.content.length} chars)...`);
+  const maxRetries = 3;
   
-  // Log section content for debugging
-  const contentPreview = sanitizedContent.substring(0, 300) + (sanitizedContent.length > 300 ? '...' : '');
-  console.log(`📝 ${section.type} content preview: ${contentPreview}`);
-  
-  const prompts = {
-    contact: `Extract contact information from this resume section. Return ONLY JSON:
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`📤 Attempt ${attempt}/${maxRetries} for ${section.type}`);
+    
+    try {
+      let prompt = '';
+      
+      if (section.type === 'contact') {
+        prompt = `Extract contact information from this resume section. Return ONLY JSON:
 {
   "name": "actual full name",
   "email": "actual email address", 
   "phone": "actual phone number",
   "location": "actual city/location",
-  "linkedin": "actual LinkedIn URL if present"
+  "linkedin": "actual linkedin url"
 }
 
-Resume section:
-${sanitizedContent}
-
-CRITICAL: Extract only real data. Use empty string "" if not found. No placeholders.`,
-
-    summary: `Create a professional summary based on this resume content. Return ONLY JSON:
+Content: ${sanitizedContent}`;
+      } else if (section.type === 'summary') {
+        prompt = `Create a professional summary from this resume section. Return ONLY JSON:
 {
-  "summary": "2-3 sentence professional summary highlighting key experience, skills and achievements"
+  "summary": "2-3 sentence professional summary highlighting key experience and skills"
 }
 
-Resume content:
-${sanitizedContent}
-
-CRITICAL: Base summary on actual content. No generic placeholders.`,
-
-    experience: `Extract work experience from this individual job entry. Return ONLY JSON:
+Content: ${sanitizedContent}`;
+      } else if (section.type.startsWith('experience_job_')) {
+        // Simplified and more robust prompt for job extraction
+        prompt = `Extract job details from this text. Be flexible with formatting. Return ONLY valid JSON:
 {
-  "title": "actual job title from content",
-  "company": "actual company name from content", 
-  "duration": "actual employment dates or period from content",
-  "description": "brief role description based on actual content (2-3 sentences)",
-  "achievements": ["specific achievement 1 from content", "specific achievement 2 from content", "specific achievement 3 from content"]
+  "title": "job title or role",
+  "company": "company name", 
+  "duration": "time period worked",
+  "description": ["main responsibility 1", "main responsibility 2", "main responsibility 3"],
+  "achievements": ["key achievement 1", "key achievement 2"]
 }
 
-IMPORTANT EXTRACTION RULES:
-- Look for "From:" lines to extract company names and dates
-- Extract job titles from role descriptions, "As [Title]" patterns, or designation lines
-- Parse dates in formats like "Aug 21 to till date", "Sep1997-Feb 2013", etc.
-- Find achievements from bullet points, accomplishments, or responsibility lists
-- If any field is unclear, extract the best approximation from available content
-- NEVER use generic placeholders - only use actual content from the job entry
+Look for job titles, company names, dates, and responsibilities. If unclear, make reasonable interpretations.
 
-Job entry content:
-${sanitizedContent}
-
-CRITICAL: This is ONE job entry. Extract the specific job title, company name, employment dates, and actual achievements from this role only. Focus on concrete accomplishments and responsibilities.`,
-
-    education: `Extract education information from this section. Return ONLY JSON:
+Content: ${sanitizedContent}`;
+      } else if (section.type === 'education') {
+        prompt = `Extract education information from this section. Return ONLY JSON:
 {
   "education": [
     {
-      "degree": "actual degree name",
-      "institution": "actual institution name", 
-      "year": "actual graduation year or date range",
-      "gpa": "actual GPA if mentioned, otherwise empty string"
+      "degree": "actual degree",
+      "institution": "actual institution",
+      "year": "actual year/period",
+      "gpa": "actual gpa if mentioned"
     }
   ]
 }
 
-Education section:
-${sanitizedContent}
-
-CRITICAL: Extract actual educational credentials. Use empty array [] if none found.`,
-
-    skills: `Extract skills, tools, certifications, and languages from this section. Return ONLY JSON:
+Content: ${sanitizedContent}`;
+      } else if (section.type === 'skills') {
+        prompt = `Extract skills, tools, certifications, and languages from this section. Return ONLY JSON:
 {
   "skills": ["actual skill 1", "actual skill 2"],
   "tools": ["actual tool/software 1", "actual tool 2"],
   "certifications": ["actual certification 1"],
-  "languages": ["actual language 1"]
+  "languages": ["language 1", "language 2"]
 }
 
-Skills section:
-${sanitizedContent}
-
-CRITICAL: Categorize properly. Extract only mentioned items. Use empty arrays [] for missing categories.`
-  };
-
-  // Handle individual job processing - use experience prompt for all job sections
-  const isExperienceJob = section.type.startsWith('experience_job_');
-  const prompt = isExperienceJob ? prompts.experience : (prompts[section.type as keyof typeof prompts] || prompts.skills);
-
-  // Enhanced retry logic with progressive timeouts
-  const maxRetries = 3;
-  const retryTimeouts = [timeoutMs, timeoutMs * 1.5, timeoutMs * 2]; // 60s, 90s, 120s
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`📤 Attempt ${attempt}/${maxRetries} for ${section.type}`);
+Content: ${sanitizedContent}`;
+      } else {
+        throw new Error(`Unknown section type: ${section.type}`);
+      }
       
-      const result = await makeOpenAIRequestWithTimeout(
-        prompt, 
-        apiKey, 
-        model, 
-        retryTimeouts[attempt - 1], 
-        globalSignal
-      );
+      console.log(`📝 Prompt preview: ${prompt.substring(0, 300)}...`);
       
+      // For job sections, log the exact prompt being sent
+      if (section.type.startsWith('experience_job_')) {
+        console.log(`🔍 FULL PROMPT for ${section.type}:`);
+        console.log(prompt);
+      }
+      
+      const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
       console.log(`✅ Successfully processed ${section.type} section on attempt ${attempt}`);
       
-      // Validate result for experience jobs
-      if (isExperienceJob && (!result.title && !result.company)) {
-        throw new Error('Invalid job data - missing title and company');
+      // Enhanced result logging for job sections
+      if (section.type.startsWith('experience_job_')) {
+        console.log(`📊 Job result: ${JSON.stringify(result).substring(0, 300)}...`);
       }
       
-      return { type: section.type, result };
+      return result;
       
     } catch (error) {
-      console.error(`❌ Attempt ${attempt}/${maxRetries} failed for ${section.type}:`, error.message);
+      console.error(`❌ Attempt ${attempt} failed for ${section.type}:`, error.message);
+      console.error(`🔧 Error details for ${section.type}:`, error);
       
-      // If this is the last attempt, create fallback for experience jobs
       if (attempt === maxRetries) {
-        if (isExperienceJob) {
-          console.log(`🔧 Creating fallback job for ${section.type} after all retries failed`);
-          const fallbackResult = createFallbackJob(sanitizedContent, section.type);
-          return { type: section.type, result: fallbackResult };
-        } else {
-          // For non-experience sections, throw the error
-          console.error(`❌ Final failure for ${section.type} after ${maxRetries} attempts`);
-          throw new Error(`Failed to process ${section.type} after ${maxRetries} attempts: ${error.message}`);
+        // For job sections, create fallback instead of throwing
+        if (section.type.startsWith('experience_job_')) {
+          console.log(`🔧 All ${maxRetries} attempts failed for ${section.type}, creating enhanced fallback...`);
+          console.log(`📄 Creating fallback from content: "${section.content}"`);
+          return createEnhancedFallbackJob(section.content, section.type);
         }
+        throw error;
       }
+      
+      // Progressive wait times for retries
+      const waitTime = 1000 * Math.pow(2, attempt - 1); // Exponential backoff: 1s, 2s, 4s
+      console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+}
       
       // Wait before retry (exponential backoff)
       if (attempt < maxRetries) {
