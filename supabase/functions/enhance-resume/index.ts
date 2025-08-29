@@ -107,15 +107,14 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Determine model and timeout based on content size
-  const isLargeContent = originalText.length > 8000;
-  const selectedModel = isLargeContent ? 'gpt-5-mini-2025-08-07' : 'gpt-5-2025-08-07';
-  const timeoutMs = isLargeContent ? 45000 : 30000; // Reduced timeouts for testing
+  // Use more reliable model and shorter timeout
+  const selectedModel = 'gpt-4.1-2025-04-14'; // More reliable than GPT-5
+  const timeoutMs = 20000; // 20 seconds max
   
   console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
 
-  // For large content, use a more efficient single-pass approach
-  if (originalText.length > 12000) {
+  // For any content over 8000, use simplified processing
+  if (originalText.length > 8000) {
     console.log('📋 Large content detected - using simplified enhancement...');
     return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
   }
@@ -359,7 +358,8 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
       body: JSON.stringify({
         model: model,
         messages: [{ role: 'user', content: prompt }],
-        max_completion_tokens: model.includes('mini') ? 2000 : 4000,
+        max_tokens: 4000, // GPT-4.1 uses max_tokens, not max_completion_tokens
+        temperature: 0.3, // GPT-4.1 supports temperature
       }),
       signal: controller.signal
     });
