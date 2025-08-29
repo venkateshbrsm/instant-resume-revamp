@@ -1393,6 +1393,23 @@ function parseResumeIntoSections(text: string): Array<{type: string, content: st
   const skillsSection = sections.find(s => s.type === 'skills');
   if (skillsSection && skillsSection.content.length > 30) {
     consolidatedSections.push(skillsSection);
+  } else {
+    // ENHANCED: If no dedicated skills section found, create one from job descriptions
+    // Extract skills from all experience content
+    console.log('💼 No dedicated skills section found, extracting skills from experience content...');
+    const allExperienceContent = sections
+      .filter(s => s.type === 'experience' || s.type.startsWith('experience_job_'))
+      .map(s => s.content)
+      .join('\n');
+    
+    if (allExperienceContent.length > 100) {
+      consolidatedSections.push({
+        type: 'skills',
+        content: `${allExperienceContent}\n\n${sections.find(s => s.type === 'contact')?.content || ''}`,
+        priority: 5
+      });
+      console.log(`✅ Created skills section from experience content (${allExperienceContent.length} chars)`);
+    }
   }
 
   // If no experience section detected, create from remaining content
@@ -1505,17 +1522,21 @@ Content: ${sanitizedContent}`;
 
 Content: ${sanitizedContent}`;
       } else if (section.type.startsWith('experience_job_')) {
-        // Simplified and more robust prompt for job extraction
-        prompt = `Extract job details from this text. Be flexible with formatting. Return ONLY valid JSON:
+        // Enhanced prompt for comprehensive job extraction with better achievement detection
+        prompt = `Extract job details from this text. Be thorough and comprehensive. Return ONLY valid JSON:
 {
   "title": "job title or role",
   "company": "company name", 
   "duration": "time period worked",
-  "description": ["main responsibility 1", "main responsibility 2", "main responsibility 3"],
-  "achievements": ["key achievement 1", "key achievement 2"]
+  "description": ["main responsibility 1", "main responsibility 2", "main responsibility 3", "main responsibility 4"],
+  "achievements": ["quantifiable achievement 1", "leadership achievement 2", "process improvement 3"]
 }
 
-Look for job titles, company names, dates, and responsibilities. If unclear, make reasonable interpretations.
+IMPORTANT EXTRACTION GUIDELINES:
+- Extract ALL responsibilities and tasks mentioned
+- For achievements, look for: quantifiable results (numbers, percentages), leadership roles (managed team of X), process improvements, recognitions, successful project deliveries, cost savings, efficiency gains, awards, promotions, target achievements
+- Include both explicit achievements and accomplishments implied by responsibilities
+- Be comprehensive - extract as much relevant information as possible
 
 Content: ${sanitizedContent}`;
       } else if (section.type === 'education') {
@@ -1533,13 +1554,20 @@ Content: ${sanitizedContent}`;
 
 Content: ${sanitizedContent}`;
       } else if (section.type === 'skills') {
-        prompt = `Extract skills, tools, certifications, and languages from this section. Return ONLY JSON:
+        prompt = `Extract skills, tools, certifications, and languages from this section. Include technical skills, soft skills, domain knowledge, and any mentioned competencies. Be comprehensive and extract ALL relevant skills mentioned. Return ONLY JSON:
 {
-  "skills": ["actual skill 1", "actual skill 2"],
-  "tools": ["actual tool/software 1", "actual tool 2"],
+  "skills": ["actual skill 1", "actual skill 2", "soft skill 1", "domain knowledge 1"],
+  "tools": ["actual tool/software 1", "actual tool 2", "technology 1"], 
   "certifications": ["actual certification 1"],
   "languages": ["language 1", "language 2"]
 }
+
+IMPORTANT: Extract as many relevant skills as possible. Look for:
+- Technical skills (software, technologies, methodologies)
+- Soft skills (leadership, communication, analytical)
+- Domain expertise (industry knowledge, processes, regulations) 
+- Competencies and areas of expertise mentioned
+- Any skills implied by job responsibilities
 
 Content: ${sanitizedContent}`;
       } else {

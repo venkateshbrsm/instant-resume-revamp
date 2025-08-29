@@ -88,16 +88,46 @@ function extractKeyResponsibilities(content: string): string[] {
 function extractAchievements(content: string): string[] {
   const achievements = [];
   
-  // Look for numbers/percentages that might indicate achievements
-  const achievementMatches = content.match(/[^.]*(?:\d+%|\$\d+|increased|improved|reduced|achieved|delivered)[^.]*/gi) || [];
-  achievementMatches.slice(0, 2).forEach(match => {
-    const cleaned = match.trim();
-    if (cleaned.length > 20 && cleaned.length < 150) {
-      achievements.push(cleaned);
-    }
+  // Enhanced achievement patterns - look for quantifiable results, accomplishments, and positive outcomes
+  const achievementPatterns = [
+    // Quantifiable results: numbers, percentages, amounts, time savings
+    /[^.]*(?:\d+%|\$\d+[\d,]*|saved \d+|reduced by \d+|increased \d+|grew by \d+|achieved \d+|delivered \d+|managed team of \d+|led \d+ resources|overachiev\w*|exceed\w*)[^.]*/gi,
+    // Leadership and management achievements  
+    /[^.]*(?:led|managed|supervised|mentored|coached|trained|guided|directed)[^.]*(?:team|resources|people|analysts|staff)[^.]*/gi,
+    // Process improvements and initiatives
+    /[^.]*(?:implemented|established|developed|created|launched|initiated|streamlined|optimized|improved|enhanced)[^.]*(?:process|system|initiative|program|framework|solution)[^.]*/gi,
+    // Recognition and success indicators
+    /[^.]*(?:recognized|awarded|promoted|selected|chosen|consistent|successful|outstanding|excellent|top performer|key role)[^.]*/gi,
+    // Project and delivery achievements
+    /[^.]*(?:completed|delivered|executed|rolled out|deployed|launched|migrated|transformed)[^.]*(?:project|implementation|system|process|solution)[^.]*/gi
+  ];
+  
+  // Apply all patterns and collect matches
+  achievementPatterns.forEach(pattern => {
+    const matches = content.match(pattern) || [];
+    matches.forEach(match => {
+      const cleaned = match.trim().replace(/^[•·▪▫-]\s*/, ''); // Remove bullet points
+      // More lenient length requirements but still filter out very short or very long text
+      if (cleaned.length > 15 && cleaned.length < 200 && !achievements.includes(cleaned)) {
+        achievements.push(cleaned);
+      }
+    });
   });
   
-  return achievements;
+  // If no achievements found with patterns, look for sentences with positive action words
+  if (achievements.length === 0) {
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    const positiveWords = /\b(responsible|accountable|successful|effective|efficient|quality|excellent|outstanding|key|critical|important|significant)\b/i;
+    
+    sentences.forEach(sentence => {
+      const cleaned = sentence.trim().replace(/^[•·▪▫-]\s*/, '');
+      if (positiveWords.test(cleaned) && cleaned.length > 20 && cleaned.length < 200) {
+        achievements.push(cleaned);
+      }
+    });
+  }
+  
+  return achievements.slice(0, 4); // Limit to top 4 achievements per job
 }
 
 export { sanitizeContentForOpenAI, createFallbackJobEntry };
