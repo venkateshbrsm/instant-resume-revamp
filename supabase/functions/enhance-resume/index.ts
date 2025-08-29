@@ -152,59 +152,85 @@ function detectIndividualJobs(experienceText: string): string[] {
   console.log(`📝 Experience text length: ${experienceText.length} characters`);
   console.log(`📄 Experience preview: ${experienceText.substring(0, 500)}...`);
   
+  // Show full text in smaller chunks for debugging
+  const lines = experienceText.split('\n');
+  console.log(`📋 Total lines in experience: ${lines.length}`);
+  lines.slice(0, 20).forEach((line, index) => {
+    console.log(`  Line ${index + 1}: "${line}"`);
+  });
+  
   try {
-    // Step 1: Try company-based detection (most reliable for structured resumes)
+    // Step 1: PRIORITY - Split by "From:" markers (most reliable for this user's format)
+    const fromJobs = splitByFromMarkers(experienceText);
+    if (fromJobs.length > 1) {
+      console.log(`✅ From-marker detection successful: ${fromJobs.length} jobs found`);
+      return fromJobs;
+    }
+    console.log(`⚠️ From-marker detection found only ${fromJobs.length} job(s)`);
+  } catch (error) {
+    console.error('❌ From-marker detection failed:', error);
+  }
+  
+  try {
+    // Step 2: Try company-based detection with enhanced patterns
     const companyJobs = detectJobsByCompanyTransitions(experienceText);
     if (companyJobs.length > 1) {
       console.log(`✅ Company-based detection successful: ${companyJobs.length} jobs found`);
       return companyJobs;
     }
+    console.log(`⚠️ Company-based detection found only ${companyJobs.length} job(s)`);
   } catch (error) {
     console.error('❌ Company-based detection failed:', error);
   }
   
   try {
-    // Step 2: Try date-based detection for chronological resumes
-    const dateJobs = detectJobsByDateRanges(experienceText);
-    if (dateJobs.length > 1) {
-      console.log(`✅ Date-based detection successful: ${dateJobs.length} jobs found`);
-      return dateJobs;
-    }
-  } catch (error) {
-    console.error('❌ Date-based detection failed:', error);
-  }
-  
-  try {
-    // Step 3: Try role progression detection (same company, multiple roles)
-    const roleJobs = detectJobsByRoleProgression(experienceText);
+    // Step 3: Try role/designation based splitting
+    const roleJobs = splitByRoleDesignations(experienceText);
     if (roleJobs.length > 1) {
-      console.log(`✅ Role progression detection successful: ${roleJobs.length} jobs found`);
+      console.log(`✅ Role-designation detection successful: ${roleJobs.length} jobs found`);
       return roleJobs;
     }
+    console.log(`⚠️ Role-designation detection found only ${roleJobs.length} job(s)`);
   } catch (error) {
-    console.error('❌ Role progression detection failed:', error);
+    console.error('❌ Role-designation detection failed:', error);
   }
   
   try {
-    // Step 4: Fallback to content-based splitting
-    const contentJobs = intelligentContentSplitting(experienceText);
-    console.log(`🔄 Fallback content splitting: ${contentJobs.length} jobs detected`);
-    return contentJobs;
+    // Step 4: Try aggressive content splitting - force split long content
+    const aggressiveJobs = aggressiveContentSplitting(experienceText);
+    if (aggressiveJobs.length > 1) {
+      console.log(`✅ Aggressive splitting successful: ${aggressiveJobs.length} jobs found`);
+      return aggressiveJobs;
+    }
+    console.log(`⚠️ Aggressive splitting found only ${aggressiveJobs.length} job(s)`);
   } catch (error) {
-    console.error('❌ Content splitting failed:', error);
-    // Final fallback - return the original text as a single job
-    return [experienceText];
+    console.error('❌ Aggressive splitting failed:', error);
   }
+  
+  // Final fallback - if content is very long, force split it
+  if (experienceText.length > 2000) {
+    console.log('🚨 Long content detected, forcing manual split');
+    const forcedJobs = forceContentSplit(experienceText);
+    console.log(`🔄 Forced splitting: ${forcedJobs.length} jobs created`);
+    return forcedJobs;
+  }
+  
+  console.log('⚠️ All detection methods failed, returning single job');
+  return [experienceText];
 }
 
 function detectJobsByCompanyTransitions(text: string): string[] {
-  console.log('🏢 Detecting jobs by company transitions...');
+  console.log('🏢 Enhanced company transitions detection...');
   
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  console.log(`📋 Processing ${lines.length} lines for company patterns`);
+  
   const jobs: string[] = [];
   
-  // Enhanced patterns for user's resume format
+  // ENHANCED patterns specifically for this user's resume format
   const fromMarkerPattern = /^From:\s*/i;
+  
+  // Specific company patterns based on user's actual resume
   const specificCompanyPatterns = [
     /HSBC\s+Electronic\s+Data\s+Processing\s+India\s+P\.?\s*limited/i,
     /Accenture\s+Services\s+Private\s+Limited/i,
@@ -214,12 +240,14 @@ function detectJobsByCompanyTransitions(text: string): string[] {
     /Yes\s+Bank\s+Limited/i,
     /RBL\s+Bank\s+Limited/i,
     /HDFC\s+Bank\s+Limited/i,
+    /CITIBANK\s+N\.?A\.?/i,
     /CITIBANK/i
   ];
   
+  // Enhanced general company patterns
   const generalCompanyPatterns = [
-    /^([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i,
-    /^From:\s*([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i
+    /^From:\s*([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG|N\.?A\.?))/i,
+    /^([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG|N\.?A\.?))/i
   ];
   
   let currentJob: string[] = [];
@@ -228,9 +256,16 @@ function detectJobsByCompanyTransitions(text: string): string[] {
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    console.log(`  🔍 Line ${i}: "${line.substring(0, 80)}..."`);
     
-    // Check for "From:" marker as primary job boundary
+    // Debug logging for first 15 lines
+    if (i < 15) {
+      const isFromMarker = fromMarkerPattern.test(line);
+      const isSpecificCompany = specificCompanyPatterns.some(pattern => pattern.test(line));
+      const isGeneralCompany = generalCompanyPatterns.some(pattern => pattern.test(line));
+      console.log(`  Line ${i + 1}: "${line}" [From:${isFromMarker} Specific:${isSpecificCompany} General:${isGeneralCompany}]`);
+    }
+    
+    // Check for "From:" marker as PRIMARY job boundary
     const isFromMarker = fromMarkerPattern.test(line);
     
     // Check for specific company patterns
@@ -241,14 +276,14 @@ function detectJobsByCompanyTransitions(text: string): string[] {
     
     const isJobBoundary = isFromMarker || isSpecificCompany || isGeneralCompany;
     
-    if (isJobBoundary && currentJob.length > 0) {
+    if (isJobBoundary && currentJob.length > 3) { // Reduced threshold for better detection
       // Found new job, save previous one
       const jobContent = currentJob.join('\n').trim();
-      if (jobContent.length > 150) { // Reduced threshold for better detection
+      if (jobContent.length > 100) { // More lenient threshold
         jobs.push(jobContent);
         jobCount++;
-        console.log(`  ✅ Job ${jobCount}: ${lastCompanyFound} (${jobContent.length} chars)`);
-        console.log(`     Preview: ${jobContent.substring(0, 100)}...`);
+        console.log(`  ✅ Company Job ${jobCount}: ${lastCompanyFound} (${jobContent.length} chars)`);
+        console.log(`     Preview: ${jobContent.substring(0, 80)}...`);
       } else {
         console.log(`  ⚠️  Skipped short job: ${jobContent.length} chars`);
       }
@@ -258,14 +293,14 @@ function detectJobsByCompanyTransitions(text: string): string[] {
       // Extract company name for better logging
       if (isSpecificCompany) {
         const match = specificCompanyPatterns.find(pattern => pattern.test(line));
-        lastCompanyFound = match ? line.match(match)?.[0] || 'Unknown' : 'Unknown';
+        lastCompanyFound = match ? (line.match(match)?.[0] || 'Specific Company') : 'Unknown';
       } else if (isFromMarker) {
         // Extract company from "From:" line
         const companyMatch = line.match(/From:\s*(.+)/i);
         lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'From Line';
       } else {
-        const companyMatch = line.match(/([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i);
-        lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'Unknown Company';
+        const companyMatch = generalCompanyPatterns.find(pattern => pattern.test(line));
+        lastCompanyFound = companyMatch ? (line.match(companyMatch)?.[1] || 'General Company') : 'Unknown Company';
       }
       
     } else {
@@ -275,11 +310,15 @@ function detectJobsByCompanyTransitions(text: string): string[] {
       if (currentJob.length === 1 && isJobBoundary) {
         if (isSpecificCompany) {
           const match = specificCompanyPatterns.find(pattern => pattern.test(line));
-          lastCompanyFound = match ? line.match(match)?.[0] || 'Unknown' : 'Unknown';
+          lastCompanyFound = match ? (line.match(match)?.[0] || 'Specific Company') : 'Unknown';
+        } else if (isFromMarker) {
+          const companyMatch = line.match(/From:\s*(.+)/i);
+          lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'From Line';
         } else {
-          const companyMatch = line.match(/([A-Z][A-Za-z\s&.]+(?:Ltd\.?|Limited|Inc\.?|Corporation|Corp\.?|Company|Co\.?|P\.?\s*[Ll]imited|Services?\s*(?:Private\s+)?Limited|Solutions?|Technologies?|Systems?|Bank(?:\s+Limited)?|India|Operations?|AG))/i);
-          lastCompanyFound = companyMatch ? companyMatch[1].trim() : 'First Job';
+          const companyMatch = generalCompanyPatterns.find(pattern => pattern.test(line));
+          lastCompanyFound = companyMatch ? (line.match(companyMatch)?.[1] || 'General Company') : 'First Job';
         }
+        console.log(`  🏢 Starting job with company: ${lastCompanyFound}`);
       }
     }
   }
@@ -287,14 +326,14 @@ function detectJobsByCompanyTransitions(text: string): string[] {
   // Add the last job
   if (currentJob.length > 0) {
     const jobContent = currentJob.join('\n').trim();
-    if (jobContent.length > 150) {
+    if (jobContent.length > 100) {
       jobs.push(jobContent);
       jobCount++;
-      console.log(`  ✅ Final Job ${jobCount}: ${lastCompanyFound} (${jobContent.length} chars)`);
+      console.log(`  ✅ Final Company Job ${jobCount}: ${lastCompanyFound} (${jobContent.length} chars)`);
     }
   }
   
-  console.log(`🏢 Company detection result: ${jobs.length} jobs found`);
+  console.log(`🏢 Enhanced company detection result: ${jobs.length} jobs found`);
   return jobs;
 }
 
@@ -470,17 +509,71 @@ function intelligentContentSplitting(text: string): string[] {
 }
 
 function splitByFromMarkers(text: string): string[] {
-  console.log('  🎯 Splitting by "From:" markers...');
-  const fromPattern = /^From:\s*/im;
-  const sections = text.split(fromPattern).filter(section => section.trim().length > 100);
+  console.log('  🎯 Enhanced "From:" marker splitting...');
   
-  // Add back "From:" prefix to all but first section
-  const jobs = sections.map((section, index) => {
-    if (index === 0) return section.trim();
-    return 'From: ' + section.trim();
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  console.log(`📋 Processing ${lines.length} lines for "From:" markers`);
+  
+  // Show first few lines for debugging
+  lines.slice(0, 10).forEach((line, index) => {
+    const isFromLine = /^From:\s*/i.test(line);
+    console.log(`  Line ${index + 1} ${isFromLine ? '🎯' : '  '}: "${line}"`);
   });
   
-  return jobs.filter(job => job.length > 150);
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  
+  // Enhanced "From:" pattern
+  const fromPattern = /^From:\s*/i;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const isFromMarker = fromPattern.test(line);
+    
+    if (isFromMarker && currentJob.length > 0) {
+      // Found new "From:" marker, save previous job
+      const jobContent = currentJob.join('\n').trim();
+      if (jobContent.length > 50) { // Very lenient threshold
+        jobs.push(jobContent);
+        console.log(`  ✅ From-based Job ${jobs.length}: (${jobContent.length} chars)`);
+        console.log(`     Content preview: ${jobContent.substring(0, 100)}...`);
+      } else {
+        console.log(`  ⚠️  Skipped short content: ${jobContent.length} chars`);
+      }
+      
+      currentJob = [line]; // Start new job with the "From:" line
+    } else {
+      currentJob.push(line);
+      
+      // Log when we encounter the first "From:" line
+      if (isFromMarker && currentJob.length === 1) {
+        console.log(`  🎯 Starting new job with: "${line}"`);
+      }
+    }
+  }
+  
+  // Add the final job
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 50) {
+      jobs.push(jobContent);
+      console.log(`  ✅ Final From-based Job: (${jobContent.length} chars)`);
+      console.log(`     Content preview: ${jobContent.substring(0, 100)}...`);
+    }
+  }
+  
+  console.log(`🎯 Enhanced "From:" splitting result: ${jobs.length} jobs found`);
+  
+  // If we found jobs, show detailed breakdown
+  if (jobs.length > 0) {
+    console.log('📋 Job breakdown:');
+    jobs.forEach((job, index) => {
+      const firstLine = job.split('\n')[0];
+      console.log(`  Job ${index + 1}: "${firstLine}" (${job.length} chars)`);
+    });
+  }
+  
+  return jobs;
 }
 
 function splitByRoleIndicators(text: string): string[] {
@@ -605,6 +698,172 @@ function splitByOrganizationalMarkers(lines: string[]): string[] {
     }
   }
   
+  return jobs;
+}
+
+// NEW: Split by role/designation patterns specific to user's resume
+function splitByRoleDesignations(text: string): string[] {
+  console.log('🎭 Detecting jobs by role/designation patterns...');
+  
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const jobs: string[] = [];
+  
+  // Specific role/designation patterns for this user's resume
+  const roleDesignationPatterns = [
+    /^As\s+(AVP|Area Manager|Manager|Officer|Executive|Specialist|Analyst)/i,
+    /^Role:\s*/i,
+    /^Position:\s*/i,
+    /^Designation:\s*/i,
+    /^(AVP|Area Manager|Manager|Officer|Executive|Specialist|Analyst)\s*[-–—]/i,
+    /^(Assistant\s+)?Vice\s+President/i,
+    /^(Senior|Principal|Lead)\s+(Manager|Officer|Executive|Specialist)/i
+  ];
+  
+  let currentJob: string[] = [];
+  let jobCount = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Check for role/designation patterns
+    const isRoleDesignation = roleDesignationPatterns.some(pattern => pattern.test(line));
+    
+    if (isRoleDesignation && currentJob.length > 5) { // Need some content before splitting
+      // Save previous job
+      const jobContent = currentJob.join('\n').trim();
+      if (jobContent.length > 150) {
+        jobs.push(jobContent);
+        jobCount++;
+        console.log(`  🎭 Role ${jobCount}: "${line.substring(0, 40)}..." (${jobContent.length} chars)`);
+      }
+      currentJob = [line];
+    } else {
+      currentJob.push(line);
+    }
+  }
+  
+  // Add the last job
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 150) {
+      jobs.push(jobContent);
+      jobCount++;
+      console.log(`  🎭 Final Role ${jobCount}: (${jobContent.length} chars)`);
+    }
+  }
+  
+  console.log(`🎭 Role-designation detection result: ${jobs.length} jobs found`);
+  return jobs;
+}
+
+// NEW: Aggressive content splitting for complex resumes
+function aggressiveContentSplitting(text: string): string[] {
+  console.log('⚡ Applying aggressive content splitting...');
+  
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  console.log(`📝 Total lines for aggressive splitting: ${lines.length}`);
+  
+  const jobs: string[] = [];
+  let currentJob: string[] = [];
+  
+  // Multiple aggressive splitting strategies
+  const aggressiveMarkers = [
+    // Company name patterns (very specific to user's resume)
+    /^(HSBC|Accenture|Deutsche|Team\s+Lease|Baroda|Yes\s+Bank|RBL|HDFC|Citibank)/i,
+    
+    // "From:" patterns  
+    /^From:\s*/i,
+    
+    // Date patterns at start of line
+    /^(Aug|Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr|May|Jun|Jul)\s*[\d']/i,
+    
+    // Role progression indicators
+    /^(Since|As|Role|Position|Designation)[\s:]/i,
+    
+    // Employment period patterns
+    /\d{4}\s*[-–—to]\s*\d{4}/i,
+    /\d{4}\s*[-–—to]\s*(till\s+date|present|current)/i,
+    
+    // Achievement/responsibility section starters
+    /^(•|->|➤|✓|\*|\d+\.)\s*/i,
+    
+    // Department/team indicators
+    /^(Department|Team|Unit|Division|Branch):/i
+  ];
+  
+  let jobCount = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Check for any aggressive marker
+    const hasAggressiveMarker = aggressiveMarkers.some(pattern => pattern.test(line));
+    
+    // Force split on aggressive markers with looser content requirements
+    if (hasAggressiveMarker && currentJob.length > 3) {
+      const jobContent = currentJob.join('\n').trim();
+      if (jobContent.length > 100) { // Lower threshold for aggressive splitting
+        jobs.push(jobContent);
+        jobCount++;
+        console.log(`  ⚡ Aggressive Job ${jobCount}: "${line.substring(0, 50)}..." (${jobContent.length} chars)`);
+      }
+      currentJob = [line];
+    } else {
+      currentJob.push(line);
+    }
+  }
+  
+  // Add final job
+  if (currentJob.length > 0) {
+    const jobContent = currentJob.join('\n').trim();
+    if (jobContent.length > 100) {
+      jobs.push(jobContent);
+      jobCount++;
+      console.log(`  ⚡ Final Aggressive Job ${jobCount}: (${jobContent.length} chars)`);
+    }
+  }
+  
+  console.log(`⚡ Aggressive splitting result: ${jobs.length} jobs found`);
+  return jobs;
+}
+
+// NEW: Force content split for very long content
+function forceContentSplit(text: string): string[] {
+  console.log('🚨 Applying forced content split for long content...');
+  
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const totalLength = text.length;
+  
+  console.log(`📏 Content stats: ${totalLength} chars, ${lines.length} lines`);
+  
+  // Calculate target number of jobs based on content length
+  let targetJobs = Math.max(Math.floor(totalLength / 1500), 3); // Aim for jobs of ~1500 chars each
+  
+  // But cap it at a reasonable number for processing
+  targetJobs = Math.min(targetJobs, 15);
+  
+  console.log(`🎯 Target jobs for forced split: ${targetJobs}`);
+  
+  const jobs: string[] = [];
+  const linesPerJob = Math.ceil(lines.length / targetJobs);
+  
+  for (let i = 0; i < targetJobs; i++) {
+    const startIndex = i * linesPerJob;
+    const endIndex = Math.min(startIndex + linesPerJob, lines.length);
+    
+    if (startIndex < lines.length) {
+      const jobLines = lines.slice(startIndex, endIndex);
+      const jobContent = jobLines.join('\n').trim();
+      
+      if (jobContent.length > 50) { // Very low threshold for forced splitting
+        jobs.push(jobContent);
+        console.log(`  🚨 Forced Job ${jobs.length}: Lines ${startIndex + 1}-${endIndex} (${jobContent.length} chars)`);
+        console.log(`     Preview: ${jobContent.substring(0, 80)}...`);
+      }
+    }
+  }
+  
+  console.log(`🚨 Forced splitting created ${jobs.length} jobs from ${totalLength} chars`);
   return jobs;
 }
 
@@ -869,16 +1128,52 @@ ${section.content}
 
 CRITICAL: Base summary on actual content. No generic placeholders.`,
 
-    experience: `Extract work experience from this individual job entry. Return ONLY JSON:
+    experience_job_0: `Extract work experience from this individual job entry. Return ONLY JSON:
 {
-  "title": "actual job title",
-  "company": "actual company name",
-  "duration": "actual employment dates or period",
-  "description": "brief role description based on actual content",
-  "achievements": ["specific achievement 1", "specific achievement 2", "specific achievement 3"]
+  "title": "actual job title from content",
+  "company": "actual company name from content",
+  "duration": "actual employment dates or period from content",
+  "description": "brief role description based on actual content (2-3 sentences)",
+  "achievements": ["specific achievement 1 from content", "specific achievement 2 from content", "specific achievement 3 from content"]
 }
 
+IMPORTANT EXTRACTION RULES:
+- Look for "From:" lines to extract company names and dates
+- Extract job titles from role descriptions, "As [Title]" patterns, or designation lines
+- Parse dates in formats like "Aug 21 to till date", "Sep1997-Feb 2013", etc.
+- Find achievements from bullet points, accomplishments, or responsibility lists
+- If any field is unclear, extract the best approximation from available content
+- NEVER use generic placeholders - only use actual content from the job entry
+
 Job entry content:
+${section.content}
+
+CRITICAL: Extract from actual content only. If information is not clear, provide the closest available match from the content.`,
+
+    // Handle all experience_job_X variations with the same prompt
+    ...Array.from({length: 20}, (_, i) => ({ 
+      [`experience_job_${i}`]: `Extract work experience from this individual job entry. Return ONLY JSON:
+{
+  "title": "actual job title from content",
+  "company": "actual company name from content", 
+  "duration": "actual employment dates or period from content",
+  "description": "brief role description based on actual content (2-3 sentences)",
+  "achievements": ["specific achievement 1 from content", "specific achievement 2 from content", "specific achievement 3 from content"]
+}
+
+IMPORTANT EXTRACTION RULES:
+- Look for "From:" lines to extract company names and dates
+- Extract job titles from role descriptions, "As [Title]" patterns, or designation lines  
+- Parse dates in formats like "Aug 21 to till date", "Sep1997-Feb 2013", etc.
+- Find achievements from bullet points, accomplishments, or responsibility lists
+- If any field is unclear, extract the best approximation from available content
+- NEVER use generic placeholders - only use actual content from the job entry
+
+Job entry content:
+${section.content}
+
+CRITICAL: Extract from actual content only. If information is not clear, provide the closest available match from the content.`
+    })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
 ${section.content}
 
 CRITICAL: This is ONE job entry. Extract the specific job title, company name, employment dates, and actual achievements from this role only. Focus on concrete accomplishments and responsibilities.`,
@@ -1025,15 +1320,37 @@ function mergeSectionResults(
 
 function validateEnhancedResume(resume: any): void {
   console.log('🔍 Validating enhanced resume...');
+  console.log(`📊 Validation data: name="${resume.name}", experience_count=${resume.experience?.length || 0}, education_count=${resume.education?.length || 0}, skills_count=${resume.skills?.length || 0}`);
+  
+  // Log detailed experience information for debugging
+  if (Array.isArray(resume.experience)) {
+    console.log('💼 Experience details:');
+    resume.experience.forEach((exp, index) => {
+      console.log(`  Job ${index + 1}: title="${exp.title || 'N/A'}", company="${exp.company || 'N/A'}", duration="${exp.duration || 'N/A'}"`);
+    });
+  } else {
+    console.log('❌ Experience is not an array:', typeof resume.experience, resume.experience);
+  }
   
   // Critical validations - must have these
   if (!resume.name || resume.name.trim().length === 0) {
+    console.error('❌ Validation failed: No name found');
     throw new Error('No name extracted from resume. Contact section processing failed.');
   }
   
   if (!Array.isArray(resume.experience) || resume.experience.length === 0) {
-    throw new Error('No work experience extracted from resume. Experience section processing failed.');
+    console.error('❌ Validation failed: No experience found');
+    console.error('🔍 Current experience value:', resume.experience);
+    console.error('🔍 Resume object keys:', Object.keys(resume));
+    
+    // Provide more helpful error message with debugging info
+    throw new Error(`No work experience extracted from resume. Experience section processing failed. 
+    Debug info: experience type=${typeof resume.experience}, length=${resume.experience?.length || 'N/A'}
+    This usually means the job detection algorithm failed to properly split and process the experience section.`);
   }
+  
+  // Log success stats
+  console.log(`✅ Validation passed: ${resume.experience.length} experience entries found`);
   
   // Ensure all required fields exist (but can be empty)
   const requiredFields = ['name', 'title', 'email', 'phone', 'location', 'linkedin', 'summary', 'experience', 'education', 'skills', 'tools', 'certifications', 'languages'];
@@ -1044,7 +1361,7 @@ function validateEnhancedResume(resume: any): void {
     }
   }
   
-  console.log('✅ Resume validation completed');
+  console.log('✅ Resume validation completed successfully');
 }
 
 
