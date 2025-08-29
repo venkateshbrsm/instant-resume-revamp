@@ -143,6 +143,8 @@ export const EditablePreview = ({
                 <>
                   {renderEditableField2('Job Title', item.title, field, 'title', false, index)}
                   {renderEditableField2('Company', item.company, field, 'company', false, index)}
+                  {renderEditableField2('Duration', item.duration, field, 'duration', false, index)}
+                  {item.description && renderEditableField2('Description', item.description, field, 'description', true, index)}
                   {item.achievements && (
                     <div className="mb-3">
                       <label className="text-sm font-medium text-muted-foreground">Achievements</label>
