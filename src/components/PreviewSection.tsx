@@ -570,9 +570,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (data.success && data.enhancedResume) {
-        // Apply ATS optimization to the enhanced resume
-        const atsOptimizedContent = enhanceResumeWithATS(data.enhancedResume);
-        setEnhancedContent(atsOptimizedContent);
+        // Check if enhancement is complete (has key sections)
+        const hasExperience = data.enhancedResume.experience && data.enhancedResume.experience.length > 0;
+        const hasSkills = data.enhancedResume.skills && data.enhancedResume.skills.length > 0;
+        const hasEducation = data.enhancedResume.education && data.enhancedResume.education.length > 0;
+        
+        if (!hasExperience && !hasSkills && !hasEducation) {
+          console.warn('Enhancement returned incomplete data - missing key sections');
+          throw new Error('Enhancement incomplete - missing experience, skills, and education sections. Please try again.');
+        }
+        
+        // Use the AI-enhanced content directly without ATS override
+        setEnhancedContent(data.enhancedResume);
         setEnhancementProgress(100);
         
         console.log('Enhancement successful, enhanced content:', data.enhancedResume);

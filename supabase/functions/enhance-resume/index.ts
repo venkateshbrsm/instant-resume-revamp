@@ -265,11 +265,32 @@ Return ONLY a JSON object with:
     .map(async (section) => {
       console.log(`🔧 Processing ${section.type} section...`);
       try {
-        const sectionPrompt = `Extract ${section.type} information from:
+        let sectionPrompt = '';
+        
+        if (section.type === 'skills_education') {
+          sectionPrompt = `Extract skills and education from this resume section:
+
+${section.content}
+
+Return ONLY a JSON object with:
+{
+  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
+  "education": [
+    {
+      "degree": "actual degree name",
+      "institution": "actual institution name", 
+      "year": "graduation year",
+      "gpa": "GPA if mentioned"
+    }
+  ]
+}`;
+        } else {
+          sectionPrompt = `Extract ${section.type} information from:
 
 ${section.content}
 
 Return ONLY a JSON object with the ${section.type} data.`;
+        }
 
         const result = await makeOpenAIRequestWithTimeout(sectionPrompt, apiKey, 'gpt-5-mini-2025-08-07', 20000, globalSignal);
         return { type: section.type, data: result };
