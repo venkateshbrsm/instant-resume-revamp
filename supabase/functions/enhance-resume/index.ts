@@ -375,9 +375,34 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     const data = await response.json();
     console.log('📥 OpenAI response received');
     
-    const content = data.choices[0]?.message?.content;
+    // Add detailed logging of response structure
+    console.log('🔍 Full OpenAI response structure:', JSON.stringify(data, null, 2));
+    console.log('🔍 Response has choices:', !!data.choices);
+    console.log('🔍 Choices length:', data.choices?.length || 0);
+    console.log('🔍 First choice structure:', JSON.stringify(data.choices?.[0], null, 2));
+    
+    // Handle different response formats
+    let content = null;
+    
+    // Try different ways to extract content
+    if (data.choices?.[0]?.message?.content) {
+      content = data.choices[0].message.content;
+      console.log('✅ Content found in choices[0].message.content');
+    } else if (data.choices?.[0]?.text) {
+      content = data.choices[0].text;
+      console.log('✅ Content found in choices[0].text');
+    } else if (data.content) {
+      content = data.content;
+      console.log('✅ Content found in direct content field');
+    } else if (data.message?.content) {
+      content = data.message.content;
+      console.log('✅ Content found in message.content');
+    }
+    
     if (!content) {
-      throw new Error('No content returned from OpenAI');
+      console.error('❌ No content found in any expected field');
+      console.error('❌ Available fields:', Object.keys(data));
+      throw new Error('No content returned from OpenAI - unexpected response format');
     }
 
     console.log('📄 Raw OpenAI response preview:', content.substring(0, 200));
