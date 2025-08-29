@@ -205,21 +205,29 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     const lines = text.split('\n').filter(line => line.trim());
     
     // Extract basic information
-    let name = 'Name Not Provided';
-    let email = 'Email Not Provided';
-    let phone = 'Phone Not Provided';
-    let location = 'Location Not Provided';
+    let name = 'Your Name';
+    let email = 'your.email@example.com';
+    let phone = '(555) 123-4567';
+    let location = 'Your City, State';
     
-    for (const line of lines) {
+    // Skip system/error lines and look for actual content
+    const contentLines = lines.filter(line => {
+      const trimmed = line.trim();
+      return !trimmed.includes('📄') && 
+             !trimmed.includes('File Details:') &&
+             !trimmed.includes('Size:') &&
+             !trimmed.includes('Type:') &&
+             !trimmed.includes('Uploaded:') &&
+             !trimmed.includes('Content Ready') &&
+             !trimmed.includes('💡') &&
+             !trimmed.includes('✨') &&
+             !trimmed.includes('❌') &&
+             !trimmed.includes('•') &&
+             trimmed.length > 0;
+    });
+    
+    for (const line of contentLines) {
       const trimmedLine = line.trim();
-      
-      // Skip error/system lines
-      if (trimmedLine.includes('PDF Processing Error') || 
-          trimmedLine.includes('File Details:') ||
-          trimmedLine.includes('💡') ||
-          trimmedLine.includes('❌')) {
-        continue;
-      }
       
       // Extract email
       const emailMatch = trimmedLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
@@ -233,14 +241,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         phone = phoneMatch[0];
       }
       
-      // Extract name (first meaningful line)
-      if (name === 'Name Not Provided' && 
+      // Extract name (first meaningful line that's not email/phone/url)
+      if (name === 'Your Name' && 
           trimmedLine.length > 2 && 
           trimmedLine.length < 50 && 
           !emailMatch && 
           !phoneMatch && 
           !trimmedLine.includes('http') &&
-          !trimmedLine.includes('.pdf')) {
+          !trimmedLine.includes('.com') &&
+          !trimmedLine.toLowerCase().includes('resume')) {
         name = trimmedLine;
       }
     }
@@ -746,12 +755,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                         {/* Tabbed Preview */}
-                         <Tabs defaultValue="pdf" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
-                            <TabsTrigger value="edit">✏️ Edit & Download</TabsTrigger>
-                          </TabsList>
+                          {/* Tabbed Preview */}
+                          <Tabs defaultValue="pdf" className="w-full">
+                           <TabsList className="grid w-full grid-cols-3">
+                             <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
+                             <TabsTrigger value="extracted">📄 Extracted Content</TabsTrigger>
+                             <TabsTrigger value="edit">✏️ Edit & Download</TabsTrigger>
+                           </TabsList>
                           
                           <TabsContent value="pdf" className="space-y-4">
                             <div className="relative">
@@ -826,7 +836,30 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 </div>
                               )}
                             </div>
-                          </TabsContent>
+                           </TabsContent>
+                           
+                           <TabsContent value="extracted" className="space-y-4">
+                             <div className="bg-muted/50 rounded-lg p-4 border">
+                               <div className="flex items-center justify-between mb-4">
+                                 <h3 className="text-lg font-semibold">Extracted File Content</h3>
+                                 <Badge variant="outline" className="text-xs">
+                                   {typeof originalContent === 'object' && originalContent.fileType ? originalContent.fileType.toUpperCase() : 'TXT'}
+                                 </Badge>
+                               </div>
+                               <ScrollArea className="h-[500px] w-full rounded border bg-background p-4">
+                                 <pre className="text-sm whitespace-pre-wrap font-mono">
+                                   {extractedText || 'No content extracted yet...'}
+                                 </pre>
+                               </ScrollArea>
+                               <p className="text-xs text-muted-foreground mt-2">
+                                 This is the raw content extracted from your uploaded file. 
+                                 {typeof originalContent === 'object' && originalContent.fileType === 'pdf' ? 
+                                   ' PDF text extraction may vary based on document formatting.' :
+                                   ' You can edit this content using the Edit tab above.'
+                                 }
+                               </p>
+                             </div>
+                           </TabsContent>
                           
                             <TabsContent value="edit" className="space-y-4">
                               <EditablePreview
