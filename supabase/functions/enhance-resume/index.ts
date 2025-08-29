@@ -107,18 +107,18 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Use more reliable model and shorter timeout
-  const selectedModel = 'gpt-4.1-2025-04-14'; // More reliable than GPT-5
-  const timeoutMs = 20000; // 20 seconds max
+  const selectedModel = 'gpt-4.1-2025-04-14';
+  const sectionTimeoutMs = 15000; // 15 seconds per section
   
-  console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
+  console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel}`);
 
-  // For any content over 8000, use simplified processing
-  if (originalText.length > 8000) {
-    console.log('📋 Large content detected - using simplified enhancement...');
-    return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
+  // For content over 7000 characters, use chunking strategy
+  if (originalText.length > 7000) {
+    console.log('📋 Large content detected - using chunking strategy...');
+    return await processWithChunking(originalText, apiKey, selectedModel, sectionTimeoutMs, globalSignal);
   }
 
+  // For smaller content, use the original single-prompt approach
   const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
 
 CRITICAL: DO NOT USE PLACEHOLDER TEXT. Extract real data from the resume or leave fields empty if not found.
@@ -158,24 +158,9 @@ Parse this resume and return ONLY a JSON object with this exact structure:
   "languages": ["extract actual languages mentioned"]
 }
 
-CRITICAL EXPERIENCE EXTRACTION RULES:
-1. Each experience entry MUST have UNIQUE achievements - never repeat similar bullet points across different jobs
-2. Focus on role-specific responsibilities and outcomes for each position
-3. If the original resume has generic content, differentiate it based on job title, company, and timeframe
-4. Look for subtle differences in responsibilities, tools used, industry focus, or scope of work
-5. Extract actual metrics, numbers, and specific outcomes when available
-6. If multiple similar roles exist, emphasize different aspects of each (e.g., strategy vs execution, team leadership vs individual contributor)
-7. For work experience: Look for job titles, company names, employment dates, and unique bullet points per role
-8. For education: Look for degree names, institution names, graduation dates, GPA if mentioned
-9. For skills: Extract from dedicated skills section or mentioned throughout the resume
-10. For contact info: Extract name, email, phone, location from the header/contact section
-11. For summary: Create based on profile summary section and overall experience
-12. NEVER use phrases like "Professional Role 1", "Company Name", "Achievement based on extracted content" - these are placeholders
-13. If you cannot find specific information, use empty string "" or empty array []
-
 Return ONLY the JSON object, no additional text or formatting.`;
 
-  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
+  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, 20000, globalSignal);
 }
 
 async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
@@ -256,32 +241,236 @@ CRITICAL: Extract actual information only. If a section is not found, use empty 
   }
 }
 
+async function processWithChunking(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
+  console.log('🔄 Processing with chunking strategy...');
+  
+  // Split resume into sections
+  const sections = splitResumeIntoSections(originalText);
+  console.log(`📋 Split into ${sections.length} sections:`, sections.map(s => s.type));
+  
+  // Process sections in parallel
+  const sectionPromises = sections.map(async (section) => {
+    try {
+      console.log(`🔧 Processing section: ${section.type} (${section.content.length} chars)`);
+      const result = await processSectionWithAI(section, apiKey, model, timeoutMs, globalSignal);
+      console.log(`✅ Completed section: ${section.type}`);
+      return { type: section.type, result, success: true };
+    } catch (error) {
+      console.error(`❌ Failed section: ${section.type}`, error);
+      return { type: section.type, error: error.message, success: false };
+    }
+  });
+  
+  // Wait for all sections to complete (or fail)
+  const results = await Promise.allSettled(sectionPromises);
+  console.log(`📊 Processing complete. ${results.filter(r => r.status === 'fulfilled').length}/${results.length} sections succeeded`);
+  
+  // Merge successful results
+  return mergeChunkedResults(results, originalText);
+}
+
+async function processSectionWithAI(section: { type: string, content: string }, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
+  let prompt = '';
+  
+  switch (section.type) {
+    case 'contact':
+      prompt = `Extract contact information from this resume section. Return ONLY a JSON object:
+
+Section content:
+${section.content}
+
+Return format:
+{
+  "name": "actual person's name",
+  "title": "job title or professional role",
+  "email": "email address",
+  "phone": "phone number",
+  "location": "city/location",
+  "linkedin": "LinkedIn URL if present"
+}`;
+      break;
+      
+    case 'experience':
+      prompt = `Extract work experience from this resume section. Return ONLY a JSON array of experience objects:
+
+Section content:
+${section.content}
+
+Return format:
+[
+  {
+    "title": "actual job title",
+    "company": "actual company name",
+    "duration": "employment dates",
+    "description": "brief role description",
+    "achievements": ["specific achievement 1", "specific achievement 2"]
+  }
+]`;
+      break;
+      
+    case 'education':
+      prompt = `Extract education information from this resume section. Return ONLY a JSON array:
+
+Section content:
+${section.content}
+
+Return format:
+[
+  {
+    "degree": "actual degree name",
+    "institution": "actual school/university name",
+    "year": "graduation year",
+    "gpa": "GPA if mentioned"
+  }
+]`;
+      break;
+      
+    case 'skills':
+    case 'skills_education':
+      prompt = `Extract skills, education, tools, certifications, and languages from this resume section. Return ONLY a JSON object:
+
+Section content:
+${section.content}
+
+Return format:
+{
+  "skills": ["skill 1", "skill 2"],
+  "tools": ["tool 1", "tool 2"],
+  "certifications": ["certification 1", "certification 2"],
+  "languages": ["language 1", "language 2"],
+  "education": [
+    {
+      "degree": "degree name if found",
+      "institution": "institution name if found",
+      "year": "year if found",
+      "gpa": "gpa if found"
+    }
+  ]
+}`;
+      break;
+      
+    default:
+      prompt = `Extract any relevant information from this resume section:
+
+Section content:
+${section.content}
+
+Return a JSON object with any relevant fields you can identify.`;
+  }
+  
+  return await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
+}
+
+function mergeChunkedResults(results: PromiseSettledResult<{ type: string, result?: any, success: boolean }>[], originalText: string): any {
+  console.log('🔗 Merging chunked results...');
+  
+  const mergedResume = {
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    linkedin: "",
+    summary: "",
+    experience: [] as any[],
+    education: [] as any[],
+    skills: [] as string[],
+    tools: [] as string[],
+    certifications: [] as string[],
+    languages: [] as string[]
+  };
+  
+  // Process successful results
+  results.forEach((result) => {
+    if (result.status === 'fulfilled' && result.value.success) {
+      const { type, result: data } = result.value;
+      
+      try {
+        switch (type) {
+          case 'contact':
+            if (data?.name) mergedResume.name = data.name;
+            if (data?.title) mergedResume.title = data.title;
+            if (data?.email) mergedResume.email = data.email;
+            if (data?.phone) mergedResume.phone = data.phone;
+            if (data?.location) mergedResume.location = data.location;
+            if (data?.linkedin) mergedResume.linkedin = data.linkedin;
+            break;
+            
+          case 'experience':
+            if (Array.isArray(data)) {
+              mergedResume.experience = data;
+            }
+            break;
+            
+          case 'education':
+            if (Array.isArray(data)) {
+              mergedResume.education = data;
+            }
+            break;
+            
+          case 'skills':
+          case 'skills_education':
+            if (data?.skills) mergedResume.skills = [...mergedResume.skills, ...(Array.isArray(data.skills) ? data.skills : [])];
+            if (data?.tools) mergedResume.tools = [...mergedResume.tools, ...(Array.isArray(data.tools) ? data.tools : [])];
+            if (data?.certifications) mergedResume.certifications = [...mergedResume.certifications, ...(Array.isArray(data.certifications) ? data.certifications : [])];
+            if (data?.languages) mergedResume.languages = [...mergedResume.languages, ...(Array.isArray(data.languages) ? data.languages : [])];
+            if (data?.education && Array.isArray(data.education)) {
+              mergedResume.education = [...mergedResume.education, ...data.education];
+            }
+            break;
+        }
+      } catch (error) {
+        console.error(`❌ Error merging ${type} section:`, error);
+      }
+    }
+  });
+  
+  // Generate summary if we have enough information
+  if (mergedResume.experience.length > 0 || mergedResume.skills.length > 0) {
+    const experienceTitles = mergedResume.experience.map(exp => exp.title).filter(Boolean);
+    const topSkills = mergedResume.skills.slice(0, 5);
+    
+    mergedResume.summary = `Professional ${mergedResume.title || 'with expertise'} with experience in ${experienceTitles.join(', ')}. Skilled in ${topSkills.join(', ')}.`;
+  }
+  
+  // Remove duplicates from arrays
+  mergedResume.skills = [...new Set(mergedResume.skills)];
+  mergedResume.tools = [...new Set(mergedResume.tools)];
+  mergedResume.certifications = [...new Set(mergedResume.certifications)];
+  mergedResume.languages = [...new Set(mergedResume.languages)];
+  
+  console.log('✅ Merging complete');
+  console.log(`📊 Final results: ${mergedResume.experience.length} experience, ${mergedResume.skills.length} skills, ${mergedResume.education.length} education`);
+  
+  return mergedResume;
+}
+
 function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   const sections = [];
   
-  // Define section markers
-  const contactMarkers = ['email', '@', 'phone', 'mobile', 'linkedin', 'address'];
-  const experienceMarkers = ['experience', 'employment', 'work history', 'professional experience', 'career', 'work', 'positions held'];
-  const educationMarkers = ['education', 'academic', 'qualification', 'degree', 'university', 'college', 'school'];
-  const skillsMarkers = ['skills', 'technical skills', 'competencies', 'expertise', 'proficiencies', 'technologies'];
+  // Enhanced section markers
+  const contactMarkers = ['email', '@', 'phone', 'mobile', 'linkedin', 'address', 'location'];
+  const experienceMarkers = ['experience', 'employment', 'work history', 'professional experience', 'career', 'work', 'positions held', 'job history'];
+  const educationMarkers = ['education', 'academic', 'qualification', 'degree', 'university', 'college', 'school', 'certification'];
+  const skillsMarkers = ['skills', 'technical skills', 'competencies', 'expertise', 'proficiencies', 'technologies', 'tools', 'software'];
   
   let currentType = 'contact';
   let currentContent: string[] = [];
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].toLowerCase();
-    const isHeader = line.length < 50 && (line.includes(':') || line.match(/^[a-z\s]+$/));
+    const isHeader = line.length < 60 && (line.includes(':') || line.match(/^[a-z\s\-]+$/));
     
-    // Check for section transitions
+    // Check for section transitions with better detection
     let newType = currentType;
-    if (isHeader && experienceMarkers.some(marker => line.includes(marker))) {
+    if (experienceMarkers.some(marker => line.includes(marker))) {
       newType = 'experience';
-    } else if (isHeader && educationMarkers.some(marker => line.includes(marker))) {
+    } else if (educationMarkers.some(marker => line.includes(marker))) {
       newType = 'education';
-    } else if (isHeader && skillsMarkers.some(marker => line.includes(marker))) {
+    } else if (skillsMarkers.some(marker => line.includes(marker))) {
       newType = 'skills';
-    } else if (i < 15 && contactMarkers.some(marker => line.includes(marker))) {
+    } else if (i < 20 && contactMarkers.some(marker => line.includes(marker))) {
       newType = 'contact';
     }
     
@@ -300,39 +489,45 @@ function splitResumeIntoSections(text: string): Array<{type: string, content: st
     sections.push({ type: currentType, content: currentContent.join('\n') });
   }
   
-  // Merge small sections and ensure we have main sections
+  // Smart consolidation
   const consolidated = [];
-  const contactSection = sections.find(s => s.type === 'contact') || { type: 'contact', content: lines.slice(0, 10).join('\n') };
+  
+  // Always include contact section (first 15 lines if not found)
+  const contactSection = sections.find(s => s.type === 'contact') || { type: 'contact', content: lines.slice(0, 15).join('\n') };
   consolidated.push(contactSection);
   
+  // Include experience section if found
   const experienceSection = sections.find(s => s.type === 'experience');
-  if (experienceSection) {
+  if (experienceSection && experienceSection.content.length > 50) {
     consolidated.push(experienceSection);
   }
   
-  // Combine education and skills if separate, or create from remaining content
+  // Handle education and skills - combine if both are small
   const educationSection = sections.find(s => s.type === 'education');
   const skillsSection = sections.find(s => s.type === 'skills');
   
-  if (educationSection || skillsSection) {
-    const combinedContent = [
-      ...(educationSection ? [educationSection.content] : []),
-      ...(skillsSection ? [skillsSection.content] : [])
-    ].join('\n\n');
-    
-    if (combinedContent.trim()) {
-      consolidated.push({ type: 'skills_education', content: combinedContent });
-    }
+  if (educationSection && skillsSection) {
+    // If both exist, combine them into skills_education
+    consolidated.push({ 
+      type: 'skills_education', 
+      content: `${educationSection.content}\n\n${skillsSection.content}` 
+    });
+  } else if (educationSection) {
+    consolidated.push({ type: 'education', content: educationSection.content });
+  } else if (skillsSection) {
+    consolidated.push({ type: 'skills', content: skillsSection.content });
   } else {
-    // Use remaining content
+    // Use remaining content after contact and experience
     const usedLines = contactSection.content.split('\n').length + (experienceSection?.content.split('\n').length || 0);
-    const remainingContent = lines.slice(usedLines).join('\n');
-    if (remainingContent.trim()) {
-      consolidated.push({ type: 'skills_education', content: remainingContent });
+    if (usedLines < lines.length) {
+      const remainingContent = lines.slice(usedLines).join('\n');
+      if (remainingContent.trim().length > 20) {
+        consolidated.push({ type: 'skills_education', content: remainingContent });
+      }
     }
   }
   
-  return consolidated;
+  return consolidated.filter(section => section.content.trim().length > 10);
 }
 
 async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
