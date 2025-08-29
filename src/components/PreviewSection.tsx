@@ -610,13 +610,45 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       let inSkills = false;
       let inSummary = false;
       let currentJob: any = null;
+      let summaryCollected = false;
+      
+      // First pass: Look for explicit professional summary or infer from early content
+      for (let i = 0; i < Math.min(20, parsedLines.length); i++) {
+        const line = parsedLines[i];
+        const lowerLine = line.toLowerCase();
+        
+        // Check if this looks like a professional summary section
+        if (line.length > 50 && !line.includes('@') && !line.match(/\d{4}/) && 
+            !line.includes('HSBC') && !line.includes('Bank') && !line.includes('Limited') &&
+            !line.includes('From:') && !line.includes('Role') && !lowerLine.includes('experience') &&
+            !lowerLine.includes('education') && !lowerLine.includes('skills') &&
+            (line.includes('professional') || line.includes('experienced') || 
+             line.includes('specializing') || line.includes('years of') ||
+             (i > 2 && line.length > 80))) { // Longer descriptive text after basic info
+          if (!result.summary) {
+            result.summary = line;
+            summaryCollected = true;
+            console.log('Found inferred summary:', line.substring(0, 100));
+          }
+        }
+      }
       
       for (let i = 0; i < parsedLines.length; i++) {
         const line = parsedLines[i];
         const lowerLine = line.toLowerCase();
         
         // Detect section headers
-        if (lowerLine.includes('experience') || lowerLine.includes('organizational experience') || lowerLine.includes('employment history')) {
+        if (lowerLine.includes('professional summary') || lowerLine.includes('profile summary') || 
+            lowerLine.includes('summary') || lowerLine.includes('objective')) {
+          console.log('Found summary section header at line:', i, line);
+          inExperience = false;
+          inEducation = false;
+          inSkills = false;
+          inSummary = true;
+          summaryCollected = false; // Reset to collect proper summary
+          continue;
+        } else if (lowerLine.includes('experience') || lowerLine.includes('organizational experience') || 
+                   lowerLine.includes('employment history') || lowerLine.includes('professional experience')) {
           console.log('Found experience section at line:', i, line);
           if (currentJob) {
             result.experience.push(currentJob);
@@ -627,7 +659,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           inSkills = false;
           inSummary = false;
           continue;
-        } else if (lowerLine.includes('education') || lowerLine.includes('qualification') || lowerLine.includes('academic')) {
+        } else if (lowerLine.includes('education') || lowerLine.includes('qualification') || 
+                   lowerLine.includes('academic') || lowerLine.includes('certifications')) {
           console.log('Found education section at line:', i, line);
           if (currentJob) {
             result.experience.push(currentJob);
@@ -638,7 +671,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           inSkills = false;
           inSummary = false;
           continue;
-        } else if (lowerLine.includes('skills') || lowerLine.includes('competencies') || lowerLine.includes('core competencies')) {
+        } else if (lowerLine.includes('skills') || lowerLine.includes('competencies') || 
+                   lowerLine.includes('core competencies') || lowerLine.includes('core skills')) {
           console.log('Found skills section at line:', i, line);
           if (currentJob) {
             result.experience.push(currentJob);
@@ -649,70 +683,99 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
           inSkills = true;
           inSummary = false;
           continue;
-        } else if (lowerLine.includes('summary') || lowerLine.includes('objective') || lowerLine.includes('profile summary')) {
-          console.log('Found summary section at line:', i, line);
-          inExperience = false;
-          inEducation = false;
-          inSkills = false;
-          inSummary = true;
-          continue;
         }
         
         // Process content based on current section
-        if (inSummary && line.length > 10) {
-          if (result.summary) {
-            result.summary += ' ' + line;
-          } else {
+        if (inSummary && line.length > 10 && !line.match(/^[A-Z\s]+$/)) {
+          if (!summaryCollected) {
             result.summary = line;
+            summaryCollected = true;
+          } else {
+            result.summary += ' ' + line;
           }
           console.log('Added to summary:', line);
         } else if (inExperience) {
-          // Look for date patterns to identify job periods
-          if (line.match(/from:|to:|till date|\d{4}|aug|sep|oct|nov|dec|jan|feb|mar|apr|may|jun|jul/i)) {
-            console.log('Found job date/period:', line);
+          // Detect new job entry by role pattern or duration pattern
+          if ((line.includes('Role') && line.length < 50) || 
+              line.match(/from:|to:|till date|\d{4}|aug|sep|oct|nov|dec|jan|feb|mar|apr|may|jun|jul/i)) {
+            console.log('Found job entry:', line);
             if (currentJob) {
+              // Clean up duplicates in achievements and responsibilities
+              currentJob.core_responsibilities = [...new Set(currentJob.core_responsibilities)];
+              currentJob.achievements = [...new Set(currentJob.achievements)];
               result.experience.push(currentJob);
               console.log('Saved previous job:', currentJob);
             }
             currentJob = {
-              title: '',
+              title: line.includes('Role') ? '' : line,
               company: '',
-              duration: line,
+              duration: line.includes('Role') ? '' : line,
               description: '',
               core_responsibilities: [],
               achievements: []
             };
           }
-          // Look for job titles or roles - be more flexible
+          // Extract company name from next line after Role
+          else if (currentJob && line.includes('Role') && i + 1 < parsedLines.length) {
+            const nextLine = parsedLines[i + 1];
+            if (nextLine.includes('HSBC') || nextLine.includes('Bank') || nextLine.includes('Limited') || 
+                nextLine.includes('Deutsche') || nextLine.includes('Team Lease')) {
+              currentJob.company = nextLine;
+              console.log('Found company from next line:', nextLine);
+            }
+          }
+          // Look for job titles 
           else if (currentJob && !currentJob.title && (
             line.includes('AVP') || line.includes('Manager') || line.includes('Officer') || 
-            line.includes('Role') || line.includes('Analyst') || line.includes('Director') || 
+            line.includes('Assistant Vice President') || line.includes('Analyst') || line.includes('Director') || 
             line.includes('Specialist') || line.includes('Lead') || line.includes('Senior') ||
-            line.includes('Business Information Risk Officer')
+            line.includes('Business Information Risk Officer') || line.includes('Business Process Delivery')
           )) {
             currentJob.title = line;
             console.log('Found job title:', line);
           }
           // Look for company names
           else if (currentJob && !currentJob.company && (
-            line.includes('HSBC') || line.includes('Bank') || line.includes('Limited') || 
-            line.includes('P limited') || line.includes('Company') || line.includes('Corp') || 
-            line.includes('Inc') || line.includes('Electronic Data Processing')
+            line.includes('HSBC') || line.includes('Deutsche Bank') || line.includes('Team Lease') || 
+            line.includes('Limited') || line.includes('P limited') || line.includes('Company') || 
+            line.includes('Corp') || line.includes('Inc') || line.includes('Electronic Data Processing')
           )) {
             currentJob.company = line;
             console.log('Found company:', line);
           }
-          // Add responsibilities and achievements
-          else if (currentJob && line.length > 15 && !line.match(/^[A-Z\s]+$/)) {
-            if (line.startsWith('-') || line.startsWith('•') || 
-                line.includes('Responsible for') || line.includes('Liaising') || 
+          // Categorize content as responsibilities vs achievements
+          else if (currentJob && line.length > 15 && !line.match(/^[A-Z\s]+$/) && !line.includes('From:')) {
+            // Responsibilities: start with action words or describe ongoing duties
+            if (line.includes('Responsible for') || line.includes('Liaising') || 
                 line.includes('Accountable for') || line.includes('Managing') ||
-                line.includes('Coordinating') || line.includes('Implementing')) {
-              currentJob.core_responsibilities.push(line.replace(/^[-•]\s*/, ''));
-              console.log('Added responsibility:', line);
-            } else if (line.length > 30) {
-              currentJob.achievements.push(line);
-              console.log('Added achievement:', line);
+                line.includes('Coordinating') || line.includes('Implementing') ||
+                line.includes('Support') || line.includes('Assist') ||
+                line.includes('Engaging') || line.includes('performing') ||
+                line.includes('review') || line.includes('provide') ||
+                line.startsWith('•') || line.startsWith('-')) {
+              const cleanLine = line.replace(/^[-•]\s*/, '');
+              if (!currentJob.core_responsibilities.includes(cleanLine)) {
+                currentJob.core_responsibilities.push(cleanLine);
+                console.log('Added responsibility:', cleanLine);
+              }
+            }
+            // Achievements: awards, recognitions, specific accomplishments
+            else if (line.includes('award') || line.includes('recognition') || line.includes('Star Performer') ||
+                     line.includes('Won') || line.includes('recipient') || line.includes('successfully') ||
+                     line.includes('completed') || line.includes('achieved') || line.includes('delivered') ||
+                     line.includes('overachieving') || line.includes('Champion') || line.includes('Team of the Quarter')) {
+              if (!currentJob.achievements.includes(line)) {
+                currentJob.achievements.push(line);
+                console.log('Added achievement:', line);
+              }
+            }
+            // Default to responsibilities for unclear content
+            else if (line.length > 30) {
+              const cleanLine = line.replace(/^[-•]\s*/, '');
+              if (!currentJob.core_responsibilities.includes(cleanLine)) {
+                currentJob.core_responsibilities.push(cleanLine);
+                console.log('Added as responsibility (default):', cleanLine);
+              }
             }
           }
         } else if (inEducation && line.length > 5 && !line.match(/^[A-Z\s]+$/)) {
