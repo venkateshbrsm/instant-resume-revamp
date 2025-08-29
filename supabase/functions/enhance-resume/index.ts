@@ -73,18 +73,25 @@ CRITICAL INSTRUCTIONS:
 1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
 2. Preserve EVERY job position, company, and time period from the original
 3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. MANDATORY LINE-BY-LINE REWRITING: For each work experience entry, extract EVERY SINGLE LINE (job titles, company names, descriptions, bullet points) and reword each one using professional language
-5. Count the exact number of bullet points/achievements in each job from the original resume and create the EXACT same number of enhanced bullet points
-6. Reword job titles to be more professional and industry-standard while maintaining the same role essence
-7. Enhance company descriptions and role descriptions with professional language and industry keywords
-8. Transform each bullet point/achievement line by line, maintaining original meaning but using professional, ATS-friendly language
-9. Add relevant industry keywords and ATS-friendly terms throughout all sections
-10. Use strong action verbs and descriptive achievements WITHOUT any numbers, percentages, or metrics
-11. Return ONLY a valid JSON object with the exact structure shown below
-12. MANDATORY: Include ALL work experience entries from the original resume
-13. MANDATORY: Include ALL skills and technical skills from the original resume
-14. CRITICAL: Do NOT include any quantified data (numbers, percentages, amounts) in achievements unless explicitly present in the original resume
-15. CRITICAL: Maintain the same number of bullet points per job as in the original resume - do not add or remove bullet points
+4. MANDATORY LINE-BY-LINE EXTRACTION: For each work experience entry, count every single line including:
+   - Job title line
+   - Company name line  
+   - Date/duration line
+   - Role description lines
+   - ALL bullet points under responsibilities
+   - ALL bullet points under achievements
+   - ANY additional content lines
+5. MANDATORY LINE-BY-LINE ENHANCEMENT: Reword EVERY extracted line using professional, ATS-friendly language while preserving exact meaning
+6. CRITICAL COUNT PRESERVATION: The total number of lines in each work experience section must match the original exactly
+7. ACHIEVEMENT SECTION FOCUS: Pay special attention to achievement sections - extract every single achievement line and enhance each one individually
+8. NO LINE REDUCTION: Do not combine multiple original lines into one enhanced line
+9. NO LINE ADDITION: Do not add extra lines that weren't in the original
+10. PROFESSIONAL ENHANCEMENT: Reword job titles, company names, and all content with professional language and industry keywords
+11. Use strong action verbs and descriptive language WITHOUT adding quantified data unless present in original
+12. Return ONLY a valid JSON object with the exact structure shown below
+13. MANDATORY: Include ALL work experience entries from the original resume
+14. MANDATORY: Include ALL skills and technical skills from the original resume
+15. CRITICAL: Maintain exact line count per job section - count original lines and match that count exactly in enhanced version
 
 REQUIRED JSON STRUCTURE:
 {
