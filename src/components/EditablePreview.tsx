@@ -56,10 +56,9 @@ export const EditablePreview = ({
         // Mark this resume as auto-enhanced
         setAutoEnhancedResumes(prev => new Set(prev).add(resumeId));
         
-        // Define fields to auto-enhance (excluding basic info fields)
+        // Define fields to auto-enhance (excluding basic info fields and skills)
         const fieldsToEnhance = [
-          { key: 'summary', label: 'Professional Summary' },
-          { key: 'skills', label: 'Skills' }
+          { key: 'summary', label: 'Professional Summary' }
         ];
         
         // Add experience descriptions
@@ -567,33 +566,6 @@ export const EditablePreview = ({
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium text-muted-foreground">Skills</label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const skillsString = (() => {
-                      if (Array.isArray(editableData.skills)) {
-                        return editableData.skills.map((skill: any) => {
-                          if (typeof skill === 'string') return skill;
-                          if (skill.items && Array.isArray(skill.items)) return skill.items.join(', ');
-                          return '';
-                        }).filter(s => s).join(', ');
-                      }
-                      return '';
-                    })();
-                    handleEnhanceField('skills', 'Skills');
-                  }}
-                  disabled={enhancingFields.has('skills') || !editableData.skills?.length}
-                  className="h-7 px-2 text-xs"
-                >
-                  {enhancingFields.has('skills') ? (
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-3 w-3 mr-1" />
-                  )}
-                  {enhancingFields.has('skills') ? 'Enhancing...' : 'Enhance with AI'}
-                </Button>
               </div>
               <Textarea
                 value={(() => {
