@@ -359,7 +359,7 @@ export const EditablePreview = ({
                         )}
                       </div>
                       <Textarea
-                        value={item.achievements.join('\n')}
+                        value={Array.isArray(item.achievements) ? item.achievements.join('\n') : (item.achievements || '')}
                         onChange={(e) => {
                           const achievements = e.target.value.split('\n').filter(a => a.trim());
                           handleArrayFieldChange(field, index, 'achievements', achievements);
