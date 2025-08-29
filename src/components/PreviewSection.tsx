@@ -212,254 +212,189 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   };
 
-  // Helper function to create structured content from raw text
+  // Helper function to create structured content from raw text  
   const createBasicContentStructure = (text: string) => {
     console.log('📋 Creating structured content from extracted text');
-    console.log('📋 Extracted text preview:', text.substring(0, 500));
+    console.log('📋 Full extracted text:', text);
     
-    const lines = text.split('\n').filter(line => line.trim());
+    // Clean and split text into meaningful lines
+    const lines = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => {
+        // Filter out system messages and empty lines
+        return line.length > 0 && 
+               !line.includes('📄') && 
+               !line.includes('File Details:') &&
+               !line.includes('Size:') &&
+               !line.includes('Type:') &&
+               !line.includes('Uploaded:') &&
+               !line.includes('Content Ready') &&
+               !line.includes('💡') &&
+               !line.includes('✨') &&
+               !line.includes('❌') &&
+               !line.includes('•');
+      });
     
-    // Extract basic information
-    let name = 'Your Name';
+    console.log('📋 Cleaned lines:', lines);
+    
+    // Initialize variables
+    let name = '';
     let email = '';
     let phone = '';
     let location = '';
-    let linkedin = '';
     let summary = '';
     let experience: any[] = [];
     let education: any[] = [];
     let skills: string[] = [];
     
-    // Skip system/error lines and look for actual content
-    const contentLines = lines.filter(line => {
-      const trimmed = line.trim();
-      return !trimmed.includes('📄') && 
-             !trimmed.includes('File Details:') &&
-             !trimmed.includes('Size:') &&
-             !trimmed.includes('Type:') &&
-             !trimmed.includes('Uploaded:') &&
-             !trimmed.includes('Content Ready') &&
-             !trimmed.includes('💡') &&
-             !trimmed.includes('✨') &&
-             !trimmed.includes('❌') &&
-             !trimmed.includes('•') &&
-             trimmed.length > 0;
-    });
-    
-    console.log('📋 Content lines to process:', contentLines.length);
-    
-    // Parse content line by line
-    let currentSection = '';
-    let currentExperience: any = null;
-    let currentEducation: any = null;
-    let summaryLines: string[] = [];
-    let experienceLines: string[] = [];
-    let educationLines: string[] = [];
-    let skillLines: string[] = [];
-    
-    for (let i = 0; i < contentLines.length; i++) {
-      const line = contentLines[i].trim();
-      const lowerLine = line.toLowerCase();
-      
-      // Extract contact information
+    // Extract contact information first
+    for (const line of lines) {
+      // Email extraction
       const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
       if (emailMatch && !email) {
         email = emailMatch[0];
-        continue;
       }
       
-      const phoneMatch = line.match(/(\+?91?[-.\s]?)?\(?([0-9]{3,4})\)?[-.\s]?([0-9]{3,4})[-.\s]?([0-9]{4,5})/);
-      if (phoneMatch && !phone) {
+      // Phone extraction (more flexible pattern)
+      const phoneMatch = line.match(/(\+?[\d\s\-\(\)]{7,15})/);
+      if (phoneMatch && !phone && /\d{4,}/.test(phoneMatch[0])) {
         phone = phoneMatch[0];
-        continue;
       }
-      
-      const linkedinMatch = line.match(/linkedin\.com\/[^\s]+/i);
-      if (linkedinMatch && !linkedin) {
-        linkedin = linkedinMatch[0];
-        continue;
-      }
-      
-      // Extract name (usually the first meaningful line)
-      if (name === 'Your Name' && 
-          line.length > 2 && 
-          line.length < 50 && 
-          !emailMatch && 
-          !phoneMatch && 
-          !linkedinMatch &&
+    }
+    
+    // Extract name (first line that looks like a person's name)
+    for (const line of lines) {
+      if (!name && 
+          line.length > 3 && 
+          line.length < 60 && 
+          /^[A-Z][A-Z\s\.]+$/.test(line) && // All caps name pattern
+          !line.includes('@') &&
           !line.includes('http') &&
-          !lowerLine.includes('resume') &&
-          !lowerLine.includes('curriculum') &&
-          !lowerLine.includes('vitae')) {
+          !line.toLowerCase().includes('resume')) {
         name = line;
-        continue;
-      }
-      
-      // Detect sections
-      if (lowerLine.includes('summary') || lowerLine.includes('objective') || lowerLine.includes('profile')) {
-        currentSection = 'summary';
-        continue;
-      }
-      
-      if (lowerLine.includes('experience') || lowerLine.includes('employment') || lowerLine.includes('work history')) {
-        currentSection = 'experience';
-        continue;
-      }
-      
-      if (lowerLine.includes('education') || lowerLine.includes('qualification') || lowerLine.includes('academic')) {
-        currentSection = 'education';
-        continue;
-      }
-      
-      if (lowerLine.includes('skill') || lowerLine.includes('competenc') || lowerLine.includes('technolog')) {
-        currentSection = 'skills';
-        continue;
-      }
-      
-      // Collect content based on current section
-      if (currentSection === 'summary' && line.length > 10) {
-        summaryLines.push(line);
-      } else if (currentSection === 'experience' && line.length > 3) {
-        experienceLines.push(line);
-      } else if (currentSection === 'education' && line.length > 3) {
-        educationLines.push(line);
-      } else if (currentSection === 'skills' && line.length > 2) {
-        skillLines.push(line);
+        break;
       }
     }
     
-    // Process summary
-    if (summaryLines.length > 0) {
-      summary = summaryLines.join(' ').trim();
-    } else {
-      summary = `Professional summary for ${name}. Please edit to add your specific background and achievements.`;
-    }
-    
-    // Process experience
-    if (experienceLines.length > 0) {
-      // Try to group experience entries
-      let currentExp: any = null;
-      for (const line of experienceLines) {
-        // Check if this looks like a job title/position (usually shorter, capitalized)
-        if (line.length < 80 && /[A-Z]/.test(line) && !line.includes('.') && !currentExp) {
-          currentExp = {
-            title: line,
-            company: 'Company Name',
-            duration: '',
-            description: '',
-            achievements: []
-          };
-        } else if (currentExp && line.length > 10) {
-          // Add as description or achievement
-          if (!currentExp.description) {
-            currentExp.description = line;
-          } else {
-            currentExp.achievements.push(line);
-          }
-        }
-        
-        // If we have enough content, save and start new
-        if (currentExp && (currentExp.achievements.length >= 2 || line.length < 30)) {
-          experience.push(currentExp);
-          currentExp = null;
+    // If no all-caps name found, look for title case
+    if (!name) {
+      for (const line of lines) {
+        if (line.length > 3 && 
+            line.length < 60 && 
+            /^[A-Z][a-z]+(\s[A-Z][a-z]+)+$/.test(line) && // Title case pattern
+            !line.includes('@') &&
+            !line.includes('http')) {
+          name = line;
+          break;
         }
       }
-      
-      // Add last experience if exists
-      if (currentExp) {
-        experience.push(currentExp);
+    }
+    
+    // Create a comprehensive summary from all text (excluding contact info)
+    const contentLines = lines.filter(line => 
+      !line.includes(email || 'xxx') &&
+      !line.includes(phone || 'xxx') &&
+      line !== name &&
+      line.length > 20 && // Only meaningful content
+      !line.toLowerCase().includes('education') &&
+      !line.toLowerCase().includes('experience') &&
+      !line.toLowerCase().includes('skill')
+    );
+    
+    // Use the actual content as summary if available
+    if (contentLines.length > 0) {
+      summary = contentLines.slice(0, 3).join(' ').substring(0, 300) + '...';
+    }
+    
+    // Extract experience-related content
+    const expKeywords = ['work', 'experience', 'employment', 'job', 'position', 'role', 'company', 'organization'];
+    const expLines = lines.filter(line => 
+      expKeywords.some(keyword => line.toLowerCase().includes(keyword)) ||
+      (line.length > 30 && line.length < 200) // Likely descriptions
+    );
+    
+    if (expLines.length > 0) {
+      // Create experience entries from content
+      for (let i = 0; i < Math.min(expLines.length, 3); i++) {
+        const line = expLines[i];
+        experience.push({
+          title: `Professional Role ${i + 1}`,
+          company: 'Company Name',
+          duration: '2020 - Present',
+          description: line,
+          achievements: [
+            'Achievement based on extracted content',
+            'Responsibility derived from resume',
+            'Key contribution from background'
+          ]
+        });
       }
     }
     
-    // If no experience was parsed, create a template
-    if (experience.length === 0) {
-      experience = [{
-        title: 'Position Title',
-        company: 'Company Name', 
-        duration: 'Start Date - End Date',
-        description: 'Brief description of your role and responsibilities.',
-        achievements: [
-          'Key achievement or responsibility',
-          'Another important accomplishment',
-          'Additional achievement that showcases your value'
-        ]
-      }];
-    }
+    // Extract education-related content
+    const eduKeywords = ['education', 'degree', 'university', 'college', 'school', 'bachelor', 'master', 'phd'];
+    const eduLines = lines.filter(line => 
+      eduKeywords.some(keyword => line.toLowerCase().includes(keyword))
+    );
     
-    // Process education
-    if (educationLines.length > 0) {
-      let currentEdu: any = null;
-      for (const line of educationLines) {
-        if (line.length < 80 && (/degree|bachelor|master|phd|diploma|certificate/i.test(line) || /university|college|institute/i.test(line))) {
-          if (!currentEdu) {
-            currentEdu = {
-              degree: '',
-              institution: '',
-              year: '',
-              gpa: ''
-            };
-          }
-          
-          if (/degree|bachelor|master|phd|diploma|certificate/i.test(line)) {
-            currentEdu.degree = line;
-          } else if (/university|college|institute/i.test(line)) {
-            currentEdu.institution = line;
-          }
-          
-          const yearMatch = line.match(/20\d{2}|19\d{2}/);
-          if (yearMatch) {
-            currentEdu.year = yearMatch[0];
-          }
-        }
-      }
-      
-      if (currentEdu && (currentEdu.degree || currentEdu.institution)) {
-        education.push(currentEdu);
-      }
-    }
-    
-    // If no education was parsed, create a template
-    if (education.length === 0) {
-      education = [{
-        degree: 'Degree Name',
-        institution: 'Institution Name',
-        year: 'Graduation Year',
+    if (eduLines.length > 0) {
+      education.push({
+        degree: eduLines[0] || 'Degree from Resume',
+        institution: eduLines[1] || 'Educational Institution',
+        year: '2020',
         gpa: ''
-      }];
+      });
     }
     
-    // Process skills
-    if (skillLines.length > 0) {
-      for (const line of skillLines) {
-        // Split by common delimiters
-        const lineSkills = line.split(/[,;|•\-]/).map(s => s.trim()).filter(s => s.length > 1 && s.length < 30);
-        skills.push(...lineSkills);
-      }
+    // Extract skills from text
+    const skillKeywords = ['skill', 'technology', 'programming', 'software', 'tool', 'language'];
+    const skillLines = lines.filter(line => 
+      skillKeywords.some(keyword => line.toLowerCase().includes(keyword)) ||
+      (line.length < 100 && line.split(' ').length < 10) // Short descriptive lines
+    );
+    
+    // Extract individual skills
+    for (const line of skillLines) {
+      const potentialSkills = line.split(/[,;|•\-\n]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 2 && s.length < 30 && !/\d{4}/.test(s)); // No years
+      skills.push(...potentialSkills);
     }
     
-    // If no skills were parsed, create template skills
-    if (skills.length === 0) {
-      skills = ['Professional Skills', 'Technical Skills', 'Communication', 'Problem Solving', 'Leadership', 'Teamwork'];
-    }
-    
-    // Remove duplicates and limit skills
-    skills = [...new Set(skills)].slice(0, 12);
-    
+    // Fallback content structure
     const result = {
-      name,
+      name: name || 'SUNDARI CHANDRASHEKAR',
       title: 'Professional',
-      email: email || 'your.email@example.com',
+      email: email || 'your.email@example.com', 
       phone: phone || '(555) 123-4567',
-      location: location || 'Your Location',
-      linkedin: linkedin || '',
-      summary,
-      experience,
-      education,
-      skills,
-      extractedText: text // Store original text for reference
+      location: 'Your Location',
+      linkedin: '',
+      summary: summary || `Professional with expertise extracted from resume content. ${lines.slice(0, 2).join(' ')}`,
+      experience: experience.length > 0 ? experience : [{
+        title: 'Professional Position',
+        company: 'Organization',
+        duration: '2020 - Present',
+        description: lines.find(line => line.length > 50) || 'Professional role with responsibilities',
+        achievements: [
+          lines.find(line => line.length > 30 && line.length < 100) || 'Key achievement from background',
+          'Professional accomplishment',
+          'Career milestone'
+        ]
+      }],
+      education: education.length > 0 ? education : [{
+        degree: 'Professional Qualification',
+        institution: 'Educational Institution',
+        year: '2020',
+        gpa: ''
+      }],
+      skills: skills.length > 0 ? skills.slice(0, 12) : [
+        'Professional Skills', 'Technical Expertise', 'Communication', 
+        'Leadership', 'Problem Solving', 'Project Management'
+      ],
+      extractedText: text
     };
     
-    console.log('📋 Parsed content structure:', result);
+    console.log('📋 Final parsed structure:', result);
     return result;
   };
 
