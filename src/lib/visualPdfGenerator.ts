@@ -1,5 +1,37 @@
 import { jsPDF } from 'jspdf';
 
+// Professional font configuration for better visual appeal
+const FONTS = {
+  primary: {
+    normal: 'times',
+    bold: 'times',
+    italic: 'times'
+  },
+  header: {
+    normal: 'times', 
+    bold: 'times'
+  },
+  body: {
+    normal: 'helvetica',
+    bold: 'helvetica'
+  }
+};
+
+// Helper function to set professional fonts with fallbacks
+function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = 'body', style: 'normal' | 'bold' | 'italic' = 'normal') {
+  try {
+    // Use Times for headers (more elegant) and Helvetica for body (better readability)
+    if (type === 'header') {
+      doc.setFont('times', style);
+    } else {
+      doc.setFont('helvetica', style);
+    }
+  } catch (error) {
+    // Fallback to default fonts if custom fonts fail
+    doc.setFont('helvetica', style);
+  }
+}
+
 export interface VisualPdfOptions {
   filename?: string;
   templateType?: 'modern' | 'classic' | 'minimalist' | 'executive' | 'creative';
@@ -130,13 +162,13 @@ async function generateModernPdf(
   // Contact section in sidebar
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
+  setProfessionalFont(doc, 'header', 'bold');
   doc.text('CONTACT', 8, sidebarY);
   sidebarY += 8;
 
   // Contact details
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
+  setProfessionalFont(doc, 'body', 'normal');
   if (resumeData.email) {
     doc.text('EMAIL', 8, sidebarY);
     sidebarY += 4;
@@ -159,14 +191,14 @@ async function generateModernPdf(
   // Skills section in sidebar with progress bars
   if (resumeData.skills && resumeData.skills.length > 0) {
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('CORE SKILLS', 8, sidebarY);
     sidebarY += 8;
 
     resumeData.skills.slice(0, 8).forEach((skill, index) => {
       // Skill name
       doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
+      setProfessionalFont(doc, 'body', 'normal');
       const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
       doc.text(skillLines[0], 8, sidebarY);
       
@@ -187,18 +219,18 @@ async function generateModernPdf(
   if (resumeData.education && resumeData.education.length > 0) {
     sidebarY += 5;
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('EDUCATION', 8, sidebarY);
     sidebarY += 8;
 
     resumeData.education.slice(0, 2).forEach((edu) => {
       doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'body', 'bold');
       const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
       doc.text(degreeLines[0], 8, sidebarY);
       sidebarY += 4;
       
-      doc.setFont('helvetica', 'normal');
+      setProfessionalFont(doc, 'body', 'normal');
       const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
       doc.text(instLines[0], 8, sidebarY);
       sidebarY += 4;
@@ -214,12 +246,12 @@ async function generateModernPdf(
   // Header
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
+  setProfessionalFont(doc, 'header', 'bold');
   doc.text(resumeData.name, mainContentX, mainY);
   mainY += 8;
 
   doc.setFontSize(14);
-  doc.setFont('helvetica', 'normal');
+  setProfessionalFont(doc, 'header', 'normal');
   doc.text(resumeData.title, mainContentX, mainY);
   mainY += 15;
 
@@ -231,13 +263,13 @@ async function generateModernPdf(
     
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('PROFESSIONAL SUMMARY', mainContentX, mainY);
     mainY += 10;
 
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    setProfessionalFont(doc, 'body', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
     summaryLines.forEach((line: string) => {
       doc.text(line, mainContentX, mainY);
@@ -481,17 +513,18 @@ async function generateCreativePdf(
   // Header text (matching preview layout)
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
+  setProfessionalFont(doc, 'header', 'bold');
   doc.text(resumeData.name, margin + 45, 25);
   
   doc.setFontSize(16);
-  doc.setFont('helvetica', 'normal');
+  setProfessionalFont(doc, 'header', 'normal');
   doc.text(resumeData.title, margin + 45, 32);
 
   // Contact info in header (matching preview)
   const contactInfo = [resumeData.email, resumeData.phone].filter(Boolean).join(' • ');
   if (contactInfo) {
     doc.setFontSize(10);
+    setProfessionalFont(doc, 'body', 'normal');
     doc.text(contactInfo, margin + 45, 40);
   }
 
