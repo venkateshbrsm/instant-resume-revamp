@@ -18,6 +18,7 @@ interface EditablePreviewProps {
   selectedColorTheme: any;
   onContentUpdate: (updatedContent: any) => void;
   onAutoEnhancementStateChange?: (isAutoEnhancing: boolean) => void;
+  onSaveRequired?: (saveFunction: () => Promise<void>) => void;
   className?: string;
 }
 
@@ -27,6 +28,7 @@ export const EditablePreview = ({
   selectedColorTheme,
   onContentUpdate,
   onAutoEnhancementStateChange,
+  onSaveRequired,
   className 
 }: EditablePreviewProps) => {
   const [editableData, setEditableData] = useState(enhancedContent);
@@ -203,9 +205,41 @@ export const EditablePreview = ({
     }
   }, [isAutoEnhancing, onAutoEnhancementStateChange]);
 
-  // Debug log when component renders
-  console.log('🔍 EditablePreview render - editableData:', editableData);
-  console.log('🔍 EditablePreview render - enhancedContent:', enhancedContent);
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      console.log('🔍 Saving editable data:', editableData);
+      console.log('🔍 Data being saved to localStorage:');
+      console.log('  - Name:', editableData.name);
+      console.log('  - Skills:', editableData.skills);
+      console.log('  - Contact:', editableData.contact);
+      
+      // Update the parent component with new content
+      onContentUpdate(editableData);
+      
+      // Store in local storage for persistence across redirects - this is used by PaymentSuccess
+      localStorage.setItem('enhancedContentForPayment', JSON.stringify(editableData));
+      
+      // Also store in a backup key to ensure data persistence
+      localStorage.setItem('latestEditedContent', JSON.stringify(editableData));
+      
+      console.log('✅ Data saved to localStorage successfully');
+      
+      toast.success('Changes saved successfully!');
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast.error('Failed to save changes. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [editableData, onContentUpdate]);
+
+  // Expose save function to parent
+  useEffect(() => {
+    if (onSaveRequired) {
+      onSaveRequired(handleSave);
+    }
+  }, [onSaveRequired, handleSave]);
 
   const handleFieldChange = useCallback((field: string, value: any, nestedField?: string) => {
     setEditableData((prev: any) => {
@@ -233,35 +267,6 @@ export const EditablePreview = ({
       return updated;
     });
   }, []);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      console.log('🔍 Saving editable data:', editableData);
-      console.log('🔍 Data being saved to localStorage:');
-      console.log('  - Name:', editableData.name);
-      console.log('  - Skills:', editableData.skills);
-      console.log('  - Contact:', editableData.contact);
-      
-      // Update the parent component with new content
-      onContentUpdate(editableData);
-      
-      // Store in local storage for persistence across redirects - this is used by PaymentSuccess
-      localStorage.setItem('enhancedContentForPayment', JSON.stringify(editableData));
-      
-      // Also store in a backup key to ensure data persistence
-      localStorage.setItem('latestEditedContent', JSON.stringify(editableData));
-      
-      console.log('✅ Data saved to localStorage successfully');
-      
-      toast.success('Changes saved successfully!');
-    } catch (error) {
-      console.error('Error saving changes:', error);
-      toast.error('Failed to save changes. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleEnhanceField = async (fieldKey: string, fieldLabel: string) => {
     const enhancementKey = fieldKey;
@@ -562,25 +567,8 @@ export const EditablePreview = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg gap-3 sm:gap-0">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            ✏️ Edit Mode
+            ✏️ Edit Mode - Changes auto-save when switching tabs
           </span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button 
-            onClick={handleSave} 
-            variant="default" 
-            size="sm"
-            disabled={isSaving || isAutoEnhancing}
-            className="flex-1 sm:flex-none"
-          >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Save
-          </Button>
         </div>
       </div>
 

@@ -57,6 +57,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [previewPdfBlob, setPreviewPdfBlob] = useState<Blob | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
+  const [currentPreviewTab, setCurrentPreviewTab] = useState("edit");
+  const [editSaveFunction, setEditSaveFunction] = useState<(() => Promise<void>) | null>(null);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -786,9 +788,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                           {/* Tabbed Preview */}
-                            <Tabs defaultValue="edit" className="w-full">
-                             <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
+                            {/* Tabbed Preview */}
+                             <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
+                               // Auto-save when switching away from edit tab
+                               if (currentPreviewTab === "edit" && newTab !== "edit" && editSaveFunction) {
+                                 try {
+                                   await editSaveFunction();
+                                 } catch (error) {
+                                   console.error('Auto-save failed:', error);
+                                 }
+                               }
+                               setCurrentPreviewTab(newTab);
+                             }} className="w-full">
+                              <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
                                  className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
@@ -906,22 +918,23 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                            </TabsContent>
                            
-                            <TabsContent value="edit" className="space-y-4">
-                               <EditablePreview
-                                 enhancedContent={enhancedContent}
-                                 selectedTemplate={selectedTemplate}
-                                 selectedColorTheme={selectedColorTheme}
-                                 onContentUpdate={(updatedContent) => {
-                                   console.log('📝 Content updated from EditablePreview:', updatedContent);
-                                   console.log('📝 Updated content keys:', Object.keys(updatedContent));
-                                   setEditedContent(updatedContent);
-                                   toast({
-                                     title: "Content Saved",
-                                     description: "Your edits have been saved and PDF preview will update shortly.",
-                                   });
-                                 }}
-                                 onAutoEnhancementStateChange={setIsAutoEnhancing}
-                               />
+                             <TabsContent value="edit" className="space-y-4">
+                                <EditablePreview
+                                  enhancedContent={enhancedContent}
+                                  selectedTemplate={selectedTemplate}
+                                  selectedColorTheme={selectedColorTheme}
+                                  onContentUpdate={(updatedContent) => {
+                                    console.log('📝 Content updated from EditablePreview:', updatedContent);
+                                    console.log('📝 Updated content keys:', Object.keys(updatedContent));
+                                    setEditedContent(updatedContent);
+                                    toast({
+                                      title: "Content Saved",
+                                      description: "Your edits have been saved and PDF preview will update shortly.",
+                                    });
+                                  }}
+                                  onAutoEnhancementStateChange={setIsAutoEnhancing}
+                                  onSaveRequired={setEditSaveFunction}
+                                />
                             </TabsContent>
                         </Tabs>
                     </div>
