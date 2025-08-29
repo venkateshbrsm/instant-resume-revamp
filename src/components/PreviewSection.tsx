@@ -158,6 +158,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       // Use the new enhanced extraction function
       const extractedContent = await extractContentFromFile(file);
       
+      // Check if extraction failed and show error message
+      if (!extractedContent.text || extractedContent.text.trim().length < 50) {
+        throw new Error('Unable to extract text from file. Please ensure the file is not corrupted and try again.');
+      }
+      
       setLoadingProgress(70);
       
       // Provide feedback about photo extraction

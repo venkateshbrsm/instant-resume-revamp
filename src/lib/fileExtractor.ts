@@ -114,60 +114,47 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const extractTextFromPDF = async (file: File): Promise<string> => {
-  console.log('Extracting text from PDF using Adobe PDF Services:', file.name, 'Size:', file.size);
+  console.log('Extracting text from PDF using multiple methods:', file.name, 'Size:', file.size);
   
-  try {
-    // Use Adobe PDF Services to extract text from PDF
-    const formData = new FormData();
-    formData.append('file', file);
+  // Try multiple extraction methods in order of preference
+  const extractionMethods = [
+    { name: 'ilovepdf', endpoint: 'extract-pdf-ilovepdf' },
+    { name: 'cloud', endpoint: 'extract-pdf-cloud' },
+    { name: 'text', endpoint: 'extract-pdf-text' }
+  ];
 
-    console.log('Sending PDF to Adobe PDF Services...');
+  for (const method of extractionMethods) {
+    try {
+      console.log(`Trying ${method.name} extraction method...`);
+      
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const { data, error } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
-      body: formData,
-    });
-    
-    if (error) {
-      console.error('PDF extraction request failed:', error);
-      throw new Error(`PDF extraction failed: ${error.message}`);
+      const { data, error } = await supabase.functions.invoke(method.endpoint, {
+        body: formData,
+      });
+      
+      if (error) {
+        console.warn(`${method.name} extraction failed:`, error);
+        continue; // Try next method
+      }
+      
+      if (data && data.success && data.extractedText && data.extractedText.trim().length > 50) {
+        console.log(`PDF extraction completed successfully using ${method.name}`);
+        return data.extractedText;
+      }
+      
+      console.warn(`${method.name} returned insufficient text, trying next method`);
+      
+    } catch (error) {
+      console.warn(`${method.name} extraction method failed:`, error);
+      continue; // Try next method
     }
-    
-    if (!data) {
-      console.error('PDF extraction request failed: No data returned');
-      throw new Error('PDF extraction failed: No data returned');
-    }
-
-    const extractionData = data;
-
-    if (!extractionData.success) {
-      console.error('PDF extraction failed:', extractionData.error);
-      throw new Error(`PDF extraction failed: ${extractionData.error}`);
-    }
-
-    console.log('PDF extraction completed successfully');
-    return extractionData.extractedText || 'Text extracted successfully from PDF';
-
-  } catch (error) {
-    console.error('PDF processing failed:', error);
-    
-    return `📄 PDF Resume: ${file.name}
-
-File Details:
-- Size: ${(file.size / 1024).toFixed(1)} KB
-- Type: ${file.type}
-- Uploaded: ${new Date().toLocaleString()}
-
-❌ PDF Processing Error
-
-Unable to process this PDF file with Adobe PDF Services.
-
-💡 Try instead:
-• Convert to PDF format from your word processor
-• Use a different PDF file
-• Ensure the file isn't corrupted or password-protected
-
-The resume enhancement will still attempt to process the document.`;
   }
+  
+  // If all methods fail, throw error instead of returning error message text
+  console.error('All PDF extraction methods failed for file:', file.name);
+  throw new Error(`Unable to extract text from PDF: ${file.name}. Please try converting to DOCX or TXT format.`);
 };
 
 
