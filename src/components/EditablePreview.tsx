@@ -36,16 +36,36 @@ export const EditablePreview = ({
   const [currentEnhancingField, setCurrentEnhancingField] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Create a stable unique identifier for the current resume session
+  // Create a stable session-based resume ID that persists across tab switches
   const resumeId = useMemo(() => {
-    // Use initial enhanced content to create a stable ID that doesn't change with edits
     const baseContent = enhancedContent || editableData;
-    return JSON.stringify({
+    
+    // Create a content-based hash for uniqueness
+    const contentKey = JSON.stringify({
       name: baseContent?.name,
       email: baseContent?.email,
       phone: baseContent?.phone,
-      timestamp: baseContent?.extractedAt || Date.now()
+      extractedAt: baseContent?.extractedAt
     });
+    
+    // Check if we have a session ID for this content
+    const sessionStorageKey = 'currentResumeSessionId';
+    const currentSessionId = sessionStorage.getItem(sessionStorageKey);
+    const currentContentKey = sessionStorage.getItem('currentResumeContentKey');
+    
+    // If content is the same as current session, reuse the session ID
+    if (currentSessionId && currentContentKey === contentKey) {
+      console.log('🔄 Reusing existing session ID for resume:', currentSessionId);
+      return currentSessionId;
+    }
+    
+    // Generate new session ID for new content
+    const newSessionId = `resume_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem(sessionStorageKey, newSessionId);
+    sessionStorage.setItem('currentResumeContentKey', contentKey);
+    
+    console.log('🆕 Created new session ID for resume:', newSessionId);
+    return newSessionId;
   }, [enhancedContent]);
 
   // Check if resume has been auto-enhanced using localStorage
@@ -65,19 +85,57 @@ export const EditablePreview = ({
       if (!enhancedResumes.includes(id)) {
         enhancedResumes.push(id);
         localStorage.setItem('autoEnhancedResumes', JSON.stringify(enhancedResumes));
+        console.log('✅ Marked resume as auto-enhanced:', id);
       }
     } catch (error) {
       console.error('Failed to save auto-enhanced resume ID:', error);
     }
   }, []);
 
+  // Clear session when new content is uploaded
+  const clearSession = useCallback(() => {
+    try {
+      sessionStorage.removeItem('currentResumeSessionId');
+      sessionStorage.removeItem('currentResumeContentKey');
+      console.log('🧹 Cleared session storage for new upload');
+    } catch (error) {
+      console.error('Failed to clear session:', error);
+    }
+  }, []);
+
+  // Cleanup session if content changes significantly (new upload detected)
+  useEffect(() => {
+    if (enhancedContent?.extractedAt) {
+      const currentContentKey = sessionStorage.getItem('currentResumeContentKey');
+      const newContentKey = JSON.stringify({
+        name: enhancedContent.name,
+        email: enhancedContent.email,
+        phone: enhancedContent.phone,
+        extractedAt: enhancedContent.extractedAt
+      });
+      
+      // If we have a session but content is completely different, clear it
+      if (currentContentKey && currentContentKey !== newContentKey) {
+        console.log('🔄 New upload detected, clearing previous session');
+        clearSession();
+      }
+    }
+  }, [enhancedContent?.extractedAt, clearSession]);
+
   // Auto-enhance all fields once when component mounts
   useEffect(() => {
+    console.log('🔍 Auto-enhancement check:', {
+      hasBeenAutoEnhanced,
+      hasEnhancedContent: !!enhancedContent,
+      resumeId: resumeId.substring(0, 50) + '...',
+      enhancedResumes: JSON.parse(localStorage.getItem('autoEnhancedResumes') || '[]')
+    });
+    
     if (!hasBeenAutoEnhanced && enhancedContent) {
       const autoEnhanceAllFields = async () => {
-        console.log('🤖 Auto-enhancing all fields for resume (session):', resumeId);
+        console.log('🤖 Starting auto-enhancement for session ID:', resumeId);
         
-        // Mark this resume as auto-enhanced
+        // Mark this resume as auto-enhanced FIRST to prevent re-runs
         markAsAutoEnhanced(resumeId);
         
         // Define fields to auto-enhance (excluding basic info fields and skills)
@@ -95,6 +153,8 @@ export const EditablePreview = ({
           });
         }
         
+        console.log('🔍 Fields to enhance:', fieldsToEnhance.map(f => f.key));
+        
         // Start auto-enhancement
         setIsAutoEnhancing(true);
         setAutoEnhanceTotal(fieldsToEnhance.length);
@@ -106,23 +166,31 @@ export const EditablePreview = ({
           setCurrentEnhancingField(field.label);
           
           try {
+            console.log(`🤖 Enhancing field ${i + 1}/${fieldsToEnhance.length}: ${field.key}`);
             await handleEnhanceField(field.key, field.label);
             setAutoEnhanceProgress(i + 1);
             // Small delay between enhancements to avoid overwhelming the API
             await new Promise(resolve => setTimeout(resolve, 1000));
           } catch (error) {
-            console.error(`Failed to auto-enhance ${field.key}:`, error);
+            console.error(`❌ Failed to auto-enhance ${field.key}:`, error);
           }
         }
         
         // Complete auto-enhancement
         setIsAutoEnhancing(false);
         setCurrentEnhancingField('');
+        console.log('✅ Auto-enhancement completed for session:', resumeId);
         toast.success('All fields enhanced successfully!');
       };
       
       // Start auto-enhancement after a short delay
       setTimeout(autoEnhanceAllFields, 500);
+    } else {
+      console.log('🚫 Skipping auto-enhancement:', {
+        reason: !hasBeenAutoEnhanced ? 'no content' : 'already enhanced',
+        hasBeenAutoEnhanced,
+        hasContent: !!enhancedContent
+      });
     }
   }, [hasBeenAutoEnhanced, enhancedContent, resumeId, markAsAutoEnhanced]);
 
