@@ -71,56 +71,55 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string): Promis
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  const prompt = `You are an expert resume parser and enhancer. Given the following resume text, extract and enhance the information into a structured JSON format. 
+  const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
 
-IMPORTANT: Only extract real, actual information from the text. Do not make up or invent any information.
+CRITICAL: DO NOT USE PLACEHOLDER TEXT. Extract real data from the resume or leave fields empty if not found.
 
 Resume text:
 ${originalText}
 
-Please parse this resume and return a JSON object with the following structure:
+Parse this resume and return ONLY a JSON object with this exact structure:
 {
-  "name": "actual extracted name",
-  "title": "actual job title or professional title",
-  "email": "actual email address",
-  "phone": "actual phone number", 
-  "location": "actual location/address",
-  "linkedin": "actual LinkedIn URL if present",
-  "summary": "enhanced professional summary based on actual content",
+  "name": "extract the actual person's name",
+  "title": "extract the actual professional title or role",
+  "email": "extract the actual email address",
+  "phone": "extract the actual phone number", 
+  "location": "extract the actual location/city",
+  "linkedin": "extract the actual LinkedIn URL if present",
+  "summary": "create a professional summary based on the actual profile summary and experience in the resume",
   "experience": [
     {
-      "title": "actual job title",
-      "company": "actual company name",
-      "duration": "actual employment duration",
-      "description": "enhanced description of role",
-      "core_responsibilities": ["actual responsibility 1", "actual responsibility 2", "actual responsibility 3"],
-      "achievements": ["actual achievement 1", "actual achievement 2", "actual achievement 3"]
+      "title": "extract the actual job title from work experience section",
+      "company": "extract the actual company name from work experience section",
+      "duration": "extract the actual employment dates/duration",
+      "description": "extract or enhance the actual job description",
+      "achievements": ["extract actual bullet points, achievements, or responsibilities from this job", "convert each bullet point to a clear achievement", "include quantifiable results when mentioned"]
     }
   ],
   "education": [
     {
-      "degree": "actual degree",
-      "institution": "actual institution",
-      "year": "actual graduation year",
-      "gpa": "actual GPA if mentioned"
+      "degree": "extract the actual degree name",
+      "institution": "extract the actual institution/university name", 
+      "year": "extract the actual graduation year or duration",
+      "gpa": "extract actual GPA if mentioned, otherwise empty string"
     }
   ],
-  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
-  "tools": ["actual tool 1", "actual tool 2"],
-  "core_technical_skills": [
-    {"name": "actual technical skill", "proficiency": estimated_proficiency_number_0_to_100}
-  ],
-  "certifications": ["actual certification 1", "actual certification 2"],
-  "languages": ["actual language 1", "actual language 2"]
+  "skills": ["extract actual skills mentioned in the resume"],
+  "tools": ["extract actual tools/software mentioned"],
+  "certifications": ["extract actual certifications mentioned"],
+  "languages": ["extract actual languages mentioned"]
 }
 
-Rules:
-1. Extract ONLY information that is actually present in the resume
-2. Do not invent or create placeholder information
-3. If information is missing, use empty strings or empty arrays
-4. Enhance descriptions and summaries based on actual content, but don't fabricate facts
-5. Estimate proficiency levels for technical skills based on context clues
-6. Return only valid JSON, no additional text or markdown formatting`;
+EXTRACTION GUIDELINES:
+1. For work experience: Look for job titles, company names, employment dates, and bullet points describing responsibilities/achievements
+2. For education: Look for degree names, institution names, graduation dates, GPA if mentioned
+3. For skills: Extract from dedicated skills section or mentioned throughout the resume
+4. For contact info: Extract name, email, phone, location from the header/contact section
+5. For summary: Create based on profile summary section and overall experience
+6. NEVER use phrases like "Professional Role 1", "Company Name", "Achievement based on extracted content" - these are placeholders
+7. If you cannot find specific information, use empty string "" or empty array []
+
+Return ONLY the JSON object, no additional text or formatting.`;
 
   try {
     console.log('📤 Sending request to OpenAI...');
