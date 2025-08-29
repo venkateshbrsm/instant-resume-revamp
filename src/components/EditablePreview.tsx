@@ -267,6 +267,13 @@ export const EditablePreview = ({
             </div>
           </div>
           
+          {/* Contact Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {renderEditableField('Email', editableData.email, 'email')}
+            {renderEditableField('Phone', editableData.phone, 'phone')}
+            {renderEditableField('Location', editableData.location, 'location')}
+            {editableData.linkedin && renderEditableField('LinkedIn', editableData.linkedin, 'linkedin')}
+          </div>
         </div>
 
         {/* Professional Summary */}
