@@ -94,3 +94,6 @@ verify_jwt = true
 
 [functions.razorpay-verify]
 verify_jwt = false
+
+[functions.enhance-section-ai]
+verify_jwt = true
