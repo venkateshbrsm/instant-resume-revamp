@@ -13,56 +13,58 @@ export interface ExtractedContent {
 }
 
 // Enhanced function that returns both text and PDF URL for visual preview
-// TEMPORARILY DISABLED: File parsing/extraction is disabled for now
 export const extractContentFromFile = async (file: File): Promise<ExtractedContent> => {
   const fileType = getFileType(file);
   
-  console.log('File upload detected (parsing disabled):', {
+  console.log('Starting enhanced file extraction:', {
     name: file.name,
     type: file.type,
     size: file.size,
     detectedType: fileType
   });
 
-  // Simulate processing time to maintain UX flow
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
   try {
+    let text: string;
     let pdfUrl: string | undefined;
+    let profilePhotoUrl: string | undefined;
 
-    // Keep PDF preview functionality for visual display
+    // Extract photos in parallel with text
+    const photoExtractionPromise = extractPhotosFromFile(file);
+
     if (fileType === 'pdf') {
+      // For PDFs, extract text and keep original file for visual preview
+      text = await extractTextFromPDF(file);
       pdfUrl = URL.createObjectURL(file);
+    } else if (fileType === 'docx') {
+      // For DOCX files, extract text using mammoth
+      text = await extractTextFromDOCX(file);
+    } else {
+      // For text files, just extract text
+      text = await file.text();
     }
 
-    // Return minimal content structure instead of parsing
-    const placeholderText = `📄 File Uploaded: ${file.name}
-
-File Details:
-- Size: ${(file.size / 1024).toFixed(1)} KB
-- Type: ${file.type}
-- Uploaded: ${new Date().toLocaleString()}
-
-📝 Content Ready for Editing
-
-File parsing is temporarily disabled. You can use the template system to manually create your resume content.
-
-✨ Available Features:
-• Choose from professional templates
-• Customize colors and themes  
-• Edit content directly in the preview
-• Generate and download PDFs
-• Professional formatting system`;
+    // Process photos
+    try {
+      const photoResult = await photoExtractionPromise;
+      if (photoResult.profilePhoto) {
+        console.log('Profile photo found, optimizing...');
+        const optimizedPhoto = await optimizePhoto(photoResult.profilePhoto);
+        profilePhotoUrl = URL.createObjectURL(optimizedPhoto);
+        console.log('Profile photo processed successfully');
+      }
+    } catch (error) {
+      console.warn('Photo extraction failed:', error);
+    }
 
     return {
-      text: placeholderText,
+      text,
       pdfUrl,
-      profilePhotoUrl: undefined, // Disable photo extraction too
+      profilePhotoUrl,
       originalFile: file,
       fileType
     };
   } catch (error) {
-    console.error('Error processing file:', error);
+    console.error('Error extracting content from file:', error);
     throw error;
   }
 };
@@ -115,15 +117,36 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
   console.log('🔍 Extracting text from PDF:', file.name, 'Size:', file.size);
   
   try {
-    // Use Adobe PDF Services to extract text from PDF
+    // Use multiple extraction services with fallback
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('📤 Sending PDF to extraction service...');
+    console.log('📤 Trying primary PDF extraction service...');
 
-    const { data, error } = await supabase.functions.invoke('extract-pdf-ilovepdf', {
-      body: formData,
-    });
+    // Try the cloud extraction service first (alternative to Adobe)
+    let data, error;
+    try {
+      const result = await supabase.functions.invoke('extract-pdf-cloud', {
+        body: formData,
+      });
+      data = result.data;
+      error = result.error;
+    } catch (primaryError) {
+      console.warn('❌ Primary extraction service failed:', primaryError);
+      
+      // Fallback to text extraction service
+      console.log('📤 Trying fallback PDF extraction service...');
+      try {
+        const result = await supabase.functions.invoke('extract-pdf-text', {
+          body: formData,
+        });
+        data = result.data;
+        error = result.error;
+      } catch (fallbackError) {
+        console.error('❌ All extraction services failed:', fallbackError);
+        throw new Error('PDF extraction services are currently unavailable');
+      }
+    }
     
     if (error) {
       console.error('❌ PDF extraction request failed:', error);

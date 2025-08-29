@@ -158,13 +158,27 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('Extracting content from file:', file.name);
       
       setLoadingProgress(50);
-      setLoadingStage("Preparing template system...");
+      setLoadingStage("Scanning for photos and images...");
       
-      // Use the simplified extraction function (parsing disabled)
+      // Use the enhanced extraction function
       const extractedContent = await extractContentFromFile(file);
       
       setLoadingProgress(70);
-      setLoadingStage("Setting up preview system...");
+      
+      // Provide feedback about photo extraction
+      if (extractedContent.profilePhotoUrl) {
+        console.log('✅ Profile photo found and extracted:', extractedContent.profilePhotoUrl);
+        setLoadingStage("Profile photo detected! Processing...");
+        toast({
+          title: "Photo Found!",
+          description: "A profile photo was detected and extracted from your resume.",
+        });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        console.log('❌ No profile photo found in document');
+        setLoadingStage("Processing content...");
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       
       setLoadingProgress(85);
       setLoadingStage("Processing content...");
@@ -178,8 +192,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingStage("Complete!");
       
       toast({
-        title: "File Uploaded",
-        description: "Template system ready - you can now create your resume.",
+        title: "File Processed",
+        description: "Resume content extracted successfully.",
       });
       
     } catch (error) {
