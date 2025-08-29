@@ -25,8 +25,12 @@ serve(async (req) => {
   try {
     const { extractedText, templateId, themeId } = await req.json();
     
-    console.log('Enhancement request received:', { templateId, themeId });
-    console.log('Extracted text length:', extractedText?.length || 0);
+    console.log('🚀 Enhancement request received:', { 
+      templateId, 
+      themeId, 
+      textLength: extractedText?.length || 0,
+      textPreview: extractedText?.substring(0, 100) + '...'
+    });
 
     // Validate input - fail if insufficient content
     if (!extractedText || extractedText.trim().length < 50) {

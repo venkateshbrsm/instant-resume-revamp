@@ -583,7 +583,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         });
       } else {
         console.error('Invalid enhancement response:', data);
-        throw new Error('Enhancement failed - invalid response');
+        console.error('Full response data:', JSON.stringify(data, null, 2));
+        
+        // Don't create fallback content - show the error clearly
+        throw new Error(`Enhancement failed - ${data?.error || 'invalid response'}`);
       }
     } catch (error) {
       console.error('Error enhancing resume:', error);
