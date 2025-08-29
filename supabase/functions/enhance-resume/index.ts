@@ -216,10 +216,10 @@ async function splitResumeIntoSections(text: string): Promise<Array<{type: strin
 function consolidateSections(sections: Array<{type: string, content: string}>, allLines: string[]): Array<{type: string, content: string}> {
   const result = [];
   
-  // Ensure contact section exists (use first 15 lines if not found)
-  let contactSection = sections.find(s => s.type === 'contact');
+  // Find existing contact section - must exist
+  const contactSection = sections.find(s => s.type === 'contact');
   if (!contactSection) {
-    contactSection = { type: 'contact', content: allLines.slice(0, 15).join('\n') };
+    throw new Error('No contact section found in resume - unable to process');
   }
   result.push(contactSection);
   
@@ -363,23 +363,10 @@ Return:
   
   const prompt = prompts[section.type as keyof typeof prompts] || prompts.additional;
   
-  try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
-    console.log(`✅ ${section.type} section processed successfully`);
-    console.log(`📊 ${section.type} result preview:`, JSON.stringify(result).substring(0, 200) + '...');
-    return { type: section.type, data: result };
-  } catch (error) {
-    console.error(`❌ Failed to process ${section.type} section:`, error);
-    // Return appropriate empty structure for failed sections
-    const fallbackData = section.type === 'experience' ? [] : 
-                        section.type === 'education' ? [] :
-                        section.type === 'skills' ? { skills: [], tools: [] } :
-                        section.type === 'summary' ? { summary: '' } :
-                        section.type === 'contact' ? { name: '', email: '', phone: '', location: '', linkedin: '', title: '' } :
-                        { certifications: [], languages: [], projects: [] };
-    
-    return { type: section.type, data: fallbackData };
-  }
+  const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
+  console.log(`✅ ${section.type} section processed successfully`);
+  console.log(`📊 ${section.type} result preview:`, JSON.stringify(result).substring(0, 200) + '...');
+  return { type: section.type, data: result };
 }
 
 function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data: any}>): any {
@@ -403,74 +390,65 @@ function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data
   };
   
   for (const section of enhancedSections) {
-    try {
-      console.log(`🔧 Processing section: ${section.type}`);
-      console.log(`📊 Section data type: ${Array.isArray(section.data) ? 'array' : typeof section.data}`);
-      
-      switch (section.type) {
-        case 'contact':
-          if (section.data && typeof section.data === 'object') {
-            result.name = section.data.name || result.name;
-            result.title = section.data.title || result.title;
-            result.email = section.data.email || result.email;
-            result.phone = section.data.phone || result.phone;
-            result.location = section.data.location || result.location;
-            result.linkedin = section.data.linkedin || result.linkedin;
-            console.log(`✅ Contact merged: ${result.name} - ${result.email}`);
-          }
-          break;
-          
-        case 'summary':
-          if (section.data?.summary) {
-            result.summary = section.data.summary;
-            console.log(`✅ Summary merged: ${result.summary.substring(0, 50)}...`);
-          }
-          break;
-          
-        case 'experience':
-          console.log(`🔍 Experience section data:`, section.data);
-          if (Array.isArray(section.data)) {
-            const validExperience = section.data.filter(exp => exp && (exp.title || exp.company));
-            result.experience = validExperience;
-            console.log(`✅ Experience merged: ${validExperience.length} entries`);
-          } else if (section.data && typeof section.data === 'object') {
-            // Handle case where AI returns object instead of array
-            console.log('⚠️ Experience data is object, attempting to convert...');
-            console.log('Experience object keys:', Object.keys(section.data));
-            // If it's a single experience object, wrap it in array
-            if (section.data.title || section.data.company) {
-              result.experience = [section.data];
-              console.log(`✅ Single experience converted to array`);
-            }
-          }
-          break;
-          
-        case 'education':
-          if (Array.isArray(section.data)) {
-            const validEducation = section.data.filter(edu => edu && (edu.degree || edu.institution));
-            result.education = validEducation;
-            console.log(`✅ Education merged: ${validEducation.length} entries`);
-          }
-          break;
-          
-        case 'skills':
-          if (section.data && typeof section.data === 'object') {
-            result.skills = Array.isArray(section.data.skills) ? section.data.skills : [];
-            result.tools = Array.isArray(section.data.tools) ? section.data.tools : [];
-            console.log(`✅ Skills merged: ${result.skills.length} skills, ${result.tools.length} tools`);
-          }
-          break;
-          
-        case 'additional':
-          if (section.data && typeof section.data === 'object') {
-            result.certifications = Array.isArray(section.data.certifications) ? section.data.certifications : [];
-            result.languages = Array.isArray(section.data.languages) ? section.data.languages : [];
-            console.log(`✅ Additional merged: ${result.certifications.length} certs, ${result.languages.length} languages`);
-          }
-          break;
-      }
-    } catch (error) {
-      console.error(`❌ Error merging ${section.type} section:`, error);
+    console.log(`🔧 Processing section: ${section.type}`);
+    console.log(`📊 Section data type: ${Array.isArray(section.data) ? 'array' : typeof section.data}`);
+    
+    switch (section.type) {
+      case 'contact':
+        if (section.data && typeof section.data === 'object') {
+          result.name = section.data.name || result.name;
+          result.title = section.data.title || result.title;
+          result.email = section.data.email || result.email;
+          result.phone = section.data.phone || result.phone;
+          result.location = section.data.location || result.location;
+          result.linkedin = section.data.linkedin || result.linkedin;
+          console.log(`✅ Contact merged: ${result.name} - ${result.email}`);
+        }
+        break;
+        
+      case 'summary':
+        if (section.data?.summary) {
+          result.summary = section.data.summary;
+          console.log(`✅ Summary merged: ${result.summary.substring(0, 50)}...`);
+        }
+        break;
+        
+      case 'experience':
+        console.log(`🔍 Experience section data:`, section.data);
+        if (!Array.isArray(section.data)) {
+          throw new Error(`Experience section must return an array, got ${typeof section.data}`);
+        }
+        const validExperience = section.data.filter(exp => exp && (exp.title || exp.company));
+        result.experience = validExperience;
+        console.log(`✅ Experience merged: ${validExperience.length} entries`);
+        break;
+        
+      case 'education':
+        if (!Array.isArray(section.data)) {
+          throw new Error(`Education section must return an array, got ${typeof section.data}`);
+        }
+        const validEducation = section.data.filter(edu => edu && (edu.degree || edu.institution));
+        result.education = validEducation;
+        console.log(`✅ Education merged: ${validEducation.length} entries`);
+        break;
+        
+      case 'skills':
+        if (!section.data || typeof section.data !== 'object') {
+          throw new Error(`Skills section must return an object, got ${typeof section.data}`);
+        }
+        result.skills = Array.isArray(section.data.skills) ? section.data.skills : [];
+        result.tools = Array.isArray(section.data.tools) ? section.data.tools : [];
+        console.log(`✅ Skills merged: ${result.skills.length} skills, ${result.tools.length} tools`);
+        break;
+        
+      case 'additional':
+        if (!section.data || typeof section.data !== 'object') {
+          throw new Error(`Additional section must return an object, got ${typeof section.data}`);
+        }
+        result.certifications = Array.isArray(section.data.certifications) ? section.data.certifications : [];
+        result.languages = Array.isArray(section.data.languages) ? section.data.languages : [];
+        console.log(`✅ Additional merged: ${result.certifications.length} certs, ${result.languages.length} languages`);
+        break;
     }
   }
   
@@ -483,8 +461,6 @@ function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data
   
   return result;
 }
-
-// This function is now replaced by the new section-based approach above
 
 async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   const controller = new AbortController();
@@ -526,34 +502,13 @@ async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, mode
     const data = await response.json();
     console.log('📥 OpenAI response received');
     
-    // Add detailed logging of response structure
-    console.log('🔍 Full OpenAI response structure:', JSON.stringify(data, null, 2));
-    console.log('🔍 Response has choices:', !!data.choices);
-    console.log('🔍 Choices length:', data.choices?.length || 0);
-    console.log('🔍 First choice structure:', JSON.stringify(data.choices?.[0], null, 2));
-    
-    // Handle different response formats
-    let content = null;
-    
-    // Try different ways to extract content
-    if (data.choices?.[0]?.message?.content) {
-      content = data.choices[0].message.content;
-      console.log('✅ Content found in choices[0].message.content');
-    } else if (data.choices?.[0]?.text) {
-      content = data.choices[0].text;
-      console.log('✅ Content found in choices[0].text');
-    } else if (data.content) {
-      content = data.content;
-      console.log('✅ Content found in direct content field');
-    } else if (data.message?.content) {
-      content = data.message.content;
-      console.log('✅ Content found in message.content');
-    }
+    // Extract content from response
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      console.error('❌ No content found in any expected field');
-      console.error('❌ Available fields:', Object.keys(data));
-      throw new Error('No content returned from OpenAI - unexpected response format');
+      console.error('❌ No content found in OpenAI response');
+      console.error('❌ Response structure:', JSON.stringify(data, null, 2));
+      throw new Error('No content returned from OpenAI - invalid response format');
     }
 
     console.log('📄 Raw OpenAI response preview:', content.substring(0, 200));
