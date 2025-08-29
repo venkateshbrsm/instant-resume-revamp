@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Save, Edit3, Eye, Loader2, AlertCircle } from 'lucide-react';
+import { Save, Edit3, Eye, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { generateVisualPdf, extractResumeDataFromEnhanced } from '@/lib/visualPdfGenerator';
 import type { ResumeTemplate } from '@/lib/resumeTemplates';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EditablePreviewProps {
   enhancedContent: any;
@@ -28,6 +29,7 @@ export const EditablePreview = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editableData, setEditableData] = useState(enhancedContent);
   const [isSaving, setIsSaving] = useState(false);
+  const [enhancingFields, setEnhancingFields] = useState<Set<string>>(new Set());
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Update editableData when enhancedContent changes
@@ -99,9 +101,77 @@ export const EditablePreview = ({
     }
   };
 
+  const handleEnhanceField = async (fieldKey: string, currentValue: string, fieldLabel: string) => {
+    const enhancementKey = fieldKey;
+    
+    if (enhancingFields.has(enhancementKey)) {
+      return; // Already enhancing
+    }
+
+    setEnhancingFields(prev => new Set(prev).add(enhancementKey));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+        body: {
+          extractedText: `Current ${fieldLabel}: ${currentValue}\n\nPlease enhance this ${fieldLabel.toLowerCase()} to be more professional and impactful while maintaining accuracy.`,
+          templateId: selectedTemplate.id,
+          themeId: selectedColorTheme.name
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.enhancedResume) {
+        const enhanced = data.enhancedResume;
+        
+        // Extract the enhanced value based on field type
+        let enhancedValue = '';
+        
+        if (fieldKey === 'summary') {
+          enhancedValue = enhanced.summary || currentValue;
+        } else if (fieldKey === 'name') {
+          enhancedValue = enhanced.name || currentValue;
+        } else if (fieldKey === 'title') {
+          enhancedValue = enhanced.title || currentValue;
+        } else {
+          enhancedValue = enhanced[fieldKey] || currentValue;
+        }
+
+        if (enhancedValue && enhancedValue !== currentValue) {
+          // Update the field with enhanced value
+          const fieldPath = fieldKey.split('.');
+          if (fieldPath.length === 1) {
+            handleFieldChange(fieldPath[0], enhancedValue);
+          } else if (fieldPath.length === 3) {
+            // Handle array field enhancement like experience.0.description
+            const [field, index, nestedField] = fieldPath;
+            handleArrayFieldChange(field, parseInt(index), nestedField, enhancedValue);
+          }
+          
+          toast.success(`${fieldLabel} enhanced successfully!`);
+        } else {
+          toast.info('No significant improvements suggested for this field.');
+        }
+      } else {
+        toast.error('Failed to enhance field. Please try again.');
+      }
+    } catch (error) {
+      console.error('Enhancement error:', error);
+      toast.error('Failed to enhance field. Please try again.');
+    } finally {
+      setEnhancingFields(prev => {
+        const next = new Set(prev);
+        next.delete(enhancementKey);
+        return next;
+      });
+    }
+  };
+
 
   const renderEditableField = (label: string, value: string, field: string, nestedField?: string, isTextarea: boolean = false) => {
     const actualValue = nestedField ? editableData[field]?.[nestedField] || '' : editableData[field] || '';
+    const fieldKey = nestedField ? `${field}.${nestedField}` : field;
+    const isEnhancing = enhancingFields.has(fieldKey);
     
     if (!isEditing) {
       return actualValue ? (
@@ -116,7 +186,24 @@ export const EditablePreview = ({
     
     return (
       <div className="mb-3">
-        <label className="text-sm font-medium text-muted-foreground">{label}</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm font-medium text-muted-foreground">{label}</label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
+            disabled={isEnhancing || !actualValue.trim()}
+            className="h-7 px-2 text-xs"
+          >
+            {isEnhancing ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3 mr-1" />
+            )}
+            {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+          </Button>
+        </div>
         <InputComponent
           value={actualValue}
           onChange={(e) => handleFieldChange(field, e.target.value, nestedField)}
@@ -147,7 +234,26 @@ export const EditablePreview = ({
                   {item.description && renderEditableField2('Description', item.description, field, 'description', true, index)}
                   {item.achievements && (
                     <div className="mb-3">
-                      <label className="text-sm font-medium text-muted-foreground">Achievements</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-sm font-medium text-muted-foreground">Achievements</label>
+                        {isEditing && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEnhanceField(`${field}.${index}.achievements`, item.achievements.join('\n'), 'Achievements')}
+                            disabled={enhancingFields.has(`${field}.${index}.achievements`) || !item.achievements.some((a: string) => a.trim())}
+                            className="h-7 px-2 text-xs"
+                          >
+                            {enhancingFields.has(`${field}.${index}.achievements`) ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-3 w-3 mr-1" />
+                            )}
+                            {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance with AI'}
+                          </Button>
+                        )}
+                      </div>
                       <Textarea
                         value={item.achievements.join('\n')}
                         onChange={(e) => {
@@ -182,6 +288,8 @@ export const EditablePreview = ({
   const renderEditableField2 = (label: string, value: string, field: string, nestedField: string | undefined, isTextarea: boolean, index?: number) => {
     if (index !== undefined) {
       const actualValue = editableData[field]?.[index]?.[nestedField!] || '';
+      const fieldKey = `${field}.${index}.${nestedField}`;
+      const isEnhancing = enhancingFields.has(fieldKey);
       
       if (!isEditing) {
         return actualValue ? (
@@ -196,7 +304,24 @@ export const EditablePreview = ({
       
       return (
         <div className="mb-3">
-          <label className="text-sm font-medium text-muted-foreground">{label}</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-sm font-medium text-muted-foreground">{label}</label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
+              disabled={isEnhancing || !actualValue.trim()}
+              className="h-7 px-2 text-xs"
+            >
+              {isEnhancing ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3 mr-1" />
+              )}
+              {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+            </Button>
+          </div>
           <InputComponent
             value={actualValue}
             onChange={(e) => handleArrayFieldChange(field, index, nestedField!, e.target.value)}
@@ -322,33 +447,65 @@ export const EditablePreview = ({
               Skills
             </h3>
             {isEditing ? (
-              <Textarea
-                value={(() => {
-                  // Handle different skill formats - convert to comma-separated string
-                  if (Array.isArray(editableData.skills)) {
-                    return editableData.skills.map((skill: any) => {
-                      if (typeof skill === 'string') return skill;
-                      if (skill.items && Array.isArray(skill.items)) return skill.items.join(', ');
-                      return '';
-                    }).filter(s => s).join(', ');
-                  }
-                  return '';
-                })()}
-                onChange={(e) => {
-                  console.log('🔍 Skills onChange - Input value:', e.target.value);
-                  setEditableData((prev: any) => {
-                    const updated = { ...prev };
-                    // Store as simple array of skill strings
-                    const skillsArray = e.target.value.split(',').map(skill => skill.trim()).filter(skill => skill);
-                    updated.skills = skillsArray;
-                    console.log('🔍 Updated skills:', updated.skills);
-                    return updated;
-                  });
-                }}
-                className="w-full"
-                placeholder="Enter skills separated by commas (e.g., JavaScript, React, Node.js, Python)"
-                rows={3}
-              />
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm font-medium text-muted-foreground">Skills</label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const skillsString = (() => {
+                        if (Array.isArray(editableData.skills)) {
+                          return editableData.skills.map((skill: any) => {
+                            if (typeof skill === 'string') return skill;
+                            if (skill.items && Array.isArray(skill.items)) return skill.items.join(', ');
+                            return '';
+                          }).filter(s => s).join(', ');
+                        }
+                        return '';
+                      })();
+                      handleEnhanceField('skills', skillsString, 'Skills');
+                    }}
+                    disabled={enhancingFields.has('skills') || !editableData.skills?.length}
+                    className="h-7 px-2 text-xs"
+                  >
+                    {enhancingFields.has('skills') ? (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3 mr-1" />
+                    )}
+                    {enhancingFields.has('skills') ? 'Enhancing...' : 'Enhance with AI'}
+                  </Button>
+                </div>
+                <Textarea
+                  value={(() => {
+                    // Handle different skill formats - convert to comma-separated string
+                    if (Array.isArray(editableData.skills)) {
+                      return editableData.skills.map((skill: any) => {
+                        if (typeof skill === 'string') return skill;
+                        if (skill.items && Array.isArray(skill.items)) return skill.items.join(', ');
+                        return '';
+                      }).filter(s => s).join(', ');
+                    }
+                    return '';
+                  })()}
+                  onChange={(e) => {
+                    console.log('🔍 Skills onChange - Input value:', e.target.value);
+                    setEditableData((prev: any) => {
+                      const updated = { ...prev };
+                      // Store as simple array of skill strings
+                      const skillsArray = e.target.value.split(',').map(skill => skill.trim()).filter(skill => skill);
+                      updated.skills = skillsArray;
+                      console.log('🔍 Updated skills:', updated.skills);
+                      return updated;
+                    });
+                  }}
+                  className="w-full"
+                  placeholder="Enter skills separated by commas (e.g., JavaScript, React, Node.js, Python)"
+                  rows={3}
+                />
+              </div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {(() => {
