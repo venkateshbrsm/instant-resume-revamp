@@ -286,7 +286,7 @@ async function generateModernPdf(
     
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('PROFESSIONAL EXPERIENCE', mainContentX, mainY);
     mainY += 12;
 
@@ -298,14 +298,14 @@ async function generateModernPdf(
       // Job title
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'header', 'bold');
       doc.text(exp.title, mainContentX, mainY);
       mainY += 5;
 
       // Company and duration
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'body', 'bold');
       doc.text(exp.company, mainContentX, mainY);
       
       // Duration badge
@@ -338,7 +338,7 @@ async function generateModernPdf(
 
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
+        setProfessionalFont(doc, 'body', 'normal');
         const descriptionLines = doc.splitTextToSize(exp.description, mainContentWidth);
         descriptionLines.forEach((line: string) => {
           doc.text(line, mainContentX, mainY);
@@ -351,7 +351,7 @@ async function generateModernPdf(
       if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text('Core Responsibilities:', mainContentX, mainY);
         mainY += 6;
 
@@ -378,7 +378,7 @@ async function generateModernPdf(
           
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(8);
-          doc.setFont('helvetica', 'normal');
+          setProfessionalFont(doc, 'body', 'normal');
           const respLines = doc.splitTextToSize(responsibility, mainContentWidth - 8);
           respLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 3.5));
@@ -392,7 +392,7 @@ async function generateModernPdf(
       if (exp.achievements && exp.achievements.length > 0) {
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text('Key Achievements:', mainContentX, mainY);
         mainY += 6;
 
@@ -419,7 +419,7 @@ async function generateModernPdf(
           
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
+          setProfessionalFont(doc, 'body', 'normal');
           const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
@@ -536,14 +536,14 @@ async function generateCreativePdf(
 
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
+  setProfessionalFont(doc, 'header', 'bold');
   doc.text('CREATIVE VISION', margin, currentY);
   currentY += 8;
 
   if (resumeData.summary) {
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    setProfessionalFont(doc, 'body', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
     summaryLines.forEach((line: string) => {
       doc.text(line, margin, currentY);
@@ -556,7 +556,7 @@ async function generateCreativePdf(
   if (resumeData.skills && resumeData.skills.length > 0) {
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('CREATIVE SKILLS', margin, currentY);
     currentY += 10;
 
