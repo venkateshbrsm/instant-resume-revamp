@@ -55,6 +55,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Memoized callback for content updates
+  const handleContentUpdate = useCallback((updatedContent: any) => {
+    console.log('Content updated from EditablePreview:', updatedContent);
+    setEditedContent(updatedContent);
+  }, []);
+
   useEffect(() => {
     // Check if we're returning from login and restore state
     const storedExtractedText = sessionStorage.getItem('extractedText');
@@ -889,10 +895,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 enhancedContent={enhancedContent}
                                 selectedTemplate={selectedTemplate}
                                 selectedColorTheme={selectedColorTheme}
-                                onContentUpdate={useCallback((updatedContent) => {
-                                  console.log('Content updated from EditablePreview:', updatedContent);
-                                  setEditedContent(updatedContent);
-                                }, [])}
+                                onContentUpdate={handleContentUpdate}
                               />
                             </TabsContent>
                         </Tabs>
