@@ -278,6 +278,7 @@ function extractDetailedWorkExperience(text: string): string {
   
   let inWorkExperience = false;
   let foundWorkExperienceSection = false;
+  let currentJobLines: string[] = [];
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -296,9 +297,12 @@ function extractDetailedWorkExperience(text: string): string {
       lowerLine.includes('education') || 
       lowerLine.includes('skills') || 
       lowerLine.includes('certifications') ||
-      lowerLine.includes('projects') ||
-      lowerLine.includes('awards')
+      lowerLine.includes('projects')
     )) {
+      // Add any remaining job lines before breaking
+      if (currentJobLines.length > 0) {
+        workExperienceLines.push(...currentJobLines);
+      }
       break;
     }
     
@@ -307,6 +311,7 @@ function extractDetailedWorkExperience(text: string): string {
       // Look for job title patterns or company patterns
       if (isLikelyJobTitle(line) || isLikelyCompanyName(line)) {
         inWorkExperience = true;
+        foundWorkExperienceSection = true;
         workExperienceLines.push(line);
         continue;
       }
@@ -314,11 +319,57 @@ function extractDetailedWorkExperience(text: string): string {
     
     // If we're in work experience section, capture all content
     if (inWorkExperience && line.length > 0) {
-      workExperienceLines.push(line);
+      // Check if this is a new job entry (starts a new section)
+      if (isLikelyJobTitle(line) && currentJobLines.length > 0) {
+        // Add previous job's content
+        workExperienceLines.push(...currentJobLines);
+        currentJobLines = [line];
+      } else {
+        currentJobLines.push(line);
+      }
+      
+      // Special handling for achievement sections
+      if (lowerLine.includes('achievement') || lowerLine.includes('accomplishment')) {
+        console.log(`Found achievement section: ${line}`);
+        
+        // Look ahead to capture all achievement bullet points
+        let j = i + 1;
+        while (j < lines.length) {
+          const nextLine = lines[j].trim();
+          const nextLowerLine = nextLine.toLowerCase();
+          
+          // Stop if we hit another section or job
+          if (nextLowerLine.includes('responsibilities') || 
+              nextLowerLine.includes('experience') ||
+              nextLowerLine.includes('education') ||
+              nextLowerLine.includes('skills') ||
+              isLikelyJobTitle(nextLine) ||
+              (nextLine.length < 10 && !nextLine.match(/^[\-\•\*]/))) {
+            break;
+          }
+          
+          // Add achievement lines
+          if (nextLine.length > 0) {
+            currentJobLines.push(nextLine);
+            console.log(`Added achievement line: ${nextLine}`);
+          }
+          
+          j++;
+        }
+        
+        // Skip the lines we already processed
+        i = j - 1;
+      }
     }
   }
   
+  // Add any remaining job lines
+  if (currentJobLines.length > 0) {
+    workExperienceLines.push(...currentJobLines);
+  }
+  
   console.log(`Extracted ${workExperienceLines.length} work experience lines`);
+  console.log(`Work experience content preview: ${workExperienceLines.slice(0, 10).join(' | ')}`);
   return workExperienceLines.join('\n');
 }
 
