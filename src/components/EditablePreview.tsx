@@ -261,7 +261,7 @@ export const EditablePreview = ({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEnhanceField(`${field}.${index}.achievements`, item.achievements.join('\n'), 'Achievements')}
-                            disabled={enhancingFields.has(`${field}.${index}.achievements`) || !item.achievements.some((a: string) => a.trim())}
+                            disabled={enhancingFields.has(`${field}.${index}.achievements`) || !Array.isArray(item.achievements) || !item.achievements.some((a: string) => a.trim())}
                             className="h-7 px-2 text-xs"
                           >
                             {enhancingFields.has(`${field}.${index}.achievements`) ? (
