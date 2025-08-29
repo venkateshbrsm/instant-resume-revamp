@@ -391,9 +391,9 @@ export const EditablePreview = ({
               onClick={() => setIsEditing(true)} 
               variant="hero" 
               size="lg"
-              className="font-semibold shadow-glow hover:shadow-xl transition-all duration-300 animate-flicker"
+              className="font-semibold shadow-glow hover:shadow-xl transition-all duration-300 animate-edit-pulse hover:animate-none"
             >
-              <Edit3 className="h-5 w-5 mr-2" />
+              <Edit3 className="h-5 w-5 mr-2 animate-pulse" />
               Edit Resume
             </Button>
           )}

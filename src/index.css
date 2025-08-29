@@ -456,10 +456,33 @@
   }
 }
 
+@keyframes edit-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 30px hsl(var(--primary-glow) / 0.15);
+  }
+  25% {
+    transform: scale(1.02);
+    box-shadow: 0 0 40px hsl(var(--primary-glow) / 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 50px hsl(var(--primary-glow) / 0.4);
+  }
+  75% {
+    transform: scale(1.02);
+    box-shadow: 0 0 35px hsl(var(--primary-glow) / 0.25);
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
 
 .animate-flicker {
   animation: flicker 2s ease-in-out infinite;
+}
+
+.animate-edit-pulse {
+  animation: edit-pulse 3s ease-in-out infinite;
 }
