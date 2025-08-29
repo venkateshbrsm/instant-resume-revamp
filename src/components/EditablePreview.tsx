@@ -108,56 +108,69 @@ export const EditablePreview = ({
       return; // Already enhancing
     }
 
+    if (!currentValue || currentValue.trim().length === 0) {
+      toast.error('Field is empty. Nothing to enhance.');
+      return;
+    }
+
     setEnhancingFields(prev => new Set(prev).add(enhancementKey));
 
     try {
-      const { data, error } = await supabase.functions.invoke('enhance-resume', {
+      console.log('🤖 Enhancing field:', fieldKey, 'with value:', currentValue);
+      
+      // Map field keys to types for better AI enhancement
+      let fieldType = fieldKey;
+      if (fieldKey.includes('description') || fieldKey.includes('responsibilities')) {
+        fieldType = 'description';
+      } else if (fieldKey.includes('title') && !fieldKey.includes('job')) {
+        fieldType = 'title';
+      } else if (fieldKey.includes('summary')) {
+        fieldType = 'summary';
+      } else if (fieldKey.includes('skills')) {
+        fieldType = 'skills';
+      } else if (fieldKey.includes('achievements') || fieldKey.includes('accomplishments')) {
+        fieldType = 'achievements';
+      }
+
+      // Call the new enhance-field function for ATS optimization
+      const { data, error } = await supabase.functions.invoke('enhance-field', {
         body: {
-          extractedText: `Current ${fieldLabel}: ${currentValue}\n\nPlease enhance this ${fieldLabel.toLowerCase()} to be more professional and impactful while maintaining accuracy.`,
-          templateId: selectedTemplate.id,
-          themeId: selectedColorTheme.name
+          fieldType: fieldType,
+          content: currentValue,
+          context: {
+            industry: editableData.title || 'Professional',
+            targetRole: editableData.title || 'Similar role',
+            fieldLabel: fieldLabel
+          }
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Enhancement error:', error);
+        toast.error(`Failed to enhance ${fieldLabel}. Please try again.`);
+        return;
+      }
 
-      if (data?.success && data?.enhancedResume) {
-        const enhanced = data.enhancedResume;
+      if (data?.enhancedContent) {
+        console.log('✅ Field enhanced successfully:', data.enhancedContent);
         
-        // Extract the enhanced value based on field type
-        let enhancedValue = '';
+        // Update the specific field with enhanced content
+        const fieldPath = fieldKey.split('.');
+        if (fieldPath.length === 1) {
+          handleFieldChange(fieldPath[0], data.enhancedContent);
+        } else if (fieldPath.length === 3) {
+          // Handle array field enhancement like experience.0.description
+          const [field, index, nestedField] = fieldPath;
+          handleArrayFieldChange(field, parseInt(index), nestedField, data.enhancedContent);
+        }
         
-        if (fieldKey === 'summary') {
-          enhancedValue = enhanced.summary || currentValue;
-        } else if (fieldKey === 'name') {
-          enhancedValue = enhanced.name || currentValue;
-        } else if (fieldKey === 'title') {
-          enhancedValue = enhanced.title || currentValue;
-        } else {
-          enhancedValue = enhanced[fieldKey] || currentValue;
-        }
-
-        if (enhancedValue && enhancedValue !== currentValue) {
-          // Update the field with enhanced value
-          const fieldPath = fieldKey.split('.');
-          if (fieldPath.length === 1) {
-            handleFieldChange(fieldPath[0], enhancedValue);
-          } else if (fieldPath.length === 3) {
-            // Handle array field enhancement like experience.0.description
-            const [field, index, nestedField] = fieldPath;
-            handleArrayFieldChange(field, parseInt(index), nestedField, enhancedValue);
-          }
-          
-          toast.success(`${fieldLabel} enhanced successfully!`);
-        } else {
-          toast.info('No significant improvements suggested for this field.');
-        }
+        toast.success(`${fieldLabel} enhanced with ATS optimization!`);
       } else {
-        toast.error('Failed to enhance field. Please try again.');
+        toast.error('Enhancement returned empty content. Please try again.');
       }
     } catch (error) {
       console.error('Enhancement error:', error);
-      toast.error('Failed to enhance field. Please try again.');
+      toast.error(`Failed to enhance ${fieldLabel}. Please check your connection and try again.`);
     } finally {
       setEnhancingFields(prev => {
         const next = new Set(prev);
