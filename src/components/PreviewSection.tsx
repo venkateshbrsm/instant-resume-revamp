@@ -776,86 +776,23 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        />
 
                            {/* Tabbed Preview */}
-                            <Tabs defaultValue="preview" className="w-full">
-                             <TabsList className="grid w-full grid-cols-3 bg-muted/30 h-auto">
-                               <TabsTrigger 
-                                 value="preview" 
-                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-xs sm:text-base py-3 px-1 sm:px-4"
-                               >
-                                 <span className="hidden sm:inline">👁 Preview</span>
-                                 <span className="sm:hidden">👁</span>
-                               </TabsTrigger>
+                            <Tabs defaultValue="edit" className="w-full">
+                             <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
-                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-xs sm:text-base py-3 px-1 sm:px-4"
+                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
                                >
                                  <span className="hidden sm:inline">✏️ Edit</span>
-                                 <span className="sm:hidden">✏️</span>
+                                 <span className="sm:hidden">✏️ Edit</span>
                                </TabsTrigger>
                                <TabsTrigger 
                                  value="pdf"
-                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-xs sm:text-base py-3 px-1 sm:px-4"
+                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
                                >
-                                 <span className="hidden sm:inline">📄 PDF</span>
-                                 <span className="sm:hidden">📄</span>
+                                 <span className="hidden sm:inline">📄 PDF Preview</span>
+                                 <span className="sm:hidden">📄 PDF</span>
                                </TabsTrigger>
                              </TabsList>
-                           
-                           <TabsContent value="preview" className="space-y-4">
-                             <div className="relative">
-                               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                                 <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
-                                   👁 Template Preview • See your resume in the selected template
-                                 </p>
-                               </div>
-                               
-                               <div className="border rounded-lg bg-white shadow-lg overflow-hidden">
-                                 <div className="p-4 sm:p-6 md:p-8">
-                                   {(() => {
-                                     const contentToUse = editedContent || enhancedContent;
-                                     
-                                     switch (selectedTemplate.layout) {
-                                       case 'modern':
-                                         return (
-                                           <ModernTemplatePreview 
-                                             enhancedContent={contentToUse}
-                                             selectedColorTheme={selectedColorTheme}
-                                           />
-                                         );
-                                       case 'creative':
-                                         return (
-                                           <CreativeTemplatePreview 
-                                             enhancedContent={contentToUse}
-                                             selectedColorTheme={selectedColorTheme}
-                                           />
-                                         );
-                                       case 'executive':
-                                         return (
-                                           <ExecutiveTemplatePreview 
-                                             enhancedContent={contentToUse}
-                                             selectedColorTheme={selectedColorTheme}
-                                           />
-                                         );
-                                       case 'classic':
-                                         return (
-                                           <ClassicTemplatePreview 
-                                             enhancedContent={contentToUse}
-                                             selectedColorTheme={selectedColorTheme}
-                                           />
-                                         );
-                                       default:
-                                         return (
-                                           <MinimalistTemplatePreview 
-                                             enhancedContent={contentToUse}
-                                             selectedColorTheme={selectedColorTheme}
-                                           />
-                                         );
-                                     }
-                                   })()}
-                                 </div>
-                               </div>
-                             </div>
-                            </TabsContent>
                            
                            <TabsContent value="pdf" className="space-y-4">
                              <div className="relative">
