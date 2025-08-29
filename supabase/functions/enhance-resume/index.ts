@@ -64,34 +64,175 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  const prompt = `You are an expert ATS resume optimizer and career consultant. Transform the following resume content into a comprehensive, ATS-friendly, keyword-rich professional resume.
+  console.log("Enhancing resume with AI using programmatic line-by-line approach...");
+  
+  // Extract work experience sections first
+  const workExperiences = extractWorkExperienceSections(originalText);
+  console.log(`Found ${workExperiences.length} work experience sections`);
+  
+  // Process each work experience section line by line
+  const enhancedWorkExperiences = [];
+  
+  for (let i = 0; i < workExperiences.length; i++) {
+    const workExp = workExperiences[i];
+    console.log(`Processing work experience ${i + 1}: ${workExp.lines.length} lines`);
+    
+    const enhancedLines = [];
+    
+    // Enhance each line individually
+    for (const line of workExp.lines) {
+      if (line.trim()) {
+        const enhancedLine = await enhanceIndividualLine(line, apiKey);
+        enhancedLines.push(enhancedLine);
+      }
+    }
+    
+    console.log(`Enhanced ${enhancedLines.length} lines for work experience ${i + 1}`);
+    
+    // Validate line count matches
+    const originalNonEmptyLines = workExp.lines.filter(line => line.trim()).length;
+    if (enhancedLines.length !== originalNonEmptyLines) {
+      console.warn(`Line count mismatch for work experience ${i + 1}: original ${originalNonEmptyLines}, enhanced ${enhancedLines.length}`);
+    }
+    
+    enhancedWorkExperiences.push({
+      originalLines: workExp.lines,
+      enhancedLines: enhancedLines,
+      lineCount: originalNonEmptyLines
+    });
+  }
+  
+  // Now get the complete enhanced resume structure
+  return await generateEnhancedResumeStructure(originalText, enhancedWorkExperiences, apiKey);
+}
+
+// Extract work experience sections and their lines
+function extractWorkExperienceSections(text: string): Array<{lines: string[]}> {
+  const sections = [];
+  const lines = text.split('\n');
+  
+  let currentSection: string[] = [];
+  let inWorkExperience = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Detect start of work experience entry (company names, job titles, dates)
+    if (isWorkExperienceStart(line, i > 0 ? lines[i-1] : '', i < lines.length - 1 ? lines[i+1] : '')) {
+      // Save previous section if exists
+      if (currentSection.length > 0) {
+        sections.push({lines: [...currentSection]});
+      }
+      currentSection = [line];
+      inWorkExperience = true;
+    } 
+    // Detect end of work experience section
+    else if (inWorkExperience && isWorkExperienceEnd(line)) {
+      if (currentSection.length > 0) {
+        sections.push({lines: [...currentSection]});
+      }
+      currentSection = [];
+      inWorkExperience = false;
+    }
+    // Continue adding lines to current section
+    else if (inWorkExperience && line) {
+      currentSection.push(line);
+    }
+  }
+  
+  // Add last section if exists
+  if (currentSection.length > 0) {
+    sections.push({lines: [...currentSection]});
+  }
+  
+  return sections;
+}
+
+// Check if line indicates start of work experience entry
+function isWorkExperienceStart(line: string, prevLine: string, nextLine: string): boolean {
+  // Job titles often contain position keywords
+  const jobTitlePattern = /(manager|developer|analyst|engineer|specialist|coordinator|director|assistant|lead|senior|junior|intern)/i;
+  // Company indicators
+  const companyPattern = /(inc\.|ltd\.|llc|corp|company|organization|university|school)/i;
+  // Date patterns
+  const datePattern = /\d{4}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i;
+  
+  return jobTitlePattern.test(line) || companyPattern.test(line) || 
+         (datePattern.test(line) && line.length < 50);
+}
+
+// Check if we've reached end of work experience section
+function isWorkExperienceEnd(line: string): boolean {
+  const sectionHeaders = /(education|skills|technical skills|certifications|projects|awards|interests)/i;
+  return sectionHeaders.test(line);
+}
+
+// Enhance individual line using simple GPT call
+async function enhanceIndividualLine(line: string, apiKey: string): Promise<string> {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional resume writer. Rewrite the given line to be more professional, ATS-friendly, and impactful while preserving the exact meaning. Return only the enhanced line, no explanations.'
+          },
+          {
+            role: 'user',
+            content: `Rewrite this resume line professionally: "${line}"`
+          }
+        ],
+        max_tokens: 100,
+        temperature: 0.7
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`OpenAI API error for line enhancement: ${response.status}`);
+      return line; // Return original line if enhancement fails
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content.trim() || line;
+  } catch (error) {
+    console.error('Error enhancing individual line:', error);
+    return line; // Return original line if enhancement fails
+  }
+}
+
+// Generate complete resume structure with enhanced work experience
+async function generateEnhancedResumeStructure(originalText: string, enhancedWorkExperiences: any[], apiKey: string): Promise<any> {
+  console.log("Generating complete enhanced resume structure...");
+
+  const structurePrompt = `
+You are an expert resume enhancement specialist. Using the original resume text and the enhanced work experience lines provided, create a complete professional resume structure.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL INSTRUCTIONS:
-1. Extract and enhance ALL work experience entries from the original resume - DO NOT REDUCE THE NUMBER OF JOBS
-2. Preserve EVERY job position, company, and time period from the original
-3. Extract and preserve ALL skills and technical skills from the original resume - DO NOT REDUCE THE NUMBER OF SKILLS
-4. MANDATORY LINE-BY-LINE EXTRACTION: For each work experience entry, count every single line including:
-   - Job title line
-   - Company name line  
-   - Date/duration line
-   - Role description lines
-   - ALL bullet points under responsibilities
-   - ALL bullet points under achievements
-   - ANY additional content lines
-5. MANDATORY LINE-BY-LINE ENHANCEMENT: Reword EVERY extracted line using professional, ATS-friendly language while preserving exact meaning
-6. CRITICAL COUNT PRESERVATION: The total number of lines in each work experience section must match the original exactly
-7. ACHIEVEMENT SECTION FOCUS: Pay special attention to achievement sections - extract every single achievement line and enhance each one individually
-8. NO LINE REDUCTION: Do not combine multiple original lines into one enhanced line
-9. NO LINE ADDITION: Do not add extra lines that weren't in the original
-10. PROFESSIONAL ENHANCEMENT: Reword job titles, company names, and all content with professional language and industry keywords
-11. Use strong action verbs and descriptive language WITHOUT adding quantified data unless present in original
-12. Return ONLY a valid JSON object with the exact structure shown below
-13. MANDATORY: Include ALL work experience entries from the original resume
-14. MANDATORY: Include ALL skills and technical skills from the original resume
-15. CRITICAL: Maintain exact line count per job section - count original lines and match that count exactly in enhanced version
+ENHANCED WORK EXPERIENCE DATA:
+${JSON.stringify(enhancedWorkExperiences, null, 2)}
+
+CRITICAL REQUIREMENTS:
+1. Extract basic information (name, contact details) from original text
+2. Use the enhanced work experience lines to build the experience section
+3. Map enhanced lines back to structured format (title, company, duration, core_responsibilities, achievements)
+4. Preserve ALL work experience entries and exact line counts
+5. Extract all skills and education from original text
+6. Return valid JSON with exact structure below
+
+WORK EXPERIENCE MAPPING:
+For each enhanced work experience, organize the enhanced lines into:
+- First line = job title
+- Second line = company name  
+- Third line = duration/dates
+- Remaining lines = mix of responsibilities and achievements (categorize appropriately)
 
 REQUIRED JSON STRUCTURE:
 {
@@ -170,7 +311,7 @@ ENHANCEMENT GUIDELINES:
         },
         { 
           role: 'user', 
-          content: prompt 
+          content: structurePrompt 
         }
       ],
       max_completion_tokens: 4000,
