@@ -17,6 +17,7 @@ interface EditablePreviewProps {
   selectedTemplate: ResumeTemplate;
   selectedColorTheme: any;
   onContentUpdate: (updatedContent: any) => void;
+  onAutoEnhancementStateChange?: (isAutoEnhancing: boolean) => void;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export const EditablePreview = ({
   selectedTemplate, 
   selectedColorTheme,
   onContentUpdate,
+  onAutoEnhancementStateChange,
   className 
 }: EditablePreviewProps) => {
   const [editableData, setEditableData] = useState(enhancedContent);
@@ -194,13 +196,12 @@ export const EditablePreview = ({
     }
   }, [hasBeenAutoEnhanced, enhancedContent, resumeId, markAsAutoEnhanced]);
 
-  // Update editableData when enhancedContent changes
-  React.useEffect(() => {
-    if (enhancedContent) {
-      console.log('🔍 EditablePreview - Updating with new enhanced content:', enhancedContent);
-      setEditableData(enhancedContent);
+  // Notify parent about auto-enhancement state changes
+  useEffect(() => {
+    if (onAutoEnhancementStateChange) {
+      onAutoEnhancementStateChange(isAutoEnhancing);
     }
-  }, [enhancedContent]);
+  }, [isAutoEnhancing, onAutoEnhancementStateChange]);
 
   // Debug log when component renders
   console.log('🔍 EditablePreview render - editableData:', editableData);

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
+import { cn } from "@/lib/utils";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
@@ -55,6 +56,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [previewPdfBlob, setPreviewPdfBlob] = useState<Blob | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -794,13 +796,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                  <span className="hidden sm:inline">✏️ Edit</span>
                                  <span className="sm:hidden">✏️ Edit</span>
                                </TabsTrigger>
-                               <TabsTrigger 
-                                 value="pdf"
-                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
-                               >
-                                 <span className="hidden sm:inline">📄 PDF Preview</span>
-                                 <span className="sm:hidden">📄 PDF</span>
-                               </TabsTrigger>
+                                <TabsTrigger 
+                                  value="pdf"
+                                  disabled={isAutoEnhancing}
+                                  className={cn(
+                                    "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4",
+                                    isAutoEnhancing && "opacity-50 cursor-not-allowed"
+                                  )}
+                                >
+                                  <span className="hidden sm:inline">
+                                    {isAutoEnhancing ? "⏳ Enhancing..." : "📄 PDF Preview"}
+                                  </span>
+                                  <span className="sm:hidden">
+                                    {isAutoEnhancing ? "⏳" : "📄 PDF"}
+                                  </span>
+                                </TabsTrigger>
                              </TabsList>
                            
                            <TabsContent value="pdf" className="space-y-4">
@@ -897,20 +907,21 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                            </TabsContent>
                            
                             <TabsContent value="edit" className="space-y-4">
-                              <EditablePreview
-                                enhancedContent={enhancedContent}
-                                selectedTemplate={selectedTemplate}
-                                selectedColorTheme={selectedColorTheme}
-                                onContentUpdate={(updatedContent) => {
-                                  console.log('📝 Content updated from EditablePreview:', updatedContent);
-                                  console.log('📝 Updated content keys:', Object.keys(updatedContent));
-                                  setEditedContent(updatedContent);
-                                  toast({
-                                    title: "Content Saved",
-                                    description: "Your edits have been saved and PDF preview will update shortly.",
-                                  });
-                                }}
-                              />
+                               <EditablePreview
+                                 enhancedContent={enhancedContent}
+                                 selectedTemplate={selectedTemplate}
+                                 selectedColorTheme={selectedColorTheme}
+                                 onContentUpdate={(updatedContent) => {
+                                   console.log('📝 Content updated from EditablePreview:', updatedContent);
+                                   console.log('📝 Updated content keys:', Object.keys(updatedContent));
+                                   setEditedContent(updatedContent);
+                                   toast({
+                                     title: "Content Saved",
+                                     description: "Your edits have been saved and PDF preview will update shortly.",
+                                   });
+                                 }}
+                                 onAutoEnhancementStateChange={setIsAutoEnhancing}
+                               />
                             </TabsContent>
                         </Tabs>
                     </div>
