@@ -181,12 +181,33 @@ serve(async (req) => {
     let enhancedContent = data.choices[0].message.content.trim();
 
     // Clean up the response to remove AI explanatory text and formatting
-    // Remove markdown formatting
+    // Remove markdown formatting and separators
     enhancedContent = enhancedContent.replace(/\*\*(.*?)\*\*/g, '$1');
     enhancedContent = enhancedContent.replace(/\*(.*?)\*/g, '$1');
+    enhancedContent = enhancedContent.replace(/---/g, '');
     
-    // Remove common AI explanatory phrases and everything after them
+    // Remove introductory phrases at the beginning
+    const introPatterns = [
+      /^Certainly[!]?\s*Here is.*?:/i,
+      /^Here is.*?:/i,
+      /^Here's.*?:/i,
+      /^I've enhanced.*?:/i,
+      /^The enhanced.*?:/i,
+      /^This is.*?:/i,
+      /^Below is.*?:/i,
+      /^.*?enhanced.*?version.*?:/i
+    ];
+    
+    for (const pattern of introPatterns) {
+      enhancedContent = enhancedContent.replace(pattern, '').trim();
+    }
+    
+    // Remove concluding phrases and everything after them
     const cleanupPatterns = [
+      /Let me know if.*/i,
+      /Feel free to.*/i,
+      /Please let me know.*/i,
+      /If you need.*/i,
       /This version.*/i,
       /The enhanced.*/i,
       /I've enhanced.*/i,
@@ -203,15 +224,17 @@ serve(async (req) => {
       /Note:.*/i,
       /Key improvements:.*/i,
       /Changes made:.*/i,
-      /Enhancement details:.*/i
+      /Enhancement details:.*/i,
+      /Would you like.*/i,
+      /Do you need.*/i
     ];
     
     for (const pattern of cleanupPatterns) {
       enhancedContent = enhancedContent.replace(pattern, '').trim();
     }
     
-    // Remove any trailing periods or explanatory text that might remain
-    enhancedContent = enhancedContent.replace(/\.\s*$/, '').trim();
+    // Remove extra whitespace and clean up
+    enhancedContent = enhancedContent.replace(/\n\s*\n/g, '\n').trim();
     
     console.log('✅ Field enhancement completed successfully');
 
