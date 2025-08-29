@@ -67,25 +67,23 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string): Promis
   console.log("Enhancing resume with structure preservation...");
   console.log("Original text preview:", originalText.substring(0, 500));
   
-  const enhancementPrompt = `You are an expert resume enhancement specialist. Analyze and enhance the following resume while preserving ALL original content and structure.
+  const enhancementPrompt = `You are an expert resume parser. Extract information from the following resume text while preserving ALL original work experience content exactly as written.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL INSTRUCTIONS:
-1. Extract the ACTUAL name, job titles, company names, and work experience from the text above
-2. Do NOT use generic placeholders - use the REAL information from the resume
-3. For each actual job/position found, extract ALL bullet points and responsibilities exactly as written
-4. Enhance the language but keep all the original facts, dates, company names, and job titles
-5. If you see "SUNDARI CHANDRASHEKAR" or similar names, use that as the name
-6. If you see company names like "HSBC", "Bank", etc., use those actual company names
-7. If you see job titles like "AVP", "Manager", "Analyst", etc., use those actual titles
-8. Extract ALL achievements and responsibilities - do not skip any content
+CRITICAL INSTRUCTIONS FOR WORK EXPERIENCE:
+1. DO NOT enhance, improve, or modify ANY work experience content
+2. Extract ALL bullet points, responsibilities, and achievements EXACTLY as written in the original resume
+3. Preserve the original wording, formatting, and structure of work experience sections
+4. Do not add bullet points or enhance language - use the exact text from the uploaded file
+5. Do not combine or reorganize work experience content - keep it as-is
 
-EXAMPLE OF WHAT I EXPECT:
-If the resume says "AVP NFR CoE Resilience Risk (Business Information Risk Officer)" - use that exact title
-If the resume says "HSBC Electronic Data Processing India P limited" - use that exact company name
-If the resume mentions specific achievements like "Responsible for review of Data Leakage" - include that
+GENERAL INSTRUCTIONS:
+1. Extract the ACTUAL name, job titles, company names from the text above
+2. Use REAL information from the resume, never generic placeholders
+3. For contact info, summary, education, and skills - you may enhance language
+4. For work experience - preserve original content completely
 
 Return ONLY this JSON structure with REAL data from the resume:
 {
@@ -252,92 +250,27 @@ function directParseResume(originalText: string): any {
     }
   }
   
-  // Parse work experience sections
-  let inExperience = false;
-  let currentJob: any = null;
+  // Extract work experience as-is from file content
+  const workExperienceText = extractWorkExperienceAsIs(originalText);
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const lowerLine = line.toLowerCase();
-    
-    // Detect experience section start
-    if (lowerLine.includes('experience') || lowerLine.includes('organizational experience')) {
-      inExperience = true;
-      continue;
-    }
-    
-    // Detect experience section end
-    if (inExperience && (lowerLine.includes('education') || lowerLine.includes('skills'))) {
-      inExperience = false;
-      if (currentJob) {
-        result.experience.push(currentJob);
-        currentJob = null;
-      }
-      continue;
-    }
-    
-    if (inExperience) {
-      // Look for date patterns to identify job periods
-      if (line.match(/from:|to:|till date|\d{4}/i)) {
-        if (currentJob) {
-          result.experience.push(currentJob);
-        }
-        currentJob = {
-          title: '',
-          company: '',
-          duration: line,
-          description: '',
-          core_responsibilities: [],
-          achievements: []
-        };
-      }
-      // Look for job titles or roles
-      else if (currentJob && !currentJob.title && (line.includes('AVP') || line.includes('Manager') || line.includes('Officer') || line.includes('Role'))) {
-        currentJob.title = line;
-      }
-      // Look for company names
-      else if (currentJob && !currentJob.company && (line.includes('HSBC') || line.includes('Bank') || line.includes('Limited') || line.includes('P limited'))) {
-        currentJob.company = line;
-      }
-      // Add responsibilities and achievements
-      else if (currentJob && line.length > 20 && !line.match(/^[A-Z\s]+$/)) {
-        if (line.startsWith('-') || line.startsWith('•') || line.includes('Responsible for') || line.includes('Liaising')) {
-          currentJob.core_responsibilities.push(line.replace(/^[-•]\s*/, ''));
-        } else {
-          currentJob.achievements.push(line);
-        }
-      }
-    }
-  }
-  
-  // Add final job if exists
-  if (currentJob) {
-    result.experience.push(currentJob);
-  }
+  // Parse the extracted work experience into structured format while preserving original content
+  result.experience = parseWorkExperiencePreserveOriginal(workExperienceText);
   
   // Set fallback values if nothing found
-  if (!result.name) result.name = 'Sundari Chandrashekar';
+  if (!result.name) result.name = 'Professional';
   if (result.experience.length === 0) {
+    // Create a single entry with all experience content if no structure found
     result.experience.push({
-      title: 'AVP NFR CoE Resilience Risk',
-      company: 'HSBC Electronic Data Processing India P Limited',
-      duration: 'Aug 21 to till date',
-      description: 'Business Information Risk Officer role',
-      core_responsibilities: [
-        'Responsible for review of Data Leakage, Assessment of Risk and Data Classification',
-        'Liaising with Business Heads and COOs on control gaps and remediation',
-        'Accountable for queries received and review for structured or unstructured query'
-      ],
-      achievements: [
-        'Provided timely feedback to stakeholders located globally',
-        'Assisted in performing scanning and coordination with Global DaR team',
-        'Engaged with key stakeholders from different disciplines as required'
-      ]
+      title: 'Professional Experience',
+      company: 'See details below',
+      duration: 'As per resume',
+      description: workExperienceText || 'Experience details from uploaded resume',
+      achievements: workExperienceText ? workExperienceText.split('\n').filter(line => line.trim().length > 0) : []
     });
   }
   
-  result.summary = 'Experienced banking professional with expertise in risk management, compliance, and operations';
-  result.skills = ['Risk Management', 'Compliance', 'AML & KYC', 'Operations', 'Data Analysis'];
+  result.summary = 'Professional with experience as detailed in the original resume';
+  result.skills = ['Professional Skills', 'Industry Experience', 'Technical Knowledge'];
   result.core_technical_skills = result.skills.map((skill: string, index: number) => ({
     name: skill,
     proficiency: 80 + index * 2
@@ -348,6 +281,127 @@ function directParseResume(originalText: string): any {
   console.log('Number of jobs:', result.experience.length);
   
   return result;
+}
+
+// Extract work experience section preserving original formatting and content
+function extractWorkExperienceAsIs(text: string): string {
+  const lines = text.split('\n');
+  const workExperienceLines: string[] = [];
+  
+  let inWorkExperience = false;
+  let foundWorkExperienceSection = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lowerLine = line.toLowerCase();
+    
+    // Check if we're entering work experience section
+    if (lowerLine.includes('work experience') || 
+        lowerLine.includes('professional experience') || 
+        lowerLine.includes('employment history') ||
+        lowerLine.includes('experience') ||
+        lowerLine.includes('organizational experience')) {
+      inWorkExperience = true;
+      foundWorkExperienceSection = true;
+      continue; // Skip the header line
+    }
+    
+    // Check if we're leaving work experience section
+    if (inWorkExperience && (
+      lowerLine.includes('education') || 
+      lowerLine.includes('skills') || 
+      lowerLine.includes('certifications') ||
+      lowerLine.includes('projects') ||
+      lowerLine.includes('awards') ||
+      lowerLine.includes('achievements') ||
+      lowerLine.includes('qualifications')
+    )) {
+      break;
+    }
+    
+    // If we're in work experience section, capture all content as-is
+    if (inWorkExperience && line.length > 0) {
+      workExperienceLines.push(line);
+    }
+  }
+  
+  console.log(`Extracted ${workExperienceLines.length} work experience lines as-is`);
+  return workExperienceLines.join('\n');
+}
+
+// Parse work experience while preserving original content structure
+function parseWorkExperiencePreserveOriginal(workExperienceText: string): any[] {
+  if (!workExperienceText || workExperienceText.trim().length === 0) {
+    return [];
+  }
+  
+  const lines = workExperienceText.split('\n').filter(line => line.trim().length > 0);
+  const jobs: any[] = [];
+  let currentJob: any = null;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lowerLine = line.toLowerCase();
+    
+    // Look for date patterns or role transitions to identify job boundaries
+    if (line.match(/from:|to:|till date|\d{4}[-\/]\d{2,4}|\w+\s+\d{4}/i)) {
+      // Save previous job if exists
+      if (currentJob) {
+        jobs.push(currentJob);
+      }
+      
+      // Start new job
+      currentJob = {
+        title: '',
+        company: '',
+        duration: line,
+        description: '',
+        achievements: []
+      };
+    }
+    // Look for role/title patterns
+    else if (!currentJob || !currentJob.title) {
+      if (line.match(/manager|officer|avp|vp|analyst|specialist|coordinator|executive|lead|head|director/i)) {
+        if (currentJob) {
+          currentJob.title = line;
+        } else {
+          currentJob = {
+            title: line,
+            company: '',
+            duration: '',
+            description: '',
+            achievements: []
+          };
+        }
+      }
+    }
+    // Look for company patterns
+    else if (currentJob && !currentJob.company && line.match(/limited|ltd|inc|corp|bank|company|pvt|private/i)) {
+      currentJob.company = line;
+    }
+    // Add all other content as achievements/responsibilities (preserving original content)
+    else if (currentJob && line.length > 10) {
+      currentJob.achievements.push(line);
+    }
+  }
+  
+  // Add final job if exists
+  if (currentJob) {
+    jobs.push(currentJob);
+  }
+  
+  // If no structured jobs found, create one entry with all content
+  if (jobs.length === 0 && workExperienceText.trim().length > 0) {
+    jobs.push({
+      title: 'Professional Experience',
+      company: 'As per resume',
+      duration: 'See details',
+      description: 'Experience details from uploaded resume',
+      achievements: lines
+    });
+  }
+  
+  return jobs;
 }
 
 // Extract detailed work experience content with all bullet points and achievements
