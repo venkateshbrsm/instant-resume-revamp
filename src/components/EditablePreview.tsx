@@ -101,12 +101,44 @@ export const EditablePreview = ({
     }
   };
 
-  const handleEnhanceField = async (fieldKey: string, currentValue: string, fieldLabel: string) => {
+  const handleEnhanceField = async (fieldKey: string, fieldLabel: string) => {
     const enhancementKey = fieldKey;
     
     if (enhancingFields.has(enhancementKey)) {
       return; // Already enhancing
     }
+
+    // Dynamically get the current field value
+    const getCurrentValue = (key: string): string => {
+      const parts = key.split('.');
+      let current: any = editableData;
+      
+      for (const part of parts) {
+        if (current && typeof current === 'object') {
+          if (!isNaN(Number(part))) {
+            // It's an array index
+            current = current[Number(part)];
+          } else {
+            current = current[part];
+          }
+        } else {
+          return '';
+        }
+      }
+      
+      // Handle different data types
+      if (Array.isArray(current)) {
+        return current.join('\n');
+      } else if (typeof current === 'string') {
+        return current;
+      } else if (current && typeof current === 'object') {
+        return JSON.stringify(current);
+      }
+      
+      return current ? String(current) : '';
+    };
+
+    const currentValue = getCurrentValue(fieldKey);
 
     if (!currentValue || currentValue.trim().length === 0) {
       toast.error('Field is empty. Nothing to enhance.');
@@ -210,7 +242,7 @@ export const EditablePreview = ({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
+              onClick={() => handleEnhanceField(fieldKey, label)}
               disabled={isEnhancing || !actualValue.trim()}
               className="h-7 px-2 text-xs"
             >
@@ -260,7 +292,7 @@ export const EditablePreview = ({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEnhanceField(`${field}.${index}.achievements`, item.achievements.join('\n'), 'Achievements')}
+                            onClick={() => handleEnhanceField(`${field}.${index}.achievements`, 'Achievements')}
                             disabled={enhancingFields.has(`${field}.${index}.achievements`) || !Array.isArray(item.achievements) || !item.achievements.some((a: string) => a.trim())}
                             className="h-7 px-2 text-xs"
                           >
@@ -338,7 +370,7 @@ export const EditablePreview = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => handleEnhanceField(fieldKey, actualValue, label)}
+                onClick={() => handleEnhanceField(fieldKey, label)}
                 disabled={isEnhancing || !actualValue.trim()}
                 className="h-7 px-2 text-xs"
               >
@@ -497,7 +529,7 @@ export const EditablePreview = ({
                         }
                         return '';
                       })();
-                      handleEnhanceField('skills', skillsString, 'Skills');
+                      handleEnhanceField('skills', 'Skills');
                     }}
                     disabled={enhancingFields.has('skills') || !editableData.skills?.length}
                     className="h-7 px-2 text-xs"
