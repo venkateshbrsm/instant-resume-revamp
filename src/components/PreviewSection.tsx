@@ -658,12 +658,17 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                         {/* Tabbed Preview */}
-                         <Tabs defaultValue="pdf" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
-                            <TabsTrigger value="edit">✏️ Edit & Download</TabsTrigger>
-                          </TabsList>
+                          {/* Tabbed Preview */}
+                          <Tabs defaultValue="pdf" className="w-full">
+                           <TabsList className="grid w-full grid-cols-2">
+                             <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
+                             <TabsTrigger 
+                               value="edit" 
+                               className="relative bg-gradient-to-r from-primary/10 to-primary/20 text-primary font-semibold border border-primary/30 animate-pulse hover:animate-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground"
+                             >
+                               ✨ Edit & Download
+                             </TabsTrigger>
+                           </TabsList>
                           
                           <TabsContent value="pdf" className="space-y-4">
                             <div className="relative">
