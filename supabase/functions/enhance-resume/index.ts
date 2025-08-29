@@ -64,211 +64,282 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
-  console.log("Enhancing resume with detailed work experience extraction...");
+  console.log("Enhancing resume with line-by-line preservation...");
   
-  // Extract detailed work experience content
-  const workExperienceContent = extractDetailedWorkExperience(originalText);
-  console.log(`Extracted work experience content:`, workExperienceContent);
-
-  const enhancementPrompt = `You are an expert ATS resume optimizer. Transform the following resume into a professional, ATS-friendly format.
-
-ORIGINAL RESUME TEXT:
-${originalText}
-
-EXTRACTED WORK EXPERIENCE DETAILS:
-${workExperienceContent}
-
-CRITICAL INSTRUCTIONS:
-1. Extract ALL work experience entries from the original resume - preserve every job with ALL details
-2. For EACH work experience entry, include ALL bullet points, achievements, responsibilities, and descriptions exactly as they appear in the original
-3. Every single line of detail under each job must be enhanced and included
-4. Count the bullet points in the original and create the EXACT same number in the enhanced version
-5. Transform each responsibility/achievement line into professional, ATS-friendly language
-6. DO NOT skip any content - enhance everything that exists in the original
-7. Extract and preserve ALL skills and technical skills from original resume
-8. Use strong action verbs and professional language
-
-REQUIRED JSON STRUCTURE:
-{
-  "name": "Full professional name",
-  "title": "Professional title or desired role", 
-  "email": "email@example.com",
-  "phone": "phone number",
-  "location": "City, State/Country",
-  "linkedin": "LinkedIn profile URL if available",
-  "summary": "Comprehensive 4-6 sentence professional summary with keywords and achievements",
-  "experience": [
-    {
-      "title": "Job Title",
-      "company": "Company Name",
-      "duration": "Start Date - End Date",
-      "description": "Brief 1-2 sentence overview of the role and main focus",
-      "core_responsibilities": [
-        "Primary responsibility with detailed description",
-        "Secondary responsibility with specific tasks and duties",
-        "Third key responsibility with operational details"
-      ],
-      "achievements": [
-        "Specific achievement describing impact and outcomes through descriptive text",
-        "Another key accomplishment highlighting professional contribution and value delivered",
-        "Third major contribution showcasing expertise and collaborative efforts"
-      ]
+  // Split the text into lines and preserve the structure
+  const lines = originalText.split('\n');
+  const enhancedLines: string[] = [];
+  
+  // Process the text in sections to preserve structure
+  let currentSection = '';
+  let sectionLines: string[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+    
+    if (trimmedLine === '' || trimmedLine.length < 3) {
+      // Preserve empty lines and spacing
+      enhancedLines.push(line);
+      continue;
     }
-  ],
-  "education": [
-    {
-      "degree": "Degree Name",
-      "institution": "Institution Name", 
-      "year": "Graduation Year or Duration",
-      "gpa": "GPA if available"
+    
+    // Detect section headers (short lines that are likely headers)
+    if (isLikelyHeader(trimmedLine)) {
+      enhancedLines.push(line);
+      continue;
     }
-  ],
-  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8", "skill9", "skill10", "skill11", "skill12"],
-  "tools": ["tool1", "tool2", "tool3", "tool4", "tool5", "tool6", "tool7", "tool8", "tool9", "tool10"],
-  "core_technical_skills": [
-    {
-      "name": "Technical Skill Name",
-      "proficiency": 85
-    }
-  ]
+    
+    // For content lines, enhance them individually
+    const enhancedLine = await enhanceLineContent(trimmedLine, apiKey);
+    enhancedLines.push(enhancedLine);
+  }
+  
+  // Join enhanced lines back together
+  const enhancedText = enhancedLines.join('\n');
+  
+  // Now parse the enhanced text into structured format
+  return parseEnhancedTextToStructure(enhancedText);
 }
 
-ENHANCEMENT GUIDELINES:
-- Professional summary should be compelling and keyword-rich
-- Experience descriptions should be brief role overviews (1-2 sentences)
-- For each work experience entry, count the bullet points in the original resume and create the EXACT same number of enhanced bullet points
-- Reword each original bullet point into professional, ATS-friendly language while preserving the core meaning
-- Do not add extra bullet points - only enhance the existing ones
-- Extract ALL skills from original resume and include 10-15 relevant skills including technical and soft skills
-- Extract ALL tools mentioned in original resume as a separate "tools" array
-- Add 8-15 core technical skills with proficiency levels (70-95%) based on original skills
-- Expand on responsibilities with action verbs and specific outcomes
-- Make content ATS-friendly with industry standard terminology
-- Ensure all sections are comprehensive and detailed
-- Focus achievements on impact descriptions and professional contributions without quantification
-- CRITICAL: The number of achievements/bullet points per job must match the original resume exactly`;
-
-  console.log('Sending request to OpenAI...');
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [
-        { 
-          role: 'system', 
-          content: 'You are an expert resume optimizer. Always return valid JSON with comprehensive, ATS-friendly content that preserves exact line counts from the original resume.' 
-        },
-        { 
-          role: 'user', 
-          content: enhancementPrompt 
-        }
-      ],
-      max_completion_tokens: 4000,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('OpenAI API error:', response.status, errorText);
-    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+async function enhanceLineContent(line: string, apiKey: string): Promise<string> {
+  // Don't enhance very short lines, names, contact info, dates
+  if (line.length < 10 || 
+      line.includes('@') || 
+      line.match(/^\d{4}/) || 
+      line.match(/^\+?\d[\d\s\-\(\)]+$/)) {
+    return line;
   }
+  
+  const enhancementPrompt = `Enhance this single resume line to be more professional and ATS-friendly while preserving its core meaning and structure. Only return the enhanced version, nothing else:
 
-  const data = await response.json();
-  const enhancedContent = data.choices[0]?.message?.content;
+Original line: "${line}"
 
-  if (!enhancedContent) {
-    throw new Error('No content received from OpenAI');
-  }
-
-  console.log('Raw AI response received, parsing JSON...');
+Enhanced line:`;
 
   try {
-    // Clean up the response to ensure it's valid JSON
-    let cleanedContent = enhancedContent.trim();
-    
-    // Remove any markdown code block markers
-    if (cleanedContent.startsWith('```json')) {
-      cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (cleanedContent.startsWith('```')) {
-      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
-    }
-
-    const parsedResume = JSON.parse(cleanedContent);
-    
-    // Validate the structure
-    if (!parsedResume.name || !parsedResume.summary || !parsedResume.experience) {
-      throw new Error('Invalid resume structure received from AI');
-    }
-
-    // Ensure arrays exist
-    parsedResume.experience = parsedResume.experience || [];
-    parsedResume.education = parsedResume.education || [];
-    parsedResume.skills = parsedResume.skills || [];
-    parsedResume.tools = parsedResume.tools || [];
-    parsedResume.core_technical_skills = parsedResume.core_technical_skills || [];
-
-    // Log successful enhancement
-    console.log(`Successfully enhanced resume with ${parsedResume.experience.length} work experience entries`);
-
-    // Add some fallback data if sections are empty
-    if (parsedResume.experience.length === 0) {
-      parsedResume.experience.push({
-        title: "Professional Experience",
-        company: "Professional Organization", 
-        duration: "Recent Experience",
-        description: "Demonstrated expertise in various professional domains with focus on delivering measurable results.",
-        core_responsibilities: [
-          "Training new team members on specific procedures and tools",
-          "Managing daily operations related to business initiatives and objectives",
-          "Participating in team meetings and updating progress status",
-          "Attending departmental meetings and sharing project updates"
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are a resume enhancement expert. Enhance the given line to be more professional and ATS-friendly while keeping the same meaning. Return only the enhanced line, no explanations.' 
+          },
+          { 
+            role: 'user', 
+            content: enhancementPrompt 
+          }
         ],
-        achievements: [
-          "Delivered exceptional results through innovative problem-solving approaches and collaborative teamwork",
-          "Drove process improvements that enhanced operational efficiency and stakeholder satisfaction", 
-          "Contributed to organizational success through strategic planning and effective project management"
-        ]
-      });
+        max_tokens: 100,
+        temperature: 0.3,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const enhancedLine = data.choices[0]?.message?.content?.trim();
+      return enhancedLine || line;
     }
-
-    if (parsedResume.skills.length === 0) {
-      parsedResume.skills = [
-        "Project Management", "Problem Solving", "Team Collaboration", "Communication",
-        "Data Analysis", "Process Improvement", "Leadership", "Strategic Planning",
-        "Customer Service", "Technical Skills", "Microsoft Office", "Adaptability"
-      ];
-    }
-
-    if (parsedResume.core_technical_skills.length === 0) {
-      parsedResume.core_technical_skills = [
-        { "name": "Digital Marketing", "proficiency": 92 },
-        { "name": "Content Strategy", "proficiency": 88 },
-        { "name": "SEO Optimization", "proficiency": 85 },
-        { "name": "SEM Management", "proficiency": 83 },
-        { "name": "Social Media Marketing", "proficiency": 90 },
-        { "name": "Brand Development", "proficiency": 87 },
-        { "name": "Market Research", "proficiency": 84 },
-        { "name": "Campaign Management", "proficiency": 91 },
-        { "name": "Google Analytics", "proficiency": 89 },
-        { "name": "Google Ads", "proficiency": 86 }
-      ];
-    }
-
-    console.log('Successfully parsed enhanced resume');
-    return parsedResume;
-
-  } catch (parseError) {
-    console.error('JSON parsing error:', parseError);
-    console.error('Raw content:', enhancedContent);
-    
-    // Fallback to basic parsing if AI response is invalid
-    return basicParseResume(originalText);
+  } catch (error) {
+    console.error('Error enhancing line:', error);
   }
+  
+  // Return original line if enhancement fails
+  return line;
+}
+
+function isLikelyHeader(line: string): boolean {
+  const headerPatterns = [
+    /^(EDUCATION|EXPERIENCE|SKILLS|SUMMARY|OBJECTIVE|ACHIEVEMENTS|CERTIFICATIONS|PROJECTS|AWARDS)/i,
+    /^[A-Z\s]{3,20}$/,  // All caps short lines
+    /^\s*[-=*]+\s*$/,   // Decorative lines
+  ];
+  
+  return headerPatterns.some(pattern => pattern.test(line)) || line.length < 30;
+}
+
+function parseEnhancedTextToStructure(enhancedText: string): any {
+  console.log('Parsing enhanced text to structure...');
+  
+  const lines = enhancedText.split('\n').filter(line => line.trim());
+  const structure: any = {
+    name: '',
+    title: '',
+    email: '',
+    phone: '',
+    location: '',
+    linkedin: '',
+    summary: '',
+    experience: [],
+    education: [],
+    skills: [],
+    tools: [],
+    core_technical_skills: []
+  };
+  
+  // Extract basic contact information
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    
+    // Extract email
+    if (trimmedLine.includes('@') && !structure.email) {
+      structure.email = trimmedLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || '';
+    }
+    
+    // Extract phone
+    if (trimmedLine.match(/^\+?\d[\d\s\-\(\)]+$/) && !structure.phone) {
+      structure.phone = trimmedLine;
+    }
+    
+    // Extract LinkedIn
+    if (trimmedLine.toLowerCase().includes('linkedin') && !structure.linkedin) {
+      structure.linkedin = trimmedLine;
+    }
+  }
+  
+  // Extract name (usually the first substantial line)
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (trimmedLine.length > 3 && 
+        !trimmedLine.includes('@') && 
+        !trimmedLine.match(/^\+?\d/) && 
+        !structure.name) {
+      structure.name = trimmedLine;
+      break;
+    }
+  }
+  
+  // Parse sections
+  let currentSection = '';
+  let currentExperience: any = null;
+  let currentEducation: any = null;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lowerLine = line.toLowerCase();
+    
+    // Detect section headers
+    if (lowerLine.includes('experience') || lowerLine.includes('employment')) {
+      currentSection = 'experience';
+      continue;
+    } else if (lowerLine.includes('education')) {
+      currentSection = 'education';
+      continue;
+    } else if (lowerLine.includes('skills')) {
+      currentSection = 'skills';
+      continue;
+    } else if (lowerLine.includes('summary') || lowerLine.includes('objective')) {
+      currentSection = 'summary';
+      continue;
+    }
+    
+    // Process content based on current section
+    if (currentSection === 'experience') {
+      // Check if this is a new job entry
+      if (isLikelyJobTitle(line) || isLikelyCompanyName(line)) {
+        // Save previous experience if exists
+        if (currentExperience) {
+          structure.experience.push(currentExperience);
+        }
+        
+        // Start new experience entry
+        currentExperience = {
+          title: '',
+          company: '',
+          duration: '',
+          description: '',
+          core_responsibilities: [],
+          achievements: []
+        };
+        
+        // Determine if this is title or company
+        if (isLikelyJobTitle(line)) {
+          currentExperience.title = line;
+        } else {
+          currentExperience.company = line;
+        }
+      } else if (currentExperience && line.length > 0) {
+        // Check next line to determine if this is title/company info
+        if (line.match(/\d{4}/) || line.includes('-')) {
+          currentExperience.duration = line;
+        } else if (!currentExperience.title && isLikelyJobTitle(line)) {
+          currentExperience.title = line;
+        } else if (!currentExperience.company && isLikelyCompanyName(line)) {
+          currentExperience.company = line;
+        } else {
+          // This is a responsibility or achievement
+          if (line.length > 20) {
+            if (lowerLine.includes('achievement') || lowerLine.includes('accomplishment')) {
+              currentExperience.achievements.push(line);
+            } else {
+              currentExperience.core_responsibilities.push(line);
+            }
+          }
+        }
+      }
+    } else if (currentSection === 'education') {
+      if (currentEducation && line.length > 0) {
+        structure.education.push(currentEducation);
+        currentEducation = null;
+      }
+      
+      if (!currentEducation && line.length > 0) {
+        currentEducation = {
+          degree: line,
+          institution: '',
+          year: '',
+          gpa: ''
+        };
+      }
+    } else if (currentSection === 'skills' && line.length > 0) {
+      // Split skills by common delimiters
+      const skills = line.split(/[,|•·\-]/).map(s => s.trim()).filter(s => s.length > 0);
+      structure.skills.push(...skills);
+    } else if (currentSection === 'summary' && line.length > 0) {
+      if (structure.summary) {
+        structure.summary += ' ' + line;
+      } else {
+        structure.summary = line;
+      }
+    }
+  }
+  
+  // Add final experience if exists
+  if (currentExperience) {
+    structure.experience.push(currentExperience);
+  }
+  
+  // Add final education if exists
+  if (currentEducation) {
+    structure.education.push(currentEducation);
+  }
+  
+  // Clean up and ensure we have content
+  if (!structure.summary) {
+    structure.summary = "Experienced professional with demonstrated expertise in delivering results and contributing to organizational success.";
+  }
+  
+  // Ensure we have some skills
+  if (structure.skills.length === 0) {
+    structure.skills = ["Professional Communication", "Team Collaboration", "Problem Solving", "Project Management"];
+  }
+  
+  // Generate core technical skills from regular skills
+  const technicalSkills = structure.skills.slice(0, 8).map((skill: string, index: number) => ({
+    name: skill,
+    proficiency: 75 + (index * 3)
+  }));
+  structure.core_technical_skills = technicalSkills;
+  
+  console.log(`Successfully parsed enhanced resume with ${structure.experience.length} work experience entries`);
+  
+  return structure;
 }
 
 // Extract detailed work experience content with all bullet points and achievements
