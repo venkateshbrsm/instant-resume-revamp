@@ -14,8 +14,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Set a global timeout for the entire function
-  const globalTimeoutMs = 55000; // 55 seconds (less than edge function limit)
+  // Set a global timeout for the entire function (increased for section processing)
+  const globalTimeoutMs = 80000; // 80 seconds to allow for parallel section processing
   const globalController = new AbortController();
   const globalTimeout = setTimeout(() => {
     console.log('⏰ Global function timeout reached');
@@ -103,185 +103,83 @@ serve(async (req) => {
 });
 
 async function enhanceResumeWithAI(originalText: string, apiKey: string, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔍 Starting AI enhancement...');
+  console.log('🔍 Starting section-based AI enhancement...');
   console.log('📄 Original text length:', originalText.length);
   console.log('📄 Text preview (first 200 chars):', originalText.substring(0, 200));
 
-  // Use more reliable model and shorter timeout
-  const selectedModel = 'gpt-4.1-2025-04-14'; // More reliable than GPT-5
-  const timeoutMs = 20000; // 20 seconds max
+  const selectedModel = 'gpt-4.1-2025-04-14';
+  const sectionTimeoutMs = 35000; // 35 seconds per section
   
-  console.log(`📊 Content size: ${originalText.length} chars - Using model: ${selectedModel} with ${timeoutMs/1000}s timeout`);
-
-  // For any content over 8000, use simplified processing
-  if (originalText.length > 8000) {
-    console.log('📋 Large content detected - using simplified enhancement...');
-    return await processWithSinglePrompt(originalText, apiKey, selectedModel, timeoutMs, globalSignal);
-  }
-
-  const prompt = `You are an expert resume parser and enhancer. Extract ONLY actual information from the resume text provided below. 
-
-CRITICAL: DO NOT USE PLACEHOLDER TEXT. Extract real data from the resume or leave fields empty if not found.
-
-Resume text:
-${originalText}
-
-Parse this resume and return ONLY a JSON object with this exact structure:
-{
-  "name": "extract the actual person's name",
-  "title": "extract the actual professional title or role",
-  "email": "extract the actual email address",
-  "phone": "extract the actual phone number", 
-  "location": "extract the actual location/city",
-  "linkedin": "extract the actual LinkedIn URL if present",
-  "summary": "create a professional summary based on the actual profile summary and experience in the resume",
-  "experience": [
-    {
-      "title": "extract the actual job title from work experience section",
-      "company": "extract the actual company name from work experience section",
-      "duration": "extract the actual employment dates/duration",
-      "description": "extract or enhance the actual job description specific to this role",
-      "achievements": ["extract UNIQUE actual bullet points specific to THIS job only", "each achievement must be distinct and role-specific", "avoid repeating similar content across different positions"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "extract the actual degree name",
-      "institution": "extract the actual institution/university name", 
-      "year": "extract the actual graduation year or duration",
-      "gpa": "extract actual GPA if mentioned, otherwise empty string"
-    }
-  ],
-  "skills": ["extract actual skills mentioned in the resume"],
-  "tools": ["extract actual tools/software mentioned"],
-  "certifications": ["extract actual certifications mentioned"],
-  "languages": ["extract actual languages mentioned"]
-}
-
-CRITICAL EXPERIENCE EXTRACTION RULES:
-1. Each experience entry MUST have UNIQUE achievements - never repeat similar bullet points across different jobs
-2. Focus on role-specific responsibilities and outcomes for each position
-3. If the original resume has generic content, differentiate it based on job title, company, and timeframe
-4. Look for subtle differences in responsibilities, tools used, industry focus, or scope of work
-5. Extract actual metrics, numbers, and specific outcomes when available
-6. If multiple similar roles exist, emphasize different aspects of each (e.g., strategy vs execution, team leadership vs individual contributor)
-7. For work experience: Look for job titles, company names, employment dates, and unique bullet points per role
-8. For education: Look for degree names, institution names, graduation dates, GPA if mentioned
-9. For skills: Extract from dedicated skills section or mentioned throughout the resume
-10. For contact info: Extract name, email, phone, location from the header/contact section
-11. For summary: Create based on profile summary section and overall experience
-12. NEVER use phrases like "Professional Role 1", "Company Name", "Achievement based on extracted content" - these are placeholders
-13. If you cannot find specific information, use empty string "" or empty array []
-
-Return ONLY the JSON object, no additional text or formatting.`;
-
-  return await makeOpenAIRequestWithTimeout(prompt, apiKey, selectedModel, timeoutMs, globalSignal);
-}
-
-async function processWithSinglePrompt(originalText: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
-  console.log('🔄 Processing with simplified single prompt...');
-  
-  // Use a more focused prompt that extracts key sections efficiently
-  const prompt = `Extract information from this resume and return ONLY a JSON object. Focus on actual data, not placeholders.
-
-Resume content:
-${originalText.substring(0, 10000)} // Limit content to prevent timeouts
-
-Return ONLY this JSON structure:
-{
-  "name": "actual person's name (required)",
-  "title": "job title or professional role",
-  "email": "email address", 
-  "phone": "phone number",
-  "location": "city/location",
-  "linkedin": "LinkedIn URL if present",
-  "summary": "2-3 sentence professional summary based on the resume content",
-  "experience": [
-    {
-      "title": "actual job title",
-      "company": "actual company name", 
-      "duration": "employment dates",
-      "description": "brief role description",
-      "achievements": ["specific achievement 1", "specific achievement 2"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "actual degree name",
-      "institution": "actual school/university name",
-      "year": "graduation year",
-      "gpa": "GPA if mentioned"
-    }
-  ],
-  "skills": ["actual skill 1", "actual skill 2", "actual skill 3"],
-  "tools": ["tool/technology used"],
-  "certifications": ["certification name if any"],
-  "languages": ["language if mentioned"]
-}
-
-CRITICAL: Extract actual information only. If a section is not found, use empty array [] or empty string "". No placeholder text.`;
+  console.log(`📊 Processing complete resume: ${originalText.length} chars - Using model: ${selectedModel} with ${sectionTimeoutMs/1000}s per section`);
 
   try {
-    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, Math.min(timeoutMs, 30000), globalSignal);
+    // Split resume into logical sections
+    const sections = await splitResumeIntoSections(originalText);
+    console.log('📋 Sections identified:', sections.map(s => `${s.type} (${s.content.length} chars)`));
+
+    // Process sections in parallel for efficiency
+    const sectionPromises = sections.map(section => 
+      processSectionWithAI(section, apiKey, selectedModel, sectionTimeoutMs, globalSignal)
+    );
+
+    const enhancedSections = await Promise.all(sectionPromises);
+    console.log('✅ All sections processed successfully');
+
+    // Merge sections back into expected JSON structure
+    const mergedResult = mergeSectionsToResumeFormat(enhancedSections);
+    console.log('🔧 Sections merged into final resume format');
     
-    // Validate the result has minimum required data
-    if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response format from AI');
-    }
-    
-    // Ensure required fields exist
-    const validatedResult = {
-      name: result.name || "",
-      title: result.title || "",
-      email: result.email || "",
-      phone: result.phone || "",
-      location: result.location || "",
-      linkedin: result.linkedin || "",
-      summary: result.summary || "",
-      experience: Array.isArray(result.experience) ? result.experience : [],
-      education: Array.isArray(result.education) ? result.education : [],
-      skills: Array.isArray(result.skills) ? result.skills : [],
-      tools: Array.isArray(result.tools) ? result.tools : [],
-      certifications: Array.isArray(result.certifications) ? result.certifications : [],
-      languages: Array.isArray(result.languages) ? result.languages : []
-    };
-    
-    console.log('✅ Single prompt processing complete');
-    console.log(`📊 Results: ${validatedResult.experience.length} experience, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
-    
-    return validatedResult;
+    return mergedResult;
+
   } catch (error) {
-    console.error('❌ Single prompt processing failed:', error);
+    console.error('❌ Section-based enhancement failed:', error);
     throw error;
   }
 }
 
-function splitResumeIntoSections(text: string): Array<{type: string, content: string}> {
+async function splitResumeIntoSections(text: string): Promise<Array<{type: string, content: string}>> {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   const sections = [];
   
-  // Define section markers
-  const contactMarkers = ['email', '@', 'phone', 'mobile', 'linkedin', 'address'];
-  const experienceMarkers = ['experience', 'employment', 'work history', 'professional experience', 'career', 'work', 'positions held'];
-  const educationMarkers = ['education', 'academic', 'qualification', 'degree', 'university', 'college', 'school'];
-  const skillsMarkers = ['skills', 'technical skills', 'competencies', 'expertise', 'proficiencies', 'technologies'];
-  
+  // Define section markers with more comprehensive patterns
+  const sectionMarkers = {
+    contact: ['email', '@', 'phone', 'mobile', 'linkedin', 'address', 'location', 'portfolio', 'website'],
+    summary: ['summary', 'profile', 'objective', 'about', 'overview', 'professional summary', 'career objective'],
+    experience: ['experience', 'employment', 'work history', 'professional experience', 'career history', 'work', 'positions', 'employment history'],
+    education: ['education', 'academic', 'qualification', 'degree', 'university', 'college', 'school', 'academic background'],
+    skills: ['skills', 'technical skills', 'competencies', 'expertise', 'proficiencies', 'technologies', 'tools', 'programming'],
+    certifications: ['certification', 'certificates', 'licensed', 'accreditation', 'credentials'],
+    projects: ['projects', 'portfolio', 'notable work', 'key projects', 'achievements'],
+    languages: ['languages', 'linguistic', 'multilingual', 'fluent']
+  };
+
   let currentType = 'contact';
   let currentContent: string[] = [];
   
+  // Process each line and detect section boundaries
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].toLowerCase();
-    const isHeader = line.length < 50 && (line.includes(':') || line.match(/^[a-z\s]+$/));
+    const line = lines[i];
+    const lowerLine = line.toLowerCase();
     
-    // Check for section transitions
+    // Detect if this line is a section header
+    const isShortLine = line.length < 80;
+    const hasColonOrAllCaps = line.includes(':') || line === line.toUpperCase();
+    const isHeader = isShortLine && (hasColonOrAllCaps || lowerLine.match(/^[a-z\s&-]+$/));
+    
     let newType = currentType;
-    if (isHeader && experienceMarkers.some(marker => line.includes(marker))) {
-      newType = 'experience';
-    } else if (isHeader && educationMarkers.some(marker => line.includes(marker))) {
-      newType = 'education';
-    } else if (isHeader && skillsMarkers.some(marker => line.includes(marker))) {
-      newType = 'skills';
-    } else if (i < 15 && contactMarkers.some(marker => line.includes(marker))) {
+    
+    if (isHeader) {
+      // Check which section this header belongs to
+      for (const [sectionType, markers] of Object.entries(sectionMarkers)) {
+        if (markers.some(marker => lowerLine.includes(marker))) {
+          newType = sectionType;
+          break;
+        }
+      }
+    }
+    
+    // Handle early contact detection (first 20 lines)
+    if (i < 20 && sectionMarkers.contact.some(marker => lowerLine.includes(marker))) {
       newType = 'contact';
     }
     
@@ -289,10 +187,10 @@ function splitResumeIntoSections(text: string): Array<{type: string, content: st
     if (newType !== currentType && currentContent.length > 0) {
       sections.push({ type: currentType, content: currentContent.join('\n') });
       currentContent = [];
-      currentType = newType;
     }
     
-    currentContent.push(lines[i]);
+    currentType = newType;
+    currentContent.push(line);
   }
   
   // Add final section
@@ -300,40 +198,245 @@ function splitResumeIntoSections(text: string): Array<{type: string, content: st
     sections.push({ type: currentType, content: currentContent.join('\n') });
   }
   
-  // Merge small sections and ensure we have main sections
-  const consolidated = [];
-  const contactSection = sections.find(s => s.type === 'contact') || { type: 'contact', content: lines.slice(0, 10).join('\n') };
-  consolidated.push(contactSection);
+  // Ensure we have essential sections by consolidating if needed
+  const consolidatedSections = consolidateSections(sections, lines);
   
+  console.log('📋 Final sections:', consolidatedSections.map(s => `${s.type} (${s.content.length} chars)`));
+  return consolidatedSections;
+}
+
+function consolidateSections(sections: Array<{type: string, content: string}>, allLines: string[]): Array<{type: string, content: string}> {
+  const result = [];
+  
+  // Ensure contact section exists (use first 15 lines if not found)
+  let contactSection = sections.find(s => s.type === 'contact');
+  if (!contactSection) {
+    contactSection = { type: 'contact', content: allLines.slice(0, 15).join('\n') };
+  }
+  result.push(contactSection);
+  
+  // Consolidate summary/profile sections
+  const summaryContent = sections
+    .filter(s => ['summary', 'profile', 'objective', 'about'].includes(s.type))
+    .map(s => s.content)
+    .join('\n\n');
+  if (summaryContent.trim()) {
+    result.push({ type: 'summary', content: summaryContent });
+  }
+  
+  // Keep experience section as is (most important)
   const experienceSection = sections.find(s => s.type === 'experience');
   if (experienceSection) {
-    consolidated.push(experienceSection);
+    result.push(experienceSection);
   }
   
-  // Combine education and skills if separate, or create from remaining content
-  const educationSection = sections.find(s => s.type === 'education');
-  const skillsSection = sections.find(s => s.type === 'skills');
-  
-  if (educationSection || skillsSection) {
-    const combinedContent = [
-      ...(educationSection ? [educationSection.content] : []),
-      ...(skillsSection ? [skillsSection.content] : [])
-    ].join('\n\n');
-    
-    if (combinedContent.trim()) {
-      consolidated.push({ type: 'skills_education', content: combinedContent });
-    }
-  } else {
-    // Use remaining content
-    const usedLines = contactSection.content.split('\n').length + (experienceSection?.content.split('\n').length || 0);
-    const remainingContent = lines.slice(usedLines).join('\n');
-    if (remainingContent.trim()) {
-      consolidated.push({ type: 'skills_education', content: remainingContent });
-    }
+  // Consolidate education
+  const educationContent = sections
+    .filter(s => s.type === 'education')
+    .map(s => s.content)
+    .join('\n\n');
+  if (educationContent.trim()) {
+    result.push({ type: 'education', content: educationContent });
   }
   
-  return consolidated;
+  // Consolidate skills, tools, and technologies
+  const skillsContent = sections
+    .filter(s => ['skills', 'technical skills', 'competencies', 'tools'].includes(s.type))
+    .map(s => s.content)
+    .join('\n\n');
+  if (skillsContent.trim()) {
+    result.push({ type: 'skills', content: skillsContent });
+  }
+  
+  // Consolidate certifications and projects
+  const otherContent = sections
+    .filter(s => ['certifications', 'projects', 'languages', 'achievements'].includes(s.type))
+    .map(s => s.content)
+    .join('\n\n');
+  if (otherContent.trim()) {
+    result.push({ type: 'additional', content: otherContent });
+  }
+  
+  return result;
 }
+
+async function processSectionWithAI(section: {type: string, content: string}, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
+  console.log(`🔄 Processing ${section.type} section (${section.content.length} chars)...`);
+  
+  const prompts = {
+    contact: `Extract contact information from this resume section. Return ONLY a JSON object:
+
+Content:
+${section.content}
+
+Return:
+{
+  "name": "full name",
+  "email": "email address", 
+  "phone": "phone number",
+  "location": "city/location",
+  "linkedin": "LinkedIn URL if present",
+  "title": "professional title/role if mentioned"
+}`,
+
+    summary: `Create a professional summary from this resume section. Return ONLY a JSON object:
+
+Content: 
+${section.content}
+
+Return:
+{
+  "summary": "2-3 sentence professional summary highlighting key qualifications and experience"
+}`,
+
+    experience: `Extract work experience from this section. Each job must have UNIQUE achievements. Return ONLY a JSON array:
+
+Content:
+${section.content}
+
+Return:
+[
+  {
+    "title": "job title",
+    "company": "company name",
+    "duration": "employment dates", 
+    "description": "brief role description",
+    "achievements": ["unique achievement 1", "unique achievement 2", "unique achievement 3"]
+  }
+]`,
+
+    education: `Extract education information. Return ONLY a JSON array:
+
+Content:
+${section.content}
+
+Return:
+[
+  {
+    "degree": "degree name",
+    "institution": "school/university name",
+    "year": "graduation year or duration",
+    "gpa": "GPA if mentioned"
+  }
+]`,
+
+    skills: `Extract skills, tools, and technologies. Return ONLY a JSON object:
+
+Content:
+${section.content}
+
+Return:
+{
+  "skills": ["skill1", "skill2", "skill3"],
+  "tools": ["tool1", "tool2", "tool3"]
+}`,
+
+    additional: `Extract certifications, projects, languages, and other information. Return ONLY a JSON object:
+
+Content:
+${section.content}
+
+Return:
+{
+  "certifications": ["certification1", "certification2"],
+  "languages": ["language1", "language2"],
+  "projects": ["project1", "project2"]
+}`
+  };
+  
+  const prompt = prompts[section.type as keyof typeof prompts] || prompts.additional;
+  
+  try {
+    const result = await makeOpenAIRequestWithTimeout(prompt, apiKey, model, timeoutMs, globalSignal);
+    console.log(`✅ ${section.type} section processed successfully`);
+    return { type: section.type, data: result };
+  } catch (error) {
+    console.error(`❌ Failed to process ${section.type} section:`, error);
+    // Return empty structure for failed sections
+    return { type: section.type, data: {} };
+  }
+}
+
+function mergeSectionsToResumeFormat(enhancedSections: Array<{type: string, data: any}>): any {
+  console.log('🔧 Merging sections into final resume format...');
+  
+  const result = {
+    name: "",
+    title: "", 
+    email: "",
+    phone: "",
+    location: "",
+    linkedin: "",
+    summary: "",
+    experience: [],
+    education: [],
+    skills: [],
+    tools: [],
+    certifications: [],
+    languages: []
+  };
+  
+  for (const section of enhancedSections) {
+    try {
+      switch (section.type) {
+        case 'contact':
+          if (section.data) {
+            result.name = section.data.name || result.name;
+            result.title = section.data.title || result.title;
+            result.email = section.data.email || result.email;
+            result.phone = section.data.phone || result.phone;
+            result.location = section.data.location || result.location;
+            result.linkedin = section.data.linkedin || result.linkedin;
+          }
+          break;
+          
+        case 'summary':
+          if (section.data?.summary) {
+            result.summary = section.data.summary;
+          }
+          break;
+          
+        case 'experience':
+          if (Array.isArray(section.data)) {
+            result.experience = section.data.filter(exp => exp.title && exp.company);
+          }
+          break;
+          
+        case 'education':
+          if (Array.isArray(section.data)) {
+            result.education = section.data.filter(edu => edu.degree || edu.institution);
+          }
+          break;
+          
+        case 'skills':
+          if (section.data) {
+            result.skills = Array.isArray(section.data.skills) ? section.data.skills : [];
+            result.tools = Array.isArray(section.data.tools) ? section.data.tools : [];
+          }
+          break;
+          
+        case 'additional':
+          if (section.data) {
+            result.certifications = Array.isArray(section.data.certifications) ? section.data.certifications : [];
+            result.languages = Array.isArray(section.data.languages) ? section.data.languages : [];
+          }
+          break;
+      }
+    } catch (error) {
+      console.error(`Error merging ${section.type} section:`, error);
+    }
+  }
+  
+  console.log('📊 Final merged results:');
+  console.log(`👤 Name: ${result.name}`);
+  console.log(`💼 Experience entries: ${result.experience.length}`);
+  console.log(`🎓 Education entries: ${result.education.length}`);
+  console.log(`🛠️ Skills count: ${result.skills.length}`);
+  
+  return result;
+}
+
+// This function is now replaced by the new section-based approach above
 
 async function makeOpenAIRequestWithTimeout(prompt: string, apiKey: string, model: string, timeoutMs: number, globalSignal?: AbortSignal): Promise<any> {
   const controller = new AbortController();
