@@ -178,8 +178,41 @@ serve(async (req) => {
       throw new Error('Invalid response from OpenAI API');
     }
 
-    const enhancedContent = data.choices[0].message.content.trim();
+    let enhancedContent = data.choices[0].message.content.trim();
 
+    // Clean up the response to remove AI explanatory text and formatting
+    // Remove markdown formatting
+    enhancedContent = enhancedContent.replace(/\*\*(.*?)\*\*/g, '$1');
+    enhancedContent = enhancedContent.replace(/\*(.*?)\*/g, '$1');
+    
+    // Remove common AI explanatory phrases and everything after them
+    const cleanupPatterns = [
+      /This version.*/i,
+      /The enhanced.*/i,
+      /I've enhanced.*/i,
+      /Here's the enhanced.*/i,
+      /This rewrite.*/i,
+      /This improved.*/i,
+      /The rewritten.*/i,
+      /This professional.*/i,
+      /This description.*/i,
+      /This skills section.*/i,
+      /This title.*/i,
+      /These achievements.*/i,
+      /This content.*/i,
+      /Note:.*/i,
+      /Key improvements:.*/i,
+      /Changes made:.*/i,
+      /Enhancement details:.*/i
+    ];
+    
+    for (const pattern of cleanupPatterns) {
+      enhancedContent = enhancedContent.replace(pattern, '').trim();
+    }
+    
+    // Remove any trailing periods or explanatory text that might remain
+    enhancedContent = enhancedContent.replace(/\.\s*$/, '').trim();
+    
     console.log('✅ Field enhancement completed successfully');
 
     return new Response(JSON.stringify({ 
