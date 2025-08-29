@@ -660,13 +660,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                           {/* Tabbed Preview */}
                           <Tabs defaultValue="pdf" className="w-full">
-                           <TabsList className="grid w-full grid-cols-2">
-                             <TabsTrigger value="pdf">📄 PDF Preview</TabsTrigger>
+                           <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                             <TabsTrigger value="pdf" className="data-[state=active]:bg-background">📄 PDF Preview</TabsTrigger>
                              <TabsTrigger 
                                value="edit" 
-                               className="relative bg-gradient-to-r from-primary/10 to-primary/20 text-primary font-semibold border border-primary/30 animate-pulse hover:animate-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground"
+                               className="relative bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-700 dark:text-green-400 font-bold border-2 border-green-500/40 animate-pulse hover:animate-none hover-scale shadow-lg shadow-green-500/25 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/50"
                              >
-                               ✨ Edit & Download
+                               <div className="flex items-center gap-2">
+                                 ✨ <span className="hidden sm:inline">Edit &</span> Download
+                                 <Badge className="bg-orange-500 text-white text-xs px-1.5 py-0.5 animate-bounce ml-1">
+                                   NEW!
+                                 </Badge>
+                               </div>
                              </TabsTrigger>
                            </TabsList>
                           
