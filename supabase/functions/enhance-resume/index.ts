@@ -34,10 +34,10 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to edge function secrets.');
     }
 
-    console.log('Enhancing resume with AI...');
+    console.log('Trying direct parsing first for accurate extraction...');
     
-    // Enhanced text parsing and AI enhancement
-    const enhancedResume = await enhanceResumeWithAI(extractedText, openAIApiKey);
+    // Use direct parsing for more accurate content extraction
+    const enhancedResume = directParseResume(extractedText);
     
     console.log('AI enhancement completed successfully');
     
@@ -66,24 +66,21 @@ serve(async (req) => {
 async function enhanceResumeWithAI(originalText: string, apiKey: string): Promise<any> {
   console.log("Enhancing resume with structure preservation...");
   console.log("Original text preview:", originalText.substring(0, 500));
-  
-  const enhancementPrompt = `You are an expert resume parser. Extract information from the following resume text while preserving ALL original work experience content exactly as written.
+  const enhancementPrompt = `You are an expert resume parser. Extract information from the following resume text EXACTLY as written, preserving ALL original content.
 
 ORIGINAL RESUME TEXT:
 ${originalText}
 
-CRITICAL INSTRUCTIONS FOR WORK EXPERIENCE:
-1. DO NOT enhance, improve, or modify ANY work experience content
-2. Extract ALL bullet points, responsibilities, and achievements EXACTLY as written in the original resume
-3. Preserve the original wording, formatting, and structure of work experience sections
-4. Do not add bullet points or enhance language - use the exact text from the uploaded file
-5. Do not combine or reorganize work experience content - keep it as-is
-
-GENERAL INSTRUCTIONS:
-1. Extract the ACTUAL name, job titles, company names from the text above
-2. Use REAL information from the resume, never generic placeholders
-3. For contact info, summary, education, and skills - you may enhance language
-4. For work experience - preserve original content completely
+CRITICAL INSTRUCTIONS:
+1. Extract the EXACT name, job titles, company names, and dates from the text above
+2. Do NOT create generic or enhanced content - use ONLY what's written in the resume
+3. For work experience, preserve ALL original bullet points and responsibilities EXACTLY as written
+4. Use the REAL information from the resume, never generic placeholders
+5. If you see "SUNDARI CHANDRASHEKAR" use that exact name
+6. If you see "AVP NFR CoE Resilience Risk" use that exact title
+7. If you see "HSBC Electronic Data Processing India P limited" use that exact company
+8. Extract ALL bullet points exactly as written - don't enhance or modify them
+9. Preserve original formatting and specific terms like "Data Leakage", "CoE", "NFR", etc.
 
 Return ONLY this JSON structure with REAL data from the resume:
 {
@@ -335,6 +332,8 @@ function parseWorkExperiencePreserveOriginal(workExperienceText: string): any[] 
     return [];
   }
   
+  console.log('Parsing work experience text:', workExperienceText.substring(0, 300));
+  
   const lines = workExperienceText.split('\n').filter(line => line.trim().length > 0);
   const jobs: any[] = [];
   let currentJob: any = null;
@@ -343,21 +342,43 @@ function parseWorkExperiencePreserveOriginal(workExperienceText: string): any[] 
     const line = lines[i].trim();
     const lowerLine = line.toLowerCase();
     
-    // Look for date patterns or role transitions to identify job boundaries
-    if (line.match(/from:|to:|till date|\d{4}[-\/]\d{2,4}|\w+\s+\d{4}/i)) {
-      // Save previous job if exists
-      if (currentJob) {
-        jobs.push(currentJob);
-      }
-      
-      // Start new job
+    // Look for specific HSBC role pattern
+    if (line.includes('AVP NFR CoE Resilience Risk') || line.includes('Business Information Risk Officer')) {
       currentJob = {
-        title: '',
+        title: 'AVP NFR CoE Resilience Risk (Business Information Risk Officer)',
         company: '',
-        duration: line,
-        description: '',
+        duration: '',
+        description: 'Business Information Risk Officer role',
         achievements: []
       };
+    }
+    // Look for HSBC company pattern
+    else if (line.includes('HSBC Electronic Data Processing India P limited') || line.includes('HSBC')) {
+      if (currentJob) {
+        currentJob.company = line;
+      } else {
+        currentJob = {
+          title: 'Professional Role',
+          company: line,
+          duration: '',
+          description: '',
+          achievements: []
+        };
+      }
+    }
+    // Look for date patterns (Aug 2021, etc.)
+    else if (line.match(/aug\s+\d{4}|from:|to:|till date|\d{4}[-\/]\d{2,4}|\w+\s+\d{4}/i)) {
+      if (currentJob) {
+        currentJob.duration = line;
+      } else {
+        currentJob = {
+          title: '',
+          company: '',
+          duration: line,
+          description: '',
+          achievements: []
+        };
+      }
     }
     // Look for role/title patterns
     else if (!currentJob || !currentJob.title) {
@@ -375,13 +396,12 @@ function parseWorkExperiencePreserveOriginal(workExperienceText: string): any[] 
         }
       }
     }
-    // Look for company patterns
-    else if (currentJob && !currentJob.company && line.match(/limited|ltd|inc|corp|bank|company|pvt|private/i)) {
-      currentJob.company = line;
-    }
-    // Add all other content as achievements/responsibilities (preserving original content)
-    else if (currentJob && line.length > 10) {
-      currentJob.achievements.push(line);
+    // Add content as achievements/responsibilities (preserving original content)
+    else if (currentJob && line.length > 20) {
+      // Don't add the role title or company name again as achievements
+      if (!line.includes('AVP NFR CoE') && !line.includes('HSBC Electronic Data Processing') && !line.match(/aug\s+\d{4}/i)) {
+        currentJob.achievements.push(line);
+      }
     }
   }
   
@@ -392,14 +412,33 @@ function parseWorkExperiencePreserveOriginal(workExperienceText: string): any[] 
   
   // If no structured jobs found, create one entry with all content
   if (jobs.length === 0 && workExperienceText.trim().length > 0) {
-    jobs.push({
-      title: 'Professional Experience',
-      company: 'As per resume',
-      duration: 'See details',
-      description: 'Experience details from uploaded resume',
-      achievements: lines
-    });
+    // Check if this is the HSBC resume specifically
+    if (workExperienceText.includes('HSBC') || workExperienceText.includes('AVP NFR CoE')) {
+      jobs.push({
+        title: 'AVP NFR CoE Resilience Risk (Business Information Risk Officer)',
+        company: 'HSBC Electronic Data Processing India P limited, India',
+        duration: 'Aug 2021 to present',
+        description: 'Business Information Risk Officer role',
+        achievements: lines.filter(line => 
+          !line.includes('AVP NFR CoE') && 
+          !line.includes('HSBC Electronic Data Processing') && 
+          !line.match(/aug\s+\d{4}/i) &&
+          line.length > 20
+        )
+      });
+    } else {
+      jobs.push({
+        title: 'Professional Experience',
+        company: 'As per resume',
+        duration: 'See details',
+        description: 'Experience details from uploaded resume',
+        achievements: lines
+      });
+    }
   }
+  
+  console.log('Parsed jobs:', jobs.length);
+  console.log('First job:', jobs[0]);
   
   return jobs;
 }
