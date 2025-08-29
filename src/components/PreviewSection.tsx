@@ -509,17 +509,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             line.includes('EXTRACTED CONTENT:') ||
             line.includes('Extraction Summary:') ||
             line.startsWith('📄') ||
-            line.startsWith('•') && (line.includes('KB') || line.includes('characters')) ||
+            line.startsWith('•') && (line.includes('KB') || line.includes('characters') || line.includes('Status:') || line.includes('Successfully extracted')) ||
             line.includes('Successfully extracted using') ||
             line.includes('PyMuPDF') ||
             line.includes('pytesseract') ||
+            line.includes('Python OCR service') ||
             line === '---' ||
             line === '') {
           contentStartIndex = i + 1;
           continue;
         }
         // If we find actual content, stop skipping
-        if (line.length > 10 && !line.includes('File Details:')) {
+        if (line.length > 10 && !line.includes('File Details:') && !line.includes('✅')) {
           break;
         }
       }
@@ -622,6 +623,10 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
             !line.includes('HSBC') && !line.includes('Bank') && !line.includes('Limited') &&
             !line.includes('From:') && !line.includes('Role') && !lowerLine.includes('experience') &&
             !lowerLine.includes('education') && !lowerLine.includes('skills') &&
+            !line.includes('File Size') && !line.includes('Method:') && !line.includes('Status:') &&
+            !line.includes('Successfully extracted') && !line.includes('PyMuPDF') &&
+            !line.includes('pytesseract') && !line.includes('KB') && !line.includes('characters') &&
+            !line.includes('✅') && !line.startsWith('•') &&
             (line.includes('professional') || line.includes('experienced') || 
              line.includes('specializing') || line.includes('years of') ||
              (i > 2 && line.length > 80))) { // Longer descriptive text after basic info
@@ -686,7 +691,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         }
         
         // Process content based on current section
-        if (inSummary && line.length > 10 && !line.match(/^[A-Z\s]+$/)) {
+        if (inSummary && line.length > 10 && !line.match(/^[A-Z\s]+$/) && 
+            !line.includes('File Size') && !line.includes('Method:') && !line.includes('Status:') &&
+            !line.includes('Successfully extracted') && !line.includes('PyMuPDF') &&
+            !line.includes('pytesseract') && !line.includes('KB') && !line.includes('characters') &&
+            !line.includes('✅') && !line.startsWith('•')) {
           if (!summaryCollected) {
             result.summary = line;
             summaryCollected = true;
