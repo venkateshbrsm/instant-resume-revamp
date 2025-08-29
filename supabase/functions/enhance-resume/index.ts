@@ -783,9 +783,35 @@ function splitByFromMarkers(text: string): string[] {
         }
       }
       
-      // Start new job with this line
+      // Start new job with this line and collect subsequent lines until next From marker
+      // ENHANCED: Collect more context lines after "From:" to capture company info
       currentJob = [line];
-    } else {
+      
+      // Look ahead to collect company/role information that comes after "From:"
+      let lookAheadCount = 0;
+      let j = i + 1;
+      while (j < lines.length && lookAheadCount < 15) { // Collect up to 15 lines ahead
+        const nextLine = lines[j];
+        
+        // Stop if we hit another "From:" marker
+        if (fromPattern.test(nextLine)) {
+          break;
+        }
+        
+        // Stop if we hit what looks like a new major section
+        if (nextLine.match(/^(Education|Skills|Certifications|Languages|Personal Details):/i)) {
+          break;
+        }
+        
+        currentJob.push(nextLine);
+        lookAheadCount++;
+        j++;
+      }
+      
+      // Skip ahead in the main loop to avoid re-processing these lines
+      i = j - 1; // j-1 because the loop will increment i
+    } else if (currentJob.length === 0) {
+      // We're not in a job section yet, add this line to start building one
       currentJob.push(line);
     }
   }
@@ -812,6 +838,22 @@ function splitByFromMarkers(text: string): string[] {
     if (alternativeJobs.length > jobs.length) {
       console.log(`✅ Alternative splitting recovered ${alternativeJobs.length} jobs`);
       return alternativeJobs;
+    }
+  }
+  
+  // CRITICAL: If we found multiple From markers, ensure we return at least that many jobs
+  if (foundFromMarkers > 1 && jobs.length < foundFromMarkers) {
+    console.log('🆘 Emergency job recovery - ensuring minimum job count matches From markers');
+    
+    // Split more aggressively by From markers using regex
+    const emergencyJobs = text.split(/(?=From:\s)/i).filter(section => {
+      const trimmed = section.trim();
+      return trimmed.length > 50 && /From:\s/i.test(trimmed);
+    });
+    
+    if (emergencyJobs.length >= foundFromMarkers) {
+      console.log(`✅ Emergency recovery successful: ${emergencyJobs.length} jobs recovered`);
+      return emergencyJobs;
     }
   }
   
@@ -1291,8 +1333,25 @@ function parseResumeIntoSections(text: string): Array<{type: string, content: st
 
   // Process experience section with individual job detection
   const experienceSection = sections.find(s => s.type === 'experience');
-  if (experienceSection && experienceSection.content.length > 100) {
-    // Detect individual jobs within the experience section
+  
+  // CRITICAL FIX: For resumes without clear section headers (like Sundari's), 
+  // scan the ENTIRE text for job markers, not just the experience section
+  console.log('🔍 Scanning entire resume for job markers (improved detection)...');
+  const fullTextJobs = detectIndividualJobs(text); // Use full text instead of just experience section
+  
+  if (fullTextJobs.length > 1) {
+    console.log(`✅ Full-text job detection found ${fullTextJobs.length} jobs`);
+    // Add each job as a separate section for processing
+    fullTextJobs.forEach((jobContent, index) => {
+      consolidatedSections.push({
+        type: `experience_job_${index}`,
+        content: jobContent,
+        priority: 3 + (index * 0.1) // Maintain order but allow parallel processing
+      });
+    });
+  } else if (experienceSection && experienceSection.content.length > 100) {
+    // Fallback to experience section detection if full-text fails
+    console.log('⚠️ Full-text detection found limited jobs, trying experience section...');
     const individualJobs = detectIndividualJobs(experienceSection.content);
     console.log(`🔍 Detected ${individualJobs.length} individual jobs in experience section`);
     
@@ -1304,6 +1363,18 @@ function parseResumeIntoSections(text: string): Array<{type: string, content: st
         priority: 3 + (index * 0.1) // Maintain order but allow parallel processing
       });
     });
+  } else {
+    // Final fallback - create a generic experience section from remaining content
+    console.log('⚠️ No clear job structure detected, creating generic experience section');
+    const usedContent = consolidatedSections.map(s => s.content).join('\n');
+    const remainingLines = lines.filter(line => !usedContent.includes(line));
+    if (remainingLines.length > 10) {
+      consolidatedSections.push({
+        type: 'experience_job_0',
+        content: remainingLines.join('\n'),
+        priority: 3
+      });
+    }
   }
 
   // Process summary/profile section
