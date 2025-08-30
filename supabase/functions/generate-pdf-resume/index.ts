@@ -170,6 +170,10 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       font-weight: bold;
       color: ${theme.primary};
       margin-bottom: 5px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
     }
     
     .company, .institution {
@@ -509,6 +513,10 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       font-weight: bold;
       color: ${theme.primary};
       margin-bottom: 5px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
     }
     
     .company, .institution {
@@ -847,6 +855,10 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       font-weight: 600;
       color: ${theme.primary};
       margin-bottom: 8px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
     }
     
     .company, .institution {
