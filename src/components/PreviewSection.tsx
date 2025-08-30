@@ -833,29 +833,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                  <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
                                    📄 PDF Preview • This is exactly what you'll receive
                                  </p>
-                                 <div className="flex gap-2">
-                                   <Button 
-                                     variant="outline" 
-                                     size="sm" 
-                                     onClick={generatePreviewPdf}
-                                     disabled={isGeneratingPreview}
-                                     className="flex-1 sm:flex-none"
-                                   >
-                                     {isGeneratingPreview ? (
-                                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                     ) : (
-                                       <FileText className="w-4 h-4 mr-2" />
-                                     )}
-                                     <span className="hidden sm:inline">Refresh PDF</span>
-                                     <span className="sm:hidden">Refresh</span>
-                                   </Button>
-                                   <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                                     <DialogTrigger asChild>
-                                       <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
-                                         <Maximize2 className="w-4 h-4 mr-2 sm:mr-0" />
-                                         <span className="sm:hidden">Fullscreen</span>
-                                       </Button>
-                                     </DialogTrigger>
+                                  <div className="flex justify-end">
+                                    <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+                                      <DialogTrigger asChild>
+                                        <Button 
+                                          variant="hero" 
+                                          size="sm" 
+                                          className="flex items-center gap-2 px-4 py-2 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                        >
+                                          <Maximize2 className="w-4 h-4" />
+                                          <span>View Fullscreen</span>
+                                        </Button>
+                                      </DialogTrigger>
                                      <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
                                        <div className="flex items-center justify-between p-4 border-b">
                                          <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
