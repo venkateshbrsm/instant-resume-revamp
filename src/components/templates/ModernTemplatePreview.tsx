@@ -243,19 +243,23 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                   ></div>
                   
                   <div className="mb-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-bold text-lg text-foreground">{exp.title}</h3>
-                        <p className="font-medium text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
+                    <div className="mb-2">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
+                        <div className="flex-1 min-w-0 pr-4">
+                          <h3 className="font-bold text-lg text-foreground break-words">{exp.title}</h3>
+                          <p className="font-medium text-base break-words" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <span 
+                            className="text-xs font-medium px-2 py-1 whitespace-nowrap" 
+                            style={{ 
+                              color: selectedColorTheme.primary
+                            }}
+                          >
+                            {exp.duration}
+                          </span>
+                        </div>
                       </div>
-                      <span 
-                        className="text-xs font-medium px-2 py-1" 
-                        style={{ 
-                          color: selectedColorTheme.primary
-                        }}
-                      >
-                        {exp.duration}
-                      </span>
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
