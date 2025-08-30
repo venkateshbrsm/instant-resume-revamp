@@ -451,7 +451,7 @@ export const EditablePreview = ({
             <CardContent className="pt-4">
               {field === 'experience' && (
                 <>
-                  {renderEditableField2('Job Title', item.title, field, 'title', false, index)}
+                  {renderEditableField2('Job Title', item.title, field, 'title', true, index)}
                   {renderEditableField2('Company', item.company, field, 'company', false, index)}
                   {renderEditableField2('Duration', item.duration, field, 'duration', false, index)}
                   {item.description && renderEditableField2('Description', item.description, field, 'description', true, index)}
@@ -513,7 +513,7 @@ export const EditablePreview = ({
       const isEnhancing = enhancingFields.has(fieldKey);
       
       // Fields that should NOT have the enhance button for experience and education
-      const excludedExperienceFields = ['title', 'company', 'duration'];
+      const excludedExperienceFields = ['company', 'duration'];
       const excludedEducationFields = ['degree', 'institution', 'year', 'gpa'];
       const shouldShowEnhanceButton = !(
         (field === 'experience' && excludedExperienceFields.includes(nestedField!)) ||
