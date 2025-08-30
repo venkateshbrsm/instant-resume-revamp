@@ -81,8 +81,8 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
                   <div className="mb-4">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                       <div className="flex-1 min-w-0 pr-4">
-                        <h3 className="text-lg font-bold text-foreground break-words">{exp.title}</h3>
-                        <p className="text-base font-semibold break-words" style={{ color: selectedColorTheme.primary }}>
+                        <h3 className="text-lg font-bold text-foreground break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
+                        <p className="text-base font-semibold break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.primary }}>
                           {exp.company}
                         </p>
                       </div>

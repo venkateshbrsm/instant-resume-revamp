@@ -140,12 +140,12 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
                       >
                          <div className="flex flex-col gap-4 mb-6 print:mb-4">
                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 print:flex-col print:gap-2">
-                             <div className="flex-1 min-w-0 pr-4">
-                               <h3 className="text-xl font-bold text-foreground print:text-lg break-words">{exp.title}</h3>
-                               <p className="text-lg font-semibold print:text-base break-words" style={{ color: selectedColorTheme.accent }}>
-                                 {exp.company}
-                               </p>
-                             </div>
+                              <div className="flex-1 min-w-0 pr-4">
+                                <h3 className="text-xl font-bold text-foreground print:text-lg break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
+                                <p className="text-lg font-semibold print:text-base break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.accent }}>
+                                  {exp.company}
+                                </p>
+                              </div>
                              <div className="flex-shrink-0">
                                <span 
                                  className="px-4 py-2 font-medium text-sm print:px-3 print:py-1 print:text-xs whitespace-nowrap"

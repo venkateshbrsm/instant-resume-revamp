@@ -68,12 +68,12 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
             {enhancedContent.experience.map((exp: any, index: number) => (
                <div key={index} className="space-y-4 print:break-inside-avoid print:mb-6">
                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                   <div className="flex-1 min-w-0 pr-4">
-                     <h3 className="text-lg font-medium text-foreground break-words">{exp.title}</h3>
-                     <p className="text-base font-light break-words" style={{ color: selectedColorTheme.primary }}>
-                       {exp.company}
-                     </p>
-                   </div>
+                    <div className="flex-1 min-w-0 pr-4">
+                      <h3 className="text-lg font-medium text-foreground break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
+                      <p className="text-base font-light break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.primary }}>
+                        {exp.company}
+                      </p>
+                    </div>
                    <div className="flex-shrink-0">
                      <p className="text-sm text-muted-foreground font-light whitespace-nowrap">{exp.duration}</p>
                    </div>

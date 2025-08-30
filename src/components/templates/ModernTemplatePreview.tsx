@@ -246,8 +246,8 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                     <div className="mb-2">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
                         <div className="flex-1 min-w-0 pr-4">
-                          <h3 className="font-bold text-lg text-foreground break-words">{exp.title}</h3>
-                          <p className="font-medium text-base break-words" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
+                          <h3 className="font-bold text-lg text-foreground break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
+                          <p className="font-medium text-base break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                         </div>
                         <div className="flex-shrink-0">
                           <span 

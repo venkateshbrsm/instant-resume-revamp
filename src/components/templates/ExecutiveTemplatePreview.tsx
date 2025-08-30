@@ -224,9 +224,9 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                     {enhancedContent.experience.map((exp: any, index: number) => (
                       <div key={index} className="bg-white p-6 rounded-lg shadow-sm border-l-4 experience-item page-break-avoid print:mb-8" style={{ borderColor: selectedColorTheme.accent }} data-experience>
                         <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-600 mb-1">{exp.title}</h3>
-                            <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
+                          <div className="flex-1 min-w-0 pr-4">
+                            <h3 className="text-lg font-bold text-gray-600 mb-1 break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
+                            <p className="text-base font-semibold break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.primary }}>
                               {exp.company}
                             </p>
                           </div>
