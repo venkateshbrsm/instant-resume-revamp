@@ -624,7 +624,9 @@ export const EditablePreview = ({
             )}
             <div className="flex-1">
               {renderEditableField('Full Name', editableData.name, 'name')}
-              {renderEditableField('Professional Title', editableData.title, 'title', undefined, true)}
+              <div className="w-1/2">
+                {renderEditableField('Professional Title', editableData.title, 'title', undefined, true)}
+              </div>
             </div>
           </div>
           
