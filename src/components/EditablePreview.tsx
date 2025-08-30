@@ -522,6 +522,8 @@ export const EditablePreview = ({
 
       const InputComponent = isTextarea ? Textarea : Input;
       
+      const isJobTitle = field === 'experience' && nestedField === 'title';
+      
       return (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
@@ -544,14 +546,24 @@ export const EditablePreview = ({
               </Button>
             )}
           </div>
-          <InputComponent
-            value={actualValue}
-            onChange={(e) => handleArrayFieldChange(field, index, nestedField!, e.target.value)}
-            className="mt-1"
-            placeholder={`Enter ${label.toLowerCase()}`}
-            rows={isTextarea ? 3 : undefined}
-            disabled={isAutoEnhancing}
-          />
+          {isJobTitle ? (
+            <div className="w-1/2">
+              <InputComponent
+                value={actualValue}
+                onChange={(e) => handleArrayFieldChange(field, index, nestedField!, e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          ) : (
+            <InputComponent
+              value={actualValue}
+              onChange={(e) => handleArrayFieldChange(field, index, nestedField!, e.target.value)}
+              className="mt-1"
+              placeholder={`Enter ${label.toLowerCase()}`}
+              rows={isTextarea ? 3 : undefined}
+              disabled={isAutoEnhancing}
+            />
+          )}
         </div>
       );
     }
