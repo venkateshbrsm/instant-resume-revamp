@@ -399,7 +399,7 @@ export const EditablePreview = ({
     const isEnhancing = enhancingFields.has(fieldKey);
     
     // Fields that should NOT have the enhance button
-    const excludedFields = ['name', 'email', 'phone', 'title', 'location', 'linkedin'];
+    const excludedFields = ['name', 'email', 'phone', 'location', 'linkedin'];
     const shouldShowEnhanceButton = !excludedFields.includes(field);
 
     const InputComponent = isTextarea ? Textarea : Input;
@@ -624,7 +624,7 @@ export const EditablePreview = ({
             )}
             <div className="flex-1">
               {renderEditableField('Full Name', editableData.name, 'name')}
-              {renderEditableField('Professional Title', editableData.title, 'title')}
+              {renderEditableField('Professional Title', editableData.title, 'title', undefined, true)}
             </div>
           </div>
           
