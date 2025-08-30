@@ -79,11 +79,17 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
               {enhancedContent.experience.map((exp: any, index: number) => (
                 <div key={index} className="border-l-4 pl-6 page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
                   <div className="mb-4">
-                    <h3 className="text-lg font-bold text-foreground">{exp.title}</h3>
-                    <p className="text-base font-semibold" style={{ color: selectedColorTheme.primary }}>
-                      {exp.company}
-                    </p>
-                    <p className="text-sm text-muted-foreground italic">{exp.duration}</p>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                      <div className="flex-1 min-w-0 pr-4">
+                        <h3 className="text-lg font-bold text-foreground break-words">{exp.title}</h3>
+                        <p className="text-base font-semibold break-words" style={{ color: selectedColorTheme.primary }}>
+                          {exp.company}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <p className="text-sm text-muted-foreground italic whitespace-nowrap">{exp.duration}</p>
+                      </div>
+                    </div>
                   </div>
                   
                   {exp.achievements && exp.achievements.length > 0 && (
