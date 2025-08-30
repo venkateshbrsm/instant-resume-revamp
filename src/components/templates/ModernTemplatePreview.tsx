@@ -248,17 +248,14 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
                         <h3 className="font-bold text-lg text-foreground">{exp.title}</h3>
                         <p className="font-medium text-base" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs px-2 py-1" 
+                      <span 
+                        className="text-xs font-medium px-2 py-1" 
                         style={{ 
-                          backgroundColor: `${selectedColorTheme.primary}10`, 
-                          color: selectedColorTheme.primary,
-                          borderColor: `${selectedColorTheme.primary}20`
+                          color: selectedColorTheme.primary
                         }}
                       >
                         {exp.duration}
-                      </Badge>
+                      </span>
                     </div>
                     
                     {exp.achievements && exp.achievements.length > 0 && (
