@@ -18,7 +18,7 @@ interface EditablePreviewProps {
   selectedColorTheme: any;
   onContentUpdate: (updatedContent: any) => void;
   onAutoEnhancementStateChange?: (isAutoEnhancing: boolean) => void;
-  onSaveRequired?: (saveFunction: () => Promise<void>) => void;
+  onSaveRequired?: (saveFunction: (isAutoSave?: boolean) => Promise<void>) => void;
   className?: string;
 }
 
@@ -206,14 +206,15 @@ export const EditablePreview = ({
     }
   }, [isAutoEnhancing, onAutoEnhancementStateChange]);
 
-  const handleSave = useCallback(async () => {
-    // Prevent multiple saves within 1 second
+  const handleSave = useCallback(async (isAutoSave = false) => {
+    // Only throttle manual saves, allow auto-saves to proceed
     const now = Date.now();
-    if (now - lastSaveTime < 1000) {
-      console.log('⏱️ Skipping save - too recent');
+    if (!isAutoSave && now - lastSaveTime < 1000) {
+      console.log('⏱️ Skipping manual save - too recent');
       return;
     }
     
+    console.log(`💾 ${isAutoSave ? 'Auto-saving' : 'Manual saving'} content...`);
     setIsSaving(true);
     setLastSaveTime(now);
     try {
@@ -234,7 +235,10 @@ export const EditablePreview = ({
       
       console.log('✅ Data saved to localStorage successfully');
       
-      toast.success('Changes saved successfully!');
+      // Only show toast for manual saves, not auto-saves
+      if (!isAutoSave) {
+        toast.success('Changes saved successfully!');
+      }
     } catch (error) {
       console.error('Error saving changes:', error);
       toast.error('Failed to save changes. Please try again.');
@@ -243,12 +247,12 @@ export const EditablePreview = ({
     }
   }, [editableData, onContentUpdate, lastSaveTime]);
 
-  // Expose save function to parent - only when onSaveRequired changes, not handleSave
+  // Expose save function to parent - include handleSave to ensure fresh reference
   useEffect(() => {
     if (onSaveRequired) {
       onSaveRequired(handleSave);
     }
-  }, [onSaveRequired]);
+  }, [onSaveRequired, handleSave]);
 
   const handleFieldChange = useCallback((field: string, value: any, nestedField?: string) => {
     setEditableData((prev: any) => {

@@ -58,7 +58,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
   const [currentPreviewTab, setCurrentPreviewTab] = useState("edit");
-  const [editSaveFunction, setEditSaveFunction] = useState<(() => Promise<void>) | null>(null);
+  const [editSaveFunction, setEditSaveFunction] = useState<((isAutoSave?: boolean) => Promise<void>) | null>(null);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -790,13 +790,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
                              {/* Tabbed Preview */}
                               <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
-                                // Only auto-save when switching away from edit tab to prevent infinite loops
+                                // Auto-save when switching away from edit tab
                                 if (currentPreviewTab === "edit" && newTab !== "edit" && editSaveFunction) {
                                   try {
                                     console.log('🔄 Auto-saving before leaving edit tab');
-                                    await editSaveFunction();
+                                    await editSaveFunction(true); // Pass true to indicate auto-save
+                                    console.log('✅ Auto-save completed successfully');
                                   } catch (error) {
-                                    console.error('Auto-save failed:', error);
+                                    console.error('❌ Auto-save failed:', error);
                                   }
                                 }
                                 setCurrentPreviewTab(newTab);
