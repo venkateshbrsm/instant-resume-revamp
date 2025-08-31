@@ -513,7 +513,7 @@ export const EditablePreview = ({
       const isEnhancing = enhancingFields.has(fieldKey);
       
       // Fields that should NOT have the enhance button for experience and education
-      const excludedExperienceFields = ['company', 'duration'];
+      const excludedExperienceFields = ['company', 'duration', 'title'];
       const excludedEducationFields = ['degree', 'institution', 'year', 'gpa'];
       const shouldShowEnhanceButton = !(
         (field === 'experience' && excludedExperienceFields.includes(nestedField!)) ||
