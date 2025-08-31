@@ -2,6 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { User, Mail, Phone, MapPin, Award, BookOpen, Globe, Briefcase, Star } from "lucide-react";
 import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -15,11 +16,13 @@ interface TemplatePreviewProps {
 }
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
-      {/* Left Sidebar */}
+    <div className={`bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 ${isMobile ? 'block' : 'flex'} min-h-[600px]`}>
+      {/* Left Sidebar - Responsive */}
       <div 
-        className="w-64 p-6 text-white"
+        className={`${isMobile ? 'w-full' : 'w-64'} p-6 text-white ${isMobile ? 'order-2' : ''}`}
         style={{
           background: `linear-gradient(180deg, ${selectedColorTheme.primary}, ${selectedColorTheme.accent})`
         }}
@@ -191,8 +194,8 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 p-8">
+      {/* Main Content Area - Responsive */}
+      <div className={`${isMobile ? 'w-full order-1' : 'flex-1'} p-8`}>
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">

@@ -1,6 +1,7 @@
 import React from "react";
 import { Mail, Phone, Award, TrendingUp, Users, User } from "lucide-react";
 import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -14,6 +15,8 @@ interface TemplatePreviewProps {
 }
 
 export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="bg-white max-w-4xl mx-auto p-6 md:p-8 space-y-8 print:p-4 print:space-y-6">
       {/* Minimalist Header */}
@@ -117,7 +120,7 @@ export function MinimalistTemplatePreview({ enhancedContent, selectedColorTheme 
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:gap-6">
+      <div className={`grid grid-cols-1 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'} gap-8 print:gap-6`}>
         {/* Skills Section */}
         {(enhancedContent.skills || enhancedContent.tools || enhancedContent.core_technical_skills) && (
           <div className="space-y-4">
