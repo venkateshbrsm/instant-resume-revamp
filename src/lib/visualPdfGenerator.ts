@@ -349,8 +349,20 @@ async function generateModernPdf(
       // Skill name
       doc.setFontSize(7);
       setProfessionalFont(doc, 'body', 'normal');
-      const skillLines = doc.splitTextToSize(skill, sidebarWidth - 16);
-      doc.text(skillLines[0], 8, sidebarY);
+      // Use manual word wrapping for consistent spacing
+      const words = skill.split(' ');
+      let skillText = skill;
+      if (doc.getTextWidth(skill) > sidebarWidth - 16) {
+        // Find first word that fits
+        for (let i = words.length - 1; i >= 0; i--) {
+          const testText = words.slice(0, i + 1).join(' ');
+          if (doc.getTextWidth(testText) <= sidebarWidth - 16) {
+            skillText = testText;
+            break;
+          }
+        }
+      }
+      doc.text(skillText, 8, sidebarY);
       
       // Progress bar background
       doc.setFillColor(255, 255, 255, 0.3);
@@ -376,13 +388,34 @@ async function generateModernPdf(
     resumeData.education.slice(0, 2).forEach((edu) => {
       doc.setFontSize(7);
       setProfessionalFont(doc, 'body', 'bold');
-      const degreeLines = doc.splitTextToSize(edu.degree, sidebarWidth - 16);
-      doc.text(degreeLines[0], 8, sidebarY);
+      // Use manual word wrapping for consistent spacing
+      const words = edu.degree.split(' ');
+      let degreeText = edu.degree;
+      if (doc.getTextWidth(edu.degree) > sidebarWidth - 16) {
+        for (let i = words.length - 1; i >= 0; i--) {
+          const testText = words.slice(0, i + 1).join(' ');
+          if (doc.getTextWidth(testText) <= sidebarWidth - 16) {
+            degreeText = testText;
+            break;
+          }
+        }
+      }
+      doc.text(degreeText, 8, sidebarY);
       sidebarY += 4;
       
       setProfessionalFont(doc, 'body', 'normal');
-      const instLines = doc.splitTextToSize(edu.institution, sidebarWidth - 16);
-      doc.text(instLines[0], 8, sidebarY);
+      const instWords = edu.institution.split(' ');
+      let instText = edu.institution;
+      if (doc.getTextWidth(edu.institution) > sidebarWidth - 16) {
+        for (let i = instWords.length - 1; i >= 0; i--) {
+          const testText = instWords.slice(0, i + 1).join(' ');
+          if (doc.getTextWidth(testText) <= sidebarWidth - 16) {
+            instText = testText;
+            break;
+          }
+        }
+      }
+      doc.text(instText, 8, sidebarY);
       sidebarY += 4;
       
       if (edu.year && edu.year !== 'N/A') {
@@ -420,11 +453,17 @@ async function generateModernPdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     setProfessionalFont(doc, 'body', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
-    summaryLines.forEach((line: string) => {
-      doc.text(line, mainContentX, mainY);
-      mainY += 5;
-    });
+    mainY = renderTextBlock(
+      doc,
+      resumeData.summary,
+      mainContentX,
+      mainY,
+      mainContentWidth,
+      5,
+      pageHeight,
+      30,
+      recreateSidebarGradient
+    );
     mainY += 8;
   }
 
@@ -657,11 +696,17 @@ async function generateCreativePdf(
       doc.setTextColor(120, 120, 120);
       doc.setFontSize(10);
       setProfessionalFont(doc, 'body', 'normal');
-      const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
-      summaryLines.forEach((line: string) => {
-        doc.text(line, margin, currentY);
-        currentY += 5;
-      });
+      currentY = renderTextBlock(
+        doc,
+        resumeData.summary,
+        margin,
+        currentY,
+        contentWidth,
+        5,
+        pageHeight,
+        30,
+        handlePageBreak
+      );
     }
   currentY += 10;
 
@@ -696,8 +741,19 @@ async function generateCreativePdf(
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        const skillLines = doc.splitTextToSize(skill, badgeWidth - 4);
-        doc.text(skillLines[0], x + 2, currentY);
+        // Use manual word wrapping for consistent spacing
+        const words = skill.split(' ');
+        let skillText = skill;
+        if (doc.getTextWidth(skill) > badgeWidth - 4) {
+          for (let i = words.length - 1; i >= 0; i--) {
+            const testText = words.slice(0, i + 1).join(' ');
+            if (doc.getTextWidth(testText) <= badgeWidth - 4) {
+              skillText = testText;
+              break;
+            }
+          }
+        }
+        doc.text(skillText, x + 2, currentY);
         
         skillIndex++;
       }
@@ -801,11 +857,30 @@ async function generateCreativePdf(
         doc.text('Key Achievements:', margin + 5, currentY);
         currentY += 6;
 
-        // Use custom rendering for checkmark bullets
+        // Use custom rendering for checkmark bullets with consistent spacing
         exp.achievements.slice(0, 4).forEach((achievement) => {
-          // Calculate space needed for this entire item
-          const itemLines = doc.splitTextToSize(achievement, contentWidth - 20);
-          const itemHeight = itemLines.length * 4 + 2;
+          // Manual word wrapping for uniform character spacing
+          const words = achievement.split(' ');
+          let currentLine = '';
+          const achievementLines: string[] = [];
+          
+          words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const testWidth = doc.getTextWidth(testLine);
+            
+            if (testWidth > contentWidth - 20 && currentLine !== '') {
+              achievementLines.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          });
+          
+          if (currentLine.trim()) {
+            achievementLines.push(currentLine);
+          }
+          
+          const itemHeight = achievementLines.length * 4 + 2;
           
           // Check if we need a page break for the entire item
           if (currentY + itemHeight > pageHeight - 30) {
@@ -822,14 +897,14 @@ async function generateCreativePdf(
           doc.setFont('helvetica', 'bold');
           doc.text('V', margin + 6.5, currentY + 0.5);
           
-          // Achievement text
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          itemLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 12, currentY + (lineIndex * 4));
+          // Render achievement text with uniform spacing
+          let lineY = currentY;
+          achievementLines.forEach((line: string) => {
+            doc.text(line.trim(), margin + 15, lineY);
+            lineY += 4;
           });
-          currentY += itemHeight;
+          
+          currentY = lineY + 2;
         });
       }
 
@@ -960,11 +1035,17 @@ async function generateClassicPdf(
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
-    summaryLines.forEach((line: string) => {
-      doc.text(line, margin, currentY);
-      currentY += 5;
-    });
+    currentY = renderTextBlock(
+      doc,
+      resumeData.summary,
+      margin,
+      currentY,
+      contentWidth,
+      5,
+      pageHeight,
+      30,
+      handlePageBreak
+    );
     currentY += 8;
   }
 
