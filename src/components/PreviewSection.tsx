@@ -235,7 +235,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       toast({
         title: "File Processed", 
-        description: "Resume content extracted successfully. Click 'Edit Resume' to start AI enhancement.",
+        description: "Resume content extracted successfully. You can now edit and customize your resume.",
       });
       
     } catch (error) {
