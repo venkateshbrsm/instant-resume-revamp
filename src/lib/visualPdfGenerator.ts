@@ -50,40 +50,19 @@ function renderTextBlock(
   const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
   
-  // Split text into words for better control
-  const words = cleanText.split(' ');
-  let currentLine = '';
+  // Use jsPDF's built-in text splitting for consistent spacing
+  const lines = doc.splitTextToSize(cleanText, maxWidth);
   
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    const testLine = currentLine + (currentLine ? ' ' : '') + word;
-    const testWidth = doc.getTextWidth(testLine);
-    
-    if (testWidth > maxWidth && currentLine !== '') {
-      // Check if we need a page break
-      if (yPosition + lineHeight > pageHeight - marginBottom) {
-        doc.addPage();
-        if (onPageBreak) onPageBreak();
-        yPosition = 20;
-      }
-      
-      // Render current line
-      doc.text(currentLine, x, yPosition);
-      yPosition += lineHeight;
-      currentLine = word;
-    } else {
-      currentLine = testLine;
-    }
-  }
-  
-  // Render the last line
-  if (currentLine.trim()) {
+  for (const line of lines) {
+    // Check if we need a page break
     if (yPosition + lineHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
     }
-    doc.text(currentLine, x, yPosition);
+    
+    // Render line with consistent spacing - use 'left' alignment explicitly
+    doc.text(line.trim(), x, yPosition, { align: 'left' });
     yPosition += lineHeight;
   }
   
@@ -146,25 +125,14 @@ function renderBulletList(
     }
     doc.circle(x + 3, yPosition - 1, 0.8, 'F');
     
-    // Render text using word-based wrapping
-    currentLine = '';
+    // Use jsPDF's built-in text splitting for consistent spacing
+    const itemLines = doc.splitTextToSize(cleanItem, maxWidth - bulletIndent);
     let lineY = yPosition;
     
-    words.forEach(word => {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      if (doc.getTextWidth(testLine) > maxWidth - bulletIndent && currentLine !== '') {
-        doc.text(currentLine, x + bulletIndent, lineY);
-        lineY += lineHeight;
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
-    });
-    
-    if (currentLine.trim()) {
-      doc.text(currentLine, x + bulletIndent, lineY);
+    itemLines.forEach((line: string) => {
+      doc.text(line.trim(), x + bulletIndent, lineY, { align: 'left' });
       lineY += lineHeight;
-    }
+    });
     
     yPosition = lineY + itemSpacing;
   });
