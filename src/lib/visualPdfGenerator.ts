@@ -31,7 +31,7 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
   }
 }
 
-// Smart text rendering function with justified alignment and special character handling
+// Smart text rendering function with justified alignment and strict boundary checking
 function renderTextBlock(
   doc: jsPDF,
   text: string,
@@ -45,82 +45,41 @@ function renderTextBlock(
 ): number {
   if (!text || text.trim() === '') return currentY;
   
-  // Clean and normalize the text while preserving special characters
+  // Clean and normalize the text
   const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
   
   // Set consistent character spacing globally
   doc.setCharSpace(0);
   
-  // Enhanced word wrapping with special character handling
+  // Manual word wrapping with strict width checking
   const words = cleanText.split(' ');
   let currentLine = '';
   const lines: string[] = [];
   
   words.forEach(word => {
-    // Handle special cases like numbers with formatting (¹2,00,000+)
+    // Check if adding this word would exceed maxWidth
     const testLine = currentLine + (currentLine ? ' ' : '') + word;
-    
-    // More accurate width calculation accounting for special characters
-    let testWidth;
-    try {
-      testWidth = doc.getTextWidth(testLine);
-    } catch (e) {
-      // Fallback for problematic characters
-      testWidth = testLine.length * 3; // Rough estimation
-    }
+    const testWidth = doc.getTextWidth(testLine);
     
     // If the line would be too wide, break it
     if (testWidth > maxWidth && currentLine !== '') {
       lines.push(currentLine.trim());
       currentLine = word;
     } else if (testWidth > maxWidth && currentLine === '') {
-      // Handle very long single words/numbers that need special treatment
-      if (word.length > 20) {
-        // For very long words, try to break at logical points
-        const breakPoints = [',', '+', '-', '/', '\\', '(', ')', '[', ']'];
-        let broken = false;
-        
-        for (const breakChar of breakPoints) {
-          if (word.includes(breakChar)) {
-            const parts = word.split(breakChar);
-            for (let i = 0; i < parts.length; i++) {
-              const part = parts[i] + (i < parts.length - 1 ? breakChar : '');
-              const partWidth = doc.getTextWidth(part);
-              if (partWidth <= maxWidth) {
-                lines.push(part);
-                broken = true;
-              }
-            }
-            break;
-          }
+      // Handle very long single words that need to be broken
+      const chars = word.split('');
+      let charLine = '';
+      chars.forEach(char => {
+        const testCharLine = charLine + char;
+        if (doc.getTextWidth(testCharLine) > maxWidth && charLine !== '') {
+          lines.push(charLine);
+          charLine = char;
+        } else {
+          charLine = testCharLine;
         }
-        
-        if (!broken) {
-          // Last resort: character by character breaking
-          const chars = word.split('');
-          let charLine = '';
-          chars.forEach(char => {
-            const testCharLine = charLine + char;
-            let charWidth;
-            try {
-              charWidth = doc.getTextWidth(testCharLine);
-            } catch (e) {
-              charWidth = testCharLine.length * 3;
-            }
-            
-            if (charWidth > maxWidth && charLine !== '') {
-              lines.push(charLine);
-              charLine = char;
-            } else {
-              charLine = testCharLine;
-            }
-          });
-          if (charLine) currentLine = charLine;
-        }
-      } else {
-        currentLine = word;
-      }
+      });
+      if (charLine) currentLine = charLine;
     } else {
       currentLine = testLine;
     }
@@ -143,35 +102,24 @@ function renderTextBlock(
       doc.setCharSpace(0);
     }
     
-    // Final width verification before rendering
-    let lineWidth;
-    try {
-      lineWidth = doc.getTextWidth(line);
-    } catch (e) {
-      lineWidth = line.length * 3;
-    }
-    
-    if (lineWidth <= maxWidth * 1.05) { // Allow small overflow tolerance
+    // Double-check width before rendering
+    const lineWidth = doc.getTextWidth(line);
+    if (lineWidth <= maxWidth) {
       const isLastLine = i === lines.length - 1;
       const wordCount = line.split(' ').length;
       
       if (!isLastLine && wordCount > 1 && lineWidth < maxWidth * 0.95) {
         // Justify text by distributing spaces (only if not too short)
-        try {
-          doc.text(line, x, yPosition, { 
-            align: 'justify',
-            maxWidth: maxWidth 
-          });
-        } catch (e) {
-          // Fallback to left align if justification fails
-          doc.text(line, x, yPosition);
-        }
+        doc.text(line, x, yPosition, { 
+          align: 'justify',
+          maxWidth: maxWidth 
+        });
       } else {
         // Left align the last line, single words, or short lines
         doc.text(line, x, yPosition);
       }
     } else {
-      // Force render with left alignment if still problematic
+      // Fallback: just render without justification if still too wide
       doc.text(line, x, yPosition);
     }
     
@@ -181,7 +129,7 @@ function renderTextBlock(
   return yPosition;
 }
 
-// Smart bullet point rendering with special character handling
+// Smart bullet point rendering with justified alignment and strict boundary checking
 function renderBulletList(
   doc: jsPDF,
   items: string[],
@@ -212,78 +160,32 @@ function renderBulletList(
     // Calculate available width for text (excluding bullet)
     const availableWidth = maxWidth - bulletIndent;
     
-    // Enhanced word wrapping with special character handling
+    // Manual word wrapping with strict width checking
     const words = cleanItem.split(' ');
     let currentLine = '';
     const itemLines: string[] = [];
     
     words.forEach(word => {
       const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      
-      // More robust width calculation
-      let testWidth;
-      try {
-        testWidth = doc.getTextWidth(testLine);
-      } catch (e) {
-        testWidth = testLine.length * 3;
-      }
+      const testWidth = doc.getTextWidth(testLine);
       
       if (testWidth > availableWidth && currentLine !== '') {
         itemLines.push(currentLine.trim());
         currentLine = word;
       } else if (testWidth > availableWidth && currentLine === '') {
-        // Handle special formatted numbers and long words
-        if (word.includes('¹') || word.includes(',') || word.length > 15) {
-          // Try breaking at logical points for special characters
-          const breakPoints = [',', '+', '-', '/', '\\', '(', ')', '[', ']', '¹', '²', '³'];
-          let broken = false;
-          
-          for (const breakChar of breakPoints) {
-            if (word.includes(breakChar)) {
-              const parts = word.split(breakChar);
-              for (let i = 0; i < parts.length; i++) {
-                const part = parts[i] + (i < parts.length - 1 ? breakChar : '');
-                let partWidth;
-                try {
-                  partWidth = doc.getTextWidth(part);
-                } catch (e) {
-                  partWidth = part.length * 3;
-                }
-                
-                if (partWidth <= availableWidth) {
-                  itemLines.push(part);
-                  broken = true;
-                }
-              }
-              break;
-            }
+        // Handle very long single words
+        const chars = word.split('');
+        let charLine = '';
+        chars.forEach(char => {
+          const testCharLine = charLine + char;
+          if (doc.getTextWidth(testCharLine) > availableWidth && charLine !== '') {
+            itemLines.push(charLine);
+            charLine = char;
+          } else {
+            charLine = testCharLine;
           }
-          
-          if (!broken) {
-            // Character-by-character breaking as last resort
-            const chars = word.split('');
-            let charLine = '';
-            chars.forEach(char => {
-              const testCharLine = charLine + char;
-              let charWidth;
-              try {
-                charWidth = doc.getTextWidth(testCharLine);
-              } catch (e) {
-                charWidth = testCharLine.length * 3;
-              }
-              
-              if (charWidth > availableWidth && charLine !== '') {
-                itemLines.push(charLine);
-                charLine = char;
-              } else {
-                charLine = testCharLine;
-              }
-            });
-            if (charLine) currentLine = charLine;
-          }
-        } else {
-          currentLine = word;
-        }
+        });
+        if (charLine) currentLine = charLine;
       } else {
         currentLine = testLine;
       }
@@ -310,40 +212,29 @@ function renderBulletList(
     }
     doc.circle(x + 3, yPosition - 1, 0.8, 'F');
     
-    // Render each line with error handling
+    // Render each line with justified alignment
     let lineY = yPosition;
     itemLines.forEach((line: string, index: number) => {
       const trimmedLine = line.trim();
       if (trimmedLine) {
-        // Robust width checking
-        let lineWidth;
-        try {
-          lineWidth = doc.getTextWidth(trimmedLine);
-        } catch (e) {
-          lineWidth = trimmedLine.length * 3;
-        }
-        
-        if (lineWidth <= availableWidth * 1.05) { // Small tolerance
+        // Double-check width before rendering
+        const lineWidth = doc.getTextWidth(trimmedLine);
+        if (lineWidth <= availableWidth) {
           const isLastLine = index === itemLines.length - 1;
           const wordCount = trimmedLine.split(' ').length;
           
           if (!isLastLine && wordCount > 1 && lineWidth < availableWidth * 0.95) {
             // Justify text except last line (and not too short lines)
-            try {
-              doc.text(trimmedLine, x + bulletIndent, lineY, { 
-                align: 'justify',
-                maxWidth: availableWidth 
-              });
-            } catch (e) {
-              // Fallback to left align
-              doc.text(trimmedLine, x + bulletIndent, lineY);
-            }
+            doc.text(trimmedLine, x + bulletIndent, lineY, { 
+              align: 'justify',
+              maxWidth: availableWidth 
+            });
           } else {
             // Left align the last line, single words, or short lines
             doc.text(trimmedLine, x + bulletIndent, lineY);
           }
         } else {
-          // Force render with left alignment
+          // Fallback: render without justification if still too wide
           doc.text(trimmedLine, x + bulletIndent, lineY);
         }
       }
