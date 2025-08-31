@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Sparkles, Download, CreditCard, ArrowLeft, Eye, FileText, Zap, AlertCircle, Loader2, Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Maximize2, Minimize2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { extractTextFromFile, extractContentFromFile, formatResumeText, getFileType, ExtractedContent } from "@/lib/fileExtractor";
-import { parseBasicResumeFromText } from "@/lib/basicResumeParser";
 import { cn } from "@/lib/utils";
 import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
@@ -134,7 +133,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
-  // Auto-switch to edit tab when content is extracted - create basic structure immediately
+  // Auto-switch to edit tab when content is extracted but not enhanced
   useEffect(() => {
     console.log('🔍 Auto-switch check:', {
       extractedText: !!extractedText,
@@ -146,19 +145,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     });
     
     if (extractedText && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
-      console.log('🔄 Auto-switching to edit tab and creating basic resume structure');
+      console.log('🔄 Auto-switching to edit tab and triggering enhancement');
       setCurrentPreviewTab("edit");
       setHasEditTabBeenEnhanced(true);
-      
-      // Create basic resume structure from extracted text immediately
-      const basicResume = parseBasicResumeFromText(extractedText);
-      console.log('✅ Created basic resume structure:', basicResume);
-      setEnhancedContent(basicResume);
-      
-      toast({
-        title: "Resume Loaded", 
-        description: "Your resume is ready for editing. Use 'Enhance with AI' buttons to improve specific sections.",
-      });
+      // Trigger enhancement immediately
+      enhanceResume();
     }
   }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
