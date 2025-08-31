@@ -145,23 +145,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     });
     
     if (extractedText && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
-      console.log('🔄 Auto-switching to edit tab (main enhancement disabled)');
-      
-      // Create minimal enhanced content structure from extracted text
-      const basicContent = {
-        name: extractedText.split('\n')[0]?.trim() || "Your Name",
-        title: "Professional",
-        email: "", phone: "", location: "", linkedin: "",
-        summary: "Your professional summary will be enhanced field by field.",
-        experience: [], education: [], skills: [], tools: [], certifications: [], languages: []
-      };
-      
-      setEnhancedContent(basicContent);
+      console.log('🔄 Auto-switching to edit tab and triggering enhancement');
       setCurrentPreviewTab("edit");
       setHasEditTabBeenEnhanced(true);
-      setIsEnhancing(false);
-      // TODO: Re-enable main enhancement later
-      // enhanceResume();
+      // Trigger enhancement immediately
+      enhanceResume();
     }
   }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
@@ -247,7 +235,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       
       toast({
         title: "File Processed", 
-        description: "Resume content extracted successfully. You can now edit and customize your resume.",
+        description: "Resume content extracted successfully. Click 'Edit Resume' to start AI enhancement.",
       });
       
     } catch (error) {
