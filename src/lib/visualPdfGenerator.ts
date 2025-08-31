@@ -31,7 +31,7 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
   }
 }
 
-// Smart text rendering function to prevent sentence cutting
+// Smart text rendering function with manual word wrapping for uniform spacing
 function renderTextBlock(
   doc: jsPDF,
   text: string,
@@ -49,12 +49,31 @@ function renderTextBlock(
   const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
   
-  // Set consistent character spacing
+  // Set consistent character spacing globally
   doc.setCharSpace(0);
   
-  // Use jsPDF's splitTextToSize for consistent line breaking
-  const lines = doc.splitTextToSize(cleanText, maxWidth);
+  // Manual word wrapping for uniform character spacing
+  const words = cleanText.split(' ');
+  let currentLine = '';
+  const lines: string[] = [];
   
+  words.forEach(word => {
+    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+    const testWidth = doc.getTextWidth(testLine);
+    
+    if (testWidth > maxWidth && currentLine !== '') {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  });
+  
+  if (currentLine.trim()) {
+    lines.push(currentLine);
+  }
+  
+  // Render each line without justification
   for (const line of lines) {
     // Check if we need a page break
     if (yPosition + lineHeight > pageHeight - marginBottom) {
@@ -65,14 +84,10 @@ function renderTextBlock(
       doc.setCharSpace(0);
     }
     
-    // Render line with uniform spacing
+    // Render line with simple text positioning - no alignment options
     const trimmedLine = line.trim();
     if (trimmedLine) {
-      doc.text(trimmedLine, x, yPosition, { 
-        baseline: 'top',
-        align: 'left',
-        charSpace: 0
-      });
+      doc.text(trimmedLine, x, yPosition);
     }
     yPosition += lineHeight;
   }
@@ -80,7 +95,7 @@ function renderTextBlock(
   return yPosition;
 }
 
-// Smart bullet point rendering to keep bullets with their text
+// Smart bullet point rendering with manual word wrapping for uniform spacing
 function renderBulletList(
   doc: jsPDF,
   items: string[],
@@ -99,35 +114,45 @@ function renderBulletList(
   
   let yPosition = currentY;
   
+  // Set consistent character spacing
+  doc.setCharSpace(0);
+  
   items.forEach((item) => {
     if (!item || item.trim() === '') return;
     
     const cleanItem = item.replace(/^[•\-\*\s]+/, '').trim();
     if (!cleanItem) return;
     
-    // Calculate space needed using word-based wrapping
+    // Manual word wrapping for uniform character spacing
     const words = cleanItem.split(' ');
     let currentLine = '';
-    let estimatedLines = 0;
+    const itemLines: string[] = [];
     
     words.forEach(word => {
       const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      if (doc.getTextWidth(testLine) > maxWidth - bulletIndent && currentLine !== '') {
-        estimatedLines++;
+      const testWidth = doc.getTextWidth(testLine);
+      
+      if (testWidth > maxWidth - bulletIndent && currentLine !== '') {
+        itemLines.push(currentLine);
         currentLine = word;
       } else {
         currentLine = testLine;
       }
     });
-    if (currentLine.trim()) estimatedLines++;
     
-    const itemHeight = estimatedLines * lineHeight + itemSpacing;
+    if (currentLine.trim()) {
+      itemLines.push(currentLine);
+    }
+    
+    const itemHeight = itemLines.length * lineHeight + itemSpacing;
     
     // Check if we need a page break for the entire item
     if (yPosition + itemHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
+      // Reset spacing after page break
+      doc.setCharSpace(0);
     }
     
     // Render bullet
@@ -136,12 +161,13 @@ function renderBulletList(
     }
     doc.circle(x + 3, yPosition - 1, 0.8, 'F');
     
-    // Use jsPDF's built-in text splitting for consistent spacing
-    const itemLines = doc.splitTextToSize(cleanItem, maxWidth - bulletIndent);
+    // Render each line without alignment options
     let lineY = yPosition;
-    
     itemLines.forEach((line: string) => {
-      doc.text(line.trim(), x + bulletIndent, lineY);
+      const trimmedLine = line.trim();
+      if (trimmedLine) {
+        doc.text(trimmedLine, x + bulletIndent, lineY);
+      }
       lineY += lineHeight;
     });
     
