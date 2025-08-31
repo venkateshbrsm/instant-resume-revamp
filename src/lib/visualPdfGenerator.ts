@@ -31,7 +31,7 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
   }
 }
 
-// Smart text rendering function with justified alignment
+// Smart text rendering function with justified alignment and strict boundary checking
 function renderTextBlock(
   doc: jsPDF,
   text: string,
@@ -52,25 +52,41 @@ function renderTextBlock(
   // Set consistent character spacing globally
   doc.setCharSpace(0);
   
-  // Manual word wrapping for justified alignment
+  // Manual word wrapping with strict width checking
   const words = cleanText.split(' ');
   let currentLine = '';
   const lines: string[] = [];
   
   words.forEach(word => {
+    // Check if adding this word would exceed maxWidth
     const testLine = currentLine + (currentLine ? ' ' : '') + word;
     const testWidth = doc.getTextWidth(testLine);
     
+    // If the line would be too wide, break it
     if (testWidth > maxWidth && currentLine !== '') {
-      lines.push(currentLine);
+      lines.push(currentLine.trim());
       currentLine = word;
+    } else if (testWidth > maxWidth && currentLine === '') {
+      // Handle very long single words that need to be broken
+      const chars = word.split('');
+      let charLine = '';
+      chars.forEach(char => {
+        const testCharLine = charLine + char;
+        if (doc.getTextWidth(testCharLine) > maxWidth && charLine !== '') {
+          lines.push(charLine);
+          charLine = char;
+        } else {
+          charLine = testCharLine;
+        }
+      });
+      if (charLine) currentLine = charLine;
     } else {
       currentLine = testLine;
     }
   });
   
   if (currentLine.trim()) {
-    lines.push(currentLine);
+    lines.push(currentLine.trim());
   }
   
   // Render each line with justified alignment
@@ -86,28 +102,34 @@ function renderTextBlock(
       doc.setCharSpace(0);
     }
     
-    // Render line with justified alignment (except last line)
-    const trimmedLine = line.trim();
-    if (trimmedLine) {
+    // Double-check width before rendering
+    const lineWidth = doc.getTextWidth(line);
+    if (lineWidth <= maxWidth) {
       const isLastLine = i === lines.length - 1;
-      if (!isLastLine && trimmedLine.split(' ').length > 1) {
-        // Justify text by distributing spaces
-        doc.text(trimmedLine, x, yPosition, { 
+      const wordCount = line.split(' ').length;
+      
+      if (!isLastLine && wordCount > 1 && lineWidth < maxWidth * 0.95) {
+        // Justify text by distributing spaces (only if not too short)
+        doc.text(line, x, yPosition, { 
           align: 'justify',
           maxWidth: maxWidth 
         });
       } else {
-        // Left align the last line or single words
-        doc.text(trimmedLine, x, yPosition);
+        // Left align the last line, single words, or short lines
+        doc.text(line, x, yPosition);
       }
+    } else {
+      // Fallback: just render without justification if still too wide
+      doc.text(line, x, yPosition);
     }
+    
     yPosition += lineHeight;
   }
   
   return yPosition;
 }
 
-// Smart bullet point rendering with justified alignment
+// Smart bullet point rendering with justified alignment and strict boundary checking
 function renderBulletList(
   doc: jsPDF,
   items: string[],
@@ -135,7 +157,10 @@ function renderBulletList(
     const cleanItem = item.replace(/^[•\-\*\s]+/, '').trim();
     if (!cleanItem) return;
     
-    // Manual word wrapping for justified alignment
+    // Calculate available width for text (excluding bullet)
+    const availableWidth = maxWidth - bulletIndent;
+    
+    // Manual word wrapping with strict width checking
     const words = cleanItem.split(' ');
     let currentLine = '';
     const itemLines: string[] = [];
@@ -144,16 +169,30 @@ function renderBulletList(
       const testLine = currentLine + (currentLine ? ' ' : '') + word;
       const testWidth = doc.getTextWidth(testLine);
       
-      if (testWidth > maxWidth - bulletIndent && currentLine !== '') {
-        itemLines.push(currentLine);
+      if (testWidth > availableWidth && currentLine !== '') {
+        itemLines.push(currentLine.trim());
         currentLine = word;
+      } else if (testWidth > availableWidth && currentLine === '') {
+        // Handle very long single words
+        const chars = word.split('');
+        let charLine = '';
+        chars.forEach(char => {
+          const testCharLine = charLine + char;
+          if (doc.getTextWidth(testCharLine) > availableWidth && charLine !== '') {
+            itemLines.push(charLine);
+            charLine = char;
+          } else {
+            charLine = testCharLine;
+          }
+        });
+        if (charLine) currentLine = charLine;
       } else {
         currentLine = testLine;
       }
     });
     
     if (currentLine.trim()) {
-      itemLines.push(currentLine);
+      itemLines.push(currentLine.trim());
     }
     
     const itemHeight = itemLines.length * lineHeight + itemSpacing;
@@ -178,15 +217,24 @@ function renderBulletList(
     itemLines.forEach((line: string, index: number) => {
       const trimmedLine = line.trim();
       if (trimmedLine) {
-        const isLastLine = index === itemLines.length - 1;
-        if (!isLastLine && trimmedLine.split(' ').length > 1) {
-          // Justify text except last line
-          doc.text(trimmedLine, x + bulletIndent, lineY, { 
-            align: 'justify',
-            maxWidth: maxWidth - bulletIndent 
-          });
+        // Double-check width before rendering
+        const lineWidth = doc.getTextWidth(trimmedLine);
+        if (lineWidth <= availableWidth) {
+          const isLastLine = index === itemLines.length - 1;
+          const wordCount = trimmedLine.split(' ').length;
+          
+          if (!isLastLine && wordCount > 1 && lineWidth < availableWidth * 0.95) {
+            // Justify text except last line (and not too short lines)
+            doc.text(trimmedLine, x + bulletIndent, lineY, { 
+              align: 'justify',
+              maxWidth: availableWidth 
+            });
+          } else {
+            // Left align the last line, single words, or short lines
+            doc.text(trimmedLine, x + bulletIndent, lineY);
+          }
         } else {
-          // Left align the last line or single words
+          // Fallback: render without justification if still too wide
           doc.text(trimmedLine, x + bulletIndent, lineY);
         }
       }
@@ -286,9 +334,10 @@ async function generateModernPdf(
 
   const pageWidth = 210;
   const pageHeight = 297;
+  const pageBorder = 10; // Account for page borders
   const sidebarWidth = 70;
-  const mainContentX = sidebarWidth + 5;
-  const mainContentWidth = pageWidth - mainContentX - 15;
+  const mainContentX = sidebarWidth + 10; // Add margin for border
+  const mainContentWidth = pageWidth - mainContentX - pageBorder - 5;
   
   // Convert hex colors to RGB
   const hexToRgb = (hex: string) => {
@@ -629,8 +678,9 @@ async function generateCreativePdf(
 
   const pageWidth = 210;
   const pageHeight = 297;
+  const pageBorder = 10; // Account for page borders
   const margin = 15;
-  const contentWidth = pageWidth - (margin * 2);
+  const contentWidth = pageWidth - (margin * 2) - pageBorder;
   
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -1030,8 +1080,9 @@ async function generateClassicPdf(
 
   const pageWidth = 210;
   const pageHeight = 297;
+  const pageBorder = 10; // Account for page borders
   const margin = 20;
-  const contentWidth = pageWidth - (margin * 2);
+  const contentWidth = pageWidth - (margin * 2) - pageBorder;
   
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
