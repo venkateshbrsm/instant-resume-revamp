@@ -135,6 +135,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
 
   // Auto-switch to edit tab when content is extracted but not enhanced
   useEffect(() => {
+    console.log('🔍 Auto-switch check:', {
+      extractedText: !!extractedText,
+      extractedTextLength: extractedText?.length || 0,
+      enhancedContent: !!enhancedContent,
+      isEnhancing: isEnhancing,
+      currentPreviewTab: currentPreviewTab,
+      hasEditTabBeenEnhanced: hasEditTabBeenEnhanced
+    });
+    
     if (extractedText && !enhancedContent && !isEnhancing && currentPreviewTab !== "edit") {
       console.log('🔄 Auto-switching to edit tab for enhancement');
       setCurrentPreviewTab("edit");
@@ -528,8 +537,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const enhanceResume = async () => {
+    console.log('🚀 enhanceResume called with state:', {
+      extractedText: extractedText ? `${extractedText.length} chars` : 'null',
+      isEnhancing,
+      hasEditTabBeenEnhanced,
+      enhancedContent: !!enhancedContent
+    });
+    
     if (!extractedText || extractedText.length < 50) {
-      console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
+      console.log('❌ Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
       toast({
         title: "Content Required",
         description: "Waiting for file content to be extracted before enhancement.",
