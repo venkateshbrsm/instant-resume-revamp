@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
   const [currentPreviewTab, setCurrentPreviewTab] = useState("edit");
   const [editSaveFunction, setEditSaveFunction] = useState<((isAutoSave?: boolean) => Promise<void>) | null>(null);
+  const [hasEditTabBeenEnhanced, setHasEditTabBeenEnhanced] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -123,13 +124,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-enhance after extracting text
-  useEffect(() => {
-    // Only enhance after we have extracted text
-    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
-      enhanceResume();
+  // Auto-enhance only when edit tab is first accessed
+  const triggerEditTabEnhancement = useCallback(async () => {
+    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
+      console.log('🤖 Triggering enhancement for first edit tab access');
+      setHasEditTabBeenEnhanced(true);
+      await enhanceResume();
     }
-  }, [extractedText]);
+  }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
   // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
@@ -158,6 +160,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsLoading(true);
     setLoadingProgress(0);
     setLoadingStage("Preparing file...");
+    setHasEditTabBeenEnhanced(false); // Reset enhancement flag for new file
     
     try {
       // Simulate realistic loading stages with progress
@@ -789,19 +792,25 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        />
 
                               {/* Tabbed Preview */}
-                               <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
-                                 // Auto-save when switching away from edit tab
-                                 if (currentPreviewTab === "edit" && newTab !== "edit" && typeof editSaveFunction === "function") {
-                                   try {
-                                     console.log('🔄 Auto-saving before leaving edit tab');
-                                     await editSaveFunction(true); // Pass true to indicate auto-save
-                                     console.log('✅ Auto-save completed successfully');
-                                   } catch (error) {
-                                     console.error('❌ Auto-save failed:', error);
-                                   }
-                                 }
-                                setCurrentPreviewTab(newTab);
-                              }} className="w-full">
+                                <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
+                                  // Auto-save when switching away from edit tab
+                                  if (currentPreviewTab === "edit" && newTab !== "edit" && typeof editSaveFunction === "function") {
+                                    try {
+                                      console.log('🔄 Auto-saving before leaving edit tab');
+                                      await editSaveFunction(true); // Pass true to indicate auto-save
+                                      console.log('✅ Auto-save completed successfully');
+                                    } catch (error) {
+                                      console.error('❌ Auto-save failed:', error);
+                                    }
+                                  }
+                                  
+                                  // Trigger enhancement when edit tab is first accessed
+                                  if (newTab === "edit" && currentPreviewTab !== "edit") {
+                                    triggerEditTabEnhancement();
+                                  }
+                                  
+                                  setCurrentPreviewTab(newTab);
+                               }} className="w-full">
                               <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
