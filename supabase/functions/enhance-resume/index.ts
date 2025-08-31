@@ -159,6 +159,7 @@ EXTRACTION GUIDELINES:
 - Maintain the distinction: descriptions are comprehensive daily responsibilities, achievements are measurable results.
 - Preserve full detail from original resume but improve readability by shortening overly long sentences without losing information.
 - If original text has bullet points or detailed lists of responsibilities, include them all in the description field with improved conciseness where needed.
+- NUMBER CONVERSION: Convert any numbers with more than 3 characters to words (e.g., "90000" becomes "ninety thousand", "5000" becomes "five thousand", "1500000" becomes "one point five million"). Keep numbers with 3 or fewer characters as digits (e.g., "100", "50", "25").
 
 Important: Extract only actual information. Use empty arrays [] or empty strings "" if information is not found.`;
 
