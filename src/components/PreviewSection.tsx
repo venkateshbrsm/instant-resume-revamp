@@ -206,6 +206,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingProgress(100);
       setLoadingStage("Complete!");
       
+      // Dismiss loading screen after a short delay
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingProgress(0);
+        setLoadingStage("");
+      }, 800);
+      
       toast({
         title: "File Processed", 
         description: "Resume content extracted successfully. Click 'Edit Resume' to start AI enhancement.",
