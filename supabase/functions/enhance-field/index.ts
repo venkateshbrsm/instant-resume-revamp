@@ -48,6 +48,7 @@ serve(async (req) => {
         - Results-oriented and quantifiable when possible
         - Industry-specific and professional
         - Action-oriented with strong power words
+        - Crisp and clear - if original sentences are too long (25+ words), make them shorter while preserving the exact same meaning
         
         Original summary: "${content}"
         
@@ -64,6 +65,7 @@ serve(async (req) => {
         - Clear and concise bullet points
         - Results-focused rather than task-focused
         - Professional and impactful
+        - Crisp and readable - if sentences are too long (25+ words), break them into shorter, clearer statements while keeping the same meaning and essence
         
         Original description: "${content}"
         
@@ -111,6 +113,7 @@ serve(async (req) => {
         - ATS-friendly with relevant keywords
         - Concise but comprehensive
         - Credible and specific
+        - Crisp and clear - if achievement descriptions are too long (25+ words), make them shorter while preserving all key information and impact
         
         Original achievements: "${content}"
         

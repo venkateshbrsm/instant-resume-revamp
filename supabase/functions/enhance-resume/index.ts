@@ -113,10 +113,10 @@ async function enhanceResumeWithAI(originalText: string, apiKey: string, globalS
   
   console.log(`📊 Processing with model: ${selectedModel} (${timeoutMs/1000}s timeout)`);
 
-  // Enhanced prompt to preserve detailed job descriptions
+  // Enhanced prompt to preserve detailed job descriptions while making them crisp
   const prompt = `Extract and organize the following resume information into JSON format. Use ONLY actual information from the text - no placeholders.
 
-CRITICAL: For job descriptions, preserve ALL detailed responsibilities, duties, and job functions from the original text. DO NOT summarize or shorten the descriptions. Include comprehensive bullet points and detailed information exactly as written.
+CRITICAL: For job descriptions, preserve ALL detailed responsibilities, duties, and job functions from the original text. However, if sentences are too long (over 25 words), make them crisp and concise while preserving the exact same meaning and essence. Break long sentences into shorter, impactful statements without losing any information.
 
 Resume text:
 ${originalText}
@@ -135,7 +135,7 @@ Return ONLY a JSON object with this structure:
       "title": "job title",
       "company": "company name",
       "duration": "employment dates", 
-      "description": "COMPREHENSIVE job responsibilities and duties - preserve ALL detailed information from original text including bullet points, technical details, processes, systems, and specific tasks. DO NOT SUMMARIZE - include full detailed descriptions as they appear in the resume",
+      "description": "COMPREHENSIVE job responsibilities and duties - preserve ALL detailed information from original text including bullet points, technical details, processes, systems, and specific tasks. Make overly long sentences (25+ words) crisp and concise while maintaining the exact same meaning and essence. Break complex sentences into clear, impactful statements without losing information.",
       "achievements": ["quantifiable results and accomplishments with metrics", "specific achievements separate from daily responsibilities"]
     }
   ],
@@ -154,11 +154,11 @@ Return ONLY a JSON object with this structure:
 }
 
 EXTRACTION GUIDELINES:
-- DESCRIPTION field: Include ALL job responsibilities, duties, processes, systems worked with, daily tasks, and comprehensive role information. Preserve bullet points and detailed technical information.
-- ACHIEVEMENTS field: Only quantifiable results, metrics, accomplishments, and specific measurable outcomes.
+- DESCRIPTION field: Include ALL job responsibilities, duties, processes, systems worked with, daily tasks, and comprehensive role information. Preserve bullet points and detailed technical information. If sentences are overly long (25+ words), make them crisp and concise while preserving exact meaning.
+- ACHIEVEMENTS field: Only quantifiable results, metrics, accomplishments, and specific measurable outcomes. Make lengthy achievement descriptions crisp and impactful.
 - Maintain the distinction: descriptions are comprehensive daily responsibilities, achievements are measurable results.
-- DO NOT condense or summarize job descriptions - preserve full detail from original resume.
-- If original text has bullet points or detailed lists of responsibilities, include them all in the description field.
+- Preserve full detail from original resume but improve readability by shortening overly long sentences without losing information.
+- If original text has bullet points or detailed lists of responsibilities, include them all in the description field with improved conciseness where needed.
 
 Important: Extract only actual information. Use empty arrays [] or empty strings "" if information is not found.`;
 
