@@ -148,6 +148,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('🔄 Auto-switching to edit tab (main enhancement disabled)');
       setCurrentPreviewTab("edit");
       setHasEditTabBeenEnhanced(true);
+      // Since we're skipping main enhancement, ensure enhancing state is false
+      setIsEnhancing(false);
       // TODO: Re-enable main enhancement later
       // enhanceResume();
     }
