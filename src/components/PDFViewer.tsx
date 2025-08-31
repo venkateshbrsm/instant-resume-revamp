@@ -113,9 +113,10 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           height: '100%',
           width: '100%'
         } : { 
-          height: '70vh',
-          minHeight: '500px',
-          maxHeight: '800px'
+          height: '600px',
+          width: '100%',
+          maxWidth: '450px',
+          margin: '0 auto'
         }}
       >
         {pdfUrl ? (
