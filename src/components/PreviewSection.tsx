@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
   const [currentPreviewTab, setCurrentPreviewTab] = useState("edit");
   const [editSaveFunction, setEditSaveFunction] = useState<((isAutoSave?: boolean) => Promise<void>) | null>(null);
-  const [hasEditTabBeenEnhanced, setHasEditTabBeenEnhanced] = useState(false);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
   const navigate = useNavigate();
@@ -124,34 +123,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     return () => subscription.unsubscribe();
   }, [onPurchase, toast]);
 
-  // Auto-enhance only when edit tab is first accessed
-  const triggerEditTabEnhancement = useCallback(async () => {
-    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
-      console.log('🤖 Triggering enhancement for first edit tab access');
-      setHasEditTabBeenEnhanced(true);
-      await enhanceResume();
-    }
-  }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
-
-  // Auto-switch to edit tab when content is extracted but not enhanced
+  // Auto-enhance after extracting text
   useEffect(() => {
-    console.log('🔍 Auto-switch check:', {
-      extractedText: !!extractedText,
-      extractedTextLength: extractedText?.length || 0,
-      enhancedContent: !!enhancedContent,
-      isEnhancing: isEnhancing,
-      currentPreviewTab: currentPreviewTab,
-      hasEditTabBeenEnhanced: hasEditTabBeenEnhanced
-    });
-    
-    if (extractedText && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
-      console.log('🔄 Auto-switching to edit tab and triggering enhancement');
-      setCurrentPreviewTab("edit");
-      setHasEditTabBeenEnhanced(true);
-      // Trigger enhancement immediately
+    // Only enhance after we have extracted text
+    if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing) {
       enhanceResume();
     }
-  }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
+  }, [extractedText]);
 
   // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
@@ -180,7 +158,6 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     setIsLoading(true);
     setLoadingProgress(0);
     setLoadingStage("Preparing file...");
-    setHasEditTabBeenEnhanced(false); // Reset enhancement flag for new file
     
     try {
       // Simulate realistic loading stages with progress
@@ -226,16 +203,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingProgress(100);
       setLoadingStage("Complete!");
       
-      // Dismiss loading screen after a short delay
-      setTimeout(() => {
-        setIsLoading(false);
-        setLoadingProgress(0);
-        setLoadingStage("");
-      }, 800);
-      
       toast({
-        title: "File Processed", 
-        description: "Resume content extracted successfully. Click 'Edit Resume' to start AI enhancement.",
+        title: "File Processed",
+        description: "Resume content extracted successfully.",
       });
       
     } catch (error) {
@@ -246,7 +216,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         variant: "destructive",
       });
     } finally {
-      // Only handle error cleanup here - success case handles its own dismissal
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingProgress(0);
+        setLoadingStage("");
+      }, 1000);
     }
   };
 
@@ -532,15 +506,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   };
 
   const enhanceResume = async () => {
-    console.log('🚀 enhanceResume called with state:', {
-      extractedText: extractedText ? `${extractedText.length} chars` : 'null',
-      isEnhancing,
-      hasEditTabBeenEnhanced,
-      enhancedContent: !!enhancedContent
-    });
-    
     if (!extractedText || extractedText.length < 50) {
-      console.log('❌ Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
+      console.log('Skipping enhancement - insufficient text content length:', extractedText?.length || 0);
       toast({
         title: "Content Required",
         description: "Waiting for file content to be extracted before enhancement.",
@@ -822,25 +789,19 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                        />
 
                               {/* Tabbed Preview */}
-                                <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
-                                  // Auto-save when switching away from edit tab
-                                  if (currentPreviewTab === "edit" && newTab !== "edit" && typeof editSaveFunction === "function") {
-                                    try {
-                                      console.log('🔄 Auto-saving before leaving edit tab');
-                                      await editSaveFunction(true); // Pass true to indicate auto-save
-                                      console.log('✅ Auto-save completed successfully');
-                                    } catch (error) {
-                                      console.error('❌ Auto-save failed:', error);
-                                    }
-                                  }
-                                  
-                                  // Trigger enhancement when edit tab is first accessed
-                                  if (newTab === "edit" && currentPreviewTab !== "edit") {
-                                    triggerEditTabEnhancement();
-                                  }
-                                  
-                                  setCurrentPreviewTab(newTab);
-                               }} className="w-full">
+                               <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
+                                 // Auto-save when switching away from edit tab
+                                 if (currentPreviewTab === "edit" && newTab !== "edit" && typeof editSaveFunction === "function") {
+                                   try {
+                                     console.log('🔄 Auto-saving before leaving edit tab');
+                                     await editSaveFunction(true); // Pass true to indicate auto-save
+                                     console.log('✅ Auto-save completed successfully');
+                                   } catch (error) {
+                                     console.error('❌ Auto-save failed:', error);
+                                   }
+                                 }
+                                setCurrentPreviewTab(newTab);
+                              }} className="w-full">
                               <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
@@ -971,10 +932,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
                     <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
                     <div>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Preparing Enhancement</h3>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Processing Your Resume</h3>
                       <p className="text-muted-foreground mb-4 text-sm sm:text-base px-4">
-                        Switching to edit mode...
+                        {loadingStage}
                       </p>
+                      <div className="space-y-2">
+                        <Progress value={loadingProgress} className="w-full h-2 sm:h-3" />
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {Math.round(loadingProgress)}% complete
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

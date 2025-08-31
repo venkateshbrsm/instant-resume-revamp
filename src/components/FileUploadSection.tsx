@@ -110,15 +110,14 @@ export function FileUploadSection({ onFileProcessed, onBack }: FileUploadSection
         if (prev >= 100) {
           clearInterval(progressInterval);
           setTimeout(() => {
+            setIsProcessing(false);
+            onFileProcessed(file);
             toast({
               title: "Resume uploaded successfully!",
               description: isLargeFile 
                 ? "Large file processed! AI enhancement will begin shortly."
                 : "Your AI-enhanced preview is ready."
             });
-            // Dismiss processing state BEFORE calling onFileProcessed to avoid race condition
-            setIsProcessing(false);
-            onFileProcessed(file);
           }, 500);
           return 100;
         }
