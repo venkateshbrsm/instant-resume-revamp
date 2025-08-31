@@ -19,7 +19,7 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
   const isMobile = useIsMobile();
   
   return (
-    <div className={`bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 ${isMobile ? 'block' : 'flex'} min-h-[600px]`}>
+    <div className={`bg-white rounded-xl shadow-lg border border-border/50 print:shadow-none print:border-0 ${isMobile ? 'block overflow-visible' : 'flex overflow-hidden min-h-[600px]'}`}>
       {/* Left Sidebar - Responsive */}
       <div 
         className={`${isMobile ? 'w-full' : 'w-64'} p-6 text-white ${isMobile ? 'order-2' : ''}`}
