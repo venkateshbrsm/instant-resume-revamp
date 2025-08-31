@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { SmartPageBreaker } from './smartPageBreaks';
 
 // Professional font configuration for better visual appeal
 const FONTS = {
@@ -137,16 +138,26 @@ async function generateModernPdf(
   const [sr, sg, sb] = hexToRgb(colorTheme.secondary);
   const [ar, ag, ab] = hexToRgb(colorTheme.accent);
 
-  // Create gradient sidebar background using multiple rectangles
-  for (let i = 0; i < sidebarWidth; i += 2) {
-    const ratio = i / sidebarWidth;
-    const r = Math.round(pr + (ar - pr) * ratio);
-    const g = Math.round(pg + (ag - pg) * ratio);
-    const b = Math.round(pb + (ab - pb) * ratio);
-    
-    doc.setFillColor(r, g, b);
-    doc.rect(i, 0, 2, pageHeight, 'F');
-  }
+  // Initialize smart page breaker
+  const pageBreaker = new SmartPageBreaker(doc, {
+    pageHeight,
+    marginTop: 20,
+    marginBottom: 20,
+    minSpaceForContent: 25
+  });
+
+  // Function to recreate sidebar on new pages
+  const recreateSidebar = () => {
+    for (let i = 0; i < sidebarWidth; i += 2) {
+      const ratio = i / sidebarWidth;
+      const r = Math.round(pr + (ar - pr) * ratio);
+      const g = Math.round(pg + (ag - pg) * ratio);
+      const b = Math.round(pb + (ab - pb) * ratio);
+      
+      doc.setFillColor(r, g, b);
+      doc.rect(i, 0, 2, pageHeight, 'F');
+    }
+  };
 
   let sidebarY = 15;
   let mainY = 20;
@@ -291,144 +302,14 @@ async function generateModernPdf(
     mainY += 12;
 
     resumeData.experience.forEach((exp, index) => {
-      // Timeline dot
-      doc.setFillColor(pr, pg, pb);
-      doc.circle(mainContentX - 3, mainY - 2, 1.5, 'F');
-      
-      // Job title
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(11);
-      setProfessionalFont(doc, 'header', 'bold');
-      doc.text(exp.title, mainContentX, mainY);
-      mainY += 5;
-
-      // Company and duration
-      doc.setTextColor(pr, pg, pb);
-      doc.setFontSize(10);
-      setProfessionalFont(doc, 'body', 'bold');
-      doc.text(exp.company, mainContentX, mainY);
-      
-      // Duration badge
-      if (exp.duration) {
-        doc.setFillColor(ar, ag, ab, 0.3);
-        const durationWidth = doc.getTextWidth(exp.duration) + 4;
-        doc.rect(mainContentX + mainContentWidth - durationWidth, mainY - 4, durationWidth, 6, 'F');
-        doc.setTextColor(pr, pg, pb);
-        doc.text(exp.duration, mainContentX + mainContentWidth - durationWidth + 2, mainY);
-      }
-      mainY += 8;
-
-      // Description
-      if (exp.description) {
-        // Check page break
-        if (mainY > pageHeight - 30) {
-          doc.addPage();
-          // Re-create sidebar on new page
-          for (let i = 0; i < sidebarWidth; i += 2) {
-            const ratio = i / sidebarWidth;
-            const r = Math.round(pr + (ar - pr) * ratio);
-            const g = Math.round(pg + (ag - pg) * ratio);
-            const b = Math.round(pb + (ab - pb) * ratio);
-            
-            doc.setFillColor(r, g, b);
-            doc.rect(i, 0, 2, pageHeight, 'F');
-          }
-          mainY = 20;
-        }
-
-        doc.setTextColor(120, 120, 120);
-        doc.setFontSize(9);
-        setProfessionalFont(doc, 'body', 'normal');
-        const descriptionLines = doc.splitTextToSize(exp.description, mainContentWidth);
-        descriptionLines.forEach((line: string) => {
-          doc.text(line, mainContentX, mainY);
-          mainY += 4;
-        });
-        mainY += 4;
-      }
-
-      // Core Responsibilities
-      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(9);
-        setProfessionalFont(doc, 'body', 'bold');
-        doc.text('Core Responsibilities:', mainContentX, mainY);
-        mainY += 6;
-
-        exp.core_responsibilities.forEach((responsibility) => {
-          // Check page break
-          if (mainY > pageHeight - 30) {
-            doc.addPage();
-            // Re-create sidebar on new page
-            for (let i = 0; i < sidebarWidth; i += 2) {
-              const ratio = i / sidebarWidth;
-              const r = Math.round(pr + (ar - pr) * ratio);
-              const g = Math.round(pg + (ag - pg) * ratio);
-              const b = Math.round(pb + (ab - pb) * ratio);
-              
-              doc.setFillColor(r, g, b);
-              doc.rect(i, 0, 2, pageHeight, 'F');
-            }
-            mainY = 20;
-          }
-
-          // Responsibility bullet
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(mainContentX + 3, mainY - 1, 0.8, 'F');
-          
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(8);
-          setProfessionalFont(doc, 'body', 'normal');
-          const respLines = doc.splitTextToSize(responsibility, mainContentWidth - 8);
-          respLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 3.5));
-          });
-          mainY += respLines.length * 3.5 + 2;
-        });
-        mainY += 4;
-      }
-
-      // Achievements
-      if (exp.achievements && exp.achievements.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(9);
-        setProfessionalFont(doc, 'body', 'bold');
-        doc.text('Key Achievements:', mainContentX, mainY);
-        mainY += 6;
-
-        exp.achievements.forEach((achievement) => {
-          // Check page break
-          if (mainY > pageHeight - 30) {
-            doc.addPage();
-            // Re-create sidebar on new page
-            for (let i = 0; i < sidebarWidth; i += 2) {
-              const ratio = i / sidebarWidth;
-              const r = Math.round(pr + (ar - pr) * ratio);
-              const g = Math.round(pg + (ag - pg) * ratio);
-              const b = Math.round(pb + (ab - pb) * ratio);
-              
-              doc.setFillColor(r, g, b);
-              doc.rect(i, 0, 2, pageHeight, 'F');
-            }
-            mainY = 20;
-          }
-
-          // Achievement bullet
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
-          
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(9);
-          setProfessionalFont(doc, 'body', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
-          achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
-          });
-          mainY += achievementLines.length * 4 + 2;
-        });
-      }
-      
-      mainY += 8;
+      mainY = pageBreaker.renderExperienceWithBreaks(
+        exp,
+        mainContentX,
+        mainY,
+        mainContentWidth,
+        { primary: [pr, pg, pb], accent: [ar, ag, ab] },
+        recreateSidebar
+      );
     });
   }
 
@@ -467,6 +348,14 @@ async function generateCreativePdf(
   const [pr, pg, pb] = hexToRgb(colorTheme.primary);
   const [sr, sg, sb] = hexToRgb(colorTheme.secondary);
   const [ar, ag, ab] = hexToRgb(colorTheme.accent);
+
+  // Initialize smart page breaker
+  const pageBreaker = new SmartPageBreaker(doc, {
+    pageHeight,
+    marginTop: 15,
+    marginBottom: 20,
+    minSpaceForContent: 25
+  });
 
   let currentY = 20;
 
@@ -602,108 +491,16 @@ async function generateCreativePdf(
     currentY += 12;
 
     resumeData.experience.forEach((exp) => {
-      // Experience container background
-      doc.setFillColor(pr, pg, pb, 0.05);
-      const containerHeight = 30 + (exp.achievements?.length || 0) * 5;
-      doc.roundedRect(margin - 2, currentY - 5, contentWidth + 4, containerHeight, 3, 3, 'F');
-      
-      // Left border accent
-      doc.setFillColor(ar, ag, ab);
-      doc.rect(margin - 2, currentY - 5, 3, containerHeight, 'F');
-
-      // Job title
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(exp.title, margin + 5, currentY);
-      currentY += 5;
-
-      // Company
-      doc.setTextColor(pr, pg, pb);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(exp.company, margin + 5, currentY);
-
-      // Duration badge
-      if (exp.duration) {
-        doc.setFillColor(ar, ag, ab);
-        const durationWidth = doc.getTextWidth(exp.duration) + 6;
-        doc.roundedRect(pageWidth - margin - durationWidth, currentY - 4, durationWidth, 6, 2, 2, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text(exp.duration, pageWidth - margin - durationWidth + 3, currentY);
-      }
-      currentY += 8;
-
-      // Description
-      if (exp.description) {
-        doc.setTextColor(120, 120, 120);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        const descriptionLines = doc.splitTextToSize(exp.description, contentWidth - 10);
-        descriptionLines.forEach((line: string) => {
-          doc.text(line, margin + 5, currentY);
-          currentY += 4;
-        });
-        currentY += 4;
-      }
-
-      // Core Responsibilities
-      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Core Responsibilities:', margin + 5, currentY);
-        currentY += 6;
-
-        exp.core_responsibilities.forEach((responsibility) => {
-          // Responsibility bullet
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(margin + 8, currentY - 1, 0.8, 'F');
-          
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(8);
-          doc.setFont('helvetica', 'normal');
-          const respLines = doc.splitTextToSize(responsibility, contentWidth - 15);
-          respLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 12, currentY + (lineIndex * 3.5));
-          });
-          currentY += respLines.length * 3.5 + 2;
-        });
-        currentY += 4;
-      }
-
-      // Key Achievements with checkmarks
-      if (exp.achievements && exp.achievements.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Key Achievements:', margin + 5, currentY);
-        currentY += 6;
-
-        exp.achievements.slice(0, 4).forEach((achievement) => {
-          // Achievement bullet (matching preview)
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(margin + 8, currentY - 1, 2, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'bold');
-          doc.text('V', margin + 6.5, currentY + 0.5);
-          
-          // Achievement text
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
-          achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 12, currentY + (lineIndex * 4));
-          });
-          currentY += achievementLines.length * 4 + 2;
-        });
-      }
-
-      currentY += containerHeight - 15;
+      currentY = pageBreaker.renderExperienceWithBreaks(
+        exp,
+        margin,
+        currentY,
+        contentWidth,
+        { primary: [pr, pg, pb], accent: [ar, ag, ab] },
+        () => {
+          // Header recreation function (empty for creative template since no sidebar)
+        }
+      );
     });
   }
 
@@ -771,6 +568,15 @@ async function generateClassicPdf(
   };
 
   const [pr, pg, pb] = hexToRgb(colorTheme.primary);
+  
+  // Initialize smart page breaker
+  const pageBreaker = new SmartPageBreaker(doc, {
+    pageHeight: 297,
+    marginTop: 20,
+    marginBottom: 20,
+    minSpaceForContent: 25
+  });
+  
   let currentY = margin;
 
   // Centered header
@@ -837,85 +643,16 @@ async function generateClassicPdf(
     addSectionHeader('Professional Experience');
     
     resumeData.experience.forEach((exp) => {
-      // Job title
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(exp.title, margin, currentY);
-      currentY += 5;
-
-      // Company and duration
-      doc.setTextColor(pr, pg, pb);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(exp.company, margin, currentY);
-      
-      if (exp.duration) {
-        const durationWidth = doc.getTextWidth(exp.duration);
-        doc.setTextColor(100, 100, 100);
-        doc.setFont('helvetica', 'italic');
-        doc.text(exp.duration, pageWidth - margin - durationWidth, currentY);
-      }
-      currentY += 7;
-
-      // Description
-      if (exp.description) {
-        doc.setTextColor(120, 120, 120);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        const descriptionLines = doc.splitTextToSize(exp.description, contentWidth);
-        descriptionLines.forEach((line: string) => {
-          doc.text(line, margin, currentY);
-          currentY += 5;
-        });
-        currentY += 4;
-      }
-
-      // Core Responsibilities
-      if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Core Responsibilities:', margin, currentY);
-        currentY += 6;
-
-        exp.core_responsibilities.forEach((responsibility) => {
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('•', margin + 5, currentY);
-          
-          const respLines = doc.splitTextToSize(responsibility, contentWidth - 10);
-          respLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 10, currentY + (lineIndex * 5));
-          });
-          currentY += respLines.length * 5 + 2;
-        });
-        currentY += 4;
-      }
-
-      // Key Achievements
-      if (exp.achievements && exp.achievements.length > 0) {
-        doc.setTextColor(pr, pg, pb);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Key Achievements:', margin, currentY);
-        currentY += 6;
-
-        exp.achievements.forEach((achievement) => {
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('•', margin + 5, currentY);
-          
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 10);
-          achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 10, currentY + (lineIndex * 5));
-          });
-          currentY += achievementLines.length * 5 + 2;
-        });
-      }
-      currentY += 8;
+      currentY = pageBreaker.renderExperienceWithBreaks(
+        exp,
+        margin,
+        currentY,
+        contentWidth,
+        { primary: [pr, pg, pb], accent: [pr, pg, pb] },
+        () => {
+          // No special page break handling needed for classic template
+        }
+      );
     });
   }
 
