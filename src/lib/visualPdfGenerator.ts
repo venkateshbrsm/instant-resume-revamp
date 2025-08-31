@@ -61,8 +61,8 @@ function renderTextBlock(
       yPosition = 20;
     }
     
-    // Render line with consistent spacing - use 'left' alignment explicitly
-    doc.text(line.trim(), x, yPosition, { align: 'left' });
+    // Render line with consistent spacing - avoid any alignment that could stretch text
+    doc.text(line.trim(), x, yPosition);
     yPosition += lineHeight;
   }
   
@@ -130,7 +130,7 @@ function renderBulletList(
     let lineY = yPosition;
     
     itemLines.forEach((line: string) => {
-      doc.text(line.trim(), x + bulletIndent, lineY, { align: 'left' });
+      doc.text(line.trim(), x + bulletIndent, lineY);
       lineY += lineHeight;
     });
     
