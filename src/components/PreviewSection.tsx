@@ -144,19 +144,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       hasEditTabBeenEnhanced: hasEditTabBeenEnhanced
     });
     
-    if (extractedText && !enhancedContent && !isEnhancing && currentPreviewTab !== "edit") {
-      console.log('🔄 Auto-switching to edit tab for enhancement');
+    if (extractedText && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
+      console.log('🔄 Auto-switching to edit tab and triggering enhancement');
       setCurrentPreviewTab("edit");
-      // Trigger enhancement after a small delay to ensure state is updated
-      setTimeout(() => {
-        if (extractedText && extractedText.length > 0 && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
-          console.log('🤖 Triggering enhancement for auto-switched edit tab');
-          setHasEditTabBeenEnhanced(true);
-          enhanceResume();
-        }
-      }, 100);
+      setHasEditTabBeenEnhanced(true);
+      // Trigger enhancement immediately
+      enhanceResume();
     }
-  }, [extractedText, enhancedContent, isEnhancing, currentPreviewTab]);
+  }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
   // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
