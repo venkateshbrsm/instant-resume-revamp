@@ -45,14 +45,16 @@ serve(async (req) => {
         Enhance this professional summary to be:
         - ATS-friendly with relevant keywords
         - Concise but impactful (2-3 sentences)
-        - Results-oriented and quantifiable when possible
+        - Results-oriented - ONLY add quantification if the original content already contains specific numbers/metrics
         - Industry-specific and professional
         - Action-oriented with strong power words
         - Crisp and clear - if original sentences are too long (25+ words), make them shorter while preserving the exact same meaning
         
+        IMPORTANT: Do NOT add numbers, percentages, or quantified achievements unless they are already present in the original content. Only enhance the language and structure while preserving the original facts.
+        
         Original summary: "${content}"
         
-        Rewrite this summary to be more compelling and ATS-optimized. Focus on achievements, skills, and value proposition.`;
+        Rewrite this summary to be more compelling and ATS-optimized. Focus on achievements, skills, and value proposition using only the information provided.`;
         break;
 
       case 'description':
@@ -61,15 +63,17 @@ serve(async (req) => {
         Enhance this job description/responsibilities section to be:
         - ATS-friendly with industry keywords
         - Action-oriented using strong power verbs (Led, Implemented, Achieved, etc.)
-        - Quantified with metrics when possible
+        - ONLY quantify with metrics if the original content already contains specific numbers/metrics
         - Clear and concise bullet points
         - Results-focused rather than task-focused
         - Professional and impactful
         - Crisp and readable - if sentences are too long (25+ words), break them into shorter, clearer statements while keeping the same meaning and essence
         
+        IMPORTANT: Do NOT add numbers, percentages, dollar amounts, or any quantified achievements unless they are already present in the original content. Only enhance the language and structure while preserving the original facts.
+        
         Original description: "${content}"
         
-        Rewrite this to highlight achievements and impact rather than just duties. Use metrics where possible and ensure it's keyword-rich for ATS systems.`;
+        Rewrite this to highlight achievements and impact rather than just duties using only the information provided. Ensure it's keyword-rich for ATS systems while maintaining accuracy.`;
         break;
 
       case 'skills':
@@ -107,7 +111,7 @@ serve(async (req) => {
         systemPrompt = 'You are an expert resume writer specializing in ATS-optimized achievements and accomplishments.';
         enhancementFocus = `
         Enhance these achievements to be:
-        - Quantified with specific metrics and numbers
+        - ONLY quantify with specific metrics if numbers are already present in the original content
         - Action-oriented with power verbs
         - Results-focused and impactful
         - ATS-friendly with relevant keywords
@@ -115,9 +119,11 @@ serve(async (req) => {
         - Credible and specific
         - Crisp and clear - if achievement descriptions are too long (25+ words), make them shorter while preserving all key information and impact
         
+        IMPORTANT: Do NOT add numbers, percentages, dollar amounts, or any quantified achievements unless they are already present in the original content. Only enhance the language and structure while preserving the original facts.
+        
         Original achievements: "${content}"
         
-        IMPORTANT: Return only ONE enhanced version of these achievements, not multiple variations. Improve the original content by making it more compelling with better metrics, stronger action verbs, and clearer impact. Keep the same basic facts but present them more powerfully.`;
+        Return only ONE enhanced version of these achievements, not multiple variations. Improve the original content by making it more compelling with stronger action verbs and clearer impact using only the information provided.`;
         break;
 
       default:
