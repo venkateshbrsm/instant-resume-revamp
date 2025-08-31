@@ -35,10 +35,7 @@ export const EditablePreview = ({
   const [enhancingFields, setEnhancingFields] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState(0);
-  const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
-  const [autoEnhanceProgress, setAutoEnhanceProgress] = useState(0);
-  const [autoEnhanceTotal, setAutoEnhanceTotal] = useState(0);
-  const [currentEnhancingField, setCurrentEnhancingField] = useState('');
+  // Removed auto-enhancement state variables
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Create a stable session-based resume ID that persists across tab switches
@@ -127,84 +124,9 @@ export const EditablePreview = ({
     }
   }, [enhancedContent?.extractedAt, clearSession]);
 
-  // Auto-enhance all fields once when component mounts
-  useEffect(() => {
-    console.log('🔍 Auto-enhancement check:', {
-      hasBeenAutoEnhanced,
-      hasEnhancedContent: !!enhancedContent,
-      resumeId: resumeId.substring(0, 50) + '...',
-      enhancedResumes: JSON.parse(localStorage.getItem('autoEnhancedResumes') || '[]')
-    });
-    
-    if (!hasBeenAutoEnhanced && enhancedContent) {
-      const autoEnhanceAllFields = async () => {
-        console.log('🤖 Starting auto-enhancement for session ID:', resumeId);
-        
-        // Mark this resume as auto-enhanced FIRST to prevent re-runs
-        markAsAutoEnhanced(resumeId);
-        
-        // Define fields to auto-enhance (excluding basic info fields and skills)
-        const fieldsToEnhance = [
-          { key: 'summary', label: 'Professional Summary' }
-        ];
-        
-        // Add experience descriptions
-        if (enhancedContent?.experience) {
-          enhancedContent.experience.forEach((_, index) => {
-            fieldsToEnhance.push({
-              key: `experience.${index}.description`,
-              label: 'Job Description'
-            });
-          });
-        }
-        
-        console.log('🔍 Fields to enhance:', fieldsToEnhance.map(f => f.key));
-        
-        // Start auto-enhancement
-        setIsAutoEnhancing(true);
-        setAutoEnhanceTotal(fieldsToEnhance.length);
-        setAutoEnhanceProgress(0);
-        
-        // Auto-enhance fields with a delay between each
-        for (let i = 0; i < fieldsToEnhance.length; i++) {
-          const field = fieldsToEnhance[i];
-          setCurrentEnhancingField(field.label);
-          
-          try {
-            console.log(`🤖 Enhancing field ${i + 1}/${fieldsToEnhance.length}: ${field.key}`);
-            await handleEnhanceField(field.key, field.label);
-            setAutoEnhanceProgress(i + 1);
-            // Small delay between enhancements to avoid overwhelming the API
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } catch (error) {
-            console.error(`❌ Failed to auto-enhance ${field.key}:`, error);
-          }
-        }
-        
-        // Complete auto-enhancement
-        setIsAutoEnhancing(false);
-        setCurrentEnhancingField('');
-        console.log('✅ Auto-enhancement completed for session:', resumeId);
-        toast.success('All fields enhanced successfully!');
-      };
-      
-      // Start auto-enhancement after a short delay
-      setTimeout(autoEnhanceAllFields, 500);
-    } else {
-      console.log('🚫 Skipping auto-enhancement:', {
-        reason: !hasBeenAutoEnhanced ? 'no content' : 'already enhanced',
-        hasBeenAutoEnhanced,
-        hasContent: !!enhancedContent
-      });
-    }
-  }, [hasBeenAutoEnhanced, enhancedContent, resumeId, markAsAutoEnhanced]);
+  // Auto-enhancement disabled - users can manually enhance individual fields using the "Enhance with AI" buttons
 
-  // Notify parent about auto-enhancement state changes
-  useEffect(() => {
-    if (onAutoEnhancementStateChange) {
-      onAutoEnhancementStateChange(isAutoEnhancing);
-    }
-  }, [isAutoEnhancing, onAutoEnhancementStateChange]);
+  // Auto-enhancement state change notification removed
 
   const handleSave = useCallback(async (isAutoSave = false) => {
     // Debounce all saves to prevent excessive calls
@@ -432,7 +354,7 @@ export const EditablePreview = ({
           className="mt-1"
           placeholder={`Enter ${label.toLowerCase()}`}
           rows={isTextarea ? 3 : undefined}
-          disabled={isAutoEnhancing}
+          disabled={false}
         />
       </div>
     );
@@ -484,7 +406,7 @@ export const EditablePreview = ({
                         className="mt-1"
                         rows={4}
                         placeholder="Enter achievements (one per line)"
-                        disabled={isAutoEnhancing}
+                        disabled={false}
                       />
                     </div>
                   )}
@@ -561,7 +483,7 @@ export const EditablePreview = ({
               className="mt-1"
               placeholder={`Enter ${label.toLowerCase()}`}
               rows={isTextarea ? 3 : undefined}
-              disabled={isAutoEnhancing}
+              disabled={false}
             />
           )}
         </div>
@@ -597,30 +519,7 @@ export const EditablePreview = ({
         </div>
       </div>
 
-      {/* Auto Enhancement Progress */}
-      {isAutoEnhancing && (
-        <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-          <div className="flex items-center gap-3 mb-3">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <div className="flex-1">
-              <h4 className="font-medium text-primary">Enhancing Resume with AI</h4>
-              <p className="text-sm text-muted-foreground">
-                Currently enhancing: {currentEnhancingField}
-              </p>
-            </div>
-            <div className="text-sm font-medium text-primary">
-              {autoEnhanceProgress}/{autoEnhanceTotal}
-            </div>
-          </div>
-          <Progress 
-            value={(autoEnhanceProgress / autoEnhanceTotal) * 100} 
-            className="h-2"
-          />
-          <p className="text-xs text-muted-foreground mt-2">
-            Please wait while we optimize your resume content for ATS compatibility...
-          </p>
-        </div>
-      )}
+      {/* Auto-enhancement progress removed */}
 
       {/* Editable Content */}
       <div ref={previewRef} className="border rounded-lg bg-background p-6 min-h-[600px]">
@@ -701,7 +600,7 @@ export const EditablePreview = ({
                 className="w-full"
                 placeholder="Enter skills separated by commas (e.g., JavaScript, React, Node.js, Python)"
                 rows={3}
-                disabled={isAutoEnhancing}
+                disabled={false}
               />
             </div>
           </div>
@@ -722,7 +621,7 @@ export const EditablePreview = ({
               className="w-full"
               placeholder="Enter languages separated by commas"
               rows={2}
-              disabled={isAutoEnhancing}
+              disabled={false}
             />
           </div>
         )}
