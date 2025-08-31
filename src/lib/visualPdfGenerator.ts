@@ -32,6 +32,111 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
   }
 }
 
+// Smart text rendering function to prevent sentence cutting
+function renderTextBlock(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  currentY: number,
+  maxWidth: number,
+  lineHeight: number = 4,
+  pageHeight: number = 297,
+  marginBottom: number = 30,
+  onPageBreak?: () => void
+): number {
+  // Split text into sentences to avoid cutting mid-sentence
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  if (sentences.length === 0) return currentY;
+  
+  let yPosition = currentY;
+  let currentParagraph = '';
+  
+  sentences.forEach((sentence, index) => {
+    const testParagraph = currentParagraph + (currentParagraph ? ' ' : '') + sentence;
+    const testLines = doc.splitTextToSize(testParagraph, maxWidth);
+    
+    // Calculate space needed for this paragraph
+    const spaceNeeded = testLines.length * lineHeight;
+    
+    // Check if we need a page break
+    if (yPosition + spaceNeeded > pageHeight - marginBottom) {
+      // Render current paragraph if it exists
+      if (currentParagraph.trim()) {
+        const lines = doc.splitTextToSize(currentParagraph, maxWidth);
+        lines.forEach((line: string) => {
+          doc.text(line, x, yPosition);
+          yPosition += lineHeight;
+        });
+      }
+      
+      // Add page break
+      doc.addPage();
+      if (onPageBreak) onPageBreak();
+      yPosition = 20;
+      currentParagraph = sentence;
+    } else {
+      currentParagraph = testParagraph;
+    }
+    
+    // If this is the last sentence, render the final paragraph
+    if (index === sentences.length - 1 && currentParagraph.trim()) {
+      const lines = doc.splitTextToSize(currentParagraph, maxWidth);
+      lines.forEach((line: string) => {
+        doc.text(line, x, yPosition);
+        yPosition += lineHeight;
+      });
+    }
+  });
+  
+  return yPosition;
+}
+
+// Smart bullet point rendering to keep bullets with their text
+function renderBulletList(
+  doc: jsPDF,
+  items: string[],
+  x: number,
+  currentY: number,
+  maxWidth: number,
+  bulletIndent: number = 6,
+  lineHeight: number = 4,
+  itemSpacing: number = 2,
+  pageHeight: number = 297,
+  marginBottom: number = 30,
+  onPageBreak?: () => void,
+  bulletColor?: [number, number, number]
+): number {
+  let yPosition = currentY;
+  
+  items.forEach((item) => {
+    // Calculate space needed for this entire bullet item
+    const itemLines = doc.splitTextToSize(item, maxWidth - bulletIndent);
+    const itemHeight = itemLines.length * lineHeight + itemSpacing;
+    
+    // Check if we need a page break for the entire item
+    if (yPosition + itemHeight > pageHeight - marginBottom) {
+      doc.addPage();
+      if (onPageBreak) onPageBreak();
+      yPosition = 20;
+    }
+    
+    // Render bullet
+    if (bulletColor) {
+      doc.setFillColor(bulletColor[0], bulletColor[1], bulletColor[2]);
+      doc.circle(x + 3, yPosition - 1, 0.8, 'F');
+    }
+    
+    // Render item text
+    itemLines.forEach((line: string, lineIndex: number) => {
+      doc.text(line, x + bulletIndent, yPosition + (lineIndex * lineHeight));
+    });
+    
+    yPosition += itemHeight;
+  });
+  
+  return yPosition;
+}
+
 export interface VisualPdfOptions {
   filename?: string;
   templateType?: 'modern' | 'classic' | 'minimalist' | 'executive' | 'creative';
@@ -137,16 +242,21 @@ async function generateModernPdf(
   const [sr, sg, sb] = hexToRgb(colorTheme.secondary);
   const [ar, ag, ab] = hexToRgb(colorTheme.accent);
 
-  // Create gradient sidebar background using multiple rectangles
-  for (let i = 0; i < sidebarWidth; i += 2) {
-    const ratio = i / sidebarWidth;
-    const r = Math.round(pr + (ar - pr) * ratio);
-    const g = Math.round(pg + (ag - pg) * ratio);
-    const b = Math.round(pb + (ab - pb) * ratio);
-    
-    doc.setFillColor(r, g, b);
-    doc.rect(i, 0, 2, pageHeight, 'F');
-  }
+  // Helper function to recreate sidebar gradient on new pages
+  const recreateSidebarGradient = () => {
+    for (let i = 0; i < sidebarWidth; i += 2) {
+      const ratio = i / sidebarWidth;
+      const r = Math.round(pr + (ar - pr) * ratio);
+      const g = Math.round(pg + (ag - pg) * ratio);
+      const b = Math.round(pb + (ab - pb) * ratio);
+      
+      doc.setFillColor(r, g, b);
+      doc.rect(i, 0, 2, pageHeight, 'F');
+    }
+  };
+
+  // Create initial gradient sidebar background
+  recreateSidebarGradient();
 
   let sidebarY = 15;
   let mainY = 20;
@@ -320,30 +430,20 @@ async function generateModernPdf(
 
       // Description
       if (exp.description) {
-        // Check page break
-        if (mainY > pageHeight - 30) {
-          doc.addPage();
-          // Re-create sidebar on new page
-          for (let i = 0; i < sidebarWidth; i += 2) {
-            const ratio = i / sidebarWidth;
-            const r = Math.round(pr + (ar - pr) * ratio);
-            const g = Math.round(pg + (ag - pg) * ratio);
-            const b = Math.round(pb + (ab - pb) * ratio);
-            
-            doc.setFillColor(r, g, b);
-            doc.rect(i, 0, 2, pageHeight, 'F');
-          }
-          mainY = 20;
-        }
-
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(9);
         setProfessionalFont(doc, 'body', 'normal');
-        const descriptionLines = doc.splitTextToSize(exp.description, mainContentWidth);
-        descriptionLines.forEach((line: string) => {
-          doc.text(line, mainContentX, mainY);
-          mainY += 4;
-        });
+        mainY = renderTextBlock(
+          doc,
+          exp.description,
+          mainContentX,
+          mainY,
+          mainContentWidth,
+          4,
+          pageHeight,
+          30,
+          recreateSidebarGradient
+        );
         mainY += 4;
       }
 
@@ -355,36 +455,20 @@ async function generateModernPdf(
         doc.text('Core Responsibilities:', mainContentX, mainY);
         mainY += 6;
 
-        exp.core_responsibilities.forEach((responsibility) => {
-          // Check page break
-          if (mainY > pageHeight - 30) {
-            doc.addPage();
-            // Re-create sidebar on new page
-            for (let i = 0; i < sidebarWidth; i += 2) {
-              const ratio = i / sidebarWidth;
-              const r = Math.round(pr + (ar - pr) * ratio);
-              const g = Math.round(pg + (ag - pg) * ratio);
-              const b = Math.round(pb + (ab - pb) * ratio);
-              
-              doc.setFillColor(r, g, b);
-              doc.rect(i, 0, 2, pageHeight, 'F');
-            }
-            mainY = 20;
-          }
-
-          // Responsibility bullet
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(mainContentX + 3, mainY - 1, 0.8, 'F');
-          
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(8);
-          setProfessionalFont(doc, 'body', 'normal');
-          const respLines = doc.splitTextToSize(responsibility, mainContentWidth - 8);
-          respLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 3.5));
-          });
-          mainY += respLines.length * 3.5 + 2;
-        });
+        mainY = renderBulletList(
+          doc,
+          exp.core_responsibilities,
+          mainContentX,
+          mainY,
+          mainContentWidth,
+          6,
+          3.5,
+          2,
+          pageHeight,
+          30,
+          recreateSidebarGradient,
+          [ar, ag, ab]
+        );
         mainY += 4;
       }
 
@@ -396,36 +480,20 @@ async function generateModernPdf(
         doc.text('Key Achievements:', mainContentX, mainY);
         mainY += 6;
 
-        exp.achievements.forEach((achievement) => {
-          // Check page break
-          if (mainY > pageHeight - 30) {
-            doc.addPage();
-            // Re-create sidebar on new page
-            for (let i = 0; i < sidebarWidth; i += 2) {
-              const ratio = i / sidebarWidth;
-              const r = Math.round(pr + (ar - pr) * ratio);
-              const g = Math.round(pg + (ag - pg) * ratio);
-              const b = Math.round(pb + (ab - pb) * ratio);
-              
-              doc.setFillColor(r, g, b);
-              doc.rect(i, 0, 2, pageHeight, 'F');
-            }
-            mainY = 20;
-          }
-
-          // Achievement bullet
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(mainContentX + 3, mainY - 1, 1, 'F');
-          
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(9);
-          setProfessionalFont(doc, 'body', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
-          achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
-          });
-          mainY += achievementLines.length * 4 + 2;
-        });
+        mainY = renderBulletList(
+          doc,
+          exp.achievements,
+          mainContentX,
+          mainY,
+          mainContentWidth,
+          6,
+          4,
+          2,
+          pageHeight,
+          30,
+          recreateSidebarGradient,
+          [ar, ag, ab]
+        );
       }
       
       mainY += 8;
@@ -469,6 +537,11 @@ async function generateCreativePdf(
   const [ar, ag, ab] = hexToRgb(colorTheme.accent);
 
   let currentY = 20;
+
+  // Helper function for page breaks
+  const handlePageBreak = () => {
+    // No sidebar to recreate in creative template
+  };
 
   // Creative gradient header matching preview exactly
   const headerHeight = 50;
@@ -641,11 +714,17 @@ async function generateCreativePdf(
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        const descriptionLines = doc.splitTextToSize(exp.description, contentWidth - 10);
-        descriptionLines.forEach((line: string) => {
-          doc.text(line, margin + 5, currentY);
-          currentY += 4;
-        });
+        currentY = renderTextBlock(
+          doc,
+          exp.description,
+          margin + 5,
+          currentY,
+          contentWidth - 10,
+          4,
+          pageHeight,
+          30,
+          handlePageBreak
+        );
         currentY += 4;
       }
 
@@ -657,20 +736,20 @@ async function generateCreativePdf(
         doc.text('Core Responsibilities:', margin + 5, currentY);
         currentY += 6;
 
-        exp.core_responsibilities.forEach((responsibility) => {
-          // Responsibility bullet
-          doc.setFillColor(ar, ag, ab);
-          doc.circle(margin + 8, currentY - 1, 0.8, 'F');
-          
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(8);
-          doc.setFont('helvetica', 'normal');
-          const respLines = doc.splitTextToSize(responsibility, contentWidth - 15);
-          respLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 12, currentY + (lineIndex * 3.5));
-          });
-          currentY += respLines.length * 3.5 + 2;
-        });
+        currentY = renderBulletList(
+          doc,
+          exp.core_responsibilities,
+          margin + 5,
+          currentY,
+          contentWidth - 15,
+          7,
+          3.5,
+          2,
+          pageHeight,
+          30,
+          handlePageBreak,
+          [ar, ag, ab]
+        );
         currentY += 4;
       }
 
@@ -682,7 +761,19 @@ async function generateCreativePdf(
         doc.text('Key Achievements:', margin + 5, currentY);
         currentY += 6;
 
+        // Use custom rendering for checkmark bullets
         exp.achievements.slice(0, 4).forEach((achievement) => {
+          // Calculate space needed for this entire item
+          const itemLines = doc.splitTextToSize(achievement, contentWidth - 20);
+          const itemHeight = itemLines.length * 4 + 2;
+          
+          // Check if we need a page break for the entire item
+          if (currentY + itemHeight > pageHeight - 30) {
+            doc.addPage();
+            handlePageBreak();
+            currentY = 20;
+          }
+          
           // Achievement bullet (matching preview)
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 8, currentY - 1, 2, 'F');
@@ -695,11 +786,10 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
-          achievementLines.forEach((line: string, lineIndex: number) => {
+          itemLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 4));
           });
-          currentY += achievementLines.length * 4 + 2;
+          currentY += itemHeight;
         });
       }
 
@@ -758,6 +848,7 @@ async function generateClassicPdf(
   });
 
   const pageWidth = 210;
+  const pageHeight = 297;
   const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   
@@ -772,6 +863,11 @@ async function generateClassicPdf(
 
   const [pr, pg, pb] = hexToRgb(colorTheme.primary);
   let currentY = margin;
+
+  // Helper function for page breaks
+  const handlePageBreak = () => {
+    // No sidebar to recreate in classic template
+  };
 
   // Centered header
   doc.setTextColor(pr, pg, pb);
@@ -863,11 +959,17 @@ async function generateClassicPdf(
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        const descriptionLines = doc.splitTextToSize(exp.description, contentWidth);
-        descriptionLines.forEach((line: string) => {
-          doc.text(line, margin, currentY);
-          currentY += 5;
-        });
+        currentY = renderTextBlock(
+          doc,
+          exp.description,
+          margin,
+          currentY,
+          contentWidth,
+          5,
+          pageHeight,
+          30,
+          handlePageBreak
+        );
         currentY += 4;
       }
 
@@ -879,18 +981,19 @@ async function generateClassicPdf(
         doc.text('Core Responsibilities:', margin, currentY);
         currentY += 6;
 
-        exp.core_responsibilities.forEach((responsibility) => {
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('•', margin + 5, currentY);
-          
-          const respLines = doc.splitTextToSize(responsibility, contentWidth - 10);
-          respLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 10, currentY + (lineIndex * 5));
-          });
-          currentY += respLines.length * 5 + 2;
-        });
+        currentY = renderBulletList(
+          doc,
+          exp.core_responsibilities,
+          margin,
+          currentY,
+          contentWidth - 10,
+          10,
+          5,
+          2,
+          pageHeight,
+          30,
+          handlePageBreak
+        );
         currentY += 4;
       }
 
@@ -902,18 +1005,19 @@ async function generateClassicPdf(
         doc.text('Key Achievements:', margin, currentY);
         currentY += 6;
 
-        exp.achievements.forEach((achievement) => {
-          doc.setTextColor(120, 120, 120);
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('•', margin + 5, currentY);
-          
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 10);
-          achievementLines.forEach((line: string, lineIndex: number) => {
-            doc.text(line, margin + 10, currentY + (lineIndex * 5));
-          });
-          currentY += achievementLines.length * 5 + 2;
-        });
+        currentY = renderBulletList(
+          doc,
+          exp.achievements,
+          margin,
+          currentY,
+          contentWidth - 10,
+          10,
+          5,
+          2,
+          pageHeight,
+          30,
+          handlePageBreak
+        );
       }
       currentY += 8;
     });
