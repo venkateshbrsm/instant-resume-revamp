@@ -39,54 +39,53 @@ function renderTextBlock(
   x: number,
   currentY: number,
   maxWidth: number,
-  lineHeight: number = 4,
+  lineHeight: number = 5,
   pageHeight: number = 297,
   marginBottom: number = 30,
   onPageBreak?: () => void
 ): number {
-  // Split text into sentences to avoid cutting mid-sentence
-  const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
-  if (sentences.length === 0) return currentY;
+  if (!text || text.trim() === '') return currentY;
   
+  // Clean and normalize the text
+  const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
-  let currentParagraph = '';
   
-  sentences.forEach((sentence, index) => {
-    const testParagraph = currentParagraph + (currentParagraph ? ' ' : '') + sentence;
-    const testLines = doc.splitTextToSize(testParagraph, maxWidth);
+  // Split text into words for better control
+  const words = cleanText.split(' ');
+  let currentLine = '';
+  
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+    const testWidth = doc.getTextWidth(testLine);
     
-    // Calculate space needed for this paragraph
-    const spaceNeeded = testLines.length * lineHeight;
-    
-    // Check if we need a page break
-    if (yPosition + spaceNeeded > pageHeight - marginBottom) {
-      // Render current paragraph if it exists
-      if (currentParagraph.trim()) {
-        const lines = doc.splitTextToSize(currentParagraph, maxWidth);
-        lines.forEach((line: string) => {
-          doc.text(line, x, yPosition);
-          yPosition += lineHeight;
-        });
+    if (testWidth > maxWidth && currentLine !== '') {
+      // Check if we need a page break
+      if (yPosition + lineHeight > pageHeight - marginBottom) {
+        doc.addPage();
+        if (onPageBreak) onPageBreak();
+        yPosition = 20;
       }
       
-      // Add page break
+      // Render current line
+      doc.text(currentLine, x, yPosition);
+      yPosition += lineHeight;
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  
+  // Render the last line
+  if (currentLine.trim()) {
+    if (yPosition + lineHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
-      currentParagraph = sentence;
-    } else {
-      currentParagraph = testParagraph;
     }
-    
-    // If this is the last sentence, render the final paragraph
-    if (index === sentences.length - 1 && currentParagraph.trim()) {
-      const lines = doc.splitTextToSize(currentParagraph, maxWidth);
-      lines.forEach((line: string) => {
-        doc.text(line, x, yPosition);
-        yPosition += lineHeight;
-      });
-    }
-  });
+    doc.text(currentLine, x, yPosition);
+    yPosition += lineHeight;
+  }
   
   return yPosition;
 }
@@ -98,20 +97,41 @@ function renderBulletList(
   x: number,
   currentY: number,
   maxWidth: number,
-  bulletIndent: number = 6,
-  lineHeight: number = 4,
+  bulletIndent: number = 8,
+  lineHeight: number = 5,
   itemSpacing: number = 2,
   pageHeight: number = 297,
   marginBottom: number = 30,
   onPageBreak?: () => void,
   bulletColor?: [number, number, number]
 ): number {
+  if (!items || items.length === 0) return currentY;
+  
   let yPosition = currentY;
   
   items.forEach((item) => {
-    // Calculate space needed for this entire bullet item
-    const itemLines = doc.splitTextToSize(item, maxWidth - bulletIndent);
-    const itemHeight = itemLines.length * lineHeight + itemSpacing;
+    if (!item || item.trim() === '') return;
+    
+    const cleanItem = item.replace(/^[•\-\*\s]+/, '').trim();
+    if (!cleanItem) return;
+    
+    // Calculate space needed using word-based wrapping
+    const words = cleanItem.split(' ');
+    let currentLine = '';
+    let estimatedLines = 0;
+    
+    words.forEach(word => {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      if (doc.getTextWidth(testLine) > maxWidth - bulletIndent && currentLine !== '') {
+        estimatedLines++;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    if (currentLine.trim()) estimatedLines++;
+    
+    const itemHeight = estimatedLines * lineHeight + itemSpacing;
     
     // Check if we need a page break for the entire item
     if (yPosition + itemHeight > pageHeight - marginBottom) {
@@ -123,15 +143,30 @@ function renderBulletList(
     // Render bullet
     if (bulletColor) {
       doc.setFillColor(bulletColor[0], bulletColor[1], bulletColor[2]);
-      doc.circle(x + 3, yPosition - 1, 0.8, 'F');
     }
+    doc.circle(x + 3, yPosition - 1, 0.8, 'F');
     
-    // Render item text
-    itemLines.forEach((line: string, lineIndex: number) => {
-      doc.text(line, x + bulletIndent, yPosition + (lineIndex * lineHeight));
+    // Render text using word-based wrapping
+    currentLine = '';
+    let lineY = yPosition;
+    
+    words.forEach(word => {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      if (doc.getTextWidth(testLine) > maxWidth - bulletIndent && currentLine !== '') {
+        doc.text(currentLine, x + bulletIndent, lineY);
+        lineY += lineHeight;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
     });
     
-    yPosition += itemHeight;
+    if (currentLine.trim()) {
+      doc.text(currentLine, x + bulletIndent, lineY);
+      lineY += lineHeight;
+    }
+    
+    yPosition = lineY + itemSpacing;
   });
   
   return yPosition;
@@ -378,12 +413,12 @@ async function generateModernPdf(
     mainY += 10;
 
     doc.setTextColor(120, 120, 120);
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     setProfessionalFont(doc, 'body', 'normal');
     const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
     summaryLines.forEach((line: string) => {
       doc.text(line, mainContentX, mainY);
-      mainY += 4.5;
+      mainY += 5;
     });
     mainY += 8;
   }
@@ -431,7 +466,7 @@ async function generateModernPdf(
       // Description
       if (exp.description) {
         doc.setTextColor(120, 120, 120);
-        doc.setFontSize(9);
+        doc.setFontSize(10);
         setProfessionalFont(doc, 'body', 'normal');
         mainY = renderTextBlock(
           doc,
@@ -439,7 +474,7 @@ async function generateModernPdf(
           mainContentX,
           mainY,
           mainContentWidth,
-          4,
+          5,
           pageHeight,
           30,
           recreateSidebarGradient
@@ -613,16 +648,16 @@ async function generateCreativePdf(
   doc.text('CREATIVE VISION', margin, currentY);
   currentY += 8;
 
-  if (resumeData.summary) {
-    doc.setTextColor(120, 120, 120);
-    doc.setFontSize(10);
-    setProfessionalFont(doc, 'body', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
-    summaryLines.forEach((line: string) => {
-      doc.text(line, margin, currentY);
-      currentY += 5;
-    });
-  }
+    if (resumeData.summary) {
+      doc.setTextColor(120, 120, 120);
+      doc.setFontSize(10);
+      setProfessionalFont(doc, 'body', 'normal');
+      const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
+      summaryLines.forEach((line: string) => {
+        doc.text(line, margin, currentY);
+        currentY += 5;
+      });
+    }
   currentY += 10;
 
   // Skills as creative badges
@@ -712,7 +747,7 @@ async function generateCreativePdf(
       // Description
       if (exp.description) {
         doc.setTextColor(120, 120, 120);
-        doc.setFontSize(9);
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         currentY = renderTextBlock(
           doc,
@@ -720,7 +755,7 @@ async function generateCreativePdf(
           margin + 5,
           currentY,
           contentWidth - 10,
-          4,
+          5,
           pageHeight,
           30,
           handlePageBreak
@@ -742,8 +777,8 @@ async function generateCreativePdf(
           margin + 5,
           currentY,
           contentWidth - 15,
-          7,
-          3.5,
+          8,
+          5,
           2,
           pageHeight,
           30,
