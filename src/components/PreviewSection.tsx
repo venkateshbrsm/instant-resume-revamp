@@ -133,6 +133,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     }
   }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
+  // Auto-switch to edit tab when content is extracted but not enhanced
+  useEffect(() => {
+    if (extractedText && !enhancedContent && !isEnhancing && currentPreviewTab !== "edit") {
+      console.log('🔄 Auto-switching to edit tab for enhancement');
+      setCurrentPreviewTab("edit");
+      triggerEditTabEnhancement();
+    }
+  }, [extractedText, enhancedContent, isEnhancing, currentPreviewTab, triggerEditTabEnhancement]);
+
   // Generate preview PDF when enhanced content or template/theme changes
   useEffect(() => {
     // Use edited content if available, otherwise use enhanced content
@@ -942,16 +951,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
-                    <FileText className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto" />
+                    <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
                     <div>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Content Extracted Successfully</h3>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Preparing Enhancement</h3>
                       <p className="text-muted-foreground mb-4 text-sm sm:text-base px-4">
-                        Your resume content is ready. Click the "✏️ Edit Resume" tab above to start AI enhancement.
+                        Switching to edit mode...
                       </p>
-                      <div className="flex items-center justify-center space-x-2 text-accent">
-                        <span className="text-sm">👆</span>
-                        <span className="text-sm font-medium">Click "Edit Resume" tab</span>
-                      </div>
                     </div>
                   </div>
                 </div>
