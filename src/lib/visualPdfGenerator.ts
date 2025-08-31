@@ -17,7 +17,7 @@ const FONTS = {
   }
 };
 
-// Helper function to set professional fonts with fallbacks
+// Helper function to set professional fonts with fallbacks and fix character spacing
 function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = 'body', style: 'normal' | 'bold' | 'italic' = 'normal') {
   try {
     // Use Times for headers (more elegant) and Helvetica for body (better readability)
@@ -26,9 +26,12 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
     } else {
       doc.setFont('helvetica', style);
     }
+    // Fix excessive character spacing issue
+    doc.setCharSpace(0);
   } catch (error) {
     // Fallback to default fonts if custom fonts fail
     doc.setFont('helvetica', style);
+    doc.setCharSpace(0);
   }
 }
 
