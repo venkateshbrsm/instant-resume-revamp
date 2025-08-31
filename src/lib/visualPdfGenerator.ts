@@ -49,27 +49,50 @@ function renderTextBlock(
   const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
   
-  // Ensure consistent character spacing
-  doc.setCharSpace(0);
+  // Split text into words manually for better control over spacing
+  const words = cleanText.split(' ');
+  let currentLine = '';
   
-  // Use jsPDF's built-in text splitting for consistent spacing
-  const lines = doc.splitTextToSize(cleanText, maxWidth);
+  for (const word of words) {
+    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+    const testWidth = doc.getTextWidth(testLine);
+    
+    if (testWidth > maxWidth && currentLine !== '') {
+      // Check if we need a page break
+      if (yPosition + lineHeight > pageHeight - marginBottom) {
+        doc.addPage();
+        if (onPageBreak) onPageBreak();
+        yPosition = 20;
+      }
+      
+      // Render current line with controlled spacing
+      const trimmedLine = currentLine.trim();
+      if (trimmedLine) {
+        // Manually space out characters for uniform distribution
+        const charWidth = doc.getTextWidth(trimmedLine) / trimmedLine.length;
+        doc.text(trimmedLine, x, yPosition, { 
+          baseline: 'top'
+        });
+      }
+      yPosition += lineHeight;
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
   
-  for (const line of lines) {
-    // Check if we need a page break
+  // Render the last line
+  if (currentLine.trim()) {
     if (yPosition + lineHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
-      doc.setCharSpace(0); // Reset after page break
     }
     
-    // Render line with consistent spacing
-    const trimmedLine = line.trim();
+    const trimmedLine = currentLine.trim();
     if (trimmedLine) {
       doc.text(trimmedLine, x, yPosition, { 
-        baseline: 'top',
-        charSpace: 0
+        baseline: 'top'
       });
     }
     yPosition += lineHeight;
@@ -1118,6 +1141,45 @@ export async function downloadVisualPdf(
 export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData {
   console.log('🔍 Extracting resume data from:', enhancedContent);
   
+  // Function to clean AI intro text from descriptions
+  const cleanAIIntroText = (text: string): string => {
+    if (!text) return '';
+    
+    // Remove common AI intro phrases
+    const aiIntroPatterns = [
+      /^(Certainly!?|Absolutely!?|Here's|Below is|I've)\s+.*?(?=\n|$)/i,
+      /^.*?(ATS-optimized|achievement-focused|rewrite|enhanced|tailored).*?(?=\n|$)/i,
+      /^.*?I've (incorporated|reframed|enhanced|optimized).*?(?=\n|$)/i,
+      /^.*?(Here's an?|Below is an?).*?(?=\n|$)/i
+    ];
+    
+    let cleanedText = text.trim();
+    
+    // Remove AI intro patterns from the beginning
+    for (const pattern of aiIntroPatterns) {
+      cleanedText = cleanedText.replace(pattern, '').trim();
+    }
+    
+    // Remove any remaining leading explanatory text before the actual content
+    const lines = cleanedText.split('\n');
+    let contentStartIndex = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      // Skip lines that look like AI explanations
+      if (line.includes('rewrite') || line.includes('optimized') || 
+          line.includes('enhanced') || line.includes('tailored') ||
+          line.includes('incorporated') || line.includes('I\'ve') ||
+          line.length < 10) {
+        contentStartIndex = i + 1;
+      } else {
+        break;
+      }
+    }
+    
+    return lines.slice(contentStartIndex).join('\n').trim();
+  };
+  
   const extractedData = {
     name: enhancedContent.name || 'Enhanced Resume',
     title: enhancedContent.title || 'Professional',
@@ -1125,15 +1187,15 @@ export function extractResumeDataFromEnhanced(enhancedContent: any): ResumeData 
     phone: enhancedContent.contact?.phone || enhancedContent.phone || '',
     location: enhancedContent.contact?.location || enhancedContent.location || '',
     linkedin: enhancedContent.linkedin || enhancedContent.contact?.linkedin || '',
-    summary: enhancedContent.summary || '',
+    summary: cleanAIIntroText(enhancedContent.summary || ''),
     photo: enhancedContent.profilePhotoUrl || enhancedContent.photo || undefined,
     experience: (enhancedContent.experience || []).map((exp: any) => ({
       title: exp.title || '',
       company: exp.company || '',
       duration: exp.duration || '',
-      description: exp.description || '',
-      achievements: exp.achievements || [],
-      core_responsibilities: exp.core_responsibilities || []
+      description: cleanAIIntroText(exp.description || ''),
+      achievements: (exp.achievements || []).map((ach: string) => cleanAIIntroText(ach)),
+      core_responsibilities: (exp.core_responsibilities || []).map((resp: string) => cleanAIIntroText(resp))
     })),
     skills: enhancedContent.skills || [],
     core_technical_skills: enhancedContent.core_technical_skills || [],
