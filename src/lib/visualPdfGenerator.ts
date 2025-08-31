@@ -31,7 +31,7 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
   }
 }
 
-// Smart text rendering function with manual word wrapping for uniform spacing
+// Smart text rendering function with justified alignment
 function renderTextBlock(
   doc: jsPDF,
   text: string,
@@ -52,7 +52,7 @@ function renderTextBlock(
   // Set consistent character spacing globally
   doc.setCharSpace(0);
   
-  // Manual word wrapping for uniform character spacing
+  // Manual word wrapping for justified alignment
   const words = cleanText.split(' ');
   let currentLine = '';
   const lines: string[] = [];
@@ -73,8 +73,10 @@ function renderTextBlock(
     lines.push(currentLine);
   }
   
-  // Render each line without justification
-  for (const line of lines) {
+  // Render each line with justified alignment
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
     // Check if we need a page break
     if (yPosition + lineHeight > pageHeight - marginBottom) {
       doc.addPage();
@@ -84,10 +86,20 @@ function renderTextBlock(
       doc.setCharSpace(0);
     }
     
-    // Render line with simple text positioning - no alignment options
+    // Render line with justified alignment (except last line)
     const trimmedLine = line.trim();
     if (trimmedLine) {
-      doc.text(trimmedLine, x, yPosition);
+      const isLastLine = i === lines.length - 1;
+      if (!isLastLine && trimmedLine.split(' ').length > 1) {
+        // Justify text by distributing spaces
+        doc.text(trimmedLine, x, yPosition, { 
+          align: 'justify',
+          maxWidth: maxWidth 
+        });
+      } else {
+        // Left align the last line or single words
+        doc.text(trimmedLine, x, yPosition);
+      }
     }
     yPosition += lineHeight;
   }
@@ -95,7 +107,7 @@ function renderTextBlock(
   return yPosition;
 }
 
-// Smart bullet point rendering with manual word wrapping for uniform spacing
+// Smart bullet point rendering with justified alignment
 function renderBulletList(
   doc: jsPDF,
   items: string[],
@@ -123,7 +135,7 @@ function renderBulletList(
     const cleanItem = item.replace(/^[•\-\*\s]+/, '').trim();
     if (!cleanItem) return;
     
-    // Manual word wrapping for uniform character spacing
+    // Manual word wrapping for justified alignment
     const words = cleanItem.split(' ');
     let currentLine = '';
     const itemLines: string[] = [];
@@ -161,12 +173,22 @@ function renderBulletList(
     }
     doc.circle(x + 3, yPosition - 1, 0.8, 'F');
     
-    // Render each line without alignment options
+    // Render each line with justified alignment
     let lineY = yPosition;
-    itemLines.forEach((line: string) => {
+    itemLines.forEach((line: string, index: number) => {
       const trimmedLine = line.trim();
       if (trimmedLine) {
-        doc.text(trimmedLine, x + bulletIndent, lineY);
+        const isLastLine = index === itemLines.length - 1;
+        if (!isLastLine && trimmedLine.split(' ').length > 1) {
+          // Justify text except last line
+          doc.text(trimmedLine, x + bulletIndent, lineY, { 
+            align: 'justify',
+            maxWidth: maxWidth - bulletIndent 
+          });
+        } else {
+          // Left align the last line or single words
+          doc.text(trimmedLine, x + bulletIndent, lineY);
+        }
       }
       lineY += lineHeight;
     });
@@ -282,8 +304,13 @@ async function generateModernPdf(
   const [sr, sg, sb] = hexToRgb(colorTheme.secondary);
   const [ar, ag, ab] = hexToRgb(colorTheme.accent);
 
-  // Helper function to recreate sidebar gradient on new pages
+  // Helper function to recreate sidebar gradient and page border on new pages
   const recreateSidebarGradient = () => {
+    // Add page border
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(1);
+    doc.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S');
+    
     for (let i = 0; i < sidebarWidth; i += 2) {
       const ratio = i / sidebarWidth;
       const r = Math.round(pr + (ar - pr) * ratio);
@@ -295,7 +322,10 @@ async function generateModernPdf(
     }
   };
 
-  // Create initial gradient sidebar background
+  // Create initial gradient sidebar background and page border
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(1);
+  doc.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S');
   recreateSidebarGradient();
 
   let sidebarY = 15;
@@ -615,11 +645,47 @@ async function generateCreativePdf(
   const [sr, sg, sb] = hexToRgb(colorTheme.secondary);
   const [ar, ag, ab] = hexToRgb(colorTheme.accent);
 
+  // Add page border
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(1);
+  doc.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S');
+  
+  // Add initial gradient background
+  for (let i = 0; i < pageWidth; i += 5) {
+    const ratio = i / pageWidth;
+    const r = Math.round(pr + (sr - pr) * ratio);
+    const g = Math.round(pg + (sg - pg) * ratio);
+    const b = Math.round(pb + (sb - pb) * ratio);
+    
+    doc.setFillColor(r, g, b, 0.1);
+    doc.rect(i, 0, 5, pageHeight, 'F');
+  }
+
   let currentY = 20;
 
-  // Helper function for page breaks
+  // Helper function for page breaks with creative background recreation
   const handlePageBreak = () => {
-    // No sidebar to recreate in creative template
+    // Add page border
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(1);
+    doc.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S');
+    
+    // Recreate gradient background
+    for (let i = 0; i < pageWidth; i += 5) {
+      const ratio = i / pageWidth;
+      const r = Math.round(pr + (sr - pr) * ratio);
+      const g = Math.round(pg + (sg - pg) * ratio);
+      const b = Math.round(pb + (sb - pb) * ratio);
+      
+      doc.setFillColor(r, g, b, 0.1);
+      doc.rect(i, 0, 5, pageHeight, 'F');
+    }
+    
+    // Recreate geometric shapes
+    doc.setFillColor(ar, ag, ab, 0.3);
+    doc.circle(pageWidth - 30, 40, 15, 'F');
+    doc.setFillColor(pr, pg, pb, 0.2);
+    doc.rect(pageWidth - 60, pageHeight - 80, 40, 40, 'F');
   };
 
   // Creative gradient header matching preview exactly
@@ -977,20 +1043,21 @@ async function generateClassicPdf(
   };
 
   const [pr, pg, pb] = hexToRgb(colorTheme.primary);
-  let currentY = margin;
 
   // Helper function for page breaks
   const handlePageBreak = () => {
-    // No sidebar to recreate in classic template
+    // Add page border
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(1);
+    doc.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S');
   };
 
-  // Name and title
-  doc.setTextColor(pr, pg, pb);
-  doc.setFontSize(22);
-  setProfessionalFont(doc, 'header', 'bold');
-  const nameWidth = doc.getTextWidth(resumeData.name);
-  doc.text(resumeData.name, (pageWidth - nameWidth) / 2, currentY);
-  currentY += 8;
+  // Add page border
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(1);
+  doc.rect(5, 5, pageWidth - 10, pageHeight - 10, 'S');
+
+  let currentY = 25;
 
   doc.setFontSize(14);
   setProfessionalFont(doc, 'header', 'normal');
