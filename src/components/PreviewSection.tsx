@@ -226,11 +226,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
         variant: "destructive",
       });
     } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-        setLoadingProgress(0);
-        setLoadingStage("");
-      }, 1000);
+      // Only handle error cleanup here - success case handles its own dismissal
     }
   };
 
