@@ -19,7 +19,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
   const isMobile = useIsMobile();
   
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
+    <div className="bg-white shadow-2xl border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
       {/* Responsive Layout - Mobile and Print Single Column */}
       <div className={`${isMobile ? 'block' : 'flex'} print:block`}>
         {/* Left Sidebar - Dark Background - Responsive */}

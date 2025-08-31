@@ -19,7 +19,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
   const isMobile = useIsMobile();
   
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
+    <div className="bg-white rounded-xl shadow-lg border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:max-w-none print:mx-0">
       {/* Classic Header - Centered */}
       <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
         {/* Profile Photo - Only show if photo exists */}

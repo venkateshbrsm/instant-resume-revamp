@@ -21,7 +21,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
-      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
+      className="bg-white rounded-2xl shadow-2xl border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:max-w-none print:mx-0 print:bg-white"
       style={{
         pageBreakInside: 'avoid',
         breakInside: 'avoid'
@@ -29,7 +29,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
     >
       {/* Creative Header with Diagonal Design */}
       <div 
-        className="relative overflow-hidden print:break-inside-avoid print:page-break-inside-avoid" 
+        className="relative print:break-inside-avoid print:page-break-inside-avoid" 
         style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
         <div 
