@@ -145,11 +145,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
     });
     
     if (extractedText && !enhancedContent && !isEnhancing && !hasEditTabBeenEnhanced) {
-      console.log('🔄 Auto-switching to edit tab and triggering enhancement');
+      console.log('🔄 Auto-switching to edit tab (main enhancement disabled)');
       setCurrentPreviewTab("edit");
       setHasEditTabBeenEnhanced(true);
-      // Trigger enhancement immediately
-      enhanceResume();
+      // TODO: Re-enable main enhancement later
+      // enhanceResume();
     }
   }, [extractedText, enhancedContent, isEnhancing, hasEditTabBeenEnhanced]);
 
