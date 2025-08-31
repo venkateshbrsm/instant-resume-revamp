@@ -17,7 +17,7 @@ const FONTS = {
   }
 };
 
-// Helper function to set professional fonts with fallbacks and fix character spacing
+// Helper function to set professional fonts with fallbacks
 function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = 'body', style: 'normal' | 'bold' | 'italic' = 'normal') {
   try {
     // Use Times for headers (more elegant) and Helvetica for body (better readability)
@@ -26,12 +26,9 @@ function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = '
     } else {
       doc.setFont('helvetica', style);
     }
-    // Fix excessive character spacing issue
-    doc.setCharSpace(0);
   } catch (error) {
     // Fallback to default fonts if custom fonts fail
     doc.setFont('helvetica', style);
-    doc.setCharSpace(0);
   }
 }
 
@@ -382,9 +379,7 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(8);
           setProfessionalFont(doc, 'body', 'normal');
-          // Clean and normalize text before splitting
-          const cleanedText = responsibility.replace(/\s+/g, ' ').trim();
-          const respLines = doc.splitTextToSize(cleanedText, mainContentWidth - 8);
+          const respLines = doc.splitTextToSize(responsibility, mainContentWidth - 8);
           respLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 3.5));
           });
@@ -425,9 +420,7 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           setProfessionalFont(doc, 'body', 'normal');
-          // Clean and normalize text before splitting
-          const cleanedText = achievement.replace(/\s+/g, ' ').trim();
-          const achievementLines = doc.splitTextToSize(cleanedText, mainContentWidth - 8);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
           });
@@ -672,9 +665,7 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(8);
           doc.setFont('helvetica', 'normal');
-          // Clean and normalize text before splitting  
-          const cleanedText = responsibility.replace(/\s+/g, ' ').trim();
-          const respLines = doc.splitTextToSize(cleanedText, contentWidth - 15);
+          const respLines = doc.splitTextToSize(responsibility, contentWidth - 15);
           respLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 3.5));
           });
@@ -704,9 +695,7 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          // Clean and normalize text before splitting
-          const cleanedText = achievement.replace(/\s+/g, ' ').trim();
-          const achievementLines = doc.splitTextToSize(cleanedText, contentWidth - 20);
+          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 4));
           });
