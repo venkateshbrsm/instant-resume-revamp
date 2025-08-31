@@ -20,15 +20,14 @@ const FONTS = {
 // Helper function to set professional fonts with fallbacks
 function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = 'body', style: 'normal' | 'bold' | 'italic' = 'normal') {
   try {
-    // Use Times for headers (more elegant) and Helvetica for body (better readability)
-    if (type === 'header') {
-      doc.setFont('times', style);
-    } else {
-      doc.setFont('helvetica', style);
-    }
+    // Use only Helvetica for consistent character spacing
+    doc.setFont('helvetica', style);
+    // Ensure proper character spacing
+    doc.setCharSpace(0);
   } catch (error) {
     // Fallback to default fonts if custom fonts fail
     doc.setFont('helvetica', style);
+    doc.setCharSpace(0);
   }
 }
 
@@ -50,6 +49,9 @@ function renderTextBlock(
   const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
   
+  // Ensure consistent character spacing
+  doc.setCharSpace(0);
+  
   // Use jsPDF's built-in text splitting for consistent spacing
   const lines = doc.splitTextToSize(cleanText, maxWidth);
   
@@ -59,10 +61,17 @@ function renderTextBlock(
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
+      doc.setCharSpace(0); // Reset after page break
     }
     
-    // Render line with consistent spacing - avoid any alignment that could stretch text
-    doc.text(line.trim(), x, yPosition);
+    // Render line with consistent spacing
+    const trimmedLine = line.trim();
+    if (trimmedLine) {
+      doc.text(trimmedLine, x, yPosition, { 
+        baseline: 'top',
+        charSpace: 0
+      });
+    }
     yPosition += lineHeight;
   }
   

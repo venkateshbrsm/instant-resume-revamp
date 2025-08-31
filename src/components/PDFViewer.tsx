@@ -121,8 +121,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         {pdfUrl ? (
           <iframe
             src={isFullscreen 
-              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitH` 
-              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100`
+              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
+              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
             }
             className={cn(
               "rounded-lg",
@@ -131,6 +131,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             title="PDF Preview"
             style={{ 
               border: 'none',
+              fontSmooth: 'never',
+              WebkitFontSmoothing: 'none',
               ...(isFullscreen && {
                 transform: 'scale(1)',
                 transformOrigin: 'top left',
