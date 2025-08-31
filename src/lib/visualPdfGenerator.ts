@@ -49,50 +49,29 @@ function renderTextBlock(
   const cleanText = text.replace(/\s+/g, ' ').trim();
   let yPosition = currentY;
   
-  // Split text into words manually for better control over spacing
-  const words = cleanText.split(' ');
-  let currentLine = '';
+  // Set consistent character spacing
+  doc.setCharSpace(0);
   
-  for (const word of words) {
-    const testLine = currentLine + (currentLine ? ' ' : '') + word;
-    const testWidth = doc.getTextWidth(testLine);
-    
-    if (testWidth > maxWidth && currentLine !== '') {
-      // Check if we need a page break
-      if (yPosition + lineHeight > pageHeight - marginBottom) {
-        doc.addPage();
-        if (onPageBreak) onPageBreak();
-        yPosition = 20;
-      }
-      
-      // Render current line with controlled spacing
-      const trimmedLine = currentLine.trim();
-      if (trimmedLine) {
-        // Manually space out characters for uniform distribution
-        const charWidth = doc.getTextWidth(trimmedLine) / trimmedLine.length;
-        doc.text(trimmedLine, x, yPosition, { 
-          baseline: 'top'
-        });
-      }
-      yPosition += lineHeight;
-      currentLine = word;
-    } else {
-      currentLine = testLine;
-    }
-  }
+  // Use jsPDF's splitTextToSize for consistent line breaking
+  const lines = doc.splitTextToSize(cleanText, maxWidth);
   
-  // Render the last line
-  if (currentLine.trim()) {
+  for (const line of lines) {
+    // Check if we need a page break
     if (yPosition + lineHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
+      // Reset spacing after page break
+      doc.setCharSpace(0);
     }
     
-    const trimmedLine = currentLine.trim();
+    // Render line with uniform spacing
+    const trimmedLine = line.trim();
     if (trimmedLine) {
       doc.text(trimmedLine, x, yPosition, { 
-        baseline: 'top'
+        baseline: 'top',
+        align: 'left',
+        charSpace: 0
       });
     }
     yPosition += lineHeight;
