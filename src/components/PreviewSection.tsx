@@ -207,8 +207,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       setLoadingStage("Complete!");
       
       toast({
-        title: "File Processed",
-        description: "Resume content extracted successfully.",
+        title: "File Processed", 
+        description: "Resume content extracted successfully. Click 'Edit Resume' to start AI enhancement.",
       });
       
     } catch (error) {
