@@ -382,7 +382,9 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(8);
           setProfessionalFont(doc, 'body', 'normal');
-          const respLines = doc.splitTextToSize(responsibility, mainContentWidth - 8);
+          // Clean and normalize text before splitting
+          const cleanedText = responsibility.replace(/\s+/g, ' ').trim();
+          const respLines = doc.splitTextToSize(cleanedText, mainContentWidth - 8);
           respLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 3.5));
           });
@@ -423,7 +425,9 @@ async function generateModernPdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           setProfessionalFont(doc, 'body', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 8);
+          // Clean and normalize text before splitting
+          const cleanedText = achievement.replace(/\s+/g, ' ').trim();
+          const achievementLines = doc.splitTextToSize(cleanedText, mainContentWidth - 8);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, mainContentX + 6, mainY + (lineIndex * 4));
           });
@@ -668,7 +672,9 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(8);
           doc.setFont('helvetica', 'normal');
-          const respLines = doc.splitTextToSize(responsibility, contentWidth - 15);
+          // Clean and normalize text before splitting  
+          const cleanedText = responsibility.replace(/\s+/g, ' ').trim();
+          const respLines = doc.splitTextToSize(cleanedText, contentWidth - 15);
           respLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 3.5));
           });
@@ -698,7 +704,9 @@ async function generateCreativePdf(
           doc.setTextColor(120, 120, 120);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const achievementLines = doc.splitTextToSize(achievement, contentWidth - 20);
+          // Clean and normalize text before splitting
+          const cleanedText = achievement.replace(/\s+/g, ' ').trim();
+          const achievementLines = doc.splitTextToSize(cleanedText, contentWidth - 20);
           achievementLines.forEach((line: string, lineIndex: number) => {
             doc.text(line, margin + 12, currentY + (lineIndex * 4));
           });
