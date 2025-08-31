@@ -828,6 +828,8 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       border: 1px solid ${theme.accent}30;
       position: relative;
       transition: transform 0.3s ease;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     
     .experience-item::before, .education-item::before {
@@ -847,6 +849,13 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       font-weight: 600;
       color: ${theme.primary};
       margin-bottom: 8px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     
     .company, .institution {
@@ -867,6 +876,11 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       color: #666;
       line-height: 1.7;
       margin-bottom: 15px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     .core-responsibilities-section, .achievements-section {
@@ -968,16 +982,48 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
       body {
         background: white;
         padding: 0;
+        margin: 0;
+        font-size: 12pt;
+        line-height: 1.4;
       }
       
       .resume-container {
         box-shadow: none;
         border-radius: 0;
+        margin: 0;
+        padding: 0;
       }
       
       .main-content {
         grid-template-columns: 1fr;
         gap: 20px;
+      }
+      
+      /* Enhanced page break control for all content */
+      .experience-item, .education-item, .section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 20px;
+      }
+      
+      /* Prevent cutting of text elements */
+      .job-title, .degree, .company, .institution, .description {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        orphans: 2;
+        widows: 2;
+      }
+      
+      /* Ensure proper text wrapping */
+      * {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+      }
+      
+      /* Prevent content from being too close to page edges */
+      .section {
+        margin-bottom: 25px;
       }
     }
   </style>
