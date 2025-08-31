@@ -234,71 +234,74 @@ export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: T
               >
                 <Briefcase className="w-3 h-3" />
               </div>
-              Work & Related Experience
+              Work & Related Experience ({enhancedContent.experience.length})
             </h2>
             
             <div className="space-y-6">
-              {enhancedContent.experience.map((exp: any, index: number) => (
-                <div key={index} className="border-l-2 pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
-                  <div 
-                    className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
-                    style={{ backgroundColor: selectedColorTheme.primary }}
-                  ></div>
-                  
-                  <div className="mb-4">
-                    <div className="mb-2">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
-                        <div className="flex-1 min-w-0 pr-4">
-                          <h3 className="font-bold text-lg text-foreground break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
-                          <p className="font-medium text-base break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <span 
-                            className="text-xs font-medium px-2 py-1 whitespace-nowrap" 
-                            style={{ 
-                              color: selectedColorTheme.primary
-                            }}
-                          >
-                            {exp.duration}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+              {enhancedContent.experience.map((exp: any, index: number) => {
+                console.log(`🔍 Mobile Debug - Rendering experience ${index + 1}:`, exp.title, exp.company);
+                return (
+                  <div key={index} className="border-l-2 pl-6 relative page-break-avoid experience-item print:break-inside-avoid print:mb-6" style={{ borderColor: `${selectedColorTheme.primary}20` }}>
+                    <div 
+                      className="absolute left-[-5px] top-0 w-2 h-2 rounded-full"
+                      style={{ backgroundColor: selectedColorTheme.primary }}
+                    ></div>
                     
-                    {exp.achievements && exp.achievements.length > 0 && (
-                      <div className="mt-4 page-break-avoid">
-                        <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
-                        <ul className="space-y-3 text-sm text-muted-foreground">
-                          {exp.achievements.map((achievement: string, achIndex: number) => (
-                            <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
-                              <span className="leading-relaxed font-medium">{achievement}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        
-                         {/* Job-specific Core Responsibilities */}
-                         {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
-                           <div className="mt-4 p-3 rounded-lg bg-white border border-gray-100 page-break-avoid print:break-inside-avoid">
-                             <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
-                              <div className="text-xs opacity-80 leading-relaxed space-y-1">
-                                {exp.core_responsibilities.map((responsibility: string, idx: number) => (
-                                  <div key={idx} className="flex items-start gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
-                                         style={{ backgroundColor: selectedColorTheme.accent }}></div>
-                                    <span className="text-sm leading-relaxed">{responsibility}</span>
-                                  </div>
-                                ))}
-                             </div>
-                           </div>
-                         )}
+                    <div className="mb-4">
+                      <div className="mb-2">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
+                          <div className="flex-1 min-w-0 pr-4">
+                            <h3 className="font-bold text-lg text-foreground break-words whitespace-normal overflow-wrap-break-word">{exp.title}</h3>
+                            <p className="font-medium text-base break-words whitespace-normal overflow-wrap-break-word" style={{ color: selectedColorTheme.accent }}>{exp.company}</p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span 
+                              className="text-xs font-medium px-2 py-1 whitespace-nowrap" 
+                              style={{ 
+                                color: selectedColorTheme.primary
+                              }}
+                            >
+                              {exp.duration}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                      
+                      {exp.achievements && exp.achievements.length > 0 && (
+                        <div className="mt-4 page-break-avoid">
+                          <h4 className="text-sm font-semibold mb-3 opacity-90">Key Achievements & Impact:</h4>
+                          <ul className="space-y-3 text-sm text-muted-foreground">
+                            {exp.achievements.map((achievement: string, achIndex: number) => (
+                              <li key={achIndex} className="flex items-start gap-3 page-break-avoid">
+                                <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ backgroundColor: selectedColorTheme.accent }}>
+                                  <span className="text-white text-xs font-bold">✓</span>
+                                </div>
+                                <span className="leading-relaxed font-medium">{achievement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          
+                           {/* Job-specific Core Responsibilities */}
+                           {exp.core_responsibilities && exp.core_responsibilities.length > 0 && (
+                             <div className="mt-4 p-3 rounded-lg bg-white border border-gray-100 page-break-avoid print:break-inside-avoid">
+                               <h5 className="text-xs font-semibold mb-2 opacity-90">Core Responsibilities:</h5>
+                                <div className="text-xs opacity-80 leading-relaxed space-y-1">
+                                  {exp.core_responsibilities.map((responsibility: string, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-3">
+                                      <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                                           style={{ backgroundColor: selectedColorTheme.accent }}></div>
+                                      <span className="text-sm leading-relaxed">{responsibility}</span>
+                                    </div>
+                                  ))}
+                               </div>
+                             </div>
+                           )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
