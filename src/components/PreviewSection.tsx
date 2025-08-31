@@ -788,18 +788,18 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                             {/* Tabbed Preview */}
-                              <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
-                                // Auto-save when switching away from edit tab
-                                if (currentPreviewTab === "edit" && newTab !== "edit" && editSaveFunction) {
-                                  try {
-                                    console.log('🔄 Auto-saving before leaving edit tab');
-                                    await editSaveFunction(true); // Pass true to indicate auto-save
-                                    console.log('✅ Auto-save completed successfully');
-                                  } catch (error) {
-                                    console.error('❌ Auto-save failed:', error);
-                                  }
-                                }
+                              {/* Tabbed Preview */}
+                               <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
+                                 // Auto-save when switching away from edit tab
+                                 if (currentPreviewTab === "edit" && newTab !== "edit" && typeof editSaveFunction === "function") {
+                                   try {
+                                     console.log('🔄 Auto-saving before leaving edit tab');
+                                     await editSaveFunction(true); // Pass true to indicate auto-save
+                                     console.log('✅ Auto-save completed successfully');
+                                   } catch (error) {
+                                     console.error('❌ Auto-save failed:', error);
+                                   }
+                                 }
                                 setCurrentPreviewTab(newTab);
                               }} className="w-full">
                               <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
