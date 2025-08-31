@@ -106,24 +106,23 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {/* PDF Display */}
       <div 
         className={cn(
-          "border rounded-lg bg-background relative",
-          isFullscreen ? "border-0 rounded-none h-full w-full" : ""
+          "border rounded-lg bg-background relative shadow-lg",
+          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
         )}
         style={isFullscreen ? { 
           height: '100%',
           width: '100%'
         } : { 
-          height: '600px',
-          width: '100%',
-          maxWidth: '450px',
-          margin: '0 auto'
+          height: '800px',
+          width: '566px',
+          maxWidth: '90vw'
         }}
       >
         {pdfUrl ? (
           <iframe
             src={isFullscreen 
-              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH` 
-              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=fit`
+              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=FitH&view=FitH` 
+              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=85`
             }
             className={cn(
               "rounded-lg",
