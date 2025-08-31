@@ -909,11 +909,11 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                             </div>
                            </TabsContent>
                            
-                             <TabsContent value="edit" className="space-y-4">
-                                <EditablePreview
-                                  enhancedContent={enhancedContent}
-                                  selectedTemplate={selectedTemplate}
-                                  selectedColorTheme={selectedColorTheme}
+                              <TabsContent value="edit" className="space-y-4">
+                                 <EditablePreview
+                                   enhancedContent={editedContent || enhancedContent}
+                                   selectedTemplate={selectedTemplate}
+                                   selectedColorTheme={selectedColorTheme}
                                    onContentUpdate={(updatedContent) => {
                                      console.log('📝 Content updated from EditablePreview:', updatedContent);
                                      console.log('📝 Updated content keys:', Object.keys(updatedContent));
