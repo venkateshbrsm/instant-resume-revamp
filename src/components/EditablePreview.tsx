@@ -41,14 +41,6 @@ export const EditablePreview = ({
   const [currentEnhancingField, setCurrentEnhancingField] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Sync editableData with enhancedContent prop changes (for tab switches)
-  useEffect(() => {
-    if (enhancedContent && (!editableData || JSON.stringify(editableData) !== JSON.stringify(enhancedContent))) {
-      console.log('🔄 Syncing editableData with updated enhancedContent');
-      setEditableData(enhancedContent);
-    }
-  }, [enhancedContent]);
-
   // Create a stable session-based resume ID that persists across tab switches
   const resumeId = useMemo(() => {
     const baseContent = enhancedContent || editableData;

@@ -2,7 +2,6 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Palette, Brush, Sparkles, User } from "lucide-react";
 import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -16,12 +15,11 @@ interface TemplatePreviewProps {
 }
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
-  const isMobile = useIsMobile();
   // Debug logging to check for N/A values
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
-      className="bg-white rounded-2xl shadow-2xl border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:max-w-none print:mx-0 print:bg-white"
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
       style={{
         pageBreakInside: 'avoid',
         breakInside: 'avoid'
@@ -29,7 +27,7 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
     >
       {/* Creative Header with Diagonal Design */}
       <div 
-        className="relative print:break-inside-avoid print:page-break-inside-avoid" 
+        className="relative overflow-hidden print:break-inside-avoid print:page-break-inside-avoid" 
         style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
       >
         <div 
@@ -106,10 +104,10 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
             </div>
           </div>
 
-          {/* Grid Layout - Responsive for Mobile */}
-          <div className={`grid grid-cols-1 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-3'} gap-6 print:gap-4 print:grid-cols-1`}>
-            {/* Main Content - Experience - Responsive */}
-            <div className={`${isMobile ? 'col-span-1 order-1' : 'lg:col-span-2'} space-y-6 print:space-y-4 print:col-span-1`}>
+          {/* Grid Layout for Large Screens, Single Column for Print */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:gap-4 print:grid-cols-1">
+            {/* Main Content - Experience */}
+            <div className="lg:col-span-2 space-y-6 print:space-y-4 print:col-span-1">
               {/* Creative Experience with Enhanced Achievements */}
               {enhancedContent.experience && enhancedContent.experience.length > 0 && (
                 <div 
@@ -218,8 +216,8 @@ export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }:
               )}
             </div>
 
-            {/* Creative Sidebar - Responsive */}
-            <div className={`space-y-5 print:space-y-4 print:col-span-1 ${isMobile ? 'order-2' : ''}`}>
+            {/* Creative Sidebar */}
+            <div className="space-y-5 print:space-y-4 print:col-span-1">
               {/* Skills as Creative Badges */}
               {enhancedContent.skills && enhancedContent.skills.length > 0 && (
                 <div 

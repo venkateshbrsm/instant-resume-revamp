@@ -2,7 +2,6 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, User } from "lucide-react";
 import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -16,10 +15,8 @@ interface TemplatePreviewProps {
 }
 
 export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:max-w-none print:mx-0">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0">
       {/* Classic Header - Centered */}
       <div className="text-center py-6 px-4 border-b-2 print:py-4 print:px-3" style={{ borderColor: selectedColorTheme.primary }}>
         {/* Profile Photo - Only show if photo exists */}
@@ -138,7 +135,7 @@ export function ClassicTemplatePreview({ enhancedContent, selectedColorTheme }: 
           </div>
         )}
 
-         <div className={`grid grid-cols-1 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'} gap-6 print:gap-4`}>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
            {/* Skills */}
            {enhancedContent.skills && enhancedContent.skills.length > 0 && (
              <div className="page-break-avoid section">
