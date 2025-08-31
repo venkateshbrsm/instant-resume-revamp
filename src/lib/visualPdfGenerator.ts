@@ -740,7 +740,7 @@ async function generateCreativePdf(
         // Skill text
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         // Use manual word wrapping for consistent spacing
         const words = skill.split(' ');
         let skillText = skill;
@@ -762,11 +762,11 @@ async function generateCreativePdf(
     currentY += 5;
   }
 
-  // Professional Experience with enhanced visual style
+  // CREATIVE EXPERIENCE section
   if (resumeData.experience && resumeData.experience.length > 0) {
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('PROFESSIONAL EXPERIENCE', margin, currentY);
     currentY += 12;
 
@@ -780,17 +780,17 @@ async function generateCreativePdf(
       doc.setFillColor(ar, ag, ab);
       doc.rect(margin - 2, currentY - 5, 3, containerHeight, 'F');
 
-      // Job title
-      doc.setTextColor(40, 40, 40);
+      // Job title with creative flair
+      doc.setTextColor(pr, pg, pb);
       doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'header', 'bold');
       doc.text(exp.title, margin + 5, currentY);
       currentY += 5;
 
       // Company
-      doc.setTextColor(pr, pg, pb);
+      doc.setTextColor(ar, ag, ab);
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'body', 'bold');
       doc.text(exp.company, margin + 5, currentY);
 
       // Duration badge
@@ -800,7 +800,7 @@ async function generateCreativePdf(
         doc.roundedRect(pageWidth - margin - durationWidth, currentY - 4, durationWidth, 6, 2, 2, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text(exp.duration, pageWidth - margin - durationWidth + 3, currentY);
       }
       currentY += 8;
@@ -809,7 +809,7 @@ async function generateCreativePdf(
       if (exp.description) {
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
+        setProfessionalFont(doc, 'body', 'normal');
         currentY = renderTextBlock(
           doc,
           exp.description,
@@ -828,7 +828,7 @@ async function generateCreativePdf(
       if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text('Core Responsibilities:', margin + 5, currentY);
         currentY += 6;
 
@@ -853,7 +853,7 @@ async function generateCreativePdf(
       if (exp.achievements && exp.achievements.length > 0) {
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text('Key Achievements:', margin + 5, currentY);
         currentY += 6;
 
@@ -889,12 +889,12 @@ async function generateCreativePdf(
             currentY = 20;
           }
           
-          // Achievement bullet (matching preview)
+          // Checkmark
           doc.setFillColor(ar, ag, ab);
           doc.circle(margin + 8, currentY - 1, 2, 'F');
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(7);
-          doc.setFont('helvetica', 'bold');
+          setProfessionalFont(doc, 'body', 'bold');
           doc.text('V', margin + 6.5, currentY + 0.5);
           
           // Render achievement text with uniform spacing
@@ -908,7 +908,7 @@ async function generateCreativePdf(
         });
       }
 
-      currentY += containerHeight - 15;
+      currentY += 10;
     });
   }
 
@@ -917,7 +917,7 @@ async function generateCreativePdf(
     currentY += 10;
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text('EDUCATION', margin, currentY);
     currentY += 10;
 
@@ -927,13 +927,13 @@ async function generateCreativePdf(
       
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'body', 'bold');
       doc.text(edu.degree, margin + 2, currentY);
       currentY += 4;
       
       doc.setTextColor(ar, ag, ab);
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
+      setProfessionalFont(doc, 'body', 'normal');
       doc.text(edu.institution, margin + 2, currentY);
       
       if (edu.year && edu.year !== 'N/A') {
@@ -984,16 +984,16 @@ async function generateClassicPdf(
     // No sidebar to recreate in classic template
   };
 
-  // Centered header
+  // Name and title
   doc.setTextColor(pr, pg, pb);
   doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
+  setProfessionalFont(doc, 'header', 'bold');
   const nameWidth = doc.getTextWidth(resumeData.name);
   doc.text(resumeData.name, (pageWidth - nameWidth) / 2, currentY);
   currentY += 8;
 
   doc.setFontSize(14);
-  doc.setFont('helvetica', 'normal');
+  setProfessionalFont(doc, 'header', 'normal');
   const titleWidth = doc.getTextWidth(resumeData.title);
   doc.text(resumeData.title, (pageWidth - titleWidth) / 2, currentY);
   currentY += 6;
@@ -1018,7 +1018,7 @@ async function generateClassicPdf(
   const addSectionHeader = (title: string) => {
     doc.setTextColor(pr, pg, pb);
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
+    setProfessionalFont(doc, 'header', 'bold');
     doc.text(title.toUpperCase(), margin, currentY);
     
     // Underline
@@ -1034,7 +1034,7 @@ async function generateClassicPdf(
     
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    setProfessionalFont(doc, 'body', 'normal');
     currentY = renderTextBlock(
       doc,
       resumeData.summary,
@@ -1057,20 +1057,20 @@ async function generateClassicPdf(
       // Job title
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'header', 'bold');
       doc.text(exp.title, margin, currentY);
       currentY += 5;
 
-      // Company and duration
+      // Company and duration 
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'body', 'bold');
       doc.text(exp.company, margin, currentY);
       
       if (exp.duration) {
         const durationWidth = doc.getTextWidth(exp.duration);
         doc.setTextColor(100, 100, 100);
-        doc.setFont('helvetica', 'italic');
+        setProfessionalFont(doc, 'body', 'italic');
         doc.text(exp.duration, pageWidth - margin - durationWidth, currentY);
       }
       currentY += 7;
@@ -1079,7 +1079,7 @@ async function generateClassicPdf(
       if (exp.description) {
         doc.setTextColor(120, 120, 120);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
+        setProfessionalFont(doc, 'body', 'normal');
         currentY = renderTextBlock(
           doc,
           exp.description,
@@ -1098,7 +1098,7 @@ async function generateClassicPdf(
       if (exp.core_responsibilities && exp.core_responsibilities.length > 0) {
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text('Core Responsibilities:', margin, currentY);
         currentY += 6;
 
@@ -1122,7 +1122,7 @@ async function generateClassicPdf(
       if (exp.achievements && exp.achievements.length > 0) {
         doc.setTextColor(pr, pg, pb);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
+        setProfessionalFont(doc, 'body', 'bold');
         doc.text('Key Achievements:', margin, currentY);
         currentY += 6;
 
@@ -1150,7 +1150,7 @@ async function generateClassicPdf(
     
     doc.setTextColor(120, 120, 120);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    setProfessionalFont(doc, 'body', 'normal');
     
     const skillsPerRow = 2;
     const colWidth = contentWidth / skillsPerRow;
@@ -1173,15 +1173,16 @@ async function generateClassicPdf(
     addSectionHeader('Education');
     
     resumeData.education.forEach((edu) => {
+      // Degree
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
+      setProfessionalFont(doc, 'header', 'bold');
       doc.text(edu.degree, margin, currentY);
       currentY += 5;
       
       doc.setTextColor(pr, pg, pb);
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      setProfessionalFont(doc, 'body', 'normal');
       doc.text(edu.institution, margin, currentY);
       
       if (edu.year && edu.year !== 'N/A') {
