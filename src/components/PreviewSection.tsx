@@ -942,18 +942,22 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
               ) : (
                 <div className="bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg p-6 sm:p-8 min-h-[400px] sm:min-h-[500px] flex items-center justify-center border border-accent/20">
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
-                    <Loader2 className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto animate-spin" />
+                    <FileText className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto" />
                     <div>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Processing Your Resume</h3>
-                      <p className="text-muted-foreground mb-4 text-sm sm:text-base px-4">
-                        {loadingStage}
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for Enhancement</h3>
+                      <p className="text-muted-foreground mb-6 text-sm sm:text-base px-4">
+                        Your resume content has been extracted successfully. Click "Edit Resume" below to start AI enhancement.
                       </p>
-                      <div className="space-y-2">
-                        <Progress value={loadingProgress} className="w-full h-2 sm:h-3" />
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {Math.round(loadingProgress)}% complete
-                        </p>
-                      </div>
+                      <Button 
+                        onClick={() => {
+                          setCurrentPreviewTab("edit");
+                          triggerEditTabEnhancement();
+                        }}
+                        className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Start AI Enhancement
+                      </Button>
                     </div>
                   </div>
                 </div>
