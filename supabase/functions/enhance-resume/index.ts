@@ -171,6 +171,17 @@ Important: Extract only actual information. Use empty arrays [] or empty strings
       return createBasicResumeFromText(originalText);
     }
 
+    console.log('🔍 AI extraction result preview:');
+    console.log('📝 Name:', result.name);
+    console.log('📝 Experience count:', Array.isArray(result.experience) ? result.experience.length : 'not array');
+    if (Array.isArray(result.experience)) {
+      console.log('📝 Experience preview:', result.experience.map(exp => ({
+        title: exp?.title,
+        company: exp?.company,
+        descriptionLength: exp?.description?.length || 0
+      })));
+    }
+
     // Ensure all required fields exist with proper defaults
     const validatedResult = {
       name: (result.name || "").toString().trim(),
@@ -192,8 +203,19 @@ Important: Extract only actual information. Use empty arrays [] or empty strings
     console.log(`📊 Results: ${validatedResult.experience.length} jobs, ${validatedResult.skills.length} skills, ${validatedResult.education.length} education`);
     console.log('🔍 Skills extracted:', validatedResult.skills);
     console.log('🔍 Tools extracted:', validatedResult.tools);
-    console.log('🔍 Raw AI skills result:', result.skills);
-    console.log('🔍 Raw AI tools result:', result.tools);
+    
+    // Validation: Warn if no experiences found
+    if (validatedResult.experience.length === 0) {
+      console.log('⚠️ WARNING: No experiences extracted from resume text');
+      console.log('📄 Original text sample for debugging:', originalText.substring(0, 500));
+      console.log('🔍 Raw AI experience result:', result.experience);
+    } else {
+      console.log('✅ Experience extraction successful:', validatedResult.experience.map(exp => ({
+        title: exp?.title,
+        company: exp?.company,
+        hasDescription: !!exp?.description && exp.description.length > 0
+      })));
+    }
     
     return validatedResult;
 
@@ -205,7 +227,7 @@ Important: Extract only actual information. Use empty arrays [] or empty strings
 
 function createBasicResumeFromText(text: string): any {
   console.log('📝 Creating basic resume structure from text');
-  console.log('📄 Fallback: Attempting basic skills extraction from text');
+  console.log('📄 Fallback: Attempting comprehensive extraction from text');
   
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
@@ -237,13 +259,51 @@ function createBasicResumeFromText(text: string): any {
       }
     }
   }
+
+  // Try to extract basic experience information
+  let extractedExperience: any[] = [];
+  
+  // Look for common job title patterns and company names
+  const jobPatterns = [
+    /\b(?:manager|engineer|developer|analyst|director|coordinator|specialist|consultant|administrator|assistant|supervisor|lead|senior|junior|principal|associate|executive|officer|representative|technician)\b/gi,
+    /\b(?:software|technical|project|sales|marketing|operations|human resources|finance|accounting|customer service|business|product|data|quality|systems|network|security|web|mobile|full stack|front end|back end|devops|cloud|database|application)\b/gi
+  ];
+  
+  // Simple experience extraction based on line patterns
+  for (let i = 0; i < lines.length - 1; i++) {
+    const line = lines[i];
+    const nextLine = lines[i + 1];
+    
+    // Look for lines that might be job titles (containing common job keywords)
+    if (jobPatterns.some(pattern => pattern.test(line)) && line.length < 100 && line.length > 10) {
+      // Check if next line might be a company name
+      const potentialCompany = nextLine && nextLine.length < 80 && !nextLine.includes('@');
+      if (potentialCompany) {
+        extractedExperience.push({
+          title: line,
+          company: nextLine,
+          duration: "Date not specified",
+          description: "Responsibilities and duties as listed in original resume.",
+          achievements: []
+        });
+        
+        if (extractedExperience.length >= 5) break; // Limit fallback experiences
+      }
+    }
+  }
+  
+  console.log('📝 Basic extraction results:');
+  console.log('  - Skills found:', extractedSkills.length);
+  console.log('  - Experiences found:', extractedExperience.length);
   
   // Extract basic info
   const firstLine = lines[0] || "";
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const phoneMatch = text.match(/[\+]?[0-9\s\-\(\)]{10,}/);
   
-  console.log('📝 Basic extraction - Skills found:', extractedSkills.length);
+  if (extractedExperience.length > 0) {
+    console.log('📝 Fallback experiences:', extractedExperience.map(exp => ({ title: exp.title, company: exp.company })));
+  }
   
   return {
     name: firstLine.length < 50 ? firstLine : "",
@@ -253,7 +313,7 @@ function createBasicResumeFromText(text: string): any {
     location: "",
     linkedin: "",
     summary: "Professional with experience in various roles and responsibilities.",
-    experience: [],
+    experience: extractedExperience,
     education: [],
     skills: extractedSkills,
     tools: [],

@@ -207,10 +207,10 @@ export const EditablePreview = ({
   }, [isAutoEnhancing, onAutoEnhancementStateChange]);
 
   const handleSave = useCallback(async (isAutoSave = false) => {
-    // Only throttle manual saves, allow auto-saves to proceed
+    // Debounce all saves to prevent excessive calls
     const now = Date.now();
-    if (!isAutoSave && now - lastSaveTime < 1000) {
-      console.log('⏱️ Skipping manual save - too recent');
+    if (now - lastSaveTime < 300) {
+      console.log('⏱️ Debouncing save call - too recent');
       return;
     }
     

@@ -914,15 +914,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                   enhancedContent={enhancedContent}
                                   selectedTemplate={selectedTemplate}
                                   selectedColorTheme={selectedColorTheme}
-                                  onContentUpdate={(updatedContent) => {
-                                    console.log('📝 Content updated from EditablePreview:', updatedContent);
-                                    console.log('📝 Updated content keys:', Object.keys(updatedContent));
-                                    setEditedContent(updatedContent);
-                                    toast({
-                                      title: "Content Saved",
-                                      description: "Your edits have been saved and PDF preview will update shortly.",
-                                    });
-                                  }}
+                                   onContentUpdate={(updatedContent) => {
+                                     console.log('📝 Content updated from EditablePreview:', updatedContent);
+                                     console.log('📝 Updated content keys:', Object.keys(updatedContent));
+                                     setEditedContent(updatedContent);
+                                     // Remove duplicate toast - EditablePreview handles its own save notifications
+                                   }}
                                   onAutoEnhancementStateChange={setIsAutoEnhancing}
                                   onSaveRequired={setEditSaveFunction}
                                 />
