@@ -17,6 +17,12 @@ const FONTS = {
   }
 };
 
+// Helper function to remove special characters from text
+function cleanSpecialCharacters(text: string): string {
+  // Remove special characters but keep basic punctuation and numbers
+  return text.replace(/[^\w\s.,;:!?()-]/g, '');
+}
+
 // Helper function to set professional fonts with fallbacks
 function setProfessionalFont(doc: jsPDF, type: 'header' | 'body' | 'primary' = 'body', style: 'normal' | 'bold' | 'italic' = 'normal') {
   try {
@@ -45,8 +51,8 @@ function renderTextBlock(
 ): number {
   if (!text || text.trim() === '') return currentY;
   
-  // Clean and normalize the text
-  const cleanText = text.replace(/\s+/g, ' ').trim();
+  // Clean and normalize the text, removing special characters
+  const cleanText = cleanSpecialCharacters(text.replace(/\s+/g, ' ').trim());
   let yPosition = currentY;
   
   // Set consistent character spacing globally
@@ -154,7 +160,7 @@ function renderBulletList(
   items.forEach((item) => {
     if (!item || item.trim() === '') return;
     
-    const cleanItem = item.replace(/^[•\-\*\s]+/, '').trim();
+    const cleanItem = cleanSpecialCharacters(item.replace(/^[•\-\*\s]+/, '').trim());
     if (!cleanItem) return;
     
     // Calculate available width for text (excluding bullet)
