@@ -16,7 +16,6 @@ import { RichDocumentPreview } from "./RichDocumentPreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { PDFViewer } from "./PDFViewer";
 import { EditablePreview } from "./EditablePreview";
-import PrintPreviewLayout from "./PrintPreviewLayout";
 import { MinimalistTemplatePreview } from "./templates/MinimalistTemplatePreview";
 import { ModernTemplatePreview } from "./templates/ModernTemplatePreview";
 import { ClassicTemplatePreview } from "./templates/ClassicTemplatePreview";
@@ -803,7 +802,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 }
                                 setCurrentPreviewTab(newTab);
                               }} className="w-full">
-                              <TabsList className="grid w-full grid-cols-3 bg-muted/30 h-auto">
+                              <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
                                  className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
@@ -825,23 +824,8 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                  <span className="sm:hidden">
                                    {isAutoEnhancing ? "⏳" : "📄 PDF"}
                                  </span>
-                               </TabsTrigger>
-                               <TabsTrigger 
-                                 value="print"
-                                 disabled={isAutoEnhancing}
-                                 className={cn(
-                                   "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4",
-                                   isAutoEnhancing && "opacity-50 cursor-not-allowed"
-                                 )}
-                               >
-                                 <span className="hidden sm:inline">
-                                   {isAutoEnhancing ? "⏳ Enhancing..." : "🖨️ Print Preview"}
-                                 </span>
-                                 <span className="sm:hidden">
-                                   {isAutoEnhancing ? "⏳" : "🖨️ Print"}
-                                 </span>
-                               </TabsTrigger>
-                             </TabsList>
+                                </TabsTrigger>
+                              </TabsList>
                            
                            <TabsContent value="pdf" className="space-y-4">
                              <div className="relative">
@@ -904,11 +888,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                     </div>
                                   </div>
                                 </div>
-                              ) : previewPdfBlob ? (
-                                <PDFViewer 
-                                  file={previewPdfBlob} 
-                                  className="h-[600px] w-full"
-                                />
+                               ) : previewPdfBlob ? (
+                                 <div className="flex justify-center overflow-x-auto p-4">
+                                   <PDFViewer 
+                                     file={previewPdfBlob} 
+                                     className="shrink-0"
+                                   />
+                                 </div>
                               ) : (
                                 <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
                                   <div className="text-center space-y-4">
@@ -923,27 +909,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 </div>
                               )}
                             </div>
-                           </TabsContent>
-
-                           <TabsContent value="print" className="space-y-4">
-                             <div className="relative">
-                               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                                 <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
-                                   🖨️ Print Preview • See how your resume will look when printed
-                                 </p>
-                               </div>
-                               
-                               <div className="h-[600px] w-full border rounded-lg overflow-hidden">
-                                 <PrintPreviewLayout 
-                                   resumeData={editedContent || enhancedContent} 
-                                   templateId={selectedTemplate.layout}
-                                   themeId={selectedColorTheme.id}
-                                 />
-                               </div>
-                             </div>
-                           </TabsContent>
-                           
-                             <TabsContent value="edit" className="space-y-4">
+                            </TabsContent>
+                            
+                              <TabsContent value="edit" className="space-y-4">
                                 <EditablePreview
                                   enhancedContent={enhancedContent}
                                   selectedTemplate={selectedTemplate}
