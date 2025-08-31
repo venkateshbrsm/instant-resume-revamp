@@ -944,20 +944,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                   <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md">
                     <FileText className="w-12 sm:w-16 h-12 sm:h-16 text-accent mx-auto" />
                     <div>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for Enhancement</h3>
-                      <p className="text-muted-foreground mb-6 text-sm sm:text-base px-4">
-                        Your resume content has been extracted successfully. Click "Edit Resume" below to start AI enhancement.
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Content Extracted Successfully</h3>
+                      <p className="text-muted-foreground mb-4 text-sm sm:text-base px-4">
+                        Your resume content is ready. Click the "✏️ Edit Resume" tab above to start AI enhancement.
                       </p>
-                      <Button 
-                        onClick={() => {
-                          setCurrentPreviewTab("edit");
-                          triggerEditTabEnhancement();
-                        }}
-                        className="bg-accent hover:bg-accent/90 text-accent-foreground"
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Start AI Enhancement
-                      </Button>
+                      <div className="flex items-center justify-center space-x-2 text-accent">
+                        <span className="text-sm">👆</span>
+                        <span className="text-sm font-medium">Click "Edit Resume" tab</span>
+                      </div>
                     </div>
                   </div>
                 </div>
