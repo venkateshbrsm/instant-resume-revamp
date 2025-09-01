@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -54,6 +54,16 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     }
   };
 
+  const handlePrint = () => {
+    if (pdfUrl) {
+      const printWindow = window.open(pdfUrl, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+    }
+  };
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
@@ -89,19 +99,28 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     return (
       <div className={cn("w-full", className)}>
         {/* Mobile Controls */}
-        <div className="flex items-center justify-center mb-3 p-2 bg-muted/50 rounded-lg">
+        <div className="flex items-center justify-between mb-3 p-2 bg-muted/50 rounded-lg print:hidden">
           <span className="text-xs text-muted-foreground text-center">
             📄 PDF Preview
           </span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handlePrint}
+            className="text-xs px-2 py-1 h-8"
+          >
+            <Printer className="w-3 h-3 mr-1" />
+            Print
+          </Button>
         </div>
 
         {/* Mobile PDF Container - Full viewport height minus controls */}
-        <div className="w-full border rounded-lg bg-background shadow-lg overflow-hidden">
-          <div className="relative" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+        <div className="w-full border rounded-lg bg-background shadow-lg overflow-hidden print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full">
+          <div className="relative print:h-full" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
             {pdfUrl ? (
               <iframe
                 src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-width&view=FitW&pagemode=none`}
-                className="w-full h-full border-none"
+                className="w-full h-full border-none print:h-full print:w-full"
                 title="PDF Preview"
                 style={{ 
                   border: 'none',
@@ -114,7 +133,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               </div>
             )}
           </div>
-          <div className="p-2 bg-muted/20 text-center border-t">
+          <div className="p-2 bg-muted/20 text-center border-t print:hidden">
             <p className="text-xs text-muted-foreground">
               📱 Pinch to zoom • Swipe to scroll • Tap and hold for options
             </p>
@@ -128,7 +147,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     <div className={cn("w-full", className)}>
       {/* Desktop/Fullscreen Controls */}
       {!isFullscreen && (
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg gap-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg gap-2 print:hidden">
           <span className="text-sm text-muted-foreground">
             📄 PDF Preview
           </span>
@@ -154,6 +173,15 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                 <ZoomIn className="w-3 h-3" />
               </Button>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handlePrint}
+              className="px-2 py-1 h-8"
+            >
+              <Printer className="w-3 h-3 mr-1" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
           </div>
         </div>
       )}
@@ -161,7 +189,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {/* PDF Display */}
       <div 
         className={cn(
-          "border rounded-lg bg-background relative shadow-lg overflow-hidden",
+          "border rounded-lg bg-background relative shadow-lg overflow-hidden print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full",
           isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
         )}
         style={isFullscreen ? { 
@@ -180,8 +208,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               : `${pdfUrl}#toolbar=${isMobile ? '1' : '0'}&navpanes=0&scrollbar=1&zoom=${zoom}&view=${isMobile ? 'FitW' : 'FitV'}&pagemode=none`
             }
             className={cn(
-              "w-full h-full",
-              isFullscreen ? "rounded-none" : "rounded-lg"
+              "w-full h-full print:h-full print:w-full",
+              isFullscreen ? "rounded-none" : "rounded-lg print:rounded-none"
             )}
             title="PDF Preview"
             style={{ 
@@ -199,7 +227,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       
       {/* Mobile helpful hint */}
       {isMobile && !isFullscreen && (
-        <div className="mt-2 text-center">
+        <div className="mt-2 text-center print:hidden">
           <p className="text-xs text-muted-foreground">
             📱 Pinch to zoom • Swipe to scroll
           </p>
