@@ -7,21 +7,21 @@ import { useRouteTracking } from "@/hooks/useRouteTracking";
 import { useWhatsAppDetection } from "@/hooks/useWhatsAppDetection";
 import { SecurityMonitor } from "./components/SecurityMonitor";
 import { MobileWarning } from "./components/MobileWarning";
-import { useEffect, Suspense, lazy } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 
-// Lazy load components to reduce initial bundle size
-const Index = lazy(() => import("./pages/Index"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
-const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
-const Auth = lazy(() => import("./pages/Auth"));
-const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
-const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
-const AboutUs = lazy(() => import("./pages/AboutUs"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const ContactUs = lazy(() => import("./pages/ContactUs"));
+// Import components directly to fix module loading issue
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentFailure";
+import Auth from "./pages/Auth";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import RefundPolicy from "./pages/RefundPolicy";
+import AboutUs from "./pages/AboutUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ContactUs from "./pages/ContactUs";
 
 const queryClient = new QueryClient();
 
@@ -83,21 +83,19 @@ const App = () => {
           <WhatsAppBadgeHider />
           <SecurityMonitor />
           <MobileWarning />
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/payment-success" element={<PaymentSuccess />} />
-              <Route path="/payment-failure" element={<PaymentFailure />} />
-              <Route path="/terms" element={<TermsAndConditions />} />
-              <Route path="/refund" element={<RefundPolicy />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/contact" element={<ContactUs />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-failure" element={<PaymentFailure />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/refund" element={<RefundPolicy />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/contact" element={<ContactUs />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           
           {/* Global WhatsApp Floating Action Button */}
           <a
