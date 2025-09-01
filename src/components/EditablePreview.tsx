@@ -422,8 +422,7 @@ export const EditablePreview = ({
               ) : (
                 <Sparkles className="h-3 w-3 mr-1" />
               )}
-              <span className="sm:hidden">Enhance</span>
-              <span className="hidden sm:inline">Enhance with AI</span>
+              Enhance
             </Button>
           )}
         </div>
@@ -473,7 +472,7 @@ export const EditablePreview = ({
                           ) : (
                             <Sparkles className="h-3 w-3 mr-1" />
                           )}
-                          {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance with AI'}
+                          {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance'}
                         </Button>
                       </div>
                       <Textarea
@@ -543,8 +542,7 @@ export const EditablePreview = ({
                 ) : (
                   <Sparkles className="h-3 w-3 mr-1" />
                 )}
-                <span className="sm:hidden">Enhance</span>
-                <span className="hidden sm:inline">Enhance with AI</span>
+                Enhance
               </Button>
             )}
           </div>
