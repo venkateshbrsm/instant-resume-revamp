@@ -35,29 +35,40 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       setLoading(true);
       setError(null);
 
+      console.log('PDFViewer: Loading PDF...', { browserInfo, fileType: typeof file });
+
       let url: string;
       
       if (typeof file === 'string') {
         // URL provided
         url = file;
+        console.log('PDFViewer: Using provided URL:', url);
       } else {
         // File or Blob object provided
         url = URL.createObjectURL(file);
+        console.log('PDFViewer: Created blob URL:', url, 'File size:', file.size);
       }
 
       setPdfUrl(url);
       
       // Determine best rendering method based on browser
+      let method: 'iframe' | 'object' | 'embed' | 'download';
+      
       if (browserInfo.isAndroidChrome) {
-        // Android Chrome - use object tag as it handles PDFs better than iframe
-        setRenderMethod('object');
+        // Android Chrome - try download approach as blob URLs don't work reliably in embeds
+        method = 'download';
+        console.log('PDFViewer: Android Chrome detected, using download fallback');
       } else if (browserInfo.isMobile && !browserInfo.isIOS) {
-        setRenderMethod('embed'); // Other mobile browsers
+        method = 'embed'; // Other mobile browsers
+        console.log('PDFViewer: Other mobile browser detected, using embed');
       } else {
-        setRenderMethod('iframe'); // Desktop and iOS
+        method = 'iframe'; // Desktop and iOS
+        console.log('PDFViewer: Desktop/iOS detected, using iframe');
       }
+      
+      setRenderMethod(method);
     } catch (err) {
-      console.error('Error loading PDF:', err);
+      console.error('PDFViewer: Error loading PDF:', err);
       setError('Failed to load PDF document');
     } finally {
       setLoading(false);
@@ -155,6 +166,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                     height: '100%'
                   })
                 }}
+                onLoad={() => console.log('PDFViewer: Iframe loaded successfully')}
+                onError={() => console.error('PDFViewer: Iframe failed to load')}
               />
             )}
             
@@ -169,6 +182,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                 style={{ 
                   border: 'none',
                 }}
+                onLoad={() => console.log('PDFViewer: Object loaded successfully')}
+                onError={() => console.error('PDFViewer: Object failed to load')}
               >
                 <div className="flex flex-col items-center justify-center h-full p-4 text-center">
                   <p className="text-muted-foreground mb-4">
@@ -199,7 +214,33 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                 style={{ 
                   border: 'none',
                 }}
+                onLoad={() => console.log('PDFViewer: Embed loaded successfully')}
+                onError={() => console.error('PDFViewer: Embed failed to load')}
               />
+            )}
+            
+            {renderMethod === 'download' && (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <div className="mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                    📄
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">PDF Preview Ready</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Your resume is ready to view. Click one of the options below to see your PDF.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 w-full max-w-xs">
+                  <Button onClick={openInNewTab} className="w-full">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View PDF in New Tab
+                  </Button>
+                  <Button onClick={handleDownload} variant="outline" className="w-full">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                </div>
+              </div>
             )}
           </>
         ) : (
