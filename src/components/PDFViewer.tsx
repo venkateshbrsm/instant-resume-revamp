@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -13,6 +14,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadPDF();
@@ -107,11 +109,16 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       <div 
         className={cn(
           "border rounded-lg bg-background relative shadow-lg",
-          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
+          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto",
+          isMobile && !isFullscreen && "w-full max-w-full"
         )}
         style={isFullscreen ? { 
           height: '100%',
           width: '100%'
+        } : isMobile ? {
+          height: '90vh',
+          width: '100%',
+          maxWidth: '100%'
         } : { 
           height: '800px',
           width: '566px',
@@ -122,7 +129,9 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <iframe
             src={isFullscreen 
               ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
-              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
+              : isMobile 
+                ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=page-width&view=FitH&pagemode=none`
+                : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
             }
             className={cn(
               "rounded-lg",
