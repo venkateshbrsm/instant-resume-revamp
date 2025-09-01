@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDeviceType } from '@/hooks/useDeviceType';
+import { ExternalPDFViewer } from './ExternalPDFViewer';
+import { createPublicPdfUrl } from '@/lib/pdfUrlUtils';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -13,6 +16,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const deviceType = useDeviceType();
 
   useEffect(() => {
     loadPDF();
@@ -39,7 +43,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         url = file;
       } else {
         // File or Blob object provided
-        url = URL.createObjectURL(file);
+        url = await createPublicPdfUrl(file);
       }
 
       setPdfUrl(url);
@@ -89,6 +93,17 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           </Button>
         </div>
       </div>
+    );
+  }
+
+  // Use external viewer for mobile devices (Android/iOS)
+  if (pdfUrl && (deviceType === 'android' || deviceType === 'ios')) {
+    return (
+      <ExternalPDFViewer 
+        pdfUrl={pdfUrl} 
+        className={className}
+        isFullscreen={isFullscreen}
+      />
     );
   }
 
