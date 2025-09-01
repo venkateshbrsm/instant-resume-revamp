@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download, ExternalLink, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -54,20 +54,14 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     }
   };
 
-  const handleDownload = () => {
+  const openInCleanPopup = () => {
     if (pdfUrl) {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = 'resume-preview.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
-  const openInNewTab = () => {
-    if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
+      const cleanUrl = `${pdfUrl}#toolbar=0&navpanes=0&statusbar=0&view=FitW`;
+      window.open(
+        cleanUrl, 
+        'pdfViewer',
+        'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=900,height=700'
+      );
     }
   };
 
@@ -109,26 +103,15 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <span className="text-xs sm:text-sm text-muted-foreground text-center">
             📄 PDF Preview (Mobile-Optimized)
           </span>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={openInNewTab}
-              className="text-xs px-2 py-1 h-8"
-            >
-              <ExternalLink className="w-3 h-3 mr-1" />
-              Full View
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleDownload}
-              className="text-xs px-2 py-1 h-8"
-            >
-              <Download className="w-3 h-3 mr-1" />
-              Download
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={openInCleanPopup}
+            className="text-xs px-2 py-1 h-8"
+          >
+            <ExternalLink className="w-3 h-3 mr-1" />
+            Full View
+          </Button>
         </div>
 
         {/* Mobile PDF Container */}
@@ -193,7 +176,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={openInNewTab}
+              onClick={openInCleanPopup}
               className="px-2 py-1 h-8"
             >
               <ExternalLink className="w-3 h-3 mr-1" />
