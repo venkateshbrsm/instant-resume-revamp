@@ -103,28 +103,21 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <span className="text-xs text-muted-foreground text-center">
             📄 PDF Preview
           </span>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handlePrint}
-            className="text-xs px-2 py-1 h-8"
-          >
-            <Printer className="w-3 h-3 mr-1" />
-            Print
-          </Button>
         </div>
 
-        {/* Mobile PDF Container - Full viewport height minus controls */}
-        <div className="w-full border rounded-lg bg-background shadow-lg overflow-hidden print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full">
-          <div className="relative print:h-full" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+        {/* Mobile PDF Container - Natural height with scrollable content */}
+        <div className="w-full border rounded-lg bg-background shadow-lg overflow-auto print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full">
+          <div className="relative print:h-full min-h-[600px]">
             {pdfUrl ? (
               <iframe
-                src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-width&view=FitW&pagemode=none`}
-                className="w-full h-full border-none print:h-full print:w-full"
+                src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=Fit&pagemode=none`}
+                className="w-full border-none print:h-full print:w-full"
                 title="PDF Preview"
                 style={{ 
                   border: 'none',
-                  touchAction: 'manipulation'
+                  touchAction: 'manipulation',
+                  height: '150vh',
+                  minHeight: '1000px'
                 }}
               />
             ) : (
@@ -135,7 +128,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           </div>
           <div className="p-2 bg-muted/20 text-center border-t print:hidden">
             <p className="text-xs text-muted-foreground">
-              📱 Pinch to zoom • Swipe to scroll • Tap and hold for options
+              📱 Scroll to see all pages • Pinch to zoom
             </p>
           </div>
         </div>
@@ -189,14 +182,14 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {/* PDF Display */}
       <div 
         className={cn(
-          "border rounded-lg bg-background relative shadow-lg overflow-hidden print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full",
+          "border rounded-lg bg-background relative shadow-lg overflow-auto print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full",
           isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
         )}
         style={isFullscreen ? { 
           height: '100%',
           width: '100%'
         } : { 
-          height: isMobile ? '500px' : '800px',
+          minHeight: '1000px',
           width: isMobile ? '100%' : '566px',
           maxWidth: '100%'
         }}
@@ -204,18 +197,20 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         {pdfUrl ? (
           <iframe
             src={isFullscreen 
-              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=page-width&view=FitH&pagemode=none` 
-              : `${pdfUrl}#toolbar=${isMobile ? '1' : '0'}&navpanes=0&scrollbar=1&zoom=${zoom}&view=${isMobile ? 'FitW' : 'FitV'}&pagemode=none`
+              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&view=Fit&pagemode=none` 
+              : `${pdfUrl}#toolbar=${isMobile ? '1' : '0'}&navpanes=0&scrollbar=1&zoom=${zoom}&view=Fit&pagemode=none`
             }
             className={cn(
-              "w-full h-full print:h-full print:w-full",
+              "w-full print:h-full print:w-full",
               isFullscreen ? "rounded-none" : "rounded-lg print:rounded-none"
             )}
             title="PDF Preview"
             style={{ 
               border: 'none',
               fontSmooth: 'never',
-              WebkitFontSmoothing: 'none'
+              WebkitFontSmoothing: 'none',
+              height: isFullscreen ? '100%' : '1200px',
+              minHeight: isFullscreen ? '100%' : '1000px'
             }}
           />
         ) : (
@@ -229,7 +224,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {isMobile && !isFullscreen && (
         <div className="mt-2 text-center print:hidden">
           <p className="text-xs text-muted-foreground">
-            📱 Pinch to zoom • Swipe to scroll
+            📱 Scroll to see all pages • Pinch to zoom
           </p>
         </div>
       )}
