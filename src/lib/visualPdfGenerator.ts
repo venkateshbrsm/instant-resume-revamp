@@ -318,8 +318,9 @@ export async function generateVisualPdf(
     case 'executive':
       return generateExecutivePdf(resumeData, colorTheme);
     case 'classic':
-    case 'minimalist':
       return generateClassicPdf(resumeData, colorTheme, templateType);
+    case 'minimalist':
+      return generateMinimalistPdf(resumeData, colorTheme);
     default:
       return generateModernPdf(resumeData, colorTheme);
   }
@@ -1360,6 +1361,159 @@ async function generateExecutivePdf(
 
   console.log('✅ Executive visual PDF generated successfully');
   return new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
+}
+
+/**
+ * Minimalist template with ultra-clean design and maximum white space
+ */
+async function generateMinimalistPdf(
+  resumeData: ResumeData,
+  colorTheme: { primary: string; secondary: string; accent: string }
+): Promise<Blob> {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+    compress: true
+  });
+
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 25; // Larger margins for minimalist look
+  const contentWidth = pageWidth - (margin * 2);
+  
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16)
+    ] : [168, 85, 247];
+  };
+
+  const [pr, pg, pb] = hexToRgb(colorTheme.primary);
+
+  let y = margin + 10;
+
+  // Header section with subtle border
+  setProfessionalFont(doc, 'header', 'normal');
+  doc.setFontSize(28);
+  doc.setTextColor(pr, pg, pb);
+  doc.text(resumeData.name, margin, y);
+  y += 12;
+
+  setProfessionalFont(doc, 'body', 'normal');
+  doc.setFontSize(14);
+  doc.setTextColor(100, 100, 100);
+  doc.text(resumeData.title || '', margin, y);
+  y += 8;
+
+  // Contact info in light gray
+  doc.setFontSize(10);
+  doc.setTextColor(120, 120, 120);
+  const contactInfo = [resumeData.email, resumeData.phone, resumeData.location].filter(Boolean).join(' • ');
+  if (contactInfo) {
+    doc.text(contactInfo, margin, y);
+    y += 8;
+  }
+
+  // Subtle border below header
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.2);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 15;
+
+  // Professional Summary
+  if (resumeData.summary) {
+    doc.setFontSize(12);
+    doc.setTextColor(pr, pg, pb);
+    doc.text('Professional Summary', margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    y = renderTextBlock(doc, resumeData.summary, margin, y, contentWidth, pageHeight, margin);
+    y += 12;
+  }
+
+  // Experience
+  if (resumeData.experience && resumeData.experience.length > 0) {
+    doc.setFontSize(12);
+    doc.setTextColor(pr, pg, pb);
+    doc.text('Experience', margin, y);
+    y += 8;
+
+    for (const exp of resumeData.experience) {
+      if (y > pageHeight - 40) {
+        doc.addPage();
+        y = margin;
+      }
+
+      doc.setFontSize(11);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`${exp.title} at ${exp.company}`, margin, y);
+      y += 6;
+
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      doc.text(exp.duration || '', margin, y);
+      y += 6;
+
+      if (exp.description) {
+        doc.setFontSize(9);
+        doc.setTextColor(60, 60, 60);
+        y = renderTextBlock(doc, exp.description, margin, y, contentWidth, pageHeight, margin);
+      }
+      y += 8;
+    }
+    y += 6;
+  }
+
+  // Skills
+  if (resumeData.skills && resumeData.skills.length > 0) {
+    if (y > pageHeight - 30) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(12);
+    doc.setTextColor(pr, pg, pb);
+    doc.text('Skills', margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    const skillsText = resumeData.skills.join(' • ');
+    y = renderTextBlock(doc, skillsText, margin, y, contentWidth, pageHeight, margin);
+    y += 12;
+  }
+
+  // Education
+  if (resumeData.education && resumeData.education.length > 0) {
+    if (y > pageHeight - 30) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(12);
+    doc.setTextColor(pr, pg, pb);
+    doc.text('Education', margin, y);
+    y += 8;
+
+    for (const edu of resumeData.education) {
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`${edu.degree} - ${edu.institution}`, margin, y);
+      y += 6;
+
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      if (edu.year) doc.text(edu.year, margin, y);
+      y += 8;
+    }
+  }
+
+  return doc.output('blob');
 }
 
 /**

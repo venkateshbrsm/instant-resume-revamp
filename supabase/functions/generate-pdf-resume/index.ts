@@ -1134,7 +1134,207 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 </html>`;
   }
 
-  function generateExecutiveHTML(resumeData: any, theme: any): string {
+function generateMinimalistHTML(resumeData: any, theme: any): string {
+  const skills = Array.isArray(resumeData.skills) ? resumeData.skills : 
+    (typeof resumeData.skills === 'string' ? resumeData.skills.split(',').map((s: string) => s.trim()) : []);
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${resumeData.name} - Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 300;
+      line-height: 1.6;
+      color: #404040;
+      background: white;
+      font-size: 12px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+      background: white;
+    }
+    
+    .header {
+      text-align: left;
+      padding-bottom: 30px;
+      border-bottom: 1px solid ${theme.primary}33;
+      margin-bottom: 40px;
+    }
+    
+    .name {
+      font-size: 36px;
+      font-weight: 300;
+      color: ${theme.primary};
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    
+    .title {
+      font-size: 18px;
+      font-weight: 300;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    
+    .contact-info {
+      font-size: 11px;
+      color: #888;
+      font-weight: 300;
+    }
+    
+    .contact-info span {
+      margin-right: 20px;
+    }
+    
+    .section {
+      margin-bottom: 35px;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 400;
+      color: ${theme.primary};
+      margin-bottom: 15px;
+      letter-spacing: 0.3px;
+    }
+    
+    .experience-item {
+      margin-bottom: 25px;
+    }
+    
+    .experience-title {
+      font-size: 13px;
+      font-weight: 400;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    
+    .experience-meta {
+      font-size: 10px;
+      color: #888;
+      margin-bottom: 8px;
+      font-weight: 300;
+    }
+    
+    .experience-description {
+      font-size: 11px;
+      line-height: 1.5;
+      color: #555;
+      font-weight: 300;
+    }
+    
+    .education-item {
+      margin-bottom: 15px;
+    }
+    
+    .education-degree {
+      font-size: 12px;
+      font-weight: 400;
+      color: #333;
+      margin-bottom: 3px;
+    }
+    
+    .education-year {
+      font-size: 10px;
+      color: #888;
+      font-weight: 300;
+    }
+    
+    .skills-list {
+      font-size: 11px;
+      line-height: 1.8;
+      color: #555;
+      font-weight: 300;
+    }
+    
+    .summary {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #555;
+      font-weight: 300;
+    }
+    
+    @media print {
+      body { font-size: 11px; }
+      .container { padding: 20px; }
+      .name { font-size: 32px; }
+      .title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="name">${resumeData.name || ''}</h1>
+      <div class="title">${resumeData.title || ''}</div>
+      <div class="contact-info">
+        ${resumeData.email ? `<span>${resumeData.email}</span>` : ''}
+        ${resumeData.phone ? `<span>${resumeData.phone}</span>` : ''}
+        ${resumeData.location ? `<span>${resumeData.location}</span>` : ''}
+      </div>
+    </div>
+
+    ${resumeData.summary ? `
+    <div class="section">
+      <h2 class="section-title">Professional Summary</h2>
+      <div class="summary">${resumeData.summary}</div>
+    </div>
+    ` : ''}
+
+    ${resumeData.experience && resumeData.experience.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Experience</h2>
+      ${resumeData.experience.map((exp: any) => `
+        <div class="experience-item">
+          <div class="experience-title">${exp.title || ''} at ${exp.company || ''}</div>
+          <div class="experience-meta">${exp.duration || ''}</div>
+          ${exp.description ? `<div class="experience-description">${exp.description}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${skills.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Skills</h2>
+      <div class="skills-list">${skills.join(' • ')}</div>
+    </div>
+    ` : ''}
+
+    ${resumeData.education && resumeData.education.length > 0 ? `
+    <div class="section">
+      <h2 class="section-title">Education</h2>
+      ${resumeData.education.map((edu: any) => `
+        <div class="education-item">
+          <div class="education-degree">${edu.degree || ''} - ${edu.institution || ''}</div>
+          ${edu.year ? `<div class="education-year">${edu.year}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+  </div>
+</body>
+</html>
+  `;
+}
+
+function generateExecutiveHTML(resumeData: any, theme: any): string {
     const skills = Array.isArray(resumeData.skills) 
       ? resumeData.skills 
       : (typeof resumeData.skills === 'string' ? resumeData.skills.split(',').map((s: string) => s.trim()) : []);
@@ -1541,7 +1741,7 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
     classic: () => generateClassicHTML(resumeData, theme),
     creative: () => generateCreativeHTML(resumeData, theme),
     executive: () => generateExecutiveHTML(resumeData, theme),
-    minimalist: () => generateClassicHTML(resumeData, theme), // Use classic as fallback
+    minimalist: () => generateMinimalistHTML(resumeData, theme),
   };
   
   const generateHTML = templateGenerators[templateId as keyof typeof templateGenerators] || templateGenerators.modern;
