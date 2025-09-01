@@ -106,16 +106,15 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {/* PDF Display */}
       <div 
         className={cn(
-          "border rounded-lg bg-background relative shadow-lg",
-          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
+          "border rounded-lg bg-background relative shadow-lg w-full",
+          isFullscreen ? "border-0 rounded-none h-full" : "mx-auto"
         )}
         style={isFullscreen ? { 
           height: '100%',
           width: '100%'
         } : { 
-          height: '800px',
-          width: '566px',
-          maxWidth: '90vw'
+          height: '600px',
+          minHeight: '400px'
         }}
       >
         {pdfUrl ? (
