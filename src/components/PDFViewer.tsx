@@ -157,12 +157,12 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         {pdfUrl ? (
           <iframe
             src={isFullscreen 
-              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
+              ? `${pdfUrl}#view=FitV&pagemode=none&toolbar=0` 
               : isMobile 
                 ? isScrollMode
-                  ? `${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-width&view=FitH&pagemode=none&scrollMode=2&page=1&search=`
-                  : `${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-fit&view=Fit&pagemode=none&scrollMode=0&page=1`
-                : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
+                  ? `${pdfUrl}#view=FitH&pagemode=bookmarks&toolbar=1`
+                  : `${pdfUrl}#view=Fit&pagemode=none&toolbar=1`
+                : `${pdfUrl}#view=FitH&pagemode=none&toolbar=0`
             }
             className={cn(
               "rounded-lg",
