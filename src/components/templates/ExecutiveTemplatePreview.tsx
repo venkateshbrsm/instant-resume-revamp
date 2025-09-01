@@ -2,6 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, Award, TrendingUp, Users, Target, Star, User, CheckCircle } from "lucide-react";
 import { extractCoreResponsibilities, extractLeadershipLearnings } from "@/lib/coreResponsibilitiesExtractor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -15,13 +16,15 @@ interface TemplatePreviewProps {
 }
 
 export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="bg-white shadow-2xl overflow-hidden border border-border/50 max-w-5xl mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full">
+    <div className={`bg-white shadow-2xl overflow-hidden border border-border/50 ${isMobile ? 'max-w-full' : 'max-w-5xl'} mx-auto print:shadow-none print:border-0 print:max-w-none print:w-full`}>
       {/* Print Layout - Single Column for PDF */}
-      <div className="flex print:block">
+      <div className={`${isMobile ? 'block' : 'flex'} print:block`}>
         {/* Left Sidebar - Dark Background */}
         <div 
-          className="w-1/3 p-6 text-white print:p-4 print:w-full print:mb-6 page-break-avoid"
+          className={`${isMobile ? 'w-full' : 'w-1/3'} p-6 text-white print:p-4 print:w-full print:mb-6 page-break-avoid`}
           style={{
             background: `linear-gradient(135deg, ${selectedColorTheme.primary} 0%, ${selectedColorTheme.secondary} 50%, ${selectedColorTheme.accent} 100%)`
           }}
@@ -184,7 +187,7 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
         </div>
 
         {/* Right Main Content - Light Background */}
-        <div className="w-2/3 p-6 bg-gray-50 print:p-4 print:w-full print:bg-white">
+        <div className={`${isMobile ? 'w-full' : 'w-2/3'} p-6 bg-gray-50 print:p-4 print:w-full print:bg-white`}>
           {/* Executive Summary */}
           <div className="mb-8 page-break-avoid section print:mb-6">
             <div className="flex items-center gap-3 mb-4">
