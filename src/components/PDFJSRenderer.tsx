@@ -4,8 +4,13 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Set up PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Set up PDF.js worker - try local worker first, fallback to CDN
+try {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).href;
+} catch {
+  // Fallback to CDN if local worker fails
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+}
 
 interface PDFJSRendererProps {
   file: File | string | Blob;
@@ -31,21 +36,40 @@ export const PDFJSRenderer = ({ file, className, isFullscreen = false }: PDFJSRe
       let arrayBuffer: ArrayBuffer;
       
       if (typeof file === 'string') {
+        console.log('Loading PDF from URL:', file);
         const response = await fetch(file);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.status}`);
+        }
         arrayBuffer = await response.arrayBuffer();
       } else {
+        console.log('Loading PDF from file/blob:', file);
         arrayBuffer = await file.arrayBuffer();
       }
 
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      console.log('PDF ArrayBuffer size:', arrayBuffer.byteLength);
+      
+      const loadingTask = pdfjsLib.getDocument({ 
+        data: arrayBuffer,
+        // Android Chrome optimizations
+        enableXfa: false,
+        isEvalSupported: false,
+        isOffscreenCanvasSupported: false,
+        useSystemFonts: true,
+        stopAtErrors: true,
+        maxImageSize: 1024 * 1024 // Limit image size for mobile
+      });
+      
       const pdf = await loadingTask.promise;
+      console.log('PDF loaded successfully, pages:', pdf.numPages);
       
       setPdfDoc(pdf);
       setPageCount(pdf.numPages);
       setPageNum(1);
     } catch (err) {
       console.error('Error loading PDF:', err);
-      setError('Failed to load PDF document');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to load PDF: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
