@@ -88,7 +88,17 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
   const openInNewTab = () => {
     if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
+      // Open PDF in popup without browser controls
+      const width = window.screen.width * 0.9;
+      const height = window.screen.height * 0.9;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+      
+      window.open(
+        pdfUrl, 
+        'pdfViewer',
+        `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes`
+      );
     }
   };
 
