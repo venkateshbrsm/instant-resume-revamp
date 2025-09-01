@@ -5,8 +5,8 @@ import { ChevronLeft, ChevronRight, Download, ExternalLink, BookOpen, Scroll } f
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+// Configure PDF.js worker - using a more reliable CDN
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
