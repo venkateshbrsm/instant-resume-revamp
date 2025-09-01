@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -13,6 +14,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadPDF();
@@ -113,15 +115,15 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           height: '100%',
           width: '100%'
         } : { 
-          height: '600px',
-          minHeight: '400px'
+          height: isMobile ? '70vh' : '600px',
+          minHeight: isMobile ? '500px' : '400px'
         }}
       >
         {pdfUrl ? (
           <iframe
             src={isFullscreen 
               ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
-              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
+              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=${isMobile ? 'page-width' : '100'}&view=FitV&pagemode=none`
             }
             className={cn(
               "rounded-lg",
