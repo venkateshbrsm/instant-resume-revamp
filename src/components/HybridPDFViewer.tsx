@@ -16,6 +16,15 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
   const [scale, setScale] = useState(1.0);
   const [rotation, setRotation] = useState(0);
   const canvasRefs = useRef<HTMLCanvasElement[]>([]);
+  
+  // Get responsive render scale based on screen size
+  const getRenderScale = () => {
+    if (typeof window === 'undefined') return 1.5;
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) return 1.2; // Mobile: lower scale to prevent overflow
+    if (screenWidth < 1024) return 1.5; // Tablet: medium scale
+    return 2.0; // Desktop: high scale for quality
+  };
 
   useEffect(() => {
     renderPDF();
@@ -66,7 +75,7 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         console.log(`Rendering page ${pageNum}/${pdf.numPages}`);
         const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
+        const viewport = page.getViewport({ scale: getRenderScale() }); // Responsive scale based on screen size
 
         // Create canvas
         const canvas = document.createElement('canvas');
@@ -188,8 +197,8 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
       {/* PDF Pages */}
       <div 
         className={cn(
-          "border rounded-lg bg-background shadow-lg overflow-auto",
-          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
+          "border rounded-lg bg-background shadow-lg",
+          isFullscreen ? "border-0 rounded-none h-full w-full overflow-hidden" : "mx-auto overflow-auto"
         )}
         style={isFullscreen ? { 
           height: '100%',
@@ -199,17 +208,24 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
           maxWidth: '90vw'
         }}
       >
-        <div className="p-4 space-y-4">
+        <div className={cn(
+          "space-y-4",
+          isFullscreen ? "p-2 h-full overflow-y-auto overflow-x-hidden" : "p-4"
+        )}>
           {pages.map((pageImage, index) => (
-            <div key={index} className="flex justify-center">
+            <div key={index} className="flex justify-center w-full">
               <img
                 src={pageImage}
                 alt={`Page ${index + 1}`}
-                className="max-w-full h-auto shadow-md border rounded"
+                className={cn(
+                  "h-auto shadow-md border rounded object-contain",
+                  isFullscreen ? "w-full max-w-full" : "max-w-full"
+                )}
                 style={{
                   transform: `scale(${scale}) rotate(${rotation}deg)`,
                   transformOrigin: 'center',
-                  transition: 'transform 0.3s ease-in-out'
+                  transition: 'transform 0.3s ease-in-out',
+                  maxWidth: isFullscreen ? '100%' : undefined
                 }}
               />
             </div>
