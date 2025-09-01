@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, ExternalLink, ZoomIn, ZoomOut, RotateCw, Maximize } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, ExternalLink, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -55,6 +54,22 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     }
   };
 
+  const handleDownload = () => {
+    if (pdfUrl) {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'resume-preview.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const openInNewTab = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
+    }
+  };
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
@@ -94,21 +109,26 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <span className="text-xs sm:text-sm text-muted-foreground text-center">
             📄 PDF Preview (Mobile-Optimized)
           </span>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs px-2 py-1 h-8"
-              >
-                <Maximize className="w-3 h-3 mr-1" />
-                Fullscreen
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
-              <PDFViewer file={file} isFullscreen={true} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={openInNewTab}
+              className="text-xs px-2 py-1 h-8"
+            >
+              <ExternalLink className="w-3 h-3 mr-1" />
+              Full View
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleDownload}
+              className="text-xs px-2 py-1 h-8"
+            >
+              <Download className="w-3 h-3 mr-1" />
+              Download
+            </Button>
+          </div>
         </div>
 
         {/* Mobile PDF Container */}
@@ -148,7 +168,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <span className="text-sm text-muted-foreground">
             📄 PDF Preview
           </span>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <Button 
                 variant="outline" 
@@ -170,21 +190,15 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                 <ZoomIn className="w-3 h-3" />
               </Button>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="px-2 py-1 h-8"
-                >
-                  <Maximize className="w-3 h-3 mr-1" />
-                  <span className="hidden sm:inline">Fullscreen</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-2">
-                <PDFViewer file={file} isFullscreen={true} />
-              </DialogContent>
-            </Dialog>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={openInNewTab}
+              className="px-2 py-1 h-8"
+            >
+              <ExternalLink className="w-3 h-3 mr-1" />
+              <span className="hidden sm:inline">Open</span>
+            </Button>
           </div>
         </div>
       )}
