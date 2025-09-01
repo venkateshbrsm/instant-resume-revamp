@@ -338,7 +338,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           </div>
         )}
       </div>
-      */
+      */}
     </div>
   );
 };
