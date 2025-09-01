@@ -21,11 +21,27 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [isScrollMode, setIsScrollMode] = useState(true); // Default to scroll mode
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     loadPDF();
   }, [file]);
+
+  useEffect(() => {
+    // Set timeout for loading to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('PDFViewer: Loading timeout reached');
+        setLoadingTimeout(true);
+        setError('PDF loading is taking too long. Please try again.');
+        setLoading(false);
+      }
+    }, 15000); // 15 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   useEffect(() => {
     // Cleanup URL when component unmounts
@@ -38,9 +54,22 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
   const loadPDF = async () => {
     try {
-      console.log('PDFViewer: Starting PDF load, file:', file);
+      console.log('PDFViewer: Starting PDF load, attempt:', retryCount + 1, 'file:', file);
       setLoading(true);
       setError(null);
+      setLoadingTimeout(false);
+
+      // Try different worker configurations on retry
+      if (retryCount > 0) {
+        console.log('PDFViewer: Retry attempt, reconfiguring worker');
+        if (retryCount === 1) {
+          // Try unpkg CDN
+          pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+        } else if (retryCount === 2) {
+          // Try direct CDN
+          pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+        }
+      }
 
       let url: string;
       
@@ -85,12 +114,24 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     console.log('PDFViewer: Document loaded successfully, pages:', numPages);
     setNumPages(numPages);
     setLoading(false);
+    setRetryCount(0); // Reset retry count on success
   };
 
   const onDocumentLoadError = (error: Error) => {
     console.error('PDFViewer: Document load error:', error);
-    setError('Failed to load PDF document');
+    setError(`Failed to load PDF document: ${error.message}`);
     setLoading(false);
+  };
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    loadPDF();
+  };
+
+  const handleFallbackIframe = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
+    }
   };
 
   const goToNextPage = () => {
@@ -119,11 +160,23 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   if (error) {
     return (
       <div className={cn("flex items-center justify-center h-96", className)}>
-        <div className="text-center">
+        <div className="text-center space-y-3">
           <p className="text-destructive mb-2">⚠️ {error}</p>
-          <Button onClick={loadPDF} variant="outline" size="sm">
-            Retry
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleRetry} variant="outline" size="sm" disabled={retryCount >= 3}>
+              {retryCount >= 3 ? 'Max Retries' : `Retry (${retryCount}/3)`}
+            </Button>
+            {pdfUrl && (
+              <Button onClick={handleFallbackIframe} variant="secondary" size="sm">
+                Open in New Tab
+              </Button>
+            )}
+          </div>
+          {retryCount >= 3 && (
+            <p className="text-xs text-muted-foreground">
+              Try opening the PDF in a new tab or download it instead.
+            </p>
+          )}
         </div>
       </div>
     );

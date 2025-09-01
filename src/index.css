@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* React-PDF CSS imports for proper rendering */
+@import 'react-pdf/dist/Page/AnnotationLayer.css';
+@import 'react-pdf/dist/Page/TextLayer.css';
+
 /* Print and page break styles */
 @media print {
   .page-break-before {
