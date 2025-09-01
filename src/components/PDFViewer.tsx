@@ -132,7 +132,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             src={isFullscreen 
               ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
               : isMobile 
-                ? `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-width&view=FitV&pagemode=thumbs`
+                ? `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-width&view=FitV&pagemode=none&scrollMode=2`
                 : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
             }
             className={cn(
