@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Detect Android Chrome specifically
@@ -33,32 +33,6 @@ export const PDFJSRenderer = ({ file, className, isFullscreen = false }: PDFJSRe
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState(isAndroidChrome() ? 0.75 : 1.0); // Smaller scale for mobile
   const [renderTask, setRenderTask] = useState<pdfjsLib.RenderTask | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-
-  // Create PDF URL for fallback options
-  useEffect(() => {
-    if (typeof file === 'string') {
-      setPdfUrl(file);
-    } else {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-      return () => URL.revokeObjectURL(url);
-    }
-  }, [file]);
-
-  const handleDownload = () => {
-    if (!pdfUrl) return;
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = typeof file === 'string' ? 'document.pdf' : (file instanceof File ? file.name : 'document.pdf');
-    link.click();
-  };
-
-  const openInNewTab = () => {
-    if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
-    }
-  };
 
   const loadPDF = useCallback(async () => {
     try {
@@ -185,24 +159,11 @@ export const PDFJSRenderer = ({ file, className, isFullscreen = false }: PDFJSRe
   if (error) {
     return (
       <div className={cn("flex items-center justify-center h-96", className)}>
-        <div className="text-center space-y-4">
+        <div className="text-center">
           <p className="text-destructive mb-2">⚠️ {error}</p>
-          <p className="text-sm text-muted-foreground">
-            PDF.js failed to render the document. Try these alternatives:
-          </p>
-          <div className="flex gap-2 justify-center">
-            <Button onClick={loadPDF} variant="outline" size="sm">
-              Retry PDF.js
-            </Button>
-            <Button onClick={handleDownload} variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-1" />
-              Download
-            </Button>
-            <Button onClick={openInNewTab} variant="outline" size="sm">
-              <ExternalLink className="h-4 w-4 mr-1" />
-              Open in Tab
-            </Button>
-          </div>
+          <Button onClick={loadPDF} variant="outline" size="sm">
+            Retry
+          </Button>
         </div>
       </div>
     );
