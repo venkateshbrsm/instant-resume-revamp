@@ -177,17 +177,11 @@
     background-size: 20px 20px;
   }
   
-  /* Mobile-optimized touch targets and interactions */
+  /* Mobile-optimized touch targets */
   @media (max-width: 768px) {
-    button, .clickable, a {
+    button, .clickable {
       min-height: 44px; /* iOS minimum touch target */
       min-width: 44px;
-    }
-    
-    /* Better touch scrolling */
-    * {
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
     }
     
     /* Reduce motion for mobile users who prefer it */
@@ -206,23 +200,6 @@
     .bg-grid-pattern {
       background-size: 15px 15px;
       opacity: 0.5;
-    }
-    
-    /* Better text readability on mobile */
-    body {
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-    }
-    
-    /* Prevent horizontal scroll */
-    html, body {
-      overflow-x: hidden;
-    }
-    
-    /* Mobile-specific spacing adjustments */
-    .container {
-      padding-left: 1rem;
-      padding-right: 1rem;
     }
   }
   
