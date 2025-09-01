@@ -96,8 +96,10 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     );
   }
 
-  // Use external viewer for mobile devices (Android/iOS)
-  if (pdfUrl && (deviceType === 'android' || deviceType === 'ios')) {
+  // Use external viewer for mobile devices only if PDF is publicly accessible
+  const isPublicUrl = pdfUrl && !pdfUrl.startsWith('blob:') && (pdfUrl.startsWith('http') || pdfUrl.startsWith('https'));
+  
+  if (pdfUrl && (deviceType === 'android' || deviceType === 'ios') && isPublicUrl) {
     return (
       <ExternalPDFViewer 
         pdfUrl={pdfUrl} 
@@ -113,7 +115,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {!isFullscreen && (
         <div className="flex items-center justify-center mb-4 p-3 bg-muted/50 rounded-lg">
           <span className="text-sm text-muted-foreground">
-            📄 PDF Preview
+            📄 PDF Preview {(deviceType === 'android' || deviceType === 'ios') && !isPublicUrl && '(Mobile Optimized)'}
           </span>
         </div>
       )}
