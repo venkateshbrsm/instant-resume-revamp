@@ -160,8 +160,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
               : isMobile 
                 ? isScrollMode
-                  ? `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-width&view=FitH&pagemode=none&scrollMode=2`
-                  : `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-fit&view=Fit&pagemode=none&scrollMode=1`
+                  ? `${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-width&view=FitH&pagemode=none&scrollMode=2&page=1&search=`
+                  : `${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-fit&view=Fit&pagemode=none&scrollMode=0&page=1`
                 : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
             }
             className={cn(
@@ -169,17 +169,21 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
             )}
             title="PDF Preview"
+            scrolling="yes"
+            allowFullScreen
             style={{ 
               border: 'none',
               fontSmooth: 'never',
               WebkitFontSmoothing: 'none',
+              overflow: 'auto',
               ...(isMobile && {
                 minHeight: '100vh',
                 width: '100%',
                 height: '100%',
-                overflow: 'scroll',
+                overflow: 'auto',
                 overflowX: 'auto',
-                overflowY: 'auto'
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch'
               }),
               ...(isFullscreen && {
                 transform: 'scale(1)',
