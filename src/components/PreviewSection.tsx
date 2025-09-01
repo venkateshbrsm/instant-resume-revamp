@@ -57,7 +57,7 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
   const [previewPdfBlob, setPreviewPdfBlob] = useState<Blob | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isAutoEnhancing, setIsAutoEnhancing] = useState(false);
-  const [currentPreviewTab, setCurrentPreviewTab] = useState("preview");
+  const [currentPreviewTab, setCurrentPreviewTab] = useState("edit");
   const [editSaveFunction, setEditSaveFunction] = useState<((isAutoSave?: boolean) => Promise<void>) | null>(null);
   const enhancedResumeRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null); // Separate ref for just the resume content
@@ -803,8 +803,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                 setCurrentPreviewTab(newTab);
                               }} className="w-full">
                               <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
+                               <TabsTrigger 
+                                 value="edit" 
+                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4"
+                               >
+                                 <span className="hidden sm:inline">✏️ Edit</span>
+                                 <span className="sm:hidden">✏️ Edit</span>
+                               </TabsTrigger>
                                 <TabsTrigger 
-                                  value="preview"
+                                  value="pdf"
                                   disabled={isAutoEnhancing}
                                   className={cn(
                                     "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4",
@@ -812,22 +819,15 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                   )}
                                 >
                                   <span className="hidden sm:inline">
-                                    {isAutoEnhancing ? "⏳ Enhancing..." : "📄 Preview"}
+                                    {isAutoEnhancing ? "⏳ Enhancing..." : "📄 PDF Preview"}
                                   </span>
                                   <span className="sm:hidden">
-                                    {isAutoEnhancing ? "⏳" : "📄"}
+                                    {isAutoEnhancing ? "⏳" : "📄 PDF"}
                                   </span>
                                 </TabsTrigger>
-                               <TabsTrigger 
-                                 value="edit" 
-                                 className="bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant data-[state=active]:ring-2 data-[state=active]:ring-primary/30 transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4 font-medium"
-                               >
-                                 <span className="hidden sm:inline">✏️ Edit Resume</span>
-                                 <span className="sm:hidden">✏️ Edit</span>
-                               </TabsTrigger>
                              </TabsList>
                            
-                           <TabsContent value="preview" className="space-y-4">
+                           <TabsContent value="pdf" className="space-y-4">
                              <div className="relative">
                                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
                                  <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
