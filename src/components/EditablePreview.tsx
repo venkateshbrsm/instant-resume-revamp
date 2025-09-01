@@ -5,7 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Save, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Save, Loader2, AlertCircle, Sparkles, Edit, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { generateVisualPdf, extractResumeDataFromEnhanced } from '@/lib/visualPdfGenerator';
@@ -39,6 +40,13 @@ export const EditablePreview = ({
   const [autoEnhanceProgress, setAutoEnhanceProgress] = useState(0);
   const [autoEnhanceTotal, setAutoEnhanceTotal] = useState(0);
   const [currentEnhancingField, setCurrentEnhancingField] = useState('');
+  const [fullscreenEdit, setFullscreenEdit] = useState<{
+    isOpen: boolean;
+    fieldKey: string;
+    fieldLabel: string;
+    fieldValue: string;
+    isTextarea: boolean;
+  }>({ isOpen: false, fieldKey: '', fieldLabel: '', fieldValue: '', isTextarea: false });
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Create a stable session-based resume ID that persists across tab switches
@@ -392,6 +400,65 @@ export const EditablePreview = ({
     }
   };
 
+  const handleFullscreenEdit = (fieldKey: string, fieldLabel: string, isTextarea: boolean = false) => {
+    // Get current field value
+    const getCurrentValue = (key: string): string => {
+      const parts = key.split('.');
+      let current: any = editableData;
+      
+      for (const part of parts) {
+        if (current && typeof current === 'object') {
+          if (!isNaN(Number(part))) {
+            current = current[Number(part)];
+          } else {
+            current = current[part];
+          }
+        } else {
+          return '';
+        }
+      }
+      
+      if (Array.isArray(current)) {
+        return current.join('\n');
+      } else if (typeof current === 'string') {
+        return current;
+      }
+      
+      return current ? String(current) : '';
+    };
+
+    const currentValue = getCurrentValue(fieldKey);
+    
+    setFullscreenEdit({
+      isOpen: true,
+      fieldKey,
+      fieldLabel,
+      fieldValue: currentValue,
+      isTextarea
+    });
+  };
+
+  const handleSaveFullscreenEdit = () => {
+    const { fieldKey, fieldValue } = fullscreenEdit;
+    const fieldPath = fieldKey.split('.');
+    
+    if (fieldPath.length === 1) {
+      handleFieldChange(fieldPath[0], fieldValue);
+    } else if (fieldPath.length === 3) {
+      const [field, index, nestedField] = fieldPath;
+      
+      // Handle special cases like achievements that should be arrays
+      if (nestedField === 'achievements') {
+        const achievements = fieldValue.split('\n').filter(a => a.trim());
+        handleArrayFieldChange(field, parseInt(index), nestedField, achievements);
+      } else {
+        handleArrayFieldChange(field, parseInt(index), nestedField, fieldValue);
+      }
+    }
+    
+    setFullscreenEdit({ isOpen: false, fieldKey: '', fieldLabel: '', fieldValue: '', isTextarea: false });
+    toast.success('Changes saved successfully!');
+  };
 
   const renderEditableField = (label: string, value: string, field: string, nestedField?: string, isTextarea: boolean = false) => {
     const actualValue = nestedField ? editableData[field]?.[nestedField] || '' : editableData[field] || '';
@@ -408,23 +475,35 @@ export const EditablePreview = ({
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <label className="text-sm font-medium text-muted-foreground">{label}</label>
-          {shouldShowEnhanceButton && (
+          <div className="flex gap-1">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => handleEnhanceField(fieldKey, label)}
-              disabled={isEnhancing || !actualValue.trim()}
+              onClick={() => handleFullscreenEdit(fieldKey, label, isTextarea)}
               className="h-7 px-2 text-xs"
             >
-              {isEnhancing ? (
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              ) : (
-                <Sparkles className="h-3 w-3 mr-1" />
-              )}
-              {isEnhancing ? 'Enhancing...' : 'Enhance'}
+              <Maximize2 className="h-3 w-3 mr-1" />
+              Edit
             </Button>
-          )}
+            {shouldShowEnhanceButton && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEnhanceField(fieldKey, label)}
+                disabled={isEnhancing || !actualValue.trim()}
+                className="h-7 px-2 text-xs"
+              >
+                {isEnhancing ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3 w-3 mr-1" />
+                )}
+                {isEnhancing ? 'Enhancing...' : 'Enhance'}
+              </Button>
+            )}
+          </div>
         </div>
         <InputComponent
           value={actualValue}
@@ -457,24 +536,36 @@ export const EditablePreview = ({
                   {item.description && renderEditableField2('Description', item.description, field, 'description', true, index)}
                   {item.achievements && (
                     <div className="mb-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-sm font-medium text-muted-foreground">Achievements</label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEnhanceField(`${field}.${index}.achievements`, 'Achievements')}
-                          disabled={enhancingFields.has(`${field}.${index}.achievements`) || !Array.isArray(item.achievements) || !item.achievements.some((a: string) => a.trim())}
-                          className="h-7 px-2 text-xs"
-                        >
-                          {enhancingFields.has(`${field}.${index}.achievements`) ? (
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-3 w-3 mr-1" />
-                          )}
-                          {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance'}
-                        </Button>
-                      </div>
+                       <div className="flex items-center justify-between mb-1">
+                         <label className="text-sm font-medium text-muted-foreground">Achievements</label>
+                         <div className="flex gap-1">
+                           <Button
+                             type="button"
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => handleFullscreenEdit(`${field}.${index}.achievements`, 'Achievements', true)}
+                             className="h-7 px-2 text-xs"
+                           >
+                             <Maximize2 className="h-3 w-3 mr-1" />
+                             Edit
+                           </Button>
+                           <Button
+                             type="button"
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => handleEnhanceField(`${field}.${index}.achievements`, 'Achievements')}
+                             disabled={enhancingFields.has(`${field}.${index}.achievements`) || !Array.isArray(item.achievements) || !item.achievements.some((a: string) => a.trim())}
+                             className="h-7 px-2 text-xs"
+                           >
+                             {enhancingFields.has(`${field}.${index}.achievements`) ? (
+                               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                             ) : (
+                               <Sparkles className="h-3 w-3 mr-1" />
+                             )}
+                             {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance'}
+                           </Button>
+                         </div>
+                       </div>
                       <Textarea
                         value={Array.isArray(item.achievements) ? item.achievements.join('\n') : (item.achievements || '')}
                         onChange={(e) => {
@@ -528,23 +619,35 @@ export const EditablePreview = ({
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <label className="text-sm font-medium text-muted-foreground">{label}</label>
-            {shouldShowEnhanceButton && (
+            <div className="flex gap-1">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => handleEnhanceField(fieldKey, label)}
-                disabled={isEnhancing || !actualValue.trim()}
+                onClick={() => handleFullscreenEdit(fieldKey, label, isTextarea)}
                 className="h-7 px-2 text-xs"
               >
-                {isEnhancing ? (
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                ) : (
-                  <Sparkles className="h-3 w-3 mr-1" />
-                )}
-                {isEnhancing ? 'Enhancing...' : 'Enhance'}
+                <Maximize2 className="h-3 w-3 mr-1" />
+                Edit
               </Button>
-            )}
+              {shouldShowEnhanceButton && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEnhanceField(fieldKey, label)}
+                  disabled={isEnhancing || !actualValue.trim()}
+                  className="h-7 px-2 text-xs"
+                >
+                  {isEnhancing ? (
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3 mr-1" />
+                  )}
+                  {isEnhancing ? 'Enhancing...' : 'Enhance'}
+                </Button>
+              )}
+            </div>
           </div>
           {isJobTitle ? (
             <div className="w-1/2">
@@ -727,6 +830,49 @@ export const EditablePreview = ({
           </div>
         )}
       </div>
+
+      {/* Fullscreen Edit Dialog */}
+      <Dialog open={fullscreenEdit.isOpen} onOpenChange={(open) => 
+        setFullscreenEdit(prev => ({ ...prev, isOpen: open }))
+      }>
+        <DialogContent className="max-w-4xl w-[90vw] h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Edit {fullscreenEdit.fieldLabel}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex flex-col gap-4">
+            {fullscreenEdit.isTextarea ? (
+              <Textarea
+                value={fullscreenEdit.fieldValue}
+                onChange={(e) => setFullscreenEdit(prev => ({ ...prev, fieldValue: e.target.value }))}
+                className="flex-1 min-h-[400px] resize-none text-base leading-relaxed"
+                placeholder={`Enter ${fullscreenEdit.fieldLabel.toLowerCase()}...`}
+              />
+            ) : (
+              <Input
+                value={fullscreenEdit.fieldValue}
+                onChange={(e) => setFullscreenEdit(prev => ({ ...prev, fieldValue: e.target.value }))}
+                className="text-base py-3"
+                placeholder={`Enter ${fullscreenEdit.fieldLabel.toLowerCase()}...`}
+              />
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setFullscreenEdit({ isOpen: false, fieldKey: '', fieldLabel: '', fieldValue: '', isTextarea: false })}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveFullscreenEdit}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
