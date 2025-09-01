@@ -2,7 +2,6 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Mail, Phone, Award, TrendingUp, Users, Palette, Brush, Sparkles, User } from "lucide-react";
 import { extractCoreResponsibilities } from "@/lib/coreResponsibilitiesExtractor";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TemplatePreviewProps {
   enhancedContent: any;
@@ -16,12 +15,11 @@ interface TemplatePreviewProps {
 }
 
 export function CreativeTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
-  const isMobile = useIsMobile();
   // Debug logging to check for N/A values
   console.log('CreativeTemplate - Education data:', enhancedContent.education);
   return (
     <div 
-      className={`bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 ${isMobile ? 'max-w-full' : 'max-w-4xl'} mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white`}
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border/50 max-w-4xl mx-auto print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:max-w-none print:mx-0 print:bg-white"
       style={{
         pageBreakInside: 'avoid',
         breakInside: 'avoid'
