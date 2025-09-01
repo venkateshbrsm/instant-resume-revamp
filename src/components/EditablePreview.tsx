@@ -207,6 +207,11 @@ export const EditablePreview = ({
   }, [isAutoEnhancing, onAutoEnhancementStateChange]);
 
   const handleSave = useCallback(async (isAutoSave = false) => {
+    if (!editableData || isSaving) {
+      console.log('⏸️ Skipping save - no data or currently saving');
+      return;
+    }
+
     // Debounce all saves to prevent excessive calls
     const now = Date.now();
     if (now - lastSaveTime < 300) {
@@ -245,7 +250,7 @@ export const EditablePreview = ({
     } finally {
       setIsSaving(false);
     }
-  }, [editableData, onContentUpdate, lastSaveTime]);
+  }, [onContentUpdate]);
 
   // Expose save function to parent - include handleSave to ensure fresh reference
   useEffect(() => {
