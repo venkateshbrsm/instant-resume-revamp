@@ -406,7 +406,7 @@ export const EditablePreview = ({
     
     return (
       <div className="mb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+        <div className="flex items-center justify-between mb-1">
           <label className="text-sm font-medium text-muted-foreground">{label}</label>
           {shouldShowEnhanceButton && (
             <Button
@@ -415,14 +415,14 @@ export const EditablePreview = ({
               size="sm"
               onClick={() => handleEnhanceField(fieldKey, label)}
               disabled={isEnhancing || !actualValue.trim()}
-              className="h-7 px-2 text-xs self-start sm:self-auto"
+              className="h-7 px-2 text-xs"
             >
               {isEnhancing ? (
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
               ) : (
                 <Sparkles className="h-3 w-3 mr-1" />
               )}
-              Enhance
+              {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
             </Button>
           )}
         </div>
@@ -472,7 +472,7 @@ export const EditablePreview = ({
                           ) : (
                             <Sparkles className="h-3 w-3 mr-1" />
                           )}
-                          {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance'}
+                          {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance with AI'}
                         </Button>
                       </div>
                       <Textarea
@@ -526,7 +526,7 @@ export const EditablePreview = ({
       
       return (
         <div className="mb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+          <div className="flex items-center justify-between mb-1">
             <label className="text-sm font-medium text-muted-foreground">{label}</label>
             {shouldShowEnhanceButton && (
               <Button
@@ -535,14 +535,14 @@ export const EditablePreview = ({
                 size="sm"
                 onClick={() => handleEnhanceField(fieldKey, label)}
                 disabled={isEnhancing || !actualValue.trim()}
-                className="h-7 px-2 text-xs self-start sm:self-auto"
+                className="h-7 px-2 text-xs"
               >
                 {isEnhancing ? (
                   <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                 ) : (
                   <Sparkles className="h-3 w-3 mr-1" />
                 )}
-                Enhance
+                {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
               </Button>
             )}
           </div>
