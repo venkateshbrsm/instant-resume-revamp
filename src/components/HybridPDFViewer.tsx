@@ -32,9 +32,8 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
       const pdfjsLib = await import('pdfjs-dist');
       console.log('PDF.js imported successfully, version:', pdfjsLib.version);
       
-      // Set worker source - use the worker from the package instead of CDN
-      const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.min.mjs');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+      // Set worker source to a working CDN URL
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs';
       console.log('Worker source set successfully');
 
       let pdfData: ArrayBuffer;
