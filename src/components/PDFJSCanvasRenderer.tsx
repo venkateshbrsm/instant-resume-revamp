@@ -4,8 +4,17 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker - use CDN for reliability
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.js';
+// Configure PDF.js worker with fallback options for Android Chrome
+if (typeof window !== 'undefined') {
+  // Try multiple worker sources for better compatibility
+  const workerSources = [
+    `${window.location.origin}/node_modules/pdfjs-dist/build/pdf.worker.min.js`,
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js',
+    'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.js'
+  ];
+  
+  pdfjsLib.GlobalWorkerOptions.workerSrc = workerSources[1]; // Use CDN as primary
+}
 
 interface PDFJSCanvasRendererProps {
   file: File | string | Blob;
@@ -37,23 +46,42 @@ export const PDFJSCanvasRenderer = ({ file, className, isFullscreen = false }: P
     try {
       setLoading(true);
       setError(null);
+      console.log('Android PDF: Starting PDF load for file:', file);
 
       let pdfData: ArrayBuffer;
       
       if (typeof file === 'string') {
+        console.log('Android PDF: Loading from URL:', file);
         const response = await fetch(file);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+        }
         pdfData = await response.arrayBuffer();
       } else {
+        console.log('Android PDF: Loading from file object, size:', file.size);
         pdfData = await file.arrayBuffer();
       }
 
-      const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+      console.log('Android PDF: PDF data loaded, size:', pdfData.byteLength);
+      console.log('Android PDF: Worker src:', pdfjsLib.GlobalWorkerOptions.workerSrc);
+      
+      const pdf = await pdfjsLib.getDocument({ 
+        data: pdfData,
+        verbosity: 0 // Reduce PDF.js console spam
+      }).promise;
+      
+      console.log('Android PDF: PDF document loaded, pages:', pdf.numPages);
       setPdfDocument(pdf);
       setTotalPages(pdf.numPages);
       setCurrentPage(1);
     } catch (err) {
-      console.error('Error loading PDF:', err);
-      setError('Failed to load PDF document');
+      console.error('Android PDF: Error loading PDF:', err);
+      console.error('Android PDF: Error details:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      });
+      setError(`Failed to load PDF: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
