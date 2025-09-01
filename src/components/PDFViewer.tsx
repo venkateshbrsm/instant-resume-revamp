@@ -110,14 +110,14 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <div className="relative print:h-full">
             {pdfUrl ? (
               <iframe
-                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=page-width&pagemode=none`}
+                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH&pagemode=none`}
                 className="w-full border-none print:h-full print:w-full"
                 title="PDF Preview"
                 style={{ 
                   border: 'none',
                   touchAction: 'manipulation',
-                  height: '200vh',
-                  minHeight: '1500px'
+                  height: '120vh',
+                  minHeight: '800px'
                 }}
               />
             ) : (
