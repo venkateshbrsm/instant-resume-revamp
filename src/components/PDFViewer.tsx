@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDeviceType } from '@/hooks/useDeviceType';
-import { ExternalPDFViewer } from './ExternalPDFViewer';
-import { createPublicPdfUrl } from '@/lib/pdfUrlUtils';
+import { MuPDFWebViewer } from './MuPDFWebViewer';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -43,7 +42,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         url = file;
       } else {
         // File or Blob object provided
-        url = await createPublicPdfUrl(file);
+        url = URL.createObjectURL(file);
       }
 
       setPdfUrl(url);
@@ -96,13 +95,11 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     );
   }
 
-  // Use external viewer for mobile devices only if PDF is publicly accessible
-  const isPublicUrl = pdfUrl && !pdfUrl.startsWith('blob:') && (pdfUrl.startsWith('http') || pdfUrl.startsWith('https'));
-  
-  if (pdfUrl && (deviceType === 'android' || deviceType === 'ios') && isPublicUrl) {
+  // Use MuPDF WebViewer for mobile devices (Android/iOS) for better compatibility
+  if (deviceType === 'android' || deviceType === 'ios') {
     return (
-      <ExternalPDFViewer 
-        pdfUrl={pdfUrl} 
+      <MuPDFWebViewer 
+        file={file} 
         className={className}
         isFullscreen={isFullscreen}
       />
@@ -115,7 +112,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       {!isFullscreen && (
         <div className="flex items-center justify-center mb-4 p-3 bg-muted/50 rounded-lg">
           <span className="text-sm text-muted-foreground">
-            📄 PDF Preview {(deviceType === 'android' || deviceType === 'ios') && !isPublicUrl && '(Mobile Optimized)'}
+            📄 PDF Preview (Desktop)
           </span>
         </div>
       )}
