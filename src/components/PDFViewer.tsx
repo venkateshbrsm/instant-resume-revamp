@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, ExternalLink, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -15,6 +16,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -54,20 +56,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     }
   };
 
-  const openInCleanPopup = () => {
-    if (pdfUrl) {
-      const cleanUrl = `${pdfUrl}#toolbar=0&navpanes=0&statusbar=0&view=FitW&pagemode=none`;
-      const popup = window.open(
-        cleanUrl, 
-        'pdfViewer',
-        'fullscreen=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=' + screen.width + ',height=' + screen.height + ',left=0,top=0'
-      );
-      
-      // Try to make it fullscreen for mobile
-      if (popup && popup.document) {
-        popup.document.documentElement.requestFullscreen?.();
-      }
-    }
+  const openFullView = () => {
+    setIsModalOpen(true);
   };
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
@@ -108,15 +98,24 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <span className="text-xs sm:text-sm text-muted-foreground text-center">
             📄 PDF Preview (Mobile-Optimized)
           </span>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={openInCleanPopup}
-            className="text-xs px-2 py-1 h-8"
-          >
-            <ExternalLink className="w-3 h-3 mr-1" />
-            Full View
-          </Button>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={openFullView}
+                className="text-xs px-2 py-1 h-8"
+              >
+                <ExternalLink className="w-3 h-3 mr-1" />
+                Full View
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0">
+              <div className="w-full h-full">
+                <PDFViewer file={file} isFullscreen={true} />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Mobile PDF Container */}
@@ -178,15 +177,24 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                 <ZoomIn className="w-3 h-3" />
               </Button>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={openInCleanPopup}
-              className="px-2 py-1 h-8"
-            >
-              <ExternalLink className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Open</span>
-            </Button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={openFullView}
+                  className="px-2 py-1 h-8"
+                >
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline">Full View</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0">
+                <div className="w-full h-full">
+                  <PDFViewer file={file} isFullscreen={true} />
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       )}
