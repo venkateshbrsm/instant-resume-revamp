@@ -89,23 +89,23 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     return (
       <div className={cn("w-full", className)}>
         {/* Mobile Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-3 p-3 bg-muted/50 rounded-lg gap-2">
-          <span className="text-xs sm:text-sm text-muted-foreground text-center">
-            📄 PDF Preview (Mobile-Optimized)
+        <div className="flex items-center justify-center mb-3 p-2 bg-muted/50 rounded-lg">
+          <span className="text-xs text-muted-foreground text-center">
+            📄 PDF Preview
           </span>
         </div>
 
-        {/* Mobile PDF Container */}
+        {/* Mobile PDF Container - Full viewport height minus controls */}
         <div className="w-full border rounded-lg bg-background shadow-lg overflow-hidden">
-          <div className="relative" style={{ height: '400px' }}>
+          <div className="relative" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
             {pdfUrl ? (
               <iframe
-                src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=85&view=FitW&pagemode=none`}
+                src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=page-width&view=FitW&pagemode=none`}
                 className="w-full h-full border-none"
                 title="PDF Preview"
                 style={{ 
                   border: 'none',
-                  minHeight: '400px'
+                  touchAction: 'manipulation'
                 }}
               />
             ) : (
@@ -114,9 +114,9 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               </div>
             )}
           </div>
-          <div className="p-2 bg-muted/30 text-center">
+          <div className="p-2 bg-muted/20 text-center border-t">
             <p className="text-xs text-muted-foreground">
-              📱 Pinch to zoom • Swipe to scroll
+              📱 Pinch to zoom • Swipe to scroll • Tap and hold for options
             </p>
           </div>
         </div>
