@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobilePDFViewer } from './MobilePDFViewer';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -13,6 +15,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadPDF();
@@ -67,6 +70,17 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       window.open(pdfUrl, '_blank');
     }
   };
+
+  // Use dedicated mobile PDF viewer for better mobile experience
+  if (isMobile && file instanceof Blob) {
+    return (
+      <MobilePDFViewer 
+        pdfBlob={file} 
+        className={className}
+        onError={(error) => console.error('Mobile PDF Viewer Error:', error)}
+      />
+    );
+  }
 
   if (loading) {
     return (
