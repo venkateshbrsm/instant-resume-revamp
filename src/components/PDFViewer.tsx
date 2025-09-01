@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PDFJSRenderer } from './PDFJSRenderer';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -13,6 +14,17 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Detect Android Chrome
+  const isAndroidChrome = () => {
+    const userAgent = navigator.userAgent;
+    return /Android/i.test(userAgent) && /Chrome/i.test(userAgent) && !/Edge/i.test(userAgent);
+  };
+  
+  // Use PDF.js for Android Chrome, fallback to iframe for others
+  if (isAndroidChrome()) {
+    return <PDFJSRenderer file={file} className={className} isFullscreen={isFullscreen} />;
+  }
 
   useEffect(() => {
     loadPDF();
