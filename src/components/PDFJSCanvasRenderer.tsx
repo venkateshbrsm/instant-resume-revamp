@@ -4,8 +4,8 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.min.js';
+// Configure PDF.js worker - use CDN for reliability
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.js';
 
 interface PDFJSCanvasRendererProps {
   file: File | string | Blob;
@@ -72,21 +72,30 @@ export const PDFJSCanvasRenderer = ({ file, className, isFullscreen = false }: P
 
       const viewport = page.getViewport({ scale });
       
-      // Set canvas dimensions
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      // Set canvas dimensions with device pixel ratio for crisp rendering
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      canvas.height = viewport.height * devicePixelRatio;
+      canvas.width = viewport.width * devicePixelRatio;
+      canvas.style.height = viewport.height + 'px';
+      canvas.style.width = viewport.width + 'px';
+      
+      // Scale context for device pixel ratio
+      context.scale(devicePixelRatio, devicePixelRatio);
 
       // Clear canvas
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       // Render PDF page
-      await page.render({
+      const renderContext = {
         canvasContext: context,
         viewport: viewport,
         canvas: canvas,
-      }).promise;
+      };
+      
+      await page.render(renderContext).promise;
     } catch (err) {
       console.error('Error rendering page:', err);
+      setError('Failed to render PDF page');
     } finally {
       setRendering(false);
     }
