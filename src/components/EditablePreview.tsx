@@ -418,7 +418,10 @@ export const EditablePreview = ({
         }
       }
       
-      if (Array.isArray(current)) {
+      // Special handling for skills field
+      if (fieldKey === 'skills' && Array.isArray(current)) {
+        return current.join(', ');
+      } else if (Array.isArray(current)) {
         return current.join('\n');
       } else if (typeof current === 'string') {
         return current;
@@ -443,7 +446,13 @@ export const EditablePreview = ({
     const fieldPath = fieldKey.split('.');
     
     if (fieldPath.length === 1) {
-      handleFieldChange(fieldPath[0], fieldValue);
+      // Special handling for skills field
+      if (fieldKey === 'skills') {
+        const skillsArray = fieldValue.split(',').map(skill => skill.trim()).filter(skill => skill);
+        handleFieldChange(fieldPath[0], skillsArray);
+      } else {
+        handleFieldChange(fieldPath[0], fieldValue);
+      }
     } else if (fieldPath.length === 3) {
       const [field, index, nestedField] = fieldPath;
       
@@ -812,6 +821,15 @@ export const EditablePreview = ({
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium text-muted-foreground">Skills</label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleFullscreenEdit('skills', 'Skills', true)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
               </div>
               <Textarea
                 value={(() => {
@@ -881,7 +899,7 @@ export const EditablePreview = ({
             <div className="flex justify-end">
               {(() => {
                 // Check if this field should have enhance button
-                const excludedFields = ['name', 'email', 'phone', 'location', 'linkedin'];
+                const excludedFields = ['name', 'email', 'phone', 'location', 'linkedin', 'skills'];
                 const excludedExperienceFields = ['company', 'duration', 'title'];
                 const excludedEducationFields = ['degree', 'institution', 'year', 'gpa'];
                 
