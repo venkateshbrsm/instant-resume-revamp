@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink, BookOpen, Scroll } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-// Configure PDF.js worker - use jsdelivr CDN which is more reliable
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -54,22 +50,10 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
   const loadPDF = async () => {
     try {
-      console.log('PDFViewer: Starting PDF load, attempt:', retryCount + 1, 'file:', file);
+      console.log('PDFViewer: Starting PDF load, file:', file);
       setLoading(true);
       setError(null);
       setLoadingTimeout(false);
-
-      // Try different worker configurations on retry
-      if (retryCount > 0) {
-        console.log('PDFViewer: Retry attempt, reconfiguring worker');
-        if (retryCount === 1) {
-          // Try unpkg CDN
-          pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-        } else if (retryCount === 2) {
-          // Try direct CDN
-          pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-        }
-      }
 
       let url: string;
       
@@ -84,8 +68,9 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       }
 
       setPdfUrl(url);
-      console.log('PDFViewer: Set PDF URL, waiting for onDocumentLoadSuccess');
-      // Don't set loading to false here - let onDocumentLoadSuccess handle it
+      console.log('PDFViewer: Set PDF URL for iframe display');
+      
+      // For iframe, we'll handle loading in the iframe onLoad event
     } catch (err) {
       console.error('PDFViewer: Error in loadPDF:', err);
       setError('Failed to load PDF document');
@@ -110,16 +95,16 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     }
   };
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    console.log('PDFViewer: Document loaded successfully, pages:', numPages);
-    setNumPages(numPages);
+  const onIframeLoad = () => {
+    console.log('PDFViewer: Iframe loaded successfully');
     setLoading(false);
+    setNumPages(1); // Set a default for iframe mode
     setRetryCount(0); // Reset retry count on success
   };
 
-  const onDocumentLoadError = (error: Error) => {
-    console.error('PDFViewer: Document load error:', error);
-    setError(`Failed to load PDF document: ${error.message}`);
+  const onIframeError = (error: any) => {
+    console.error('PDFViewer: Iframe load error:', error);
+    setError('Failed to load PDF document');
     setLoading(false);
   };
 
@@ -244,90 +229,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         </div>
       )}
 
-      {/* PDF Display */}
-      <div 
-        className={cn(
-          "border rounded-lg bg-background relative shadow-lg",
-          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto",
-          isMobile && !isFullscreen && "w-full max-w-full"
-        )}
-        style={isFullscreen ? { 
-          height: '100%',
-          width: '100%'
-        } : isMobile ? {
-          height: '100vh',
-          width: '100%',
-          maxWidth: '100%'
-        } : {
-          height: '800px',
-          width: '566px',
-          maxWidth: '90vw'
-        }}
-      >
-        {pdfUrl ? (
-          <div
-            className={cn(
-              "w-full h-full",
-              isScrollMode || isFullscreen ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden",
-              isFullscreen ? "rounded-none" : "rounded-lg"
-            )}
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              scrollBehavior: 'smooth'
-            }}
-          >
-            <Document
-              file={pdfUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading={
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                    <p className="text-muted-foreground">Loading PDF...</p>
-                  </div>
-                </div>
-              }
-            >
-              {isScrollMode || isFullscreen ? (
-                // Scroll mode: Show all pages
-                numPages && Array.from(new Array(numPages), (el, index) => (
-                  <Page
-                    key={`page_${index + 1}`}
-                    pageNumber={index + 1}
-                    width={isFullscreen ? window.innerWidth : isMobile ? window.innerWidth * 0.95 : 566}
-                    className="mb-4 mx-auto"
-                    loading={
-                      <div className="flex items-center justify-center h-96">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                      </div>
-                    }
-                  />
-                ))
-              ) : (
-                // Page mode: Show single page
-                <Page
-                  pageNumber={currentPage}
-                  width={isMobile ? window.innerWidth * 0.95 : 566}
-                  className="mx-auto"
-                  loading={
-                    <div className="flex items-center justify-center h-96">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  }
-                />
-              )}
-            </Document>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">Unable to display PDF</p>
-          </div>
-        )}
-      </div>
-
-      {/* 
-      ORIGINAL IFRAME IMPLEMENTATION - KEPT FOR ROLLBACK
+      {/* PDF Display - Using reliable iframe approach */}
       <div 
         className={cn(
           "border rounded-lg bg-background relative shadow-lg",
@@ -368,6 +270,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             title="PDF Preview"
             scrolling="yes"
             allowFullScreen
+            onLoad={onIframeLoad}
+            onError={onIframeError}
             style={{ 
               border: 'none',
               fontSmooth: 'never',
@@ -396,7 +300,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           </div>
         )}
       </div>
-      */}
+
     </div>
   );
 };
