@@ -16,7 +16,7 @@ export interface ResumeTemplate {
   features: string[];
 }
 
-const allTemplates: ResumeTemplate[] = [
+export const resumeTemplates: ResumeTemplate[] = [
   {
     id: 'modern',
     name: 'Modern Professional',
@@ -89,13 +89,8 @@ const allTemplates: ResumeTemplate[] = [
   }
 ];
 
-// Export only modern and executive templates
-export const resumeTemplates: ResumeTemplate[] = allTemplates.filter(
-  template => template.id === 'modern' || template.id === 'executive'
-);
-
 export const getTemplateById = (id: string): ResumeTemplate | undefined => {
-  return allTemplates.find(template => template.id === id);
+  return resumeTemplates.find(template => template.id === id);
 };
 
 export const getDefaultTemplate = (): ResumeTemplate => {
