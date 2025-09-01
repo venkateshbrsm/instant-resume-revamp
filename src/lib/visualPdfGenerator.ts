@@ -315,8 +315,9 @@ export async function generateVisualPdf(
       return generateModernPdf(resumeData, colorTheme);
     case 'creative':
       return generateCreativePdf(resumeData, colorTheme);
-    case 'classic':
     case 'executive':
+      return generateExecutivePdf(resumeData, colorTheme);
+    case 'classic':
     case 'minimalist':
       return generateClassicPdf(resumeData, colorTheme, templateType);
     default:
@@ -1066,6 +1067,298 @@ async function generateCreativePdf(
   }
 
   console.log('✅ Creative visual PDF generated successfully');
+  return new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
+}
+
+/**
+ * Executive template with professional gradient sidebar
+ */
+async function generateExecutivePdf(
+  resumeData: ResumeData,
+  colorTheme: { primary: string; secondary: string; accent: string }
+): Promise<Blob> {
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF('portrait', 'mm', 'a4');
+
+  // Page setup
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const leftColumnWidth = pageWidth * 0.33; // 1/3 for sidebar
+  const rightColumnWidth = pageWidth * 0.67; // 2/3 for main content
+  const margin = 0;
+
+  // Color theme
+  const primaryColor = colorTheme.primary || '#2563eb';
+  const secondaryColor = colorTheme.secondary || '#3b82f6';
+  const accentColor = colorTheme.accent || '#1d4ed8';
+
+  // Extract RGB values for jsPDF
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 37, g: 99, b: 235 };
+  };
+
+  const primary = hexToRgb(primaryColor);
+  const secondary = hexToRgb(secondaryColor);
+  const accent = hexToRgb(accentColor);
+
+  // Gradient sidebar background
+  doc.setFillColor(primary.r, primary.g, primary.b);
+  doc.rect(0, 0, leftColumnWidth, pageHeight, 'F');
+
+  // Add gradient effect with multiple rectangles
+  for (let i = 0; i < leftColumnWidth; i += 2) {
+    const ratio = i / leftColumnWidth;
+    const r = Math.round(primary.r + (secondary.r - primary.r) * ratio);
+    const g = Math.round(primary.g + (secondary.g - primary.g) * ratio);
+    const b = Math.round(primary.b + (secondary.b - primary.b) * ratio);
+    doc.setFillColor(r, g, b);
+    doc.rect(i, 0, 2, pageHeight, 'F');
+  }
+
+  // Sidebar content
+  let sidebarY = 20;
+  const sidebarX = 10;
+  const sidebarContentWidth = leftColumnWidth - 20;
+
+  // Name and title in sidebar
+  setProfessionalFont(doc, 'header', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  const nameLines = doc.splitTextToSize(resumeData.name || '', sidebarContentWidth);
+  nameLines.forEach((line: string) => {
+    doc.text(line, sidebarX, sidebarY);
+    sidebarY += 6;
+  });
+
+  setProfessionalFont(doc, 'body', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(240, 240, 240);
+  const titleLines = doc.splitTextToSize(resumeData.title || '', sidebarContentWidth);
+  titleLines.forEach((line: string) => {
+    doc.text(line, sidebarX, sidebarY);
+    sidebarY += 5;
+  });
+
+  sidebarY += 10;
+
+  // Contact information
+  setProfessionalFont(doc, 'body', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(220, 220, 220);
+  if (resumeData.email) {
+    doc.text(resumeData.email, sidebarX, sidebarY);
+    sidebarY += 5;
+  }
+  if (resumeData.phone) {
+    doc.text(resumeData.phone, sidebarX, sidebarY);
+    sidebarY += 5;
+  }
+
+  sidebarY += 10;
+
+  // Skills section
+  if (resumeData.skills && resumeData.skills.length > 0) {
+    setProfessionalFont(doc, 'header', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Skills', sidebarX, sidebarY);
+    sidebarY += 8;
+
+    setProfessionalFont(doc, 'body', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(220, 220, 220);
+    resumeData.skills.slice(0, 8).forEach((skill) => {
+      doc.setFillColor(255, 255, 255, 0.8);
+      doc.circle(sidebarX + 1, sidebarY - 2, 0.8, 'F');
+      doc.text(`  ${skill}`, sidebarX + 3, sidebarY);
+      sidebarY += 4;
+    });
+    sidebarY += 5;
+  }
+
+  // Leadership Impact metrics
+  setProfessionalFont(doc, 'header', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Leadership Impact', sidebarX, sidebarY);
+  sidebarY += 8;
+
+  // Years of leadership
+  doc.setFillColor(255, 255, 255, 0.1);
+  doc.roundedRect(sidebarX, sidebarY, sidebarContentWidth - 5, 15, 3, 3, 'F');
+  setProfessionalFont(doc, 'header', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text(`${resumeData.experience?.length || 0}+`, sidebarX + (sidebarContentWidth - 5) / 2, sidebarY + 8, { align: 'center' });
+  setProfessionalFont(doc, 'body', 'normal');
+  doc.setFontSize(8);
+  doc.text('Years Leadership', sidebarX + (sidebarContentWidth - 5) / 2, sidebarY + 12, { align: 'center' });
+  sidebarY += 20;
+
+  // Core competencies
+  doc.setFillColor(255, 255, 255, 0.1);
+  doc.roundedRect(sidebarX, sidebarY, sidebarContentWidth - 5, 15, 3, 3, 'F');
+  setProfessionalFont(doc, 'header', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  const competencies = resumeData.core_technical_skills?.length || resumeData.skills?.length || 0;
+  doc.text(`${competencies}`, sidebarX + (sidebarContentWidth - 5) / 2, sidebarY + 8, { align: 'center' });
+  setProfessionalFont(doc, 'body', 'normal');
+  doc.setFontSize(8);
+  doc.text('Core Competencies', sidebarX + (sidebarContentWidth - 5) / 2, sidebarY + 12, { align: 'center' });
+  sidebarY += 25;
+
+  // Education section in sidebar
+  if (resumeData.education && resumeData.education.length > 0) {
+    setProfessionalFont(doc, 'header', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Education', sidebarX, sidebarY);
+    sidebarY += 8;
+
+    resumeData.education.forEach((edu) => {
+      doc.setFillColor(255, 255, 255, 0.1);
+      const eduHeight = 18;
+      doc.roundedRect(sidebarX, sidebarY, sidebarContentWidth - 5, eduHeight, 3, 3, 'F');
+      
+      setProfessionalFont(doc, 'body', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      const degreeLines = doc.splitTextToSize(edu.degree || '', sidebarContentWidth - 10);
+      doc.text(degreeLines[0], sidebarX + 3, sidebarY + 5);
+      
+      setProfessionalFont(doc, 'body', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(220, 220, 220);
+      const institutionLines = doc.splitTextToSize(edu.institution || '', sidebarContentWidth - 10);
+      doc.text(institutionLines[0], sidebarX + 3, sidebarY + 9);
+      
+      if (edu.year && edu.year !== "N/A") {
+        doc.text(edu.year, sidebarX + 3, sidebarY + 13);
+      }
+      
+      sidebarY += eduHeight + 3;
+    });
+  }
+
+  // Main content area
+  let mainY = 20;
+  const mainX = leftColumnWidth + 10;
+  const mainContentWidth = rightColumnWidth - 20;
+
+  // Executive Summary
+  setProfessionalFont(doc, 'header', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(primary.r, primary.g, primary.b);
+  doc.text('Executive Summary', mainX, mainY);
+  mainY += 10;
+
+  // Summary box with border
+  doc.setDrawColor(primary.r, primary.g, primary.b);
+  doc.setLineWidth(0.5);
+  doc.line(mainX, mainY, mainX + 15, mainY);
+  mainY += 5;
+
+  setProfessionalFont(doc, 'body', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  if (resumeData.summary) {
+    const summaryLines = doc.splitTextToSize(resumeData.summary, mainContentWidth);
+    summaryLines.forEach((line: string) => {
+      doc.text(line, mainX, mainY);
+      mainY += 5;
+    });
+  }
+  mainY += 10;
+
+  // Professional Experience
+  if (resumeData.experience && resumeData.experience.length > 0) {
+    setProfessionalFont(doc, 'header', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(primary.r, primary.g, primary.b);
+    doc.text('Executive Leadership Experience', mainX, mainY);
+    mainY += 10;
+
+    resumeData.experience.forEach((exp, index) => {
+      // Check for page break
+      if (mainY > pageHeight - 60) {
+        doc.addPage();
+        
+        // Re-add sidebar on new page
+        doc.setFillColor(primary.r, primary.g, primary.b);
+        doc.rect(0, 0, leftColumnWidth, pageHeight, 'F');
+        for (let i = 0; i < leftColumnWidth; i += 2) {
+          const ratio = i / leftColumnWidth;
+          const r = Math.round(primary.r + (secondary.r - primary.r) * ratio);
+          const g = Math.round(primary.g + (secondary.g - primary.g) * ratio);
+          const b = Math.round(primary.b + (secondary.b - primary.b) * ratio);
+          doc.setFillColor(r, g, b);
+          doc.rect(i, 0, 2, pageHeight, 'F');
+        }
+        
+        mainY = 20;
+      }
+
+      // Job title and company
+      setProfessionalFont(doc, 'header', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(60, 60, 60);
+      const titleLines = doc.splitTextToSize(exp.title || '', mainContentWidth - 30);
+      titleLines.forEach((line: string) => {
+        doc.text(line, mainX, mainY);
+        mainY += 6;
+      });
+
+      setProfessionalFont(doc, 'body', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(primary.r, primary.g, primary.b);
+      doc.text(exp.company || '', mainX, mainY);
+
+      // Duration badge
+      setProfessionalFont(doc, 'body', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(primary.r, primary.g, primary.b);
+      const durationWidth = doc.getTextWidth(exp.duration || '') + 6;
+      doc.roundedRect(mainX + mainContentWidth - durationWidth, mainY - 4, durationWidth, 6, 2, 2, 'F');
+      doc.text(exp.duration || '', mainX + mainContentWidth - durationWidth + 3, mainY);
+      
+      mainY += 10;
+
+      // Strategic achievements
+      if (exp.achievements && exp.achievements.length > 0) {
+        setProfessionalFont(doc, 'body', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(accent.r, accent.g, accent.b);
+        doc.text('Strategic Achievements & Leadership Impact', mainX, mainY);
+        mainY += 8;
+
+        exp.achievements.forEach((achievement: string) => {
+          // Bullet point
+          doc.setFillColor(accent.r, accent.g, accent.b);
+          doc.circle(mainX + 2, mainY - 2, 1, 'F');
+
+          setProfessionalFont(doc, 'body', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(80, 80, 80);
+          const achievementLines = doc.splitTextToSize(achievement, mainContentWidth - 10);
+          achievementLines.forEach((line: string) => {
+            doc.text(line, mainX + 6, mainY);
+            mainY += 4;
+          });
+          mainY += 2;
+        });
+      }
+      mainY += 8;
+    });
+  }
+
+  console.log('✅ Executive visual PDF generated successfully');
   return new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
 }
 

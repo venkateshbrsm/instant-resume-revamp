@@ -1133,13 +1133,414 @@ async function generatePDFWithPDFShift(resumeData: any, templateId: string = 'mo
 </body>
 </html>`;
   }
+
+  function generateExecutiveHTML(resumeData: any, theme: any): string {
+    const skills = Array.isArray(resumeData.skills) 
+      ? resumeData.skills 
+      : (typeof resumeData.skills === 'string' ? resumeData.skills.split(',').map((s: string) => s.trim()) : []);
+    
+    const tools = Array.isArray(resumeData.tools)
+      ? resumeData.tools
+      : (typeof resumeData.tools === 'string' ? resumeData.tools.split(',').map((s: string) => s.trim()) : []);
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Resume - ${resumeData.name}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Arial', 'Helvetica', sans-serif; 
+      line-height: 1.4; 
+      color: #333; 
+      font-size: 12px;
+      background: #fff;
+    }
+    .container { 
+      display: flex; 
+      min-height: 100vh; 
+      max-width: 1200px; 
+      margin: 0 auto;
+    }
+    
+    /* Sidebar */
+    .sidebar { 
+      width: 33.33%; 
+      background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 50%, ${theme.accent} 100%);
+      color: white; 
+      padding: 30px 25px;
+      position: relative;
+    }
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+      pointer-events: none;
+    }
+    
+    .profile { text-align: center; margin-bottom: 30px; }
+    .profile h1 { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+    .profile .title { font-size: 16px; opacity: 0.95; font-weight: 500; margin-bottom: 15px; }
+    .contact { font-size: 11px; opacity: 0.9; }
+    .contact div { margin-bottom: 4px; }
+    
+    .sidebar-section { margin-bottom: 25px; }
+    .sidebar-section h3 { 
+      font-size: 14px; 
+      font-weight: bold; 
+      margin-bottom: 12px; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+    }
+    .sidebar-section h3::before {
+      content: '●';
+      font-size: 8px;
+    }
+    
+    .skill-item, .edu-item { 
+      margin-bottom: 8px; 
+      font-size: 11px; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+    }
+    .skill-item::before, .edu-item::before {
+      content: '•';
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .leadership-metrics { 
+      display: grid; 
+      gap: 12px; 
+      margin-top: 15px; 
+    }
+    .metric-card { 
+      background: rgba(255,255,255,0.1); 
+      padding: 15px; 
+      border-radius: 8px; 
+      text-align: center; 
+      backdrop-filter: blur(10px);
+    }
+    .metric-value { font-size: 20px; font-weight: bold; display: block; }
+    .metric-label { font-size: 9px; opacity: 0.9; margin-top: 4px; }
+    
+    .certification-item, .education-item { 
+      background: rgba(255,255,255,0.1); 
+      padding: 12px; 
+      border-radius: 6px; 
+      margin-bottom: 8px; 
+      backdrop-filter: blur(10px);
+    }
+    .certification-item { font-size: 11px; font-weight: 500; }
+    .education-item h4 { font-size: 11px; font-weight: bold; margin-bottom: 4px; }
+    .education-item p { font-size: 10px; opacity: 0.9; }
+    
+    /* Main Content */
+    .main-content { 
+      width: 66.67%; 
+      padding: 30px; 
+      background: #f8f9fa; 
+    }
+    
+    .section { margin-bottom: 35px; }
+    .section-header { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      margin-bottom: 20px; 
+    }
+    .section-icon { 
+      width: 32px; 
+      height: 32px; 
+      border-radius: 8px; 
+      background: ${theme.primary}; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      color: white; 
+      font-weight: bold;
+    }
+    .section h2 { 
+      font-size: 20px; 
+      font-weight: bold; 
+      color: ${theme.primary}; 
+    }
+    
+    .summary-box { 
+      background: white; 
+      padding: 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+      border-left: 4px solid ${theme.primary};
+      font-size: 12px;
+      line-height: 1.6;
+      color: #666;
+    }
+    
+    .experience-item { 
+      background: white; 
+      padding: 25px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+      margin-bottom: 25px; 
+      border-left: 4px solid ${theme.accent};
+    }
+    .experience-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-start; 
+      margin-bottom: 15px; 
+    }
+    .experience-header h3 { 
+      font-size: 16px; 
+      font-weight: bold; 
+      color: #666; 
+      margin-bottom: 4px; 
+    }
+    .experience-header .company { 
+      font-size: 14px; 
+      font-weight: 600; 
+      color: ${theme.primary}; 
+    }
+    .duration-badge { 
+      background: ${theme.primary}; 
+      color: white; 
+      padding: 4px 12px; 
+      border-radius: 15px; 
+      font-size: 10px; 
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .achievements { margin-top: 15px; }
+    .achievements h4 { 
+      font-size: 13px; 
+      font-weight: 600; 
+      color: #666; 
+      margin-bottom: 12px; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+    }
+    .achievements h4::before {
+      content: '★';
+      color: ${theme.accent};
+    }
+    .achievement { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: 10px; 
+      margin-bottom: 10px; 
+    }
+    .achievement::before { 
+      content: '●'; 
+      color: ${theme.accent}; 
+      font-size: 12px; 
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .achievement-text { 
+      font-size: 11px; 
+      line-height: 1.5; 
+      color: #666; 
+      font-weight: 500; 
+    }
+    
+    .core-responsibilities { 
+      margin-top: 15px; 
+      padding: 15px; 
+      background: ${theme.primary}08; 
+      border: 1px solid ${theme.primary}20; 
+      border-radius: 6px; 
+    }
+    .core-responsibilities h5 { 
+      font-size: 11px; 
+      font-weight: 600; 
+      margin-bottom: 8px; 
+      color: #333; 
+    }
+    .responsibility { 
+      font-size: 10px; 
+      color: #666; 
+      margin-bottom: 4px; 
+      padding-left: 12px; 
+      position: relative; 
+    }
+    .responsibility::before { 
+      content: '•'; 
+      color: ${theme.accent}; 
+      position: absolute; 
+      left: 0; 
+      top: 0; 
+    }
+    
+    .leadership-vision { 
+      margin-top: 20px; 
+      padding: 15px; 
+      background: #f8f9fa; 
+      border-left: 3px solid ${theme.primary}; 
+      border-radius: 0 6px 6px 0; 
+    }
+    .leadership-vision h5 { 
+      font-size: 11px; 
+      font-weight: 600; 
+      color: #666; 
+      margin-bottom: 8px; 
+    }
+    .leadership-vision p { 
+      font-size: 10px; 
+      line-height: 1.5; 
+      color: #666; 
+    }
+
+    @media print {
+      .container { max-width: none; }
+      .sidebar, .main-content { page-break-inside: avoid; }
+      .experience-item { page-break-inside: avoid; margin-bottom: 15px; }
+      .section { margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="profile">
+        <h1>${resumeData.name || 'Executive Name'}</h1>
+        <div class="title">${resumeData.title || 'Executive Position'}</div>
+        <div class="contact">
+          ${resumeData.email ? `<div>📧 ${resumeData.email}</div>` : ''}
+          ${resumeData.phone ? `<div>📱 ${resumeData.phone}</div>` : ''}
+        </div>
+      </div>
+
+      ${skills.length > 0 ? `
+      <div class="sidebar-section">
+        <h3>Skills</h3>
+        ${skills.slice(0, 8).map((skill: string) => `
+          <div class="skill-item">${skill}</div>
+        `).join('')}
+      </div>` : ''}
+
+      ${tools.length > 0 ? `
+      <div class="sidebar-section">
+        <h3>Tools & Technologies</h3>
+        ${tools.map((tool: string) => `
+          <div class="skill-item">${tool}</div>
+        `).join('')}
+      </div>` : ''}
+
+      <div class="sidebar-section">
+        <h3>Leadership Impact</h3>
+        <div class="leadership-metrics">
+          <div class="metric-card">
+            <span class="metric-value">${resumeData.experience?.length || 0}+</span>
+            <div class="metric-label">Years Leadership</div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">${resumeData.core_technical_skills?.length || skills.length || 0}</span>
+            <div class="metric-label">Core Competencies</div>
+          </div>
+        </div>
+      </div>
+
+      ${resumeData.certifications && resumeData.certifications.length > 0 ? `
+      <div class="sidebar-section">
+        <h3>Certifications</h3>
+        ${resumeData.certifications.map((cert: string) => `
+          <div class="certification-item">${cert}</div>
+        `).join('')}
+      </div>` : ''}
+
+      ${resumeData.education && resumeData.education.length > 0 ? `
+      <div class="sidebar-section">
+        <h3>Education</h3>
+        ${resumeData.education.map((edu: any) => `
+          <div class="education-item">
+            <h4>${edu.degree || 'Degree'}</h4>
+            <p>${edu.institution || 'Institution'}</p>
+            ${edu.year && edu.year !== 'N/A' ? `<p style="font-size: 9px; margin-top: 2px;">${edu.year}</p>` : ''}
+          </div>
+        `).join('')}
+      </div>` : ''}
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Executive Summary -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">🎯</div>
+          <h2>Executive Summary</h2>
+        </div>
+        <div class="summary-box">
+          ${resumeData.summary || 'Executive summary highlighting leadership achievements and strategic vision.'}
+        </div>
+      </div>
+
+      <!-- Professional Experience -->
+      ${resumeData.experience && resumeData.experience.length > 0 ? `
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon">📈</div>
+          <h2>Executive Leadership Experience</h2>
+        </div>
+        
+        ${resumeData.experience.map((exp: any, index: number) => `
+          <div class="experience-item">
+            <div class="experience-header">
+              <div>
+                <h3>${exp.title || 'Position Title'}</h3>
+                <div class="company">${exp.company || 'Company Name'}</div>
+              </div>
+              <div class="duration-badge">${exp.duration || 'Duration'}</div>
+            </div>
+            
+            ${exp.achievements && exp.achievements.length > 0 ? `
+            <div class="achievements">
+              <h4>Strategic Achievements & Leadership Impact</h4>
+              ${exp.achievements.map((achievement: string) => `
+                <div class="achievement">
+                  <div class="achievement-text">${achievement}</div>
+                </div>
+              `).join('')}
+              
+              ${exp.core_responsibilities && exp.core_responsibilities.length > 0 ? `
+              <div class="core-responsibilities">
+                <h5>Core Responsibilities:</h5>
+                ${exp.core_responsibilities.map((responsibility: string) => `
+                  <div class="responsibility">${responsibility}</div>
+                `).join('')}
+              </div>` : ''}
+              
+              <div class="leadership-vision">
+                <h5>Executive Leadership & Strategic Vision:</h5>
+                <p>Demonstrated strategic leadership through innovative approaches and measurable business impact, driving organizational growth and team development in ${exp.company}.</p>
+              </div>
+            </div>` : ''}
+          </div>
+        `).join('')}
+      </div>` : ''}
+    </div>
+  </div>
+</body>
+</html>`;
+  }
   
-  // Template generators - now defined after the HTML functions  
+  // Template generators - now defined after the HTML functions
   const templateGenerators = {
     modern: () => generateModernHTML(resumeData, theme),
     classic: () => generateClassicHTML(resumeData, theme),
     creative: () => generateCreativeHTML(resumeData, theme),
-    executive: () => generateClassicHTML(resumeData, theme), // Use classic as fallback  
+    executive: () => generateExecutiveHTML(resumeData, theme),
     minimalist: () => generateClassicHTML(resumeData, theme), // Use classic as fallback
   };
   
