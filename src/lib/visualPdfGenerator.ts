@@ -1,5 +1,17 @@
 import { jsPDF } from 'jspdf';
 
+// Mobile detection utility
+function isMobileBrowser(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const userAgent = navigator.userAgent.toLowerCase();
+  const mobileKeywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
+  const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+  const isSmallScreen = window.innerWidth <= 768;
+  
+  return isMobileUA || isSmallScreen;
+}
+
 // Professional font configuration for better visual appeal
 const FONTS = {
   primary: {
@@ -308,19 +320,28 @@ export async function generateVisualPdf(
     }
   } = options;
 
-  console.log(`🎨 Generating visual PDF for ${templateType} template with neon purple theme...`);
+  const isMobile = isMobileBrowser();
+  console.log(`🎨 Generating visual PDF for ${templateType} template with neon purple theme (mobile: ${isMobile})...`);
+
+  // Mobile-specific configuration
+  const mobileConfig = {
+    pageBreakMargin: isMobile ? 40 : 30, // More conservative margins on mobile
+    lineHeight: isMobile ? 6 : 5, // Slightly larger line height on mobile
+    fontSize: isMobile ? 11 : 10, // Slightly larger fonts on mobile
+    compression: isMobile ? false : true, // Disable compression on mobile for better compatibility
+  };
 
   switch (templateType) {
     case 'modern':
-      return generateModernPdf(resumeData, colorTheme);
+      return generateModernPdf(resumeData, colorTheme, mobileConfig);
     case 'creative':
-      return generateCreativePdf(resumeData, colorTheme);
+      return generateCreativePdf(resumeData, colorTheme, mobileConfig);
     case 'classic':
     case 'executive':
     case 'minimalist':
-      return generateClassicPdf(resumeData, colorTheme, templateType);
+      return generateClassicPdf(resumeData, colorTheme, templateType, mobileConfig);
     default:
-      return generateModernPdf(resumeData, colorTheme);
+      return generateModernPdf(resumeData, colorTheme, mobileConfig);
   }
 }
 
@@ -329,13 +350,14 @@ export async function generateVisualPdf(
  */
 async function generateModernPdf(
   resumeData: ResumeData,
-  colorTheme: { primary: string; secondary: string; accent: string }
+  colorTheme: { primary: string; secondary: string; accent: string },
+  mobileConfig?: any
 ): Promise<Blob> {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: true
+    compress: mobileConfig?.compression ?? true
   });
 
   const pageWidth = 210;
@@ -536,19 +558,19 @@ async function generateModernPdf(
     mainY += 10;
 
     doc.setTextColor(120, 120, 120);
-    doc.setFontSize(10);
-    setProfessionalFont(doc, 'body', 'normal');
-    mainY = renderTextBlock(
-      doc,
-      resumeData.summary,
-      mainContentX,
-      mainY,
-      mainContentWidth,
-      5,
-      pageHeight,
-      30,
-      recreateSidebarGradient
-    );
+  doc.setFontSize(mobileConfig?.fontSize || 10);
+  setProfessionalFont(doc, 'body', 'normal');
+      mainY = renderTextBlock(
+        doc,
+        resumeData.summary,
+        mainContentX,
+        mainY,
+        mainContentWidth,
+        mobileConfig?.lineHeight || 5,
+        pageHeight,
+        mobileConfig?.pageBreakMargin || 30,
+        recreateSidebarGradient
+      );
     mainY += 8;
   }
 
@@ -603,9 +625,9 @@ async function generateModernPdf(
           mainContentX,
           mainY,
           mainContentWidth,
-          5,
+          mobileConfig?.lineHeight || 5,
           pageHeight,
-          30,
+          mobileConfig?.pageBreakMargin || 30,
           recreateSidebarGradient
         );
         mainY += 4;
@@ -626,10 +648,10 @@ async function generateModernPdf(
           mainY,
           mainContentWidth,
           6,
-          3.5,
+          mobileConfig?.lineHeight || 3.5,
           2,
           pageHeight,
-          30,
+          mobileConfig?.pageBreakMargin || 30,
           recreateSidebarGradient,
           [ar, ag, ab]
         );
@@ -651,10 +673,10 @@ async function generateModernPdf(
           mainY,
           mainContentWidth,
           6,
-          4,
+          mobileConfig?.lineHeight || 4,
           2,
           pageHeight,
-          30,
+          mobileConfig?.pageBreakMargin || 30,
           recreateSidebarGradient,
           [ar, ag, ab]
         );
@@ -673,13 +695,14 @@ async function generateModernPdf(
  */
 async function generateCreativePdf(
   resumeData: ResumeData,
-  colorTheme: { primary: string; secondary: string; accent: string }
+  colorTheme: { primary: string; secondary: string; accent: string },
+  mobileConfig?: any
 ): Promise<Blob> {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: true
+    compress: mobileConfig?.compression ?? true
   });
 
   const pageWidth = 210;
@@ -1075,13 +1098,14 @@ async function generateCreativePdf(
 async function generateClassicPdf(
   resumeData: ResumeData,
   colorTheme: { primary: string; secondary: string; accent: string },
-  templateType: string
+  templateType: string,
+  mobileConfig?: any
 ): Promise<Blob> {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: true
+    compress: mobileConfig?.compression ?? true
   });
 
   const pageWidth = 210;
