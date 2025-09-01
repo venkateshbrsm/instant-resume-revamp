@@ -833,47 +833,51 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                  <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
                                    📄 PDF Preview • This is exactly what you'll receive
                                  </p>
-                                  <div className="flex justify-end">
-                                    <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-                                      <DialogTrigger asChild>
-                                        <Button 
-                                          variant="hero" 
-                                          size="sm" 
-                                          className="flex items-center gap-2 px-4 py-2 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                                        >
-                                          <Maximize2 className="w-4 h-4" />
-                                          <span>View Fullscreen</span>
-                                        </Button>
-                                      </DialogTrigger>
-                                     <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
-                                       <div className="flex items-center justify-between p-4 border-b">
-                                         <h2 className="text-lg font-semibold">PDF Preview - Fullscreen</h2>
+                                   <div className="flex justify-center sm:justify-end">
+                                     <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+                                       <DialogTrigger asChild>
                                          <Button 
-                                           variant="outline" 
+                                           variant="hero" 
                                            size="sm" 
-                                           onClick={() => setIsFullscreen(false)}
+                                           className="flex items-center gap-2 px-3 sm:px-4 py-2 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-xs sm:text-sm w-full sm:w-auto"
                                          >
-                                           <Minimize2 className="w-4 h-4 mr-2" />
-                                           Exit Fullscreen
+                                           <Maximize2 className="w-3 sm:w-4 h-3 sm:h-4" />
+                                           <span>View Fullscreen</span>
                                          </Button>
-                                       </div>
-                                       <div className="flex-1 overflow-hidden">
-                                         {previewPdfBlob ? (
-                                           <PDFViewer 
-                                             file={previewPdfBlob} 
-                                             className="h-full w-full"
-                                             isFullscreen={true}
-                                           />
-                                         ) : (
-                                           <div className="flex items-center justify-center h-full">
-                                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                             <span className="ml-2">Generating PDF preview...</span>
-                                           </div>
-                                         )}
-                                       </div>
-                                     </DialogContent>
-                                   </Dialog>
-                                 </div>
+                                       </DialogTrigger>
+                                      <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
+                                        <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur-sm">
+                                          <h2 className="text-base sm:text-lg font-semibold">PDF Preview - Fullscreen</h2>
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={() => setIsFullscreen(false)}
+                                            className="text-xs sm:text-sm px-2 sm:px-3"
+                                          >
+                                            <Minimize2 className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
+                                            <span className="hidden sm:inline">Exit Fullscreen</span>
+                                            <span className="sm:hidden">Exit</span>
+                                          </Button>
+                                        </div>
+                                        <div className="flex-1 overflow-hidden bg-muted/20">
+                                          {previewPdfBlob ? (
+                                            <PDFViewer 
+                                              file={previewPdfBlob} 
+                                              className="h-full w-full"
+                                              isFullscreen={true}
+                                            />
+                                          ) : (
+                                            <div className="flex items-center justify-center h-full">
+                                              <div className="text-center p-4">
+                                                <Loader2 className="w-6 sm:w-8 h-6 sm:h-8 animate-spin text-primary mx-auto mb-2" />
+                                                <span className="text-sm sm:text-base">Generating PDF preview...</span>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </div>
                                </div>
                               
                               {isGeneratingPreview ? (
@@ -888,11 +892,13 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                     </div>
                                   </div>
                                 </div>
-                              ) : previewPdfBlob ? (
-                                <PDFViewer 
-                                  file={previewPdfBlob} 
-                                  className="h-[600px] w-full"
-                                />
+                               ) : previewPdfBlob ? (
+                                 <div className="w-full">
+                                   <PDFViewer 
+                                     file={previewPdfBlob} 
+                                     className="w-full"
+                                   />
+                                 </div>
                               ) : (
                                 <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
                                   <div className="text-center space-y-4">
