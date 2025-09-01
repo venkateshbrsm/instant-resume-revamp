@@ -41,6 +41,16 @@ export const MuPDFWebViewer = ({ file, className, isFullscreen = false }: MuPDFW
       setLoading(true);
       setError(null);
 
+      // Check if MuPDF library assets are available
+      try {
+        const response = await fetch('/lib/mupdf-wasm.js');
+        if (!response.ok) {
+          throw new Error('MuPDF library assets not found. Please run the setup script.');
+        }
+      } catch {
+        throw new Error('MuPDF library assets not found. Please run: npm run setup:mupdf');
+      }
+
       // Dynamically import MuPDF WebViewer
       const { initMuPDFWebViewer } = await import('mupdf-webviewer');
       

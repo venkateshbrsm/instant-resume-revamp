@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDeviceType } from '@/hooks/useDeviceType';
-import { MuPDFWebViewer } from './MuPDFWebViewer';
+import { MobilePDFViewer } from './MobilePDFViewer';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -95,13 +95,14 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     );
   }
 
-  // Use MuPDF WebViewer for mobile devices (Android/iOS) for better compatibility
+  // Use MobilePDFViewer for mobile devices (Android/iOS) 
   if (deviceType === 'android' || deviceType === 'ios') {
     return (
-      <MuPDFWebViewer 
+      <MobilePDFViewer 
         file={file} 
         className={className}
         isFullscreen={isFullscreen}
+        pdfUrl={pdfUrl}
       />
     );
   }
