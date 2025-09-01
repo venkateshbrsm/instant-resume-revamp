@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download, ExternalLink, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -14,7 +13,6 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadPDF();
@@ -89,55 +87,6 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           <Button onClick={loadPDF} variant="outline" size="sm">
             Retry
           </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Mobile-specific PDF handling
-  if (isMobile && pdfUrl) {
-    return (
-      <div className={cn("w-full", className)}>
-        {/* Mobile PDF Notice */}
-        <div className="border rounded-lg bg-background/50 p-6 text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <AlertCircle className="h-8 w-8 text-primary" />
-          </div>
-          
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">PDF Preview Ready</h3>
-            <p className="text-muted-foreground text-sm">
-              Your enhanced resume is ready to view. Due to mobile browser limitations, 
-              you can download or open the PDF in a new tab.
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              onClick={handleDownload}
-              className="flex items-center gap-2"
-              size="lg"
-            >
-              <Download className="h-4 w-4" />
-              Download PDF
-            </Button>
-            
-            <Button 
-              onClick={openInNewTab}
-              variant="outline"
-              className="flex items-center gap-2"
-              size="lg"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Open in New Tab
-            </Button>
-          </div>
-          
-          <div className="pt-4 border-t">
-            <p className="text-xs text-muted-foreground">
-              💡 Tip: For the best experience, use the "Download PDF" option
-            </p>
-          </div>
         </div>
       </div>
     );
