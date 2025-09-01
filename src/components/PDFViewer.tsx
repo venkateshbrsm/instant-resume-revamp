@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBrowserDetection } from '@/hooks/useBrowserDetection';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -13,6 +14,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [renderMethod, setRenderMethod] = useState<'iframe' | 'object' | 'embed' | 'download'>('iframe');
+  const browserInfo = useBrowserDetection();
 
   useEffect(() => {
     loadPDF();
@@ -43,6 +46,15 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       }
 
       setPdfUrl(url);
+      
+      // Determine best rendering method based on browser
+      if (browserInfo.isAndroidChrome) {
+        setRenderMethod('object'); // Android Chrome handles object tag better
+      } else if (browserInfo.isMobile && !browserInfo.isIOS) {
+        setRenderMethod('embed'); // Other mobile browsers
+      } else {
+        setRenderMethod('iframe'); // Desktop and iOS
+      }
     } catch (err) {
       console.error('Error loading PDF:', err);
       setError('Failed to load PDF document');
@@ -119,28 +131,76 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         }}
       >
         {pdfUrl ? (
-          <iframe
-            src={isFullscreen 
-              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
-              : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
-            }
-            className={cn(
-              "rounded-lg",
-              isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+          <>
+            {renderMethod === 'iframe' && (
+              <iframe
+                src={isFullscreen 
+                  ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
+                  : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
+                }
+                className={cn(
+                  "rounded-lg",
+                  isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+                )}
+                title="PDF Preview"
+                style={{ 
+                  border: 'none',
+                  fontSmooth: 'never',
+                  WebkitFontSmoothing: 'none',
+                  ...(isFullscreen && {
+                    transform: 'scale(1)',
+                    transformOrigin: 'top left',
+                    width: '100%',
+                    height: '100%'
+                  })
+                }}
+              />
             )}
-            title="PDF Preview"
-            style={{ 
-              border: 'none',
-              fontSmooth: 'never',
-              WebkitFontSmoothing: 'none',
-              ...(isFullscreen && {
-                transform: 'scale(1)',
-                transformOrigin: 'top left',
-                width: '100%',
-                height: '100%'
-              })
-            }}
-          />
+            
+            {renderMethod === 'object' && (
+              <object
+                data={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none`}
+                type="application/pdf"
+                className={cn(
+                  "rounded-lg",
+                  isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+                )}
+                style={{ 
+                  border: 'none',
+                }}
+              >
+                <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                  <p className="text-muted-foreground mb-4">
+                    PDF preview not available on this device
+                  </p>
+                  <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </Button>
+                    <Button onClick={openInNewTab} variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in New Tab
+                    </Button>
+                  </div>
+                </div>
+              </object>
+            )}
+            
+            {renderMethod === 'embed' && (
+              <embed
+                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none`}
+                type="application/pdf"
+                className={cn(
+                  "rounded-lg",
+                  isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+                )}
+                style={{ 
+                  border: 'none',
+                }}
+              />
+            )}
+          </>
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-muted-foreground">Unable to display PDF</p>
