@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Set up PDF.js worker - use CDN for better compatibility
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Disable PDF.js worker for better mobile compatibility - run in main thread
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 interface PDFJSRendererProps {
   file: File | string | Blob;
@@ -46,13 +46,15 @@ export const PDFJSRenderer = ({ file, className, isFullscreen = false }: PDFJSRe
       
       const loadingTask = pdfjsLib.getDocument({ 
         data: arrayBuffer,
-        // Android Chrome optimizations
-        enableXfa: false,
-        isEvalSupported: false,
-        isOffscreenCanvasSupported: false,
+        // Mobile optimizations
         useSystemFonts: true,
-        stopAtErrors: true,
-        maxImageSize: 1024 * 1024 // Limit image size for mobile
+        stopAtErrors: false,
+        maxImageSize: 1024 * 1024,
+        cMapPacked: true,
+        cMapUrl: 'https://unpkg.com/pdfjs-dist@5.4.149/cmaps/',
+        // Disable worker if it fails
+        useWorkerFetch: false,
+        isEvalSupported: false
       });
       
       const pdf = await loadingTask.promise;
