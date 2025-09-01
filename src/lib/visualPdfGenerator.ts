@@ -585,12 +585,16 @@ async function generateModernPdf(
       setProfessionalFont(doc, 'body', 'bold');
       doc.text(exp.company, mainContentX, mainY);
       
-      // Duration badge
+      // Duration badge with gradient background
       if (exp.duration) {
-        doc.setFillColor(ar, ag, ab, 0.3);
         const durationWidth = doc.getTextWidth(exp.duration) + 4;
-        doc.rect(mainContentX + mainContentWidth - durationWidth, mainY - 4, durationWidth, 6, 'F');
-        doc.setTextColor(pr, pg, pb);
+        createSectionHeaderGradient(
+          mainContentX + mainContentWidth - durationWidth, 
+          mainY - 4, 
+          durationWidth, 
+          6
+        );
+        doc.setTextColor(255, 255, 255);
         doc.text(exp.duration, mainContentX + mainContentWidth - durationWidth + 2, mainY);
       }
       mainY += 8;
