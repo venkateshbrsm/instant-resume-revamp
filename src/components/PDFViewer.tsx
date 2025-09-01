@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, ExternalLink, BookOpen, Scroll } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -14,6 +14,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isScrollMode, setIsScrollMode] = useState(true); // Default to scroll mode
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -98,10 +99,34 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     <div className={cn("w-full", className)}>
       {/* Controls - Only show if not fullscreen */}
       {!isFullscreen && (
-        <div className="flex items-center justify-center mb-4 p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
           <span className="text-sm text-muted-foreground">
             📄 PDF Preview
           </span>
+          
+          {/* Mobile View Mode Toggle */}
+          {isMobile && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant={isScrollMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsScrollMode(true)}
+                className="flex items-center gap-1 text-xs"
+              >
+                <Scroll className="h-3 w-3" />
+                Scroll
+              </Button>
+              <Button
+                variant={!isScrollMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsScrollMode(false)}
+                className="flex items-center gap-1 text-xs"
+              >
+                <BookOpen className="h-3 w-3" />
+                Page
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -134,7 +159,9 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             src={isFullscreen 
               ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
               : isMobile 
-                ? `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-width&view=FitH&pagemode=none&scrollMode=2`
+                ? isScrollMode
+                  ? `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-width&view=FitH&pagemode=none&scrollMode=2`
+                  : `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-fit&view=Fit&pagemode=none&scrollMode=1`
                 : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
             }
             className={cn(
