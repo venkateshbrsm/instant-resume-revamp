@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Award, TrendingUp, Users, Target, Star, User, CheckCircle } from "lucide-react";
+import { Mail, Phone, Award, TrendingUp, Users, Target, Star, User, CheckCircle, MapPin } from "lucide-react";
 import { extractCoreResponsibilities, extractLeadershipLearnings } from "@/lib/coreResponsibilitiesExtractor";
 
 interface TemplatePreviewProps {
@@ -50,6 +50,12 @@ export function ExecutiveTemplatePreview({ enhancedContent, selectedColorTheme }
                 <Phone className="w-4 h-4 flex-shrink-0" />
                 <span className="no-underline">{enhancedContent.phone}</span>
               </div>
+              {enhancedContent.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <span className="no-underline">{enhancedContent.location}</span>
+                </div>
+              )}
             </div>
           </div>
 
