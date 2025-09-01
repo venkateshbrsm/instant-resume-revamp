@@ -473,14 +473,38 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
       console.log('🎨 Extracted resume data (experience count):', resumeData.experience?.length || 0);
       console.log('🎨 Extracted resume data (skills count):', resumeData.skills?.length || 0);
       
-      const pdfBlob = await generateVisualPdf(resumeData, {
-        templateType: selectedTemplate.layout,
-        colorTheme: {
-          primary: selectedColorTheme.primary,
-          secondary: selectedColorTheme.secondary,
-          accent: selectedColorTheme.accent
-        }
-      });
+      // Check if mobile device - use text-based PDF for better mobile compatibility
+      const isMobile = window.innerWidth < 768;
+      
+      let pdfBlob: Blob;
+      
+      if (isMobile) {
+        console.log('📱 Generating mobile-optimized text-based PDF...');
+        const { generateTextBasedPdf, extractResumeDataFromEnhanced: extractTextData } = await import('@/lib/textBasedPdfGenerator');
+        const textResumeData = extractTextData(enhancedContentForPdf);
+        
+        pdfBlob = await generateTextBasedPdf(textResumeData, {
+          filename: 'preview-resume.pdf',
+          templateType: selectedTemplate.layout,
+          colorTheme: {
+            primary: selectedColorTheme.primary,
+            secondary: selectedColorTheme.secondary,
+            accent: selectedColorTheme.accent
+          }
+        });
+        console.log('✅ Mobile text-based PDF generated successfully');
+      } else {
+        console.log('🖥️ Generating desktop visual PDF...');
+        pdfBlob = await generateVisualPdf(resumeData, {
+          templateType: selectedTemplate.layout,
+          colorTheme: {
+            primary: selectedColorTheme.primary,
+            secondary: selectedColorTheme.secondary,
+            accent: selectedColorTheme.accent
+          }
+        });
+        console.log('✅ Desktop visual PDF generated successfully');
+      }
       
       setPreviewPdfBlob(pdfBlob);
       console.log('✅ Preview PDF generated successfully with', editedContent ? 'edited' : 'enhanced', 'content');

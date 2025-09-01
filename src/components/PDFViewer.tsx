@@ -105,30 +105,28 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           </span>
         </div>
 
-        {/* Mobile PDF Container - Natural height with scrollable content */}
-        <div className="w-full border rounded-lg bg-background shadow-lg overflow-auto print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full">
-          <div className="relative print:h-full">
+        {/* Mobile PDF Container - Fixed A4 aspect ratio for better content display */}
+        <div className="w-full border rounded-lg bg-background shadow-lg print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full">
+          <div className="relative" style={{ paddingBottom: '141.4%' }}> {/* A4 aspect ratio 1:1.414 */}
             {pdfUrl ? (
               <iframe
-                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH&pagemode=none`}
-                className="w-full border-none print:h-full print:w-full"
+                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&view=Fit&pagemode=bookmarks&zoom=page-fit`}
+                className="absolute inset-0 w-full h-full border-none print:h-full print:w-full"
                 title="PDF Preview"
                 style={{ 
                   border: 'none',
-                  touchAction: 'manipulation',
-                  height: '120vh',
-                  minHeight: '800px'
+                  touchAction: 'manipulation'
                 }}
               />
             ) : (
-              <div className="flex items-center justify-center h-full">
+              <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-muted-foreground text-sm">Unable to display PDF</p>
               </div>
             )}
           </div>
           <div className="p-2 bg-muted/20 text-center border-t print:hidden">
             <p className="text-xs text-muted-foreground">
-              📱 Scroll to see all pages • Pinch to zoom
+              📱 Scroll between pages • Pinch to zoom
             </p>
           </div>
         </div>
