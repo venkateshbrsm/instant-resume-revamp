@@ -49,7 +49,8 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       
       // Determine best rendering method based on browser
       if (browserInfo.isAndroidChrome) {
-        setRenderMethod('object'); // Android Chrome handles object tag better
+        // Android Chrome - use object tag as it handles PDFs better than iframe
+        setRenderMethod('object');
       } else if (browserInfo.isMobile && !browserInfo.isIOS) {
         setRenderMethod('embed'); // Other mobile browsers
       } else {
