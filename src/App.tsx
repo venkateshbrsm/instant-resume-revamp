@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useRouteTracking } from "@/hooks/useRouteTracking";
 import { useWhatsAppDetection } from "@/hooks/useWhatsAppDetection";
 import { SecurityMonitor } from "./components/SecurityMonitor";
-import { MobileWarning } from "./components/MobileWarning";
 import { useEffect, Suspense, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
@@ -82,7 +81,6 @@ const App = () => {
           <RouteTracker />
           <WhatsAppBadgeHider />
           <SecurityMonitor />
-          <MobileWarning />
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/" element={<Index />} />
