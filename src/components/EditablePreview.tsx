@@ -406,7 +406,7 @@ export const EditablePreview = ({
     
     return (
       <div className="mb-3">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-1">
           <label className="text-sm font-medium text-muted-foreground">{label}</label>
           {shouldShowEnhanceButton && (
             <Button
@@ -415,14 +415,19 @@ export const EditablePreview = ({
               size="sm"
               onClick={() => handleEnhanceField(fieldKey, label)}
               disabled={isEnhancing || !actualValue.trim()}
-              className="h-7 px-2 text-xs"
+              className="h-7 px-2 text-xs self-start sm:self-auto shrink-0"
             >
               {isEnhancing ? (
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
               ) : (
                 <Sparkles className="h-3 w-3 mr-1" />
               )}
-              {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+              <span className="hidden sm:inline">
+                {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+              </span>
+              <span className="sm:hidden">
+                {isEnhancing ? 'Enhancing...' : 'Enhance'}
+              </span>
             </Button>
           )}
         </div>
@@ -457,7 +462,7 @@ export const EditablePreview = ({
                   {item.description && renderEditableField2('Description', item.description, field, 'description', true, index)}
                   {item.achievements && (
                     <div className="mb-3">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-1">
                         <label className="text-sm font-medium text-muted-foreground">Achievements</label>
                         <Button
                           type="button"
@@ -465,14 +470,19 @@ export const EditablePreview = ({
                           size="sm"
                           onClick={() => handleEnhanceField(`${field}.${index}.achievements`, 'Achievements')}
                           disabled={enhancingFields.has(`${field}.${index}.achievements`) || !Array.isArray(item.achievements) || !item.achievements.some((a: string) => a.trim())}
-                          className="h-7 px-2 text-xs"
+                          className="h-7 px-2 text-xs self-start sm:self-auto shrink-0"
                         >
                           {enhancingFields.has(`${field}.${index}.achievements`) ? (
                             <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                           ) : (
                             <Sparkles className="h-3 w-3 mr-1" />
                           )}
-                          {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance with AI'}
+                          <span className="hidden sm:inline">
+                            {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance with AI'}
+                          </span>
+                          <span className="sm:hidden">
+                            {enhancingFields.has(`${field}.${index}.achievements`) ? 'Enhancing...' : 'Enhance'}
+                          </span>
                         </Button>
                       </div>
                       <Textarea
@@ -526,7 +536,7 @@ export const EditablePreview = ({
       
       return (
         <div className="mb-3">
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-1">
             <label className="text-sm font-medium text-muted-foreground">{label}</label>
             {shouldShowEnhanceButton && (
               <Button
@@ -535,14 +545,19 @@ export const EditablePreview = ({
                 size="sm"
                 onClick={() => handleEnhanceField(fieldKey, label)}
                 disabled={isEnhancing || !actualValue.trim()}
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2 text-xs self-start sm:self-auto shrink-0"
               >
                 {isEnhancing ? (
                   <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                 ) : (
                   <Sparkles className="h-3 w-3 mr-1" />
                 )}
-                {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+                <span className="hidden sm:inline">
+                  {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+                </span>
+                <span className="sm:hidden">
+                  {isEnhancing ? 'Enhancing...' : 'Enhance'}
+                </span>
               </Button>
             )}
           </div>
