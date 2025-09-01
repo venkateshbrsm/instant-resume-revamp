@@ -66,6 +66,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         console.log('PDFViewer: Desktop/iOS detected, using iframe');
       }
       
+      console.log('PDFViewer: Selected render method:', method, 'for browser:', browserInfo);
       setRenderMethod(method);
     } catch (err) {
       console.error('PDFViewer: Error loading PDF:', err);
@@ -214,19 +215,36 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             )}
             
             {renderMethod === 'embed' && (
-              <embed
-                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none`}
-                type="application/pdf"
-                className={cn(
-                  "rounded-lg",
-                  isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
-                )}
-                style={{ 
-                  border: 'none',
-                }}
-                onLoad={() => console.log('PDFViewer: Embed loaded successfully')}
-                onError={() => console.error('PDFViewer: Embed failed to load')}
-              />
+              <>
+                <embed
+                  src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none`}
+                  type="application/pdf"
+                  className={cn(
+                    "rounded-lg",
+                    isFullscreen ? "w-full h-full rounded-none" : "w-full h-full"
+                  )}
+                  style={{ 
+                    border: 'none',
+                  }}
+                  onLoad={() => console.log('PDFViewer: Embed loaded successfully')}
+                  onError={() => console.error('PDFViewer: Embed failed to load')}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
+                  <p className="text-muted-foreground mb-4 text-center">
+                    PDF not displaying properly?
+                  </p>
+                  <div className="flex gap-2">
+                    <Button onClick={openInNewTab} variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in New Tab
+                    </Button>
+                    <Button onClick={handleDownload} variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
             
             {renderMethod === 'download' && (
