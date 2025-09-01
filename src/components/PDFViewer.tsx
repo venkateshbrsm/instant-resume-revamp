@@ -56,8 +56,17 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
   const openInCleanPopup = () => {
     if (pdfUrl) {
-      const fullscreenUrl = `/pdf-viewer?url=${encodeURIComponent(pdfUrl)}`;
-      window.open(fullscreenUrl, '_blank');
+      const cleanUrl = `${pdfUrl}#toolbar=0&navpanes=0&statusbar=0&view=FitW&pagemode=none`;
+      const popup = window.open(
+        cleanUrl, 
+        'pdfViewer',
+        'fullscreen=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=' + screen.width + ',height=' + screen.height + ',left=0,top=0'
+      );
+      
+      // Try to make it fullscreen for mobile
+      if (popup && popup.document) {
+        popup.document.documentElement.requestFullscreen?.();
+      }
     }
   };
 

@@ -22,7 +22,6 @@ const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 const AboutUs = lazy(() => import("./pages/AboutUs"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const ContactUs = lazy(() => import("./pages/ContactUs"));
-const FullscreenPDFViewer = lazy(() => import("./pages/FullscreenPDFViewer"));
 
 const queryClient = new QueryClient();
 
@@ -95,7 +94,6 @@ const App = () => {
               <Route path="/about" element={<AboutUs />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/contact" element={<ContactUs />} />
-              <Route path="/pdf-viewer" element={<FullscreenPDFViewer />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
