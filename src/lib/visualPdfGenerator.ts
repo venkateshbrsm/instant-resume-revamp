@@ -370,6 +370,18 @@ async function generateModernPdf(
     }
   };
 
+  // Helper function to create section header gradient
+  const createSectionHeaderGradient = (x: number, y: number, width: number, height: number) => {
+    for (let i = 0; i < width; i += 2) {
+      const ratio = i / width;
+      const r = Math.round(pr + (ar - pr) * ratio);
+      const g = Math.round(pg + (ag - pg) * ratio);
+      const b = Math.round(pb + (ab - pb) * ratio);
+      doc.setFillColor(r, g, b);
+      doc.rect(x + i, y, 2, height, 'F');
+    }
+  };
+
   // Create initial gradient sidebar background and page border
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(1);
@@ -518,11 +530,10 @@ async function generateModernPdf(
 
   // Professional Summary section
   if (resumeData.summary) {
-    // Section header with colored background
-    doc.setFillColor(pr, pg, pb, 0.1);
-    doc.rect(mainContentX - 2, mainY - 6, mainContentWidth + 4, 8, 'F');
+    // Section header with gradient background
+    createSectionHeaderGradient(mainContentX - 2, mainY - 6, mainContentWidth + 4, 8);
     
-    doc.setTextColor(pr, pg, pb);
+    doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     setProfessionalFont(doc, 'header', 'bold');
     doc.text('PROFESSIONAL SUMMARY', mainContentX, mainY);
@@ -547,11 +558,10 @@ async function generateModernPdf(
 
   // Professional Experience
   if (resumeData.experience && resumeData.experience.length > 0) {
-    // Section header
-    doc.setFillColor(pr, pg, pb, 0.1);
-    doc.rect(mainContentX - 2, mainY - 6, mainContentWidth + 4, 8, 'F');
+    // Section header with gradient background
+    createSectionHeaderGradient(mainContentX - 2, mainY - 6, mainContentWidth + 4, 8);
     
-    doc.setTextColor(pr, pg, pb);
+    doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     setProfessionalFont(doc, 'header', 'bold');
     doc.text('PROFESSIONAL EXPERIENCE', mainContentX, mainY);
