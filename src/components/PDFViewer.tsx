@@ -110,7 +110,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                 Full View
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0">
+            <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 m-0 border-0">
               <div className="w-full h-full">
                 <PDFViewer file={file} isFullscreen={true} />
               </div>
@@ -189,7 +189,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
                   <span className="hidden sm:inline">Full View</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0">
+              <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 m-0 border-0">
                 <div className="w-full h-full">
                   <PDFViewer file={file} isFullscreen={true} />
                 </div>
@@ -217,7 +217,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         {pdfUrl ? (
           <iframe
             src={isFullscreen 
-              ? `${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
+              ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=page-width&view=FitH&pagemode=none` 
               : `${pdfUrl}#toolbar=${isMobile ? '1' : '0'}&navpanes=0&scrollbar=1&zoom=${zoom}&view=${isMobile ? 'FitW' : 'FitV'}&pagemode=none`
             }
             className={cn(
