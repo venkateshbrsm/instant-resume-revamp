@@ -110,7 +110,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
         className={cn(
           "border rounded-lg bg-background relative shadow-lg",
           isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto",
-          isMobile && !isFullscreen && "w-full max-w-full"
+          isMobile && !isFullscreen && "w-full max-w-full overflow-auto"
         )}
         style={isFullscreen ? { 
           height: '100%',
@@ -119,7 +119,9 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           height: '100vh',
           width: '100%',
           maxWidth: '100%',
-          overflow: 'auto',
+          overflow: 'scroll',
+          overflowX: 'auto',
+          overflowY: 'auto',
           display: 'block'
         } : {
           height: '800px',
@@ -146,7 +148,11 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               WebkitFontSmoothing: 'none',
               ...(isMobile && {
                 minHeight: '100vh',
-                overflow: 'auto'
+                width: '100%',
+                height: '100%',
+                overflow: 'scroll',
+                overflowX: 'auto',
+                overflowY: 'auto'
               }),
               ...(isFullscreen && {
                 transform: 'scale(1)',
