@@ -16,7 +16,7 @@ interface TemplatePreviewProps {
 
 export function ModernTemplatePreview({ enhancedContent, selectedColorTheme }: TemplatePreviewProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px] md:border-0 md:shadow-none sm:border-0 sm:shadow-none">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-border/50 print:shadow-none print:border-0 flex min-h-[600px]">
       {/* Left Sidebar */}
       <div 
         className="w-64 p-6 text-white"

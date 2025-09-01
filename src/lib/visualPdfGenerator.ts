@@ -1,164 +1,5 @@
 import { jsPDF } from 'jspdf';
 
-// Enhanced mobile detection utility
-function isMobileBrowser(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  const userAgent = navigator.userAgent.toLowerCase();
-  const mobileKeywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
-  const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
-  const isSmallScreen = window.innerWidth <= 768;
-  
-  return isMobileUA || isSmallScreen;
-}
-
-// Specific mobile browser detection for targeted optimizations
-function getMobileBrowserType(): 'ios-safari' | 'ios-chrome' | 'android-chrome' | 'android-other' | 'desktop' {
-  if (typeof window === 'undefined') return 'desktop';
-  
-  const userAgent = navigator.userAgent.toLowerCase();
-  
-  if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
-    if (userAgent.includes('crios')) return 'ios-chrome';
-    return 'ios-safari';
-  }
-  
-  if (userAgent.includes('android')) {
-    if (userAgent.includes('chrome')) return 'android-chrome';
-    return 'android-other';
-  }
-  
-  return 'desktop';
-}
-
-// Mobile-specific PDF generation configuration
-interface MobilePdfConfig {
-  maxSectionSize: number;
-  pageBreakMargin: number;
-  compressionLevel: number;
-  fontSizeAdjustment: number;
-  lineHeightAdjustment: number;
-  chunkSize: number;
-  enableValidation: boolean;
-  retryAttempts: number;
-}
-
-function getMobilePdfConfig(): MobilePdfConfig {
-  const browserType = getMobileBrowserType();
-  
-  const baseConfig: MobilePdfConfig = {
-    maxSectionSize: 150,
-    pageBreakMargin: 30,
-    compressionLevel: 0,
-    fontSizeAdjustment: 0,
-    lineHeightAdjustment: 1.2,
-    chunkSize: 50,
-    enableValidation: true,
-    retryAttempts: 2
-  };
-  
-  // iOS-specific optimizations
-  if (browserType === 'ios-safari' || browserType === 'ios-chrome') {
-    return {
-      ...baseConfig,
-      maxSectionSize: 100,
-      pageBreakMargin: 40,
-      chunkSize: 30,
-      retryAttempts: 3
-    };
-  }
-  
-  // Android-specific optimizations
-  if (browserType === 'android-chrome' || browserType === 'android-other') {
-    return {
-      ...baseConfig,
-      maxSectionSize: 120,
-      pageBreakMargin: 35,
-      chunkSize: 40,
-      retryAttempts: 2
-    };
-  }
-  
-  return baseConfig;
-}
-
-// PDF validation utilities
-interface PdfValidationResult {
-  isValid: boolean;
-  pageCount: number;
-  expectedSections: number;
-  actualSections: number;
-  errors: string[];
-}
-
-function validatePdfContent(doc: jsPDF, expectedSections: number): PdfValidationResult {
-  const pageCount = doc.getNumberOfPages();
-  const result: PdfValidationResult = {
-    isValid: false,
-    pageCount,
-    expectedSections,
-    actualSections: 0,
-    errors: []
-  };
-  
-  // Basic validation
-  if (pageCount === 0) {
-    result.errors.push('PDF has no pages');
-    return result;
-  }
-  
-  if (pageCount === 1 && expectedSections > 3) {
-    result.errors.push('PDF only has one page but should have multiple sections');
-    return result;
-  }
-  
-  // For mobile, we expect at least 1 page per 3-4 major sections
-  const expectedMinPages = Math.max(1, Math.ceil(expectedSections / 4));
-  if (pageCount < expectedMinPages) {
-    result.errors.push(`PDF has ${pageCount} pages but expected at least ${expectedMinPages}`);
-    return result;
-  }
-  
-  result.actualSections = pageCount * 3; // Rough estimate
-  result.isValid = result.errors.length === 0;
-  
-  return result;
-}
-
-// Memory management for mobile browsers
-class MobileMemoryManager {
-  private static instance: MobileMemoryManager;
-  private memoryUsage: number = 0;
-  private readonly maxMemoryMB: number = 50; // Conservative limit for mobile
-  
-  static getInstance(): MobileMemoryManager {
-    if (!MobileMemoryManager.instance) {
-      MobileMemoryManager.instance = new MobileMemoryManager();
-    }
-    return MobileMemoryManager.instance;
-  }
-  
-  trackMemoryUsage(bytes: number): void {
-    this.memoryUsage += bytes / (1024 * 1024); // Convert to MB
-  }
-  
-  canAllocateMemory(estimatedMB: number): boolean {
-    return (this.memoryUsage + estimatedMB) < this.maxMemoryMB;
-  }
-  
-  forceGarbageCollection(): void {
-    // Force garbage collection if available
-    if (window.gc) {
-      window.gc();
-    }
-    this.memoryUsage = Math.max(0, this.memoryUsage * 0.7); // Estimate cleanup
-  }
-  
-  reset(): void {
-    this.memoryUsage = 0;
-  }
-}
-
 // Professional font configuration for better visual appeal
 const FONTS = {
   primary: {
@@ -258,22 +99,13 @@ function renderTextBlock(
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     
-    // Check if we need a page break - more conservative for mobile
-    const isMobile = isMobileBrowser();
-    const conservativeMargin = isMobile ? Math.max(marginBottom, 50) : marginBottom;
-    
-    if (yPosition + lineHeight > pageHeight - conservativeMargin) {
-      console.log('📄 Adding page break for better mobile compatibility');
+    // Check if we need a page break
+    if (yPosition + lineHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
       // Reset spacing after page break
       doc.setCharSpace(0);
-      
-      // Log for mobile debugging
-      if (isMobile) {
-        console.log('📱 Page break added for mobile browser compatibility');
-      }
     }
     
     // Double-check width before rendering
@@ -371,22 +203,13 @@ function renderBulletList(
     
     const itemHeight = itemLines.length * lineHeight + itemSpacing;
     
-    // Check if we need a page break for the entire item - more conservative for mobile
-    const isMobile = isMobileBrowser();
-    const conservativeMargin = isMobile ? Math.max(marginBottom, 50) : marginBottom;
-    
-    if (yPosition + itemHeight > pageHeight - conservativeMargin) {
-      console.log('📄 Adding page break for bullet list on mobile');
+    // Check if we need a page break for the entire item
+    if (yPosition + itemHeight > pageHeight - marginBottom) {
       doc.addPage();
       if (onPageBreak) onPageBreak();
       yPosition = 20;
       // Reset spacing after page break
       doc.setCharSpace(0);
-      
-      // Log for mobile debugging
-      if (isMobile) {
-        console.log('📱 Page break added for bullet list on mobile');
-      }
     }
     
     // Render bullet
@@ -470,7 +293,7 @@ interface ResumeData {
 }
 
 /**
- * Generates a visually rich PDF that matches template previews with mobile optimization
+ * Generates a visually rich PDF that matches template previews
  */
 export async function generateVisualPdf(
   resumeData: ResumeData,
@@ -485,284 +308,20 @@ export async function generateVisualPdf(
     }
   } = options;
 
-  const isMobile = isMobileBrowser();
-  const browserType = getMobileBrowserType();
-  const mobileConfig = getMobilePdfConfig();
-  const memoryManager = MobileMemoryManager.getInstance();
-  
-  console.log(`🎨 Generating visual PDF for ${templateType} template (mobile: ${isMobile}, browser: ${browserType})...`);
-
-  // Count expected sections for validation
-  const expectedSections = [
-    resumeData.summary ? 1 : 0,
-    resumeData.experience?.length || 0,
-    resumeData.skills?.length ? 1 : 0,
-    resumeData.education?.length ? 1 : 0
-  ].reduce((a, b) => a + b, 0);
-
-  // Mobile-specific retry logic
-  const generatePdfWithRetry = async (attempt: number = 1): Promise<Blob> => {
-    try {
-      console.log(`📱 PDF generation attempt ${attempt}/${mobileConfig.retryAttempts + 1} (mobile: ${isMobile})`);
-      
-      // Reset memory tracking for each attempt
-      memoryManager.reset();
-      
-      // Use progressive timeout for mobile browsers
-      const timeout = isMobile ? 30000 + (attempt * 10000) : 15000;
-      const generatePromise = generatePdfByTemplate(templateType, resumeData, colorTheme, mobileConfig);
-      
-      const pdfBlob = await Promise.race([
-        generatePromise,
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('PDF generation timeout')), timeout)
-        )
-      ]);
-
-      // Validate the generated PDF
-      if (mobileConfig.enableValidation && isMobile) {
-        console.log(`🔍 Validating PDF content (attempt ${attempt})...`);
-        
-        // Create a temporary jsPDF instance to check the generated content
-        const tempDoc = new jsPDF();
-        const validation = validatePdfContent(tempDoc, expectedSections);
-        
-        if (!validation.isValid && attempt <= mobileConfig.retryAttempts) {
-          console.warn(`⚠️ PDF validation failed:`, validation.errors);
-          console.log(`🔄 Retrying with mobile fallback settings...`);
-          
-          // Force garbage collection and retry
-          memoryManager.forceGarbageCollection();
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          return generatePdfWithRetry(attempt + 1);
-        }
-        
-        console.log(`✅ PDF validation passed (pages: ${validation.pageCount}, sections: ${validation.actualSections})`);
-      }
-
-      return pdfBlob;
-      
-    } catch (error) {
-      console.error(`❌ PDF generation attempt ${attempt} failed:`, error);
-      
-      if (attempt <= mobileConfig.retryAttempts) {
-        console.log(`🔄 Retrying PDF generation (attempt ${attempt + 1}/${mobileConfig.retryAttempts + 1})...`);
-        
-        // Force garbage collection between attempts
-        memoryManager.forceGarbageCollection();
-        
-        // Progressive delay between retries
-        await new Promise(resolve => setTimeout(resolve, attempt * 1000));
-        
-        return generatePdfWithRetry(attempt + 1);
-      }
-      
-      // Final fallback for mobile browsers
-      if (isMobile && attempt > mobileConfig.retryAttempts) {
-        console.log(`🏃 Falling back to mobile-optimized text-based PDF generation...`);
-        return generateMobileFallbackPdf(resumeData, colorTheme);
-      }
-      
-      throw error;
-    }
-  };
-
-  return generatePdfWithRetry();
-}
-
-/**
- * Routes to specific template generators
- */
-async function generatePdfByTemplate(
-  templateType: string,
-  resumeData: ResumeData,
-  colorTheme: { primary: string; secondary: string; accent: string },
-  mobileConfig: MobilePdfConfig
-): Promise<Blob> {
-  const isMobile = isMobileBrowser();
-  
-  // Enhanced mobile configuration
-  const enhancedMobileConfig = {
-    pageBreakMargin: isMobile ? mobileConfig.pageBreakMargin : 30,
-    lineHeight: isMobile ? mobileConfig.lineHeightAdjustment * 5 : 5,
-    fontSize: isMobile ? 10 + mobileConfig.fontSizeAdjustment : 10,
-    compression: isMobile ? mobileConfig.compressionLevel > 0 : true,
-    maxSectionSize: mobileConfig.maxSectionSize,
-    chunkSize: mobileConfig.chunkSize
-  };
+  console.log(`🎨 Generating visual PDF for ${templateType} template with neon purple theme...`);
 
   switch (templateType) {
     case 'modern':
-      return generateModernPdf(resumeData, colorTheme, enhancedMobileConfig);
+      return generateModernPdf(resumeData, colorTheme);
     case 'creative':
-      return generateCreativePdf(resumeData, colorTheme, enhancedMobileConfig);
+      return generateCreativePdf(resumeData, colorTheme);
     case 'classic':
     case 'executive':
     case 'minimalist':
-      return generateClassicPdf(resumeData, colorTheme, templateType, enhancedMobileConfig);
+      return generateClassicPdf(resumeData, colorTheme, templateType);
     default:
-      return generateModernPdf(resumeData, colorTheme, enhancedMobileConfig);
+      return generateModernPdf(resumeData, colorTheme);
   }
-}
-
-/**
- * Mobile fallback PDF generator - simplified text-based approach
- */
-async function generateMobileFallbackPdf(
-  resumeData: ResumeData,
-  colorTheme: { primary: string; secondary: string; accent: string }
-): Promise<Blob> {
-  console.log(`📱 Generating mobile fallback PDF...`);
-  
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-    compress: false // Never compress on mobile fallback
-  });
-
-  const pageWidth = 210;
-  const pageHeight = 297;
-  const margin = 20;
-  const contentWidth = pageWidth - (margin * 2);
-  
-  let currentY = 25;
-
-  // Helper function for conservative page breaks
-  const conservativePageBreak = () => {
-    if (currentY > pageHeight - 50) { // Very conservative margin
-      doc.addPage();
-      currentY = 20;
-      return true;
-    }
-    return false;
-  };
-
-  // Simple header
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text(resumeData.name, margin, currentY);
-  currentY += 8;
-
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text(resumeData.title, margin, currentY);
-  currentY += 10;
-
-  // Contact info
-  const contact = [resumeData.email, resumeData.phone, resumeData.location].filter(Boolean).join(' | ');
-  if (contact) {
-    doc.setFontSize(10);
-    doc.text(contact, margin, currentY);
-    currentY += 15;
-  }
-
-  // Summary
-  if (resumeData.summary) {
-    conservativePageBreak();
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SUMMARY', margin, currentY);
-    currentY += 8;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const summaryLines = doc.splitTextToSize(resumeData.summary, contentWidth);
-    summaryLines.forEach((line: string) => {
-      if (conservativePageBreak()) return;
-      doc.text(line, margin, currentY);
-      currentY += 5;
-    });
-    currentY += 10;
-  }
-
-  // Experience (chunked for mobile)
-  if (resumeData.experience && resumeData.experience.length > 0) {
-    conservativePageBreak();
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('EXPERIENCE', margin, currentY);
-    currentY += 10;
-
-    // Process experience in chunks for mobile memory management
-    const chunkSize = 2; // Smaller chunks for mobile
-    for (let i = 0; i < resumeData.experience.length; i += chunkSize) {
-      const chunk = resumeData.experience.slice(i, i + chunkSize);
-      
-      chunk.forEach((exp) => {
-        conservativePageBreak();
-        
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text(exp.title, margin, currentY);
-        currentY += 6;
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${exp.company} | ${exp.duration}`, margin, currentY);
-        currentY += 8;
-
-        if (exp.description) {
-          const descLines = doc.splitTextToSize(exp.description, contentWidth);
-          descLines.slice(0, 10).forEach((line: string) => { // Limit lines for mobile
-            if (conservativePageBreak()) return;
-            doc.text(line, margin, currentY);
-            currentY += 5;
-          });
-          currentY += 5;
-        }
-      });
-      
-      // Force memory management between chunks
-      if (i + chunkSize < resumeData.experience.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
-  }
-
-  // Skills (simplified for mobile)
-  if (resumeData.skills && resumeData.skills.length > 0) {
-    conservativePageBreak();
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SKILLS', margin, currentY);
-    currentY += 8;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const skillsText = resumeData.skills.slice(0, 15).join(', '); // Limit skills for mobile
-    const skillsLines = doc.splitTextToSize(skillsText, contentWidth);
-    skillsLines.forEach((line: string) => {
-      if (conservativePageBreak()) return;
-      doc.text(line, margin, currentY);
-      currentY += 5;
-    });
-    currentY += 10;
-  }
-
-  // Education (simplified)
-  if (resumeData.education && resumeData.education.length > 0) {
-    conservativePageBreak();
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('EDUCATION', margin, currentY);
-    currentY += 8;
-
-    resumeData.education.slice(0, 3).forEach((edu) => { // Limit for mobile
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(edu.degree, margin, currentY);
-      currentY += 5;
-      
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${edu.institution} | ${edu.year}`, margin, currentY);
-      currentY += 8;
-    });
-  }
-
-  console.log('✅ Mobile fallback PDF generated successfully');
-  return new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
 }
 
 /**
@@ -770,23 +329,13 @@ async function generateMobileFallbackPdf(
  */
 async function generateModernPdf(
   resumeData: ResumeData,
-  colorTheme: { primary: string; secondary: string; accent: string },
-  mobileConfig?: any
+  colorTheme: { primary: string; secondary: string; accent: string }
 ): Promise<Blob> {
-  const isMobile = isMobileBrowser();
-  const memoryManager = MobileMemoryManager.getInstance();
-  
-  // Track memory usage for mobile
-  if (isMobile) {
-    memoryManager.trackMemoryUsage(2); // Estimate 2MB for PDF creation
-    console.log('📱 Starting mobile-optimized modern PDF generation');
-  }
-  
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: mobileConfig?.compression ?? true
+    compress: true
   });
 
   const pageWidth = 210;
@@ -987,19 +536,19 @@ async function generateModernPdf(
     mainY += 10;
 
     doc.setTextColor(120, 120, 120);
-  doc.setFontSize(mobileConfig?.fontSize || 10);
-  setProfessionalFont(doc, 'body', 'normal');
-      mainY = renderTextBlock(
-        doc,
-        resumeData.summary,
-        mainContentX,
-        mainY,
-        mainContentWidth,
-        mobileConfig?.lineHeight || 5,
-        pageHeight,
-        mobileConfig?.pageBreakMargin || 30,
-        recreateSidebarGradient
-      );
+    doc.setFontSize(10);
+    setProfessionalFont(doc, 'body', 'normal');
+    mainY = renderTextBlock(
+      doc,
+      resumeData.summary,
+      mainContentX,
+      mainY,
+      mainContentWidth,
+      5,
+      pageHeight,
+      30,
+      recreateSidebarGradient
+    );
     mainY += 8;
   }
 
@@ -1015,15 +564,7 @@ async function generateModernPdf(
     doc.text('PROFESSIONAL EXPERIENCE', mainContentX, mainY);
     mainY += 12;
 
-    // Process experience in chunks for mobile browsers
-    const chunkSize = isMobile ? (mobileConfig?.chunkSize || 2) : resumeData.experience.length;
-    
-    for (let i = 0; i < resumeData.experience.length; i += chunkSize) {
-      const chunk = resumeData.experience.slice(i, i + chunkSize);
-      
-      for (let j = 0; j < chunk.length; j++) {
-        const exp = chunk[j];
-        const globalIndex = i + j;
+    resumeData.experience.forEach((exp, index) => {
       // Timeline dot
       doc.setFillColor(pr, pg, pb);
       doc.circle(mainContentX - 3, mainY - 2, 1.5, 'F');
@@ -1062,9 +603,9 @@ async function generateModernPdf(
           mainContentX,
           mainY,
           mainContentWidth,
-          mobileConfig?.lineHeight || 5,
+          5,
           pageHeight,
-          mobileConfig?.pageBreakMargin || 30,
+          30,
           recreateSidebarGradient
         );
         mainY += 4;
@@ -1085,10 +626,10 @@ async function generateModernPdf(
           mainY,
           mainContentWidth,
           6,
-          mobileConfig?.lineHeight || 3.5,
+          3.5,
           2,
           pageHeight,
-          mobileConfig?.pageBreakMargin || 30,
+          30,
           recreateSidebarGradient,
           [ar, ag, ab]
         );
@@ -1110,24 +651,17 @@ async function generateModernPdf(
           mainY,
           mainContentWidth,
           6,
-          mobileConfig?.lineHeight || 4,
+          4,
           2,
           pageHeight,
-          mobileConfig?.pageBreakMargin || 30,
+          30,
           recreateSidebarGradient,
           [ar, ag, ab]
         );
       }
       
       mainY += 8;
-      }
-      
-      // Memory management delay for mobile between chunks
-      if (isMobile && i + chunkSize < resumeData.experience.length) {
-        console.log(`📱 Processing experience chunk ${Math.floor(i/chunkSize) + 1}/${Math.ceil(resumeData.experience.length/chunkSize)}`);
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
+    });
   }
 
   console.log('✅ Modern visual PDF generated successfully');
@@ -1139,14 +673,13 @@ async function generateModernPdf(
  */
 async function generateCreativePdf(
   resumeData: ResumeData,
-  colorTheme: { primary: string; secondary: string; accent: string },
-  mobileConfig?: any
+  colorTheme: { primary: string; secondary: string; accent: string }
 ): Promise<Blob> {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: mobileConfig?.compression ?? true
+    compress: true
   });
 
   const pageWidth = 210;
@@ -1542,14 +1075,13 @@ async function generateCreativePdf(
 async function generateClassicPdf(
   resumeData: ResumeData,
   colorTheme: { primary: string; secondary: string; accent: string },
-  templateType: string,
-  mobileConfig?: any
+  templateType: string
 ): Promise<Blob> {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: mobileConfig?.compression ?? true
+    compress: true
   });
 
   const pageWidth = 210;

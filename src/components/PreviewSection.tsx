@@ -788,24 +788,20 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                          onColorThemeChange={setSelectedColorTheme}
                        />
 
-                              {/* Tabbed Preview */}
-                               <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
-                                 // Auto-save when switching away from edit tab
-                                 if (currentPreviewTab === "edit" && newTab !== "edit") {
-                                   if (editSaveFunction && typeof editSaveFunction === 'function') {
-                                     try {
-                                       console.log('🔄 Auto-saving before leaving edit tab');
-                                       await editSaveFunction(true); // Pass true to indicate auto-save
-                                       console.log('✅ Auto-save completed successfully');
-                                     } catch (error) {
-                                       console.error('❌ Auto-save failed:', error);
-                                     }
-                                   } else {
-                                     console.log('⚠️ Edit save function not available, skipping auto-save');
-                                   }
-                                 }
-                                 setCurrentPreviewTab(newTab);
-                               }} className="w-full">
+                             {/* Tabbed Preview */}
+                              <Tabs value={currentPreviewTab} onValueChange={async (newTab) => {
+                                // Auto-save when switching away from edit tab
+                                if (currentPreviewTab === "edit" && newTab !== "edit" && editSaveFunction) {
+                                  try {
+                                    console.log('🔄 Auto-saving before leaving edit tab');
+                                    await editSaveFunction(true); // Pass true to indicate auto-save
+                                    console.log('✅ Auto-save completed successfully');
+                                  } catch (error) {
+                                    console.error('❌ Auto-save failed:', error);
+                                  }
+                                }
+                                setCurrentPreviewTab(newTab);
+                              }} className="w-full">
                               <TabsList className="grid w-full grid-cols-2 bg-muted/30 h-auto">
                                <TabsTrigger 
                                  value="edit" 
@@ -892,12 +888,12 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                     </div>
                                   </div>
                                 </div>
-                               ) : previewPdfBlob ? (
-                                 <PDFViewer 
-                                   file={previewPdfBlob} 
-                                   className="w-full h-[400px] sm:h-[600px]"
-                                 />
-                               ) : (
+                              ) : previewPdfBlob ? (
+                                <PDFViewer 
+                                  file={previewPdfBlob} 
+                                  className="h-[600px] w-full"
+                                />
+                              ) : (
                                 <div className="h-[600px] w-full border rounded-lg shadow-inner flex items-center justify-center bg-muted/10">
                                   <div className="text-center space-y-4">
                                     <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
