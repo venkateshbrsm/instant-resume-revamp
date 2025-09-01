@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
+import React from 'react';
 import { cn } from '@/lib/utils';
+import { useDeviceType } from '@/hooks/useDeviceType';
+import { PDFJSCanvasRenderer } from './PDFJSCanvasRenderer';
+import { PDFiOSRenderer } from './PDFiOSRenderer';
 
 interface PDFViewerProps {
   file: File | string | Blob; // File object, URL, or Blob
@@ -9,16 +10,17 @@ interface PDFViewerProps {
   isFullscreen?: boolean; // Add prop to detect fullscreen mode
 }
 
-export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerProps) => {
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Fallback iframe renderer for desktop
+const DesktopPDFRenderer = ({ file, className, isFullscreen }: PDFViewerProps) => {
+  const [pdfUrl, setPdfUrl] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     loadPDF();
   }, [file]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Cleanup URL when component unmounts
     return () => {
       if (pdfUrl && pdfUrl.startsWith('blob:')) {
@@ -51,23 +53,6 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
     }
   };
 
-  const handleDownload = () => {
-    if (pdfUrl) {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = 'resume-preview.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
-  const openInNewTab = () => {
-    if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
-    }
-  };
-
   if (loading) {
     return (
       <div className={cn("flex items-center justify-center h-96", className)}>
@@ -84,9 +69,6 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       <div className={cn("flex items-center justify-center h-96", className)}>
         <div className="text-center">
           <p className="text-destructive mb-2">⚠️ {error}</p>
-          <Button onClick={loadPDF} variant="outline" size="sm">
-            Retry
-          </Button>
         </div>
       </div>
     );
@@ -149,4 +131,18 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       </div>
     </div>
   );
+};
+
+export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerProps) => {
+  const deviceType = useDeviceType();
+  // Route to appropriate renderer based on device type
+  switch (deviceType) {
+    case 'android':
+      return <PDFJSCanvasRenderer file={file} className={className} isFullscreen={isFullscreen} />;
+    case 'ios':
+      return <PDFiOSRenderer file={file} className={className} isFullscreen={isFullscreen} />;
+    case 'desktop':
+    default:
+      return <DesktopPDFRenderer file={file} className={className} isFullscreen={isFullscreen} />;
+  }
 };
