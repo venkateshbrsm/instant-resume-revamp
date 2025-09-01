@@ -23,32 +23,48 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
 
   const renderPDF = async () => {
     try {
+      console.log('Starting PDF render process');
       setLoading(true);
       setError(null);
 
       // Dynamically import pdf.js
+      console.log('Importing pdf.js library');
       const pdfjsLib = await import('pdfjs-dist');
+      console.log('PDF.js imported successfully, version:', pdfjsLib.version);
       
       // Set worker source
       pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      console.log('Worker source set to:', pdfjsLib.GlobalWorkerOptions.workerSrc);
 
       let pdfData: ArrayBuffer;
 
+      console.log('Processing file input, type:', typeof file);
       if (typeof file === 'string') {
         // URL provided - fetch the PDF
+        console.log('Fetching PDF from URL:', file);
         const response = await fetch(file);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+        }
         pdfData = await response.arrayBuffer();
+        console.log('PDF data fetched successfully, size:', pdfData.byteLength);
       } else {
         // File or Blob object
+        console.log('Converting file/blob to ArrayBuffer, size:', file.size);
         pdfData = await file.arrayBuffer();
+        console.log('PDF data converted successfully, size:', pdfData.byteLength);
       }
 
       // Load PDF document
+      console.log('Loading PDF document with pdf.js');
       const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+      console.log('PDF loaded successfully, pages:', pdf.numPages);
       const pageImages: string[] = [];
 
       // Render each page to canvas
+      console.log('Starting to render pages to canvas');
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        console.log(`Rendering page ${pageNum}/${pdf.numPages}`);
         const page = await pdf.getPage(pageNum);
         const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
 
@@ -56,10 +72,14 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         
-        if (!context) continue;
+        if (!context) {
+          console.error(`Failed to get canvas context for page ${pageNum}`);
+          continue;
+        }
 
         canvas.height = viewport.height;
         canvas.width = viewport.width;
+        console.log(`Canvas size for page ${pageNum}: ${canvas.width}x${canvas.height}`);
 
         // Render page to canvas
         const renderContext = {
@@ -69,16 +89,24 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
         };
 
         await page.render(renderContext).promise;
+        console.log(`Page ${pageNum} rendered to canvas successfully`);
         
         // Convert canvas to base64 image
         const imageData = canvas.toDataURL('image/png', 0.9);
         pageImages.push(imageData);
+        console.log(`Page ${pageNum} converted to base64 image`);
       }
 
+      console.log(`All pages rendered successfully. Total pages: ${pageImages.length}`);
       setPages(pageImages);
     } catch (err) {
       console.error('Error rendering PDF:', err);
-      setError('Failed to render PDF document');
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        name: err instanceof Error ? err.name : 'Unknown'
+      });
+      setError(`Failed to render PDF: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
