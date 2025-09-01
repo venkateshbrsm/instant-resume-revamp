@@ -99,23 +99,23 @@ const App = () => {
             </Routes>
           </Suspense>
           
-          {/* Global WhatsApp Floating Action Button */}
+          {/* Global WhatsApp Floating Action Button - Mobile Optimized */}
           <a
             href="https://wa.me/919945514909?text=Hi!%20I'm%20interested%20in%20your%20resume%20makeover%20service."
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 group animate-bounce hover:animate-none"
+            className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 group animate-bounce hover:animate-none"
             aria-label="Contact us on WhatsApp"
           >
             <Button
               variant="success"
-              className="px-3 py-2 sm:px-4 sm:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white border-2 border-green-400 flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
+              className="px-3 py-2 sm:px-4 sm:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 bg-green-500 hover:bg-green-600 text-white border-2 border-green-400 flex items-center gap-1 sm:gap-2 text-sm sm:text-base min-h-[44px] min-w-[44px]"
             >
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="font-semibold hidden sm:inline">WhatsApp Now</span>
               <span className="font-semibold sm:hidden">Chat</span>
             </Button>
-            <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+            <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-xs sm:text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none hidden sm:block">
               Chat with us on WhatsApp
               <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
             </div>
