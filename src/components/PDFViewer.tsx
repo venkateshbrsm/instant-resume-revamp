@@ -113,7 +113,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           height: '100%',
           width: '100%'
         } : { 
-          height: '800px',
+          height: '4000px',
           width: '566px',
           maxWidth: '90vw'
         }}
