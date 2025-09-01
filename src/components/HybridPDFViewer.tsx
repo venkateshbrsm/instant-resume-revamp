@@ -197,35 +197,35 @@ export const HybridPDFViewer = ({ file, className, isFullscreen = false }: Hybri
       {/* PDF Pages */}
       <div 
         className={cn(
-          "border rounded-lg bg-background shadow-lg",
-          isFullscreen ? "border-0 rounded-none h-full w-full overflow-hidden" : "mx-auto overflow-auto"
+          "border rounded-lg bg-background shadow-lg overflow-auto",
+          isFullscreen ? "border-0 rounded-none h-full w-full" : "mx-auto"
         )}
         style={isFullscreen ? { 
           height: '100%',
           width: '100%'
         } : { 
           height: '800px',
-          maxWidth: '90vw'
+          maxWidth: '100vw',
+          width: 'fit-content',
+          minWidth: '90vw'
         }}
       >
         <div className={cn(
           "space-y-4",
-          isFullscreen ? "p-2 h-full overflow-y-auto overflow-x-hidden" : "p-4"
+          isFullscreen ? "p-2 h-full" : "p-4"
         )}>
           {pages.map((pageImage, index) => (
-            <div key={index} className="flex justify-center w-full">
+            <div key={index} className="flex justify-center">
               <img
                 src={pageImage}
                 alt={`Page ${index + 1}`}
-                className={cn(
-                  "h-auto shadow-md border rounded object-contain",
-                  isFullscreen ? "w-full max-w-full" : "max-w-full"
-                )}
+                className="h-auto shadow-md border rounded object-contain"
                 style={{
                   transform: `scale(${scale}) rotate(${rotation}deg)`,
                   transformOrigin: 'center',
                   transition: 'transform 0.3s ease-in-out',
-                  maxWidth: isFullscreen ? '100%' : undefined
+                  width: 'auto',
+                  height: 'auto'
                 }}
               />
             </div>
