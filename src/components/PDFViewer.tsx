@@ -107,17 +107,17 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
         {/* Mobile PDF Container - Natural height with scrollable content */}
         <div className="w-full border rounded-lg bg-background shadow-lg overflow-auto print:border-0 print:shadow-none print:rounded-none print:w-full print:h-full">
-          <div className="relative print:h-full min-h-[600px]">
+          <div className="relative print:h-full">
             {pdfUrl ? (
               <iframe
-                src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&view=Fit&pagemode=none`}
+                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=page-width&pagemode=none`}
                 className="w-full border-none print:h-full print:w-full"
                 title="PDF Preview"
                 style={{ 
                   border: 'none',
                   touchAction: 'manipulation',
-                  height: '150vh',
-                  minHeight: '1000px'
+                  height: '200vh',
+                  minHeight: '1500px'
                 }}
               />
             ) : (
