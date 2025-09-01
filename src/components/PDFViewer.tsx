@@ -119,8 +119,9 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
           height: '100vh',
           width: '100%',
           maxWidth: '100%',
-          overflow: 'auto'
-        } : { 
+          overflow: 'auto',
+          display: 'block'
+        } : {
           height: '800px',
           width: '566px',
           maxWidth: '90vw'
@@ -131,7 +132,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
             src={isFullscreen 
               ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&view=FitV&pagemode=none` 
               : isMobile 
-                ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=75&view=Fit&pagemode=none`
+                ? `${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=page-width&view=FitV&pagemode=thumbs`
                 : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=100&pagemode=none`
             }
             className={cn(
@@ -143,6 +144,10 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
               border: 'none',
               fontSmooth: 'never',
               WebkitFontSmoothing: 'none',
+              ...(isMobile && {
+                minHeight: '100vh',
+                overflow: 'auto'
+              }),
               ...(isFullscreen && {
                 transform: 'scale(1)',
                 transformOrigin: 'top left',
