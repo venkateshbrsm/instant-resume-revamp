@@ -38,6 +38,7 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
 
   const loadPDF = async () => {
     try {
+      console.log('PDFViewer: Starting PDF load, file:', file);
       setLoading(true);
       setError(null);
 
@@ -46,16 +47,19 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
       if (typeof file === 'string') {
         // URL provided
         url = file;
+        console.log('PDFViewer: Using URL:', url);
       } else {
         // File or Blob object provided
         url = URL.createObjectURL(file);
+        console.log('PDFViewer: Created blob URL:', url);
       }
 
       setPdfUrl(url);
+      console.log('PDFViewer: Set PDF URL, waiting for onDocumentLoadSuccess');
+      // Don't set loading to false here - let onDocumentLoadSuccess handle it
     } catch (err) {
-      console.error('Error loading PDF:', err);
+      console.error('PDFViewer: Error in loadPDF:', err);
       setError('Failed to load PDF document');
-    } finally {
       setLoading(false);
     }
   };
@@ -78,12 +82,13 @@ export const PDFViewer = ({ file, className, isFullscreen = false }: PDFViewerPr
   };
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    console.log('PDFViewer: Document loaded successfully, pages:', numPages);
     setNumPages(numPages);
     setLoading(false);
   };
 
   const onDocumentLoadError = (error: Error) => {
-    console.error('Error loading PDF:', error);
+    console.error('PDFViewer: Document load error:', error);
     setError('Failed to load PDF document');
     setLoading(false);
   };
