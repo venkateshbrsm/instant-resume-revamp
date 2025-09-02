@@ -811,19 +811,32 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                    disabled={isAutoEnhancing}
                                    className={cn(
                                      "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold data-[state=active]:shadow-elegant transition-all duration-200 text-sm sm:text-base py-3 px-2 sm:px-4 relative overflow-hidden",
-                                     !isAutoEnhancing && "bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 border-2 border-primary/40 shadow-lg shadow-primary/25 animate-pulse text-primary font-bold",
+                                     !isAutoEnhancing && "bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 border-2 border-primary/40 shadow-lg shadow-primary/25 text-primary font-bold",
                                      isAutoEnhancing && "opacity-50 cursor-not-allowed"
                                    )}
+                                   style={{
+                                     animation: !isAutoEnhancing ? 'pulse 3s ease-in-out infinite' : undefined
+                                   }}
                                  >
                                    {!isAutoEnhancing && (
-                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
+                                     <div 
+                                       className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+                                       style={{ animation: 'shimmer 4s ease-in-out infinite' }}
+                                     />
                                    )}
                                    <span className="hidden sm:inline flex items-center gap-2 relative z-10">
                                      {isAutoEnhancing ? "⏳ Enhancing..." : (
                                        <>
-                                         <Eye className="w-5 h-5 animate-bounce" />
+                                         <Eye 
+                                           className="w-5 h-5" 
+                                           style={{ animation: 'bounce 2s ease-in-out infinite' }}
+                                         />
                                          ✨ Preview Your Resume
-                                         <Badge variant="secondary" className="ml-2 text-xs bg-primary text-primary-foreground border-primary animate-pulse font-bold px-2 py-1">
+                                         <Badge 
+                                           variant="secondary" 
+                                           className="ml-2 text-xs bg-primary text-primary-foreground border-primary font-bold px-2 py-1"
+                                           style={{ animation: 'pulse 4s ease-in-out infinite' }}
+                                         >
                                            👀 MUST SEE!
                                          </Badge>
                                        </>
@@ -832,9 +845,16 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                    <span className="sm:hidden flex items-center gap-1 relative z-10">
                                      {isAutoEnhancing ? "⏳" : (
                                        <>
-                                         <Eye className="w-4 h-4 animate-bounce" />
+                                         <Eye 
+                                           className="w-4 h-4" 
+                                           style={{ animation: 'bounce 2s ease-in-out infinite' }}
+                                         />
                                          ✨ Preview
-                                         <Badge variant="secondary" className="text-xs bg-primary text-primary-foreground">
+                                         <Badge 
+                                           variant="secondary" 
+                                           className="text-xs bg-primary text-primary-foreground"
+                                           style={{ animation: 'pulse 4s ease-in-out infinite' }}
+                                         >
                                            !
                                          </Badge>
                                        </>
