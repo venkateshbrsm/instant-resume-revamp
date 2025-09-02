@@ -96,8 +96,7 @@ export function TemplateSelector({
 
         {/* Color Theme Selection */}
         <div className="border-t border-border/50 pt-4">
-          <div className="flex items-center justify-between mb-3">
-            <h5 className="text-sm font-medium text-foreground">Color Scheme</h5>
+          <div className="flex items-center justify-end mb-3">
             <div className="flex gap-2">
               <ColorPicker 
                 selectedColorTheme={selectedColorTheme}
