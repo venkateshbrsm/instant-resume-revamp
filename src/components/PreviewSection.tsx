@@ -819,24 +819,14 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                    }}
                                  >
                                    {!isAutoEnhancing && (
-                                     <div 
-                                       className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-                                       style={{ animation: 'shimmer 4s ease-in-out infinite' }}
-                                     />
+                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
                                    )}
                                    <span className="hidden sm:inline flex items-center gap-2 relative z-10">
                                      {isAutoEnhancing ? "⏳ Enhancing..." : (
                                        <>
-                                         <Eye 
-                                           className="w-5 h-5" 
-                                           style={{ animation: 'bounce 2s ease-in-out infinite' }}
-                                         />
+                                         <Eye className="w-5 h-5 animate-bounce" />
                                          ✨ Preview Your Resume
-                                         <Badge 
-                                           variant="secondary" 
-                                           className="ml-2 text-xs bg-primary text-primary-foreground border-primary font-bold px-2 py-1"
-                                           style={{ animation: 'pulse 4s ease-in-out infinite' }}
-                                         >
+                                         <Badge variant="secondary" className="ml-2 text-xs bg-primary text-primary-foreground border-primary animate-pulse font-bold px-2 py-1">
                                            👀 MUST SEE!
                                          </Badge>
                                        </>
@@ -845,16 +835,9 @@ export function PreviewSection({ file, onPurchase, onBack }: PreviewSectionProps
                                    <span className="sm:hidden flex items-center gap-1 relative z-10">
                                      {isAutoEnhancing ? "⏳" : (
                                        <>
-                                         <Eye 
-                                           className="w-4 h-4" 
-                                           style={{ animation: 'bounce 2s ease-in-out infinite' }}
-                                         />
+                                         <Eye className="w-4 h-4 animate-bounce" />
                                          ✨ Preview
-                                         <Badge 
-                                           variant="secondary" 
-                                           className="text-xs bg-primary text-primary-foreground"
-                                           style={{ animation: 'pulse 4s ease-in-out infinite' }}
-                                         >
+                                         <Badge variant="secondary" className="text-xs bg-primary text-primary-foreground animate-pulse">
                                            !
                                          </Badge>
                                        </>
