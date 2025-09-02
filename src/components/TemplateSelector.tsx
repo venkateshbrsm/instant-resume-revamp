@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, Palette } from "lucide-react";
 import { resumeTemplates, type ResumeTemplate } from "@/lib/resumeTemplates";
+import { ColorPicker } from "@/components/ColorPicker";
 
 interface TemplateSelectorProps {
   selectedTemplate: ResumeTemplate;
@@ -97,14 +98,20 @@ export function TemplateSelector({
         <div className="border-t border-border/50 pt-4">
           <div className="flex items-center justify-between mb-3">
             <h5 className="text-sm font-medium text-foreground">Color Scheme</h5>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowColorThemes(!showColorThemes)}
-              className="text-xs"
-            >
-              {showColorThemes ? 'Hide Options' : 'More Colors'}
-            </Button>
+            <div className="flex gap-2">
+              <ColorPicker 
+                selectedColorTheme={selectedColorTheme}
+                onColorThemeChange={onColorThemeChange}
+              />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowColorThemes(!showColorThemes)}
+                className="text-xs"
+              >
+                {showColorThemes ? 'Hide Options' : 'More Colors'}
+              </Button>
+            </div>
           </div>
           
           <div className={`grid gap-2 transition-all duration-200 ${
